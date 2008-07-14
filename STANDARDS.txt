@@ -1,0 +1,36 @@
+The following guidelines should be adhered to when developing libraries for
+the Clean Platform library collection.
+
+== Type names ==
+The names of types should be clear and informative, and should always start with a capital.
+If the name of a type consists of multiple words, each new word should start with a capital.
+The constructors of a type should also start with a capital.
+
+== Function names ==
+Function names should *not* start with a capital, but when a function consists of multiple words,
+each new word, except the first one should start with a capital. By starting types and constructors
+with a capital and, functions without one, the difference between a constructor and a function
+is immediately clear for the reader of a program.
+
+== Module names ==
+For modules, the same guidelines apply as for naming types. Names should be informative and
+preferably short. When a library module is not meant for direct imports by end users,
+but should only used by experts in modules that for example provide a more friendly interface,
+you should prefix the name of that module with an underscore character.
+
+== Argument order ==
+While there are no hard demands on the order in which you specify the arguments of functions,
+there are two rules which make your functions easier to use and somewhat more clear:
+
+  * State representing arguments such as the common *World type argument, should be at
+    the end of the argument list.
+  * Arguments which are used as "options" in some way should be at the beginning of
+    the arguments. This makes it easy to pass in options by currying. 
+
+== Comments ==
+A concise description of the purpose of a function and the meaning of its input and output
+parameters should be present in the .dcl file for all exported functions.
+
+== Whitespace ==
+Whitespace may be used to format functions. When tabs are used for alignment, they are considered
+to be four spaces wide.

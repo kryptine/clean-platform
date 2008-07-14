@@ -9,6 +9,7 @@ Data.Maybe
 Data.Set
 Data.Queue
 
+Database
 Database.SQL
 Database.SQL.MySQL
 Database.SQL.PostgreSQL
@@ -17,6 +18,7 @@ Database.SQL.SQLite
 Gui
 Gui.ObjectIO
 
+Internet
 Internet.Email
 Internet.Http
 Internet.Http.Cgi
@@ -24,6 +26,7 @@ Internet.Http.HttpServer
 
 Math
 
+Network
 Network.Tcp
 Network.Udp
 
@@ -36,6 +39,7 @@ System.OS
 System.Process
 System.Time
 
+Test
 Test.Gast
 
 Text
