@@ -29,14 +29,16 @@ there are two rules which make your functions easier to use and somewhat more cl
 
 == Comments ==
 A concise description of the purpose of a function and the meaning of its input and output
-parameters should be present in the .dcl file for all exported functions. Comments are enclosed
+parameters should be present in the .dcl file for all exported functions. Comments are specified
 as follows:
 
 /**
- * This function is the identity
+ * This function is the identity.
  */
 id :: a -> a
 id x = x
+
+The @param notation (similar to JavaDocs) can be used to clarify the arguments separately.
 
 == Layout ==
 Whitespace and new lines can be used to format code nicely. When tabs are used for alignment, they are
