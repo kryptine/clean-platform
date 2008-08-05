@@ -29,8 +29,15 @@ there are two rules which make your functions easier to use and somewhat more cl
 
 == Comments ==
 A concise description of the purpose of a function and the meaning of its input and output
-parameters should be present in the .dcl file for all exported functions.
+parameters should be present in the .dcl file for all exported functions. Comments are enclosed
+as follows:
 
-== Whitespace ==
-Whitespace may be used to format functions. When tabs are used for alignment, they are considered
-to be four spaces wide.
+/**
+ * This function is the identity
+ */
+id :: a -> a
+id x = x
+
+== Layout ==
+Whitespace and new lines can be used to format code nicely. When tabs are used for alignment, they are
+considered to be fixed to four spaces.
