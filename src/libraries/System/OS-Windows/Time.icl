@@ -5,6 +5,8 @@ import Pointer
 import StdEnv
 import StdDebug
 
+import code from library "msvcrt.txt"
+
 //String buffer size
 MAXBUF :== 256
 
@@ -14,7 +16,7 @@ where
 	where
 		toStringTmC :: !{#Int} -> Pointer
 		toStringTmC a0 = code {
-			ccall asctime "A:I"
+			ccall asctime@4 "A:I"
 		}
 instance toString Time
 where
@@ -22,7 +24,7 @@ where
 	where	
 		toStringTimeC :: !{#Int} -> Pointer
 		toStringTimeC a0 = code {
-			ccall ctime "A:I"
+			ccall ctime@4 "A:I"
 		}
 instance toString Clock
 where
@@ -35,7 +37,7 @@ clock world
 	where
 	clockC :: !*World -> (!Int, !*World)
 	clockC world = code {
-		ccall clock ":I:A"
+		ccall clock@0 ":I:A"
 	}
 
 time :: !*World -> (!Time, !*World)
@@ -45,7 +47,7 @@ time world
 	where
 	timeC :: !Int !*World -> (!Int,!*World)
 	timeC a0 world = code {
-		ccall time "I:I:A"
+		ccall time@4 "I:I:A"
 	}
 
 gmTime :: !*World -> (!Tm, !*World)
@@ -56,7 +58,7 @@ gmTime world
 	where
 	gmTimeC :: !{#Int} !*World -> (!Int, !*World)
 	gmTimeC tm world = code {
-    	ccall gmtime "A:I:A"
+    	ccall gmtime@4 "A:I:A"
 	}
 
 localTime :: !*World -> (!Tm, !*World)
@@ -67,7 +69,7 @@ localTime world
 	where
 	localTimeC :: !{#Int} !*World -> (!Int, !*World)
 	localTimeC tm world = code {
-    	ccall localtime "A:I:A"
+    	ccall localtime@4 "A:I:A"
 	}
 
 mkTime :: !Tm -> Time
@@ -77,7 +79,7 @@ mkTime tm
 	where
 	mkTimeC :: !{#Int} -> Int
 	mkTimeC tm = code {
-		ccall mktime "A:I"
+		ccall mktime@4 "A:I"
 	}
 
 diffTime :: !Time !Time -> Int
@@ -91,7 +93,7 @@ strfTime format tm
 	where
 		strfTimeC :: !{#Char} !Int !{#Char} !{#Int} !{#Char} -> (!Int,!{#Char})
 		strfTimeC a0 a1 a2 a3 a4 = code {
-			ccall strftime "sIsA:I:A"
+			ccall strftime@16 "sIsA:I:A"
 		}
 
 //Custom deref and pack for the Tm structure
