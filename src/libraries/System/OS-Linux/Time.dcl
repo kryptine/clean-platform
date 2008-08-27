@@ -5,7 +5,11 @@ definition module Time
 */
 
 from StdString import class toString
-from _TimeOS import CLK_PER_SEC
+
+/**
+* The resolution of the system clock ticks
+*/
+CLK_PER_SEC	:== 100
 
 /**
 * The Tm record structure contains date and time information

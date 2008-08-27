@@ -45,7 +45,7 @@ time world
 	where
 	timeC :: !Int !*World -> (!Int,!*World)
 	timeC a0 world = code {
-		ccall time@4 "I:I:A"
+		ccall time "I:I:A"
 	}
 
 gmTime :: !*World -> (!Tm, !*World)
