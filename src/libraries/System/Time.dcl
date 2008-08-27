@@ -52,7 +52,7 @@ gmTime		:: !*World -> (!Tm, !*World)
 */
 localTime	:: !*World -> (!Tm, !*World)
 /**
-* Convert a Tm record to a Time value
+* Convert a Tm record (local time) to a Time value
 */
 mkTime		:: !Tm -> Time
 /**
@@ -63,4 +63,3 @@ diffTime	:: !Time !Time -> Int
 * Format the time structure using the format defined by C's time.h
 */
 strfTime	:: !String !Tm -> String
-

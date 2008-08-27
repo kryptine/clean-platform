@@ -1,34 +1,31 @@
 implementation module Time
 
 import StdString, StdArray, StdClass, StdOverloaded, StdInt
-import code from "_TimeC.o"
+import Pointer
+import StdEnv
+import StdDebug
+
+//String buffer size
+MAXBUF :== 256
 
 instance toString Tm
+where
+	toString tm = derefString (toStringTmC (packTm tm))
 	where
-	toString tm 
-		# string	= createArray 24 '\0'
-		# ok  		= toStringTmC {tm.sec,tm.min,tm.hour,tm.mday,tm.mon,tm.year,tm.wday,tm.yday,if tm.isdst 1 0} string
-		= if (ok == 0) string ""
-		where
-		toStringTmC :: !{#Int} !{#Char} -> Int
-		toStringTmC a s = code {
-			ccall toStringTmC "AS:I"
+		toStringTmC :: !{#Int} -> Pointer
+		toStringTmC a0 = code {
+			ccall asctime "A:I"
 		}
-
 instance toString Time
-	where
-	toString (Time t)
-		# string	= createArray 24 '\0'
-		# ok		= toStringTimeC t string
-		= if (ok == 0) string ""
-		where
-		toStringTimeC :: !Int !{#Char} -> Int
-		toStringTimeC t s = code {
-			ccall toStringTimeC "IS:I"
+where
+	toString (Time t) = derefString (toStringTimeC (packInt t))
+	where	
+		toStringTimeC :: !{#Int} -> Pointer
+		toStringTimeC a0 = code {
+			ccall ctime "A:I"
 		}
-
 instance toString Clock
-	where
+where
 	toString (Clock c) = toString c
 
 clock :: !*World -> (!Clock, !*World)
@@ -38,59 +35,49 @@ clock world
 	where
 	clockC :: !*World -> (!Int, !*World)
 	clockC world = code {
-		ccall clockC ":I:A"
+		ccall clock ":I:A"
 	}
 
 time :: !*World -> (!Time, !*World)
 time world
-	# (t, world)	= timeC world
+	# (t, world)	= timeC 0 world
 	= (Time t, world)
 	where
-	timeC :: !*World -> (!Int,!*World)
-	timeC world = code {
-		ccall timeC ":I:A"
+	timeC :: !Int !*World -> (!Int,!*World)
+	timeC a0 world = code {
+		ccall time@4 "I:I:A"
 	}
 
 gmTime :: !*World -> (!Tm, !*World)
 gmTime world
-	# tm	= createArray 9 0
-	# world	= gmTimeC tm world
-	= ({ sec = tm.[0], min = tm.[1], hour = tm.[2]
-	   , mday = tm.[3], mon = tm.[4], year = tm.[5]
-	   , wday = tm.[6], yday = tm.[7], isdst = tm.[8] <> 0
-	   }, world)
+	# ((Time t),world)	= time world
+	# (tm, world)		= gmTimeC (packInt t) world
+	= (derefTm tm, world)
 	where
-	gmTimeC :: !{#Int} !*World -> *World
+	gmTimeC :: !{#Int} !*World -> (!Int, !*World)
 	gmTimeC tm world = code {
-    	ccall gmTimeC "A:V:A"
-		fill_a 0 1
-		pop_a 1
+    	ccall gmtime "A:I:A"
 	}
 
 localTime :: !*World -> (!Tm, !*World)
 localTime world
-	# tm	= createArray 9 0
-	# world	= localTimeC tm world
-	= ({ sec = tm.[0], min = tm.[1], hour = tm.[2]
-	   , mday = tm.[3], mon = tm.[4], year = tm.[5]
-	   , wday = tm.[6], yday = tm.[7], isdst = tm.[8] <> 0
-	   }, world)
+	# ((Time t),world)	= time world
+	# (tm,world)		= localTimeC (packInt t) world
+	= (derefTm tm, world)
 	where
-	localTimeC :: !{#Int} !*World -> *World
+	localTimeC :: !{#Int} !*World -> (!Int, !*World)
 	localTimeC tm world = code {
-    	ccall localTimeC "A:V:A"
-		fill_a 0 1
-		pop_a 1
+    	ccall localtime "A:I:A"
 	}
-		
+
 mkTime :: !Tm -> Time
 mkTime tm 
-	# t = mkTimeC {tm.sec,tm.min,tm.hour,tm.mday,tm.mon,tm.year,tm.wday,tm.yday,if tm.isdst 1 0}
+	# t = mkTimeC (packTm tm)
 	= Time t
 	where
 	mkTimeC :: !{#Int} -> Int
 	mkTimeC tm = code {
-		ccall mkTimeC "A:I"
+		ccall mktime "A:I"
 	}
 
 diffTime :: !Time !Time -> Int
@@ -98,17 +85,35 @@ diffTime (Time t1) (Time t2) = t1 - t2
 
 strfTime :: !String !Tm -> String
 strfTime format tm 
-	# format	= format +++ "\0"
-	# (len,ptr) = strfTimeC format {tm.sec,tm.min,tm.hour,tm.mday,tm.mon,tm.year,tm.wday,tm.yday,if tm.isdst 1 0}
-	# string	= createArray len '\0'
-	# ok		= copyStringC len ptr string
-	= if (ok == 0) string ""
+	# buf		= createArray MAXBUF 'X'
+	# (len,buf)	= strfTimeC buf MAXBUF (packString format) (packTm tm) buf
+	= buf % (0, len - 1)
 	where
-	strfTimeC :: !String !{#Int} -> (!Int,!Int)
-	strfTimeC format tm = code {
-		ccall strfTimeC "SA:VII"
-	}
-	copyStringC :: !Int !Int !String -> Int
-	copyStringC len ptr s = code { 
-		ccall copyStringC "IIS:I"
-	}
+		strfTimeC :: !{#Char} !Int !{#Char} !{#Int} !{#Char} -> (!Int,!{#Char})
+		strfTimeC a0 a1 a2 a3 a4 = code {
+			ccall strftime "sIsA:I:A"
+		}
+
+//Custom deref and pack for the Tm structure
+derefTm :: !Int -> Tm
+derefTm tm =	{ sec = readInt tm 0
+				, min = readInt tm 4
+				, hour = readInt tm 8 
+				, mday = readInt tm 12 
+				, mon = readInt tm 16
+				, year = readInt tm 20
+				, wday = readInt tm 24
+				, yday = readInt tm 28 
+				, isdst = readInt tm 32 <> 0
+				}
+packTm :: !Tm -> {#Int}
+packTm tm = 	{ tm.sec
+				, tm.min
+				, tm.hour
+				, tm.mday
+				, tm.mon
+				, tm.year
+				, tm.wday
+				, tm.yday
+				, if tm.isdst 1 0
+				}
