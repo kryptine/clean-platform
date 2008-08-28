@@ -36,13 +36,3 @@ unsetEnvironmentVariable name world
 		unsetenvC a0 a1 = code {
 			ccall unsetenv "s:I:A"
 		}
-
-clearEnvironment :: !*World -> *World
-clearEnvironment world
-	# (_,world) = clearenvC world
-	= world
-	where
-		clearenvC :: !*World -> (!Int, !*world)
-		clearenvC a0 = code {
-			ccall clearenv ":I:A"
-		}

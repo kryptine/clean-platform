@@ -1,48 +1,41 @@
 implementation module Environment
-/**
-* Module for accessing environment variables
-*/
-import StdOverloaded, StdInt
+
+import StdOverloaded, StdInt, StdArray, StdChar, StdString
 import StdMaybe
 import Pointer
 
+import code from library "kernel32.txt"
+
+MAXBUF :== 32767 //Maximum size for environment variables
+
 getEnvironmentVariable :: !String !*World -> (Maybe String, *World)
 getEnvironmentVariable name world
-	# ptr = getenvC (packString name)
-	| ptr == 0	= (Nothing, world)
-				= (Just (derefString ptr), world)
+	# buf	= createArray MAXBUF '\0'
+	# len	= getenvC (packString name) buf MAXBUF
+	| len == 0	= (Nothing, world)
+				= (Just (buf % (0, len - 1)), world)
 	where
-		getenvC :: !{#Char} -> Pointer
-		getenvC a0 = code {
-			ccall getenv "s:I"
+		getenvC :: !{#Char} !{#Char} !Int -> Int
+		getenvC a0 a1 a2 = code {
+			ccall GetEnvironmentVariableA@12 "PssI:I"
 		}
 
 setEnvironmentVariable :: !String !String !*World -> *World
 setEnvironmentVariable name value world
-	# (_,world) = setenvC (packString name) (packString value) 1 world
+	# (_,world) = setenvC (packString name) (packString value) world
 	= world
 	where
-		setenvC :: !{#Char} !{#Char} !Int !*World -> (!Int, !*World)
-		setenvC a0 a1 a2 a3 = code {
-			ccall setenv "ssI:I:A"
+		setenvC :: !{#Char} !{#Char} !*World -> (!Int, !*World)
+		setenvC a0 a1 a2 = code {
+			ccall SetEnvironmentVariableA@8 "Pss:I:A"
 		}
 
 unsetEnvironmentVariable :: !String !*World -> *World
 unsetEnvironmentVariable name world
-	# (_,world) = unsetenvC (packString name) world
+	# (_,world) = unsetenvC (packString name) 0 world
 	= world
 	where
-		unsetenvC :: !{#Char} !*World -> (!Int, !*World)
-		unsetenvC a0 a1 = code {
-			ccall unsetenv "s:I:A"
-		}
-
-clearEnvironment :: !*World -> *World
-clearEnvironment world
-	# (_,world) = clearenvC world
-	= world
-	where
-		clearenvC :: !*World -> (!Int, !*world)
-		clearenvC a0 = code {
-			ccall clearenv ":I:A"
+		unsetenvC :: !{#Char} !Int !*World -> (!Int, !*World)
+		unsetenvC a0 a1 a2 = code {
+			ccall SetEnvironmentVariableA@8 "PsI:I:A"
 		}
