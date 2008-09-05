@@ -7,6 +7,9 @@ import StdMisc
 
 :: Maybe a = Nothing | Just a
 
+fmap :: (.a -> .b) (Maybe .a) -> Maybe .b
+fmap _ Nothing  = Nothing
+fmap f (Just x) = Just (f x)
 
 maybe :: .a (.a -> .a) !(Maybe .a) -> .a
 maybe x _ Nothing  = x
