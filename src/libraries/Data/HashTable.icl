@@ -23,8 +23,8 @@ instance hash String
 where
 	hash _	= 0
 
-new :: 						   			   HashTable k v	| == k & hash k
-new	= HashTable []
+newHashTable :: 						   HashTable k v	| == k & hash k
+newHashTable = HashTable []
 
 get :: !k (HashTable k v)				-> Maybe v			| == k & hash k
 get k (HashTable [])					= Nothing

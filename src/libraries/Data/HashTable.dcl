@@ -11,7 +11,7 @@ class hash k where
 instance hash Int
 instance hash String
 
-new :: 						   			   HashTable k v	| == k & hash k
+newHashTable :: 						   HashTable k v	| == k & hash k
 get :: !k (HashTable k v)				-> Maybe v			| == k & hash k
 put :: !k !v (HashTable k v)			-> HashTable k v	| == k & hash k
 del :: !k (HashTable k v)				-> HashTable k v	| == k & hash k
