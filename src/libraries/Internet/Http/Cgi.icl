@@ -1,8 +1,7 @@
 implementation module Cgi
 
 import StdFile, StdInt, StdBool, StdArray
-import StdMaybe
-import Http, Text, Environment
+import Maybe, Http, Text, Environment
 
 //Http headers which should be polled in the environment
 CGI_HEADERS :== [ ("Content-Type","CONTENT_TYPE")

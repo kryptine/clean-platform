@@ -1,8 +1,7 @@
 implementation module Mime
 
 import StdOverloaded, StdString, StdList, StdArray
-import StdMaybe
-import Text
+import Maybe, Text
 
 encodeMimeMultipart :: !String [([(String,String)], String)] -> String
 encodeMimeMultipart boundary parts

@@ -7,7 +7,7 @@ implementation module HashTable
 * someone finds the time to implement a nice efficient hashtable.
 */
 import StdOverloaded, StdInt, StdString, StdList
-import StdMaybe
+import Maybe
 
 :: HashTable k v	= HashTable [(k,v)]
 

@@ -1,7 +1,7 @@
 definition module HashTable
 
-import StdMaybe
 import StdOverloaded
+import Maybe
 
 :: HashTable k v
 

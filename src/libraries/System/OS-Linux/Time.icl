@@ -2,8 +2,6 @@ implementation module Time
 
 import StdString, StdArray, StdClass, StdOverloaded, StdInt
 import Pointer
-import StdEnv
-import StdDebug
 
 //String buffer size
 MAXBUF :== 256

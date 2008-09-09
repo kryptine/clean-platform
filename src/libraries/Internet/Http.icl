@@ -1,8 +1,7 @@
 implementation module Http
 
 import StdOverloaded, StdString, StdList, StdArray, StdFile, StdBool
-import StdMaybe
-import HashTable, Text, UrlEncoding, Mime
+import HashTable, Maybe, Text, UrlEncoding, Mime
 
 newHTTPRequest :: HTTPRequest
 newHTTPRequest		= {	req_method		= ""

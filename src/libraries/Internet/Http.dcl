@@ -2,8 +2,7 @@ definition module Http
 
 // This library defines HTTP related types and functions
 import StdString
-import StdMaybe
-import HashTable
+import HashTable, Maybe
 
 :: HTTPRequest	= {	req_method		:: 	String						// The HTTP request method (eg. GET, POST, HEAD)
 				,	req_path		::	String						// The requested location (eg. /foo)

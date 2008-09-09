@@ -3,8 +3,7 @@ implementation module Environment
 * Module for accessing environment variables
 */
 import StdOverloaded, StdInt
-import StdMaybe
-import Pointer
+import Maybe, Pointer
 
 getEnvironmentVariable :: !String !*World -> (Maybe String, *World)
 getEnvironmentVariable name world

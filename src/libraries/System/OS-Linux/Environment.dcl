@@ -2,7 +2,7 @@ definition module Environment
 /**
 * Module for accessing environment variables
 */
-import StdMaybe
+import Maybe
 
 getEnvironmentVariable :: !String !*World -> (Maybe String, *World)
 
