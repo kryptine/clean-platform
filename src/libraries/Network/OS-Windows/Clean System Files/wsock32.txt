@@ -1,0 +1,4 @@
+wsock32.dll
+WSAStartup@6
+WSACleanup@0
+gethostbyname@4
