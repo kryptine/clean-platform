@@ -2,7 +2,7 @@ Version: 1.4
 Global
 	Built:	True
 	Target:	Clean Platform
-	Exec:	{Project}\iplookup.exe
+	Exec:	{Project}\IPLookup.exe
 	CodeGen
 		CheckStacks:	False
 		CheckIndexes:	True
@@ -40,7 +40,7 @@ Global
 	Precompile:	
 	Postlink:	
 MainModule
-	Name:	iplookup
+	Name:	IPLookup
 	Dir:	{Project}
 	Compiler
 		NeverMemoryProfile:	False
@@ -372,7 +372,7 @@ OtherModules
 		IclOpen:	False
 Static
 	Mods
-		Path:	{Project}\iplookup.icl
+		Path:	{Project}\IPLookup.icl
 		Path:	{Application}\Libraries\StdEnv\StdFunc.icl
 		Path:	{Application}\Libraries\StdEnv\_SystemEnum.icl
 		Path:	{Application}\Libraries\StdEnv\StdEnum.icl
@@ -396,7 +396,7 @@ Static
 		Path:	{Application}\Libraries\StdEnv\Clean System Files\_startup1.o
 		Path:	{Application}\Libraries\StdEnv\Clean System Files\_startup2.o
 		Path:	{Application}\Libraries\StdEnv\Clean System Files\_system.o
-		Path:	{Project}\Clean System Files\iplookup.o
+		Path:	{Project}\Clean System Files\IPLookup.o
 		Path:	{Application}\CleanPlatform\src\libraries\Network\OS-Windows\Clean System Files\IP.o
 		Path:	{Application}\Libraries\StdEnv\Clean System Files\StdString.o
 		Path:	{Application}\Libraries\StdEnv\Clean System Files\StdOverloaded.o

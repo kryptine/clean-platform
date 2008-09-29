@@ -1,4 +1,4 @@
-module iplookup
+module IPLookup
 
 import IP, Maybe
 

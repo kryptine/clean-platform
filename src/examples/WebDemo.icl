@@ -1,4 +1,4 @@
-module webdemo
+module WebDemo
 /**
 * Simple CGI application built solely on clean-platform libs
 */
@@ -23,4 +23,4 @@ where
 	body name = BodyTag [] [H1Tag [] [Text "Hello ", Text name]]
 
 Start :: *World -> *World
-Start world = startCGI [] [(\_ -> True,helloPage)] world
+Start world = startCGI [] [(const True, helloPage)] world

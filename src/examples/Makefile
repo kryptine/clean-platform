@@ -1,2 +1,2 @@
 all:
-	clm -I `cat ../libraries/cplibs.txt` -nt -nr webdemo -o webdemo
+	clm -I `cat ../env/cplibs.txt` -nt -nr WebDemo -o WebDemo
