@@ -19,8 +19,17 @@ isNothing :: !(Maybe .a) -> Bool
 isNothing Nothing = True
 isNothing _       = False
 
-isJust :: ((Maybe .a) -> Bool)
-isJust = not o isJust
+isNothingU :: !u:(Maybe .a) -> (!Bool, !u:Maybe .a)
+isNothingU Nothing = (True, Nothing)
+isNothingU x       = (False, x)
+
+isJust :: !(Maybe .a) -> Bool
+isJust (Just _)    = True
+isJust _           = False
+
+isJustU :: !u:(Maybe .a) -> (!Bool, !u:Maybe .a)
+isJustU (Just x)    = (True, Just x)
+isJustU x           = (False, x)
 
 fromJust :: !(Maybe .a) -> .a
 fromJust Nothing  = abort "Data.Maybe.fromJust: argument is Nothing"

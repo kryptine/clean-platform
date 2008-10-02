@@ -27,11 +27,19 @@ maybe :: .a (.a -> .a) !(Maybe .a) -> .a
  * Return True when the argument is a Nothing value and return False otherwise.
  */
 isNothing :: !(Maybe .a) -> Bool
+/**
+* Variant of isNothing which returns its input parameter.
+*/
+isNothingU :: !u:(Maybe .a) -> (!Bool, !u:Maybe .a)
 
 /** 
  * Return True when the argument is a Just value and return False otherwise.
  */
-isJust :: ((Maybe .a) -> Bool)
+isJust :: !(Maybe .a) -> Bool
+/**
+* Variant of isJust which returns its input parameter.
+*/
+isJustU :: !u:(Maybe .a) -> (!Bool, !u:Maybe .a)
 
 /**
  * Return the contents of a Just value and abort at run-time otherwise.
