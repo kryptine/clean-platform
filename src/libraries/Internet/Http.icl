@@ -103,7 +103,7 @@ parseRequest req
 	# type							= case (get "Content-Type") req.req_headers of
 		(Just ct)	= ct
 		(Nothing)	= ""
-	| type == "application/x-www-form-urlencoded"
+	| type % (0,32) == "application/x-www-form-urlencoded"
 		= {req & arg_post = parsePostArguments req}									//Parse post arguments
 	| type % (0,18) == "multipart/form-data"
 		# (post,uploads)			= parseMultiPartPostArguments req
