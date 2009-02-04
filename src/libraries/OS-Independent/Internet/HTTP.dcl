@@ -1,4 +1,4 @@
-definition module Http
+definition module HTTP
 
 // This library defines HTTP related types and functions
 import StdString

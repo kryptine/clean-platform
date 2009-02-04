@@ -15,20 +15,22 @@ Database.SQL.MySQL
 Database.SQL.PostgreSQL
 Database.SQL.SQLite
 
-Gui
-Gui.ObjectIO
+GUI
+GUI.ObjectIO
 
 Internet
 Internet.Email
-Internet.Http
-Internet.Http.Cgi
-Internet.Http.HttpServer
+Internet.HTTP
+Internet.HTTP.CGI
+Internet.HTTP.HTTPServer
 
 Math
+Math.Random
 
 Network
-Network.Tcp
-Network.Udp
+Network.IP
+Network.TCP
+Network.UDP
 
 System
 System.Args
@@ -44,9 +46,9 @@ Test.Gast
 
 Text
 Text.Config
-Text.Csv
+Text.CSV
 Text.Encodings.Base64
-Text.Encodings.Mime
-Text.Html
+Text.Encodings.MIME
+Text.HTML
 Text.RegEx
-Text.Xml
+Text.XML

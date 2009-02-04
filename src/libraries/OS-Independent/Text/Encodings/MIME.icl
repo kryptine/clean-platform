@@ -1,4 +1,4 @@
-implementation module Mime
+implementation module MIME
 
 import StdOverloaded, StdString, StdList, StdArray
 import Maybe, Text

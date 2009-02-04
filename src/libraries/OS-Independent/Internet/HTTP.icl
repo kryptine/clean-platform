@@ -1,4 +1,4 @@
-implementation module Http
+implementation module HTTP
 
 import StdOverloaded, StdString, StdList, StdArray, StdFile, StdBool
 import HashTable, Maybe, Text, UrlEncoding, Mime

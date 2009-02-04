@@ -1,4 +1,4 @@
-definition module Html
+definition module HTML
 /**
 * This module provides data types for easy construction of Html documents.
 * All tags and attributes of Xhtml 1.0 transitional are captured

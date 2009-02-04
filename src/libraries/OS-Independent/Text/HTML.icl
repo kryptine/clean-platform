@@ -1,4 +1,4 @@
-implementation module Html
+implementation module HTML
 
 import StdString, StdArray, StdList, StdTuple, StdBool
 
