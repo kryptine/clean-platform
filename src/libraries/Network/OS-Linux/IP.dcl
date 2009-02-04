@@ -15,6 +15,11 @@ import Maybe
 */
 instance toString IPAddress
 instance fromString IPAddress
+/**
+* Convert an IP address from and to an integer
+*/
+instance toInt IPAddress
+instance fromInt IPAddress
 
 
 /**

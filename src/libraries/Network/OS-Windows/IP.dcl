@@ -15,7 +15,11 @@ import Maybe
 */
 instance toString IPAddress
 instance fromString IPAddress
-
+/**
+* Convert an IP address from and to an integer
+*/
+instance toInt IPAddress
+instance fromInt IPAddress
 
 /**
 * Looks up a DNS name (e.g www.example.com) and returns an IP address on success

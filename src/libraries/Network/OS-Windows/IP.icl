@@ -30,6 +30,14 @@ where
 		[b1,b2,b3,b4]	= IPAddress ((toInt b1) + ((toInt b2) << 8) + ((toInt b3) << 16) + ((toInt b4) << 24))
 		_				= IPAddress 0
 
+instance toInt IPAddress
+where
+	toInt (IPAddress ip)	= ip
+
+instance fromInt IPAddress
+where
+	fromInt i				= IPAddress i
+
 /**
 * Looks up a DNS name (e.g www.example.com) and returns an IP address on success
 */
