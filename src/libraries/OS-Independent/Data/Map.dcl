@@ -1,7 +1,7 @@
 definition module Map
 /**
 * This module provides a dynamic Map type for creating mappings from keys to values
-* Inernally it uses an AVL tree to organize the key-value pairs stored in the mapping
+* Internally it uses an AVL tree to organize the key-value pairs stored in the mapping
 * such that lookup, insert and delete operations can be performed in O(log n).
 */
 
@@ -25,7 +25,7 @@ from StdOverloaded	import class ==, class <
 *
 * @return An empty map
 */
-empty		::									.(Map k v)
+empty		:: w:(Map k v)
 /**
 * Adds or replaces the value for a given key.
 *
@@ -34,24 +34,45 @@ empty		::									.(Map k v)
 * @param The original mapping
 * @return The modified mapping with the added value
 */
-put			:: k v 	(Map k v)	-> (			Map k v)	| Eq k & Ord k
+put 		:: k u:v w:(Map k u:v) -> x:(Map k u:v) | Eq k & Ord k, [ w x <= u, w <= x]
 /**
-* Searches for a value at a given key position.
+* Searches for a value at a given key position. Works only for non-unique
+* mappings.
 *
 * @param The key to look for
 * @param The orginal mapping
 * @return When found, the value at the key position, if not: Nothing
-* @return The original mapping (to enable unique maps)
 */
-get			:: k	(Map k v)	-> (Maybe v,	(Map k v))	| Eq k & Ord k
+get			:: k (Map k v) -> Maybe v | Eq k & Ord k
 /**
-* Removes the value at a given key position.
+* Searches for a value at a given key position and returns the mapping
+* as a result as well. This makes it possible to have use mappings with a unique spine
+*
+* @param The key to look for
+* @param The orginal mapping
+* @return When found, the value at the key position, if not: Nothing
+* @return The original mapping (to enable Maps wth a unique spine, !but without unique values!)
+*/
+getU		:: k w:(Map k v) -> x:(Maybe v, y:(Map k v)) | Eq k & Ord k, [ x <= y, w <= y ]
+/**
+* Removes the value at a given key position. The mapping itself can be spine unique.
 *
 * @param The key to remove
 * @param The original mapping
 * @return The modified mapping with the value/key removed
 */
-del			:: k	(Map k v)	-> (			Map k v)	| Eq k & Ord k
+del			:: k w:(Map k v) -> x:(Map k v) | Eq k & Ord k, [ w <= x]
+/**
+* Removes and returns the value at a given key position. Because the value is returned this
+* makes it possible to store unique values in the mapping and safely remove them without losing
+* their references.
+*
+* @param The key to remove
+* @param The original mapping
+* @return When found, the value removed at the key position, if not: Nothing
+* @return The modified mapping with the value/key removed
+*/
+delU		:: k w:(Map k u:v) -> x:(Maybe u:v, y:(Map k u:v)) | Eq k & Ord k, [ w y <= u, x <= y, w <= y]
 
 //Conversion functions
 
@@ -72,4 +93,3 @@ toList		:: 		(Map k v)	-> [(k,v)]
 * @return A mapping containing all the tuples in the list
 */
 fromList	:: [(k,v)]			-> 			   (Map k v)	| Eq k & Ord k
-

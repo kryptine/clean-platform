@@ -7,81 +7,109 @@ import Maybe
 			| MLeaf
 
 //Create function
-empty :: .(Map k v)
+empty :: w:(Map k v)
 empty = MLeaf
 
 //Insert function
-put :: k v (Map k v) -> (Map k v) | Eq k & Ord k
+put :: k u:v w:(Map k u:v) -> x:(Map k u:v) | Eq k & Ord k, [w x <= u, w <= x]
 put k v MLeaf	= MNode MLeaf k 1 v MLeaf
 put k v (MNode left nk h nv right) 
 	| k == nk	= (MNode left k h v right)
-	| k < nk	= balance (MNode newleft nk h nv right) //Add to left subtree and rebalance
-				  with
-					newleft		= (put k v left)
-					h			= (max (height newleft) (height right)) + 1
+	| k < nk	
+		# left				= put k v left
+		= update left nk nv right
+	| otherwise
+		# right				= put k v right
+		= update left nk nv right
+where
+	update left nk nv right
+		# (hleft,left)		= height left
+		# (hright,right)	= height right
+		# h					= (max hleft hright) + 1
+		= balance (MNode left nk h nv right)
 
-				= balance (MNode left nk h nv newright) //Add to right subtree and rebalance
-				  with
-					newright	= (put k v right)
-					h			= (max (height left) (height newright)) + 1
+//Lookup function, non-unique version
+get :: k (Map k v) -> Maybe v | Eq k & Ord k
+get k MLeaf = Nothing
+get k (MNode left nk _ nv right)
+	| k == nk	= Just nv
+	| k < nk	= get k left
+				= get k right
+
+//Lookup function, possibly spine unique version
+getU :: k w:(Map k v) -> x:(Maybe v,y:(Map k v)) | Eq k & Ord k, [ x <= y, w <= y]
+getU k MLeaf = (Nothing, MLeaf)
+getU k (MNode left nk h nv right)
+	| k == nk	= (Just nv, MNode left nk h nv right)
+	| k < nk
+		# (mbv, left) = getU k left
+		= (mbv, MNode left nk h nv right)
+	| otherwise
+		# (mbv, right) = getU k right
+		= (mbv, MNode left nk h nv right)
+
+//Delete function, only spine unique version
+del :: k w:(Map k v) -> x:(Map k v) | Eq k & Ord k, [ w <= x]
+del k mapping = snd (delU k mapping)
 
 //Delete function
-del :: k (Map k v) -> (Map k v) | Eq k & Ord k
-del k MLeaf = MLeaf										//Do nothing
-del k (MNode MLeaf nk h nv MLeaf)						//A node with just leaves as children can be safely removed
-	| k == nk	= MLeaf	
-				= (MNode MLeaf nk h nv MLeaf)
-del k (MNode MLeaf nk h nv right)						//A node without smaller items
-	| k == nk	= right									//When found, just remove
-	| k < nk	= (MNode MLeaf nk h nv right)			//Do nothing, k is not in the mapping
-				= balance (MNode MLeaf nk h nv newright)
-				  with
-					newright	= del k right
-					h			= (height newright) + 1
-del k (MNode left nk h nv MLeaf)						//A node without larger items
-	| k == nk	= left									//When found just remove
-	| k < nk	= balance (MNode newleft nk h nv MLeaf)
-				  with
-					newleft		= del k left
-					h			= (height newleft) + 1
-				= (MNode left nk h nv MLeaf)			//Do nothing, k is not in hte mapping
-del k (MNode left nk h nv right)						//A node with both larger and smaller items
-	| k == nk	= balance (MNode newleft k h v right)	//Replace with the largest of the smaller items and rebalance
-				  with
-					(newleft,k,v)	= takeMax left
-					h				= (max (height newleft) (height right)) + 1
-	| k < nk	= balance (MNode newleft nk h nv right)
-				  with
-					newleft 	= del k left
-					h 			= (max (height newleft) (height right)) + 1
-				= balance (MNode left nk h nv newright)
-				  with
-					newright	= del k right
-					h			= (max (height left) (height newright)) + 1
+delU :: k w:(Map k u:v) -> x:(Maybe u:v, y:(Map k u:v)) | Eq k & Ord k, [ w y <= u, x <= y, w <= y]
+delU k MLeaf = (Nothing, MLeaf)							//Do nothing
+delU k (MNode MLeaf nk h nv MLeaf)						//A node with just leaves as children can be safely removed
+	| k == nk	= (Just nv, MLeaf)
+				= (Nothing, MNode MLeaf nk h nv MLeaf)
+delU k (MNode MLeaf nk h nv right)						//A node without smaller items
+	| k == nk	= (Just nv, right)						//When found, just remove
+	| k < nk	= (Nothing, MNode MLeaf nk h nv right)	//Do nothing, k is not in the mapping
+	| otherwise
+		# (mbv,right)		= delU k right
+		# (hright,right)	= height right
+		# h					= hright + 1
+		= (mbv, balance (MNode MLeaf nk h nv right))
+
+delU k (MNode left nk h nv MLeaf)						//A node without larger items
+	| k == nk	= (Just nv, left)						//When found just remove
+	| k < nk	
+		# (mbv,left)		= delU k left
+		# (hleft,left)		= height left
+		# h					= hleft + 1
+		= (mbv, balance (MNode left nk h nv MLeaf))
+	| otherwise
+				= (Nothing, MNode left nk h nv MLeaf)	//Do nothing, k is not in hte mapping
+
+delU k (MNode left nk h nv right)						//A node with both larger and smaller items
+	| k == nk	
+		# (left,k,v)		= takeMax left
+		# (h,left,right)	= parentHeight left right
+		= (Just nv, balance (MNode left k h v right))	//Replace with the largest of the smaller items and rebalance
+	| k < nk	
+		# (mbv, left)		= delU k left
+		# (h,left,right)	= parentHeight left right
+		= (mbv, balance (MNode left nk h nv right))
+	| otherwise
+		# (mbv, right)		= delU k right
+		# (h,left,right)	= parentHeight left right
+		= (mbv, balance (MNode left nk h nv right))
 where
 	//Takes the k and v values from the maximum node in the tree and removes that node
-	takeMax :: (Map k v) -> (Map k v, k, v)
 	takeMax MLeaf = abort "takeMax of leaf evaluated" 
 	takeMax (MNode left nk _ nv MLeaf)	= (left, nk, nv)
-	takeMax (MNode left nk _ nv right)	= (balance (MNode left nk h nv newright), k, v)
-										  with
-											(newright,k,v) = takeMax right
-											h = (max (height left) (height newright)) + 1
+	takeMax (MNode left nk _ nv right)
+					# (right,k,v)		= takeMax right
+					# (hleft,left)		= height left
+					# (hright,right)	= height right
+					# h					= (max hleft hright) + 1
+					= (balance (MNode left nk h nv right), k, v)
 
-//Lookup function
-get :: k (Map k v) -> (Maybe v,(Map k v)) | Eq k & Ord k
-get k MLeaf = (Nothing, MLeaf)
-get k (MNode left nk h nv right)
-	| k == nk	= (Just nv, MNode left nk h nv right)
-	| k < nk	= (mbv, MNode newleft nk h nv right)
-				  with
-					(mbv,newleft) = get k left
-				= (mbv, MNode left nk h nv newright)
-				  with
-					(mbv,newright) = get k right
+	//Determines the height of the parent node of two sub trees
+	parentHeight left right
+		# (hleft,left)		= height left
+		# (hright,right)	= height right
+		# h					= (max hleft hright) + 1
+		= (h, left, right)
 
 //Conversion functions
-toList :: (Map k v) -> [(k,v)] 
+toList :: (Map k v) -> [(k,v)]
 toList m = toList` m []
 where
 	toList` MLeaf c = c
@@ -94,54 +122,68 @@ fromList list = foldr (\(k,v) t -> put k v t) empty list
 
 //Determine the height of a tree
 //This information is stored inside the tree to prevent complete traversals of the tree
-height :: (Map k v) -> Int
-height MLeaf				= 0
-height (MNode _ _ h _ _)	= h
+height :: u:(Map k w:v) -> x:(Int, y:(Map k w:v)), [u y <= w, x <= y, u <= y]
+height MLeaf				= (0,MLeaf)
+height (MNode left k h v right)	= (h, MNode left k h v right)
 
 //Balance a tree locally (E.g. not recursive. only inspect and rearrange the top of the tree)
-balance :: (Map k v) -> (Map k v)
+balance :: u:(Map k w:v) -> x:(Map k w:v), [u x <= w, u <= x] 
 balance MLeaf = MLeaf
 balance (MNode left k h v right)
+	# (hleft,left)		= height left
+	# (hright,right)	= height right
+	# balanceFactor		= hright - hleft
 	| balanceFactor < -1	
-		| leftDeepest left	= leftleftRotate (MNode left k h v right)	//Left-left rotate
+		# (ld, left)	= leftDeepest left
+		| ld				= leftleftRotate (MNode left k h v right)	//Left-left rotate
 							= leftrightRotate (MNode left k h v right)	//Left-right rotate
 	| balanceFactor > 1		
-		| leftDeepest right	= rightleftRotate (MNode left k h v right)	//Right-left rotate
+		# (ld, right)	= leftDeepest right
+		| ld				= rightleftRotate (MNode left k h v right)	//Right-left rotate
 							= rightrightRotate (MNode left k h v right) //Right-right rotate
 	| otherwise
-							= MNode left k h v right //Already balanced
+							= MNode left k h v right 					//Already balanced
 where
-	balanceFactor = (height right) - (height left)
-
-	leftDeepest MLeaf = False
-	leftDeepest (MNode left _ _ _ right) = (height left) > (height right)
+	leftDeepest MLeaf = (False,MLeaf)
+	leftDeepest (MNode left k h v right)
+		# (hleft,left)		= height left
+		# (hright,right)	= height right
+		= (hleft > hright,(MNode left k h v right))
 
 	leftleftRotate (MNode (MNode (MNode d xk xh xv c) pk _ pv b ) rk _ rv a)
+		# (ah,a) 	= height a
+		# (bh,b) 	= height b
+		# rh		= (max bh ah) + 1
+		# ph		= (max xh rh) + 1
 		= MNode (MNode d xk xh xv c) pk ph pv (MNode b rk rh rv a)
-	where
-		rh = (max (height b) (height a)) + 1
-		ph = (max xh rh) + 1
 	leftleftRotate node = node
 
 	leftrightRotate (MNode (MNode b rk _ rv (MNode c pk _ pv d)) xk _ xv a)
+		# (bh,b)	= height b
+		# (ch,c)	= height c
+		# rh		= (max bh ch) + 1
+		# (dh,d)	= height d
+		# (ah,a)	= height a
+		# xh		= (max dh ah) + 1
+		# ph		= (max rh xh) + 1
 		= MNode (MNode b rk rh rv c) pk ph pv (MNode d xk xh xv a)
-	where
-		rh = (max (height b) (height c)) + 1
-		xh = (max (height d) (height a)) + 1
-		ph = (max rh xh) + 1
 	leftrightRotate node = node
 
 	rightleftRotate (MNode a xk _ xv (MNode (MNode d pk _ pv c) rk _ rv b))
+		# (ah,a)	= height a
+		# (dh,d)	= height d	
+		# xh		= (max ah dh) + 1
+		# (ch,c)	= height c
+		# (bh,b)	= height b
+		# rh		= (max ch bh) + 1
+		# ph		= (max xh rh) + 1
 		= MNode (MNode a xk xh xv d) pk ph pv (MNode c rk rh rv b)
-	where
-		xh = (max (height a) (height d)) + 1
-		rh = (max (height c) (height b)) + 1
-		ph = (max xh rh) + 1
 	rightleftRotate node = node
 
 	rightrightRotate (MNode a rk _ rv (MNode b pk _ pv (MNode c xk xh xv d)))
+		# (ah,a)	= height a
+		# (bh,b)	= height b
+		# rh		= (max ah bh) + 1
+		# ph		= (max rh xh) + 1
 		= MNode (MNode a rk rh rv b) pk ph pv (MNode c xk xh xv d)
-	where
-		rh = (max (height a) (height b)) + 1
-		ph = (max rh xh) + 1
 	rightrightRotate node = node
