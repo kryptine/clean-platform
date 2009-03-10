@@ -25,7 +25,7 @@ from StdOverloaded	import class ==, class <
 *
 * @return An empty map
 */
-empty		:: w:(Map k v)
+empty		:: w:(Map k u:v), [ w <= u]
 /**
 * Adds or replaces the value for a given key.
 *
@@ -84,7 +84,7 @@ delU		:: k w:(Map k u:v) -> x:(Maybe u:v, y:(Map k u:v)) | Eq k & Ord k, [ w y <
 * @param The original mapping
 * @return A list of key/value tuples in the mapping
 */
-toList		:: 		(Map k v)	-> [(k,v)] 
+toList		:: 		w:(Map k u:v)	-> x:[y:(k,u:v)] , [w y <= u, x <= y, w <= x]
 
 /**
 * Converts a list of key/value tuples to a mapping.
@@ -92,4 +92,4 @@ toList		:: 		(Map k v)	-> [(k,v)]
 * @param A list of key/value tuples
 * @return A mapping containing all the tuples in the list
 */
-fromList	:: [(k,v)]			-> 			   (Map k v)	| Eq k & Ord k
+fromList	:: w:[x:(k,u:v)]		-> y:(Map k u:v) | Eq k & Ord k, [x y <= u, w <= x, w <= y]

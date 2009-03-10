@@ -7,7 +7,7 @@ import Maybe
 			| MLeaf
 
 //Create function
-empty :: w:(Map k v)
+empty :: w:(Map k u:v), [ w <= u]
 empty = MLeaf
 
 //Insert function
@@ -109,14 +109,17 @@ where
 		= (h, left, right)
 
 //Conversion functions
-toList :: (Map k v) -> [(k,v)]
+toList :: w:(Map k u:v)	-> x:[y:(k,u:v)] , [w y <= u, x <= y, w <= x]
 toList m = toList` m []
 where
 	toList` MLeaf c = c
 	toList` (MNode left k h v right) c = toList` left [(k,v): toList` right c]
 
-fromList :: [(k,v)] -> (Map k v) | Eq k & Ord k
-fromList list = foldr (\(k,v) t -> put k v t) empty list
+
+fromList :: w:[x:(k,u:v)] -> y:(Map k u:v) | Eq k & Ord k, [x y <= u, w <= x, w <= y]
+//fromList :: [(k,v)] -> (Map k v) | Eq k & Ord k
+fromList [] = empty
+fromList [(k,v):xs] = put k v (fromList xs)
 
 //Helper functions
 
