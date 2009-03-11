@@ -3,9 +3,9 @@ module WebDemo
 * Simple CGI application built solely on clean-platform libs
 */
 import StdEnv
-import Html	//Text.Html
-import Http	//Internet.Http
-import Cgi	//Internet.Http.Cgi
+import HTML	//Text.Html
+import HTTP	//Internet.Http
+import CGI	//Internet.Http.Cgi
 
 page = HtmlTag [] [head,body] 
 head = HeadTag [] [TitleTag [] [Text "Hello World!"]]

@@ -7,8 +7,8 @@ import Maybe
 			| MLeaf
 
 //Create function
-empty :: w:(Map k u:v), [ w <= u]
-empty = MLeaf
+newMap :: w:(Map k u:v), [ w <= u]
+newMap = MLeaf
 
 //Insert function
 put :: k u:v w:(Map k u:v) -> x:(Map k u:v) | Eq k & Ord k, [w x <= u, w <= x]
@@ -118,7 +118,7 @@ where
 
 fromList :: w:[x:(k,u:v)] -> y:(Map k u:v) | Eq k & Ord k, [x y <= u, w <= x, w <= y]
 //fromList :: [(k,v)] -> (Map k v) | Eq k & Ord k
-fromList [] = empty
+fromList [] = newMap
 fromList [(k,v):xs] = put k v (fromList xs)
 
 //Helper functions

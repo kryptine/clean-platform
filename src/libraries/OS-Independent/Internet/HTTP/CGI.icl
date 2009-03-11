@@ -71,7 +71,7 @@ getClientName world
 	| name == ""	= getFromEnv "REMOTE_ADDR" world
 					= (name,world)
 									
-makeHeaders :: [(String,String)] *World -> (HashTable String String, *World)
+makeHeaders :: [(String,String)] *World -> (Map String String, *World)
 makeHeaders cgihdrs world = case makeHeaders` cgihdrs world of (hdrs,world) = (fromList hdrs, world)
 where
 	makeHeaders` [] world = ([],world)

@@ -25,7 +25,7 @@ from StdOverloaded	import class ==, class <
 *
 * @return An empty map
 */
-empty		:: w:(Map k u:v), [ w <= u]
+newMap		:: w:(Map k u:v), [ w <= u]
 /**
 * Adds or replaces the value for a given key.
 *

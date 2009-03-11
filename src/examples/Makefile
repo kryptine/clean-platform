@@ -1,3 +1,4 @@
 all:
-	clm -I `cat "../env/Clean Platform.dirs"` -nt WebDemo -o WebDemo
-	clm -I `cat "../env/Clean Platform.dirs"` -nt IPLookup -o IPLookup
+	clm -I "../env/all-libraries" -nt MapDemo -o MapDemo
+	clm -I "../env/all-libraries" -nt -nr WebDemo -o WebDemo
+	clm -I "../env/all-libraries" -nt IPLookup -o IPLookup

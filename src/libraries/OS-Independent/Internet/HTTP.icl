@@ -1,7 +1,7 @@
 implementation module HTTP
 
 import StdOverloaded, StdString, StdList, StdArray, StdFile, StdBool
-import HashTable, Maybe, Text, UrlEncoding, Mime
+import Maybe, Map, Text, UrlEncoding, MIME
 
 newHTTPRequest :: HTTPRequest
 newHTTPRequest		= {	req_method		= ""
@@ -9,19 +9,19 @@ newHTTPRequest		= {	req_method		= ""
 					,	req_query		= ""
 					,	req_version		= ""
 					,	req_protocol	= HTTPProtoHTTP
-					,	req_headers		= newHashTable
+					,	req_headers		= newMap
 					,	req_data		= ""
-					,	arg_get			= newHashTable
-					,	arg_post		= newHashTable
-					,	arg_cookies		= newHashTable
-					,	arg_uploads		= newHashTable
+					,	arg_get			= newMap
+					,	arg_post		= newMap
+					,	arg_cookies		= newMap
+					,	arg_uploads		= newMap
 					,	server_name		= ""
 					,	server_port		= 0
 					,	client_name		= ""
 					}
 					
 newHTTPResponse :: HTTPResponse					
-newHTTPResponse		= {	rsp_headers		= newHashTable
+newHTTPResponse		= {	rsp_headers		= newMap
 					,	rsp_data		= ""
 					}
 
@@ -110,12 +110,12 @@ parseRequest req
 		= {req & arg_post = fromList post, arg_uploads = fromList uploads}			//Parse post arguments + uploads
 	| otherwise						= req
 where	
-	parseGetArguments :: !HTTPRequest -> HashTable String String
+	parseGetArguments :: !HTTPRequest -> Map String String
 	parseGetArguments req
-		| req.req_query == ""	= newHashTable
+		| req.req_query == ""	= newMap
 								= fromList (urlDecodePairs req.req_query)
 
-	parsePostArguments :: !HTTPRequest -> HashTable String String
+	parsePostArguments :: !HTTPRequest -> Map String String
 	parsePostArguments req		= fromList (urlDecodePairs req.req_data)
 
 	parseMultiPartPostArguments :: !HTTPRequest -> ([(String,String)],[(String,HTTPUpload)])
@@ -222,7 +222,7 @@ encodeResponse withreply {rsp_headers = headers, rsp_data = data} world
 	# reply = if withreply
 			("HTTP/1.0 " +++ (default "200 OK" (get "Status" headers)) +++ "\r\n")
 			("Status: " +++ (default "200 OK" (get "Status" headers)) +++ "\r\n")
-	# reply = reply +++ ("Server: " +++ (default "Clean Http tools" (get "Server" headers)) +++ "\r\n")							//Server identifier	
+	# reply = reply +++ ("Server: " +++ (default "Clean HTTP tools" (get "Server" headers)) +++ "\r\n")							//Server identifier	
 	# reply = reply +++	("Content-Type: " +++ (default "text/html" (get "Content-Type" headers)) +++ "\r\n")					//Content type header
 	# reply = reply +++	("Content-Length: " +++ (toString (size data)) +++ "\r\n")												//Content length header
 	# reply = reply +++	(foldr (+++) "" [(n +++ ": " +++ v +++ "\r\n") \\ (n,v) <- toList headers | not (skipHeader n)])		//Additional headers
@@ -233,4 +233,4 @@ where
 	default def mbval = case mbval of
 		Nothing	= def
 		(Just val) = val
-	skipHeader s = isMember s ["Status","Date","Server","Content-Type","Content-Lenght","Last-Modified"]
+	skipHeader s = isMember s ["Status","Date","Server","Content-Type","Content-Length","Last-Modified"]
