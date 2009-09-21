@@ -46,10 +46,7 @@ where
 		encodeOctet` oct -1 s a p = s
 		encodeOctet` oct off s a p
 		| p > 0 = encodeOctet` (oct>>6) (off-1) {s & [off] = a.[64]} a (p-1)
-		| otherwise = encodeOctet` (oct>>6) (off-1) {s & [off] = (translateChar oct a)} a p
-		
-		translateChar :: !Int Alphabet -> Char
-		translateChar oct a = a.[(oct bitand 63)]
+		| otherwise = encodeOctet` (oct>>6) (off-1) {s & [off] = (a.[(oct bitand 63)])} a p
 
 addLineBreaks :: !String Length -> String
 addLineBreaks s l
@@ -60,9 +57,6 @@ where
 	addLineBreaks` src dest len
 	| len >= (size src) = (dest+++src)
 	| otherwise = addLineBreaks` (src % (len,(size src))) (dest+++(src % (0,len-1))+++"\n") len
-	where 
-		remLastNL :: !String -> String
-		remLastNL s = s % (0,(size s)-2)
 
 base64Decode :: !String -> String
 base64Decode s = decodeString (removeLineBreaks s) 0 stdAlphabet
@@ -80,7 +74,7 @@ decodeString s o a
 decodeOctet :: !{#Char} Alphabet -> {#Char}
 decodeOctet s a 
 | (s.[2] == '=') && (s.[3] == '=') = decodeOctet` (((getValue s.[0] a)<<6+(getValue s.[1] a))>>4) 0 (createArray 1 ' ') //lose the last four obsolete bits (2*6-8b)
-| s.[3] == '=' = decodeOctet` (((getValue s.[0] a)<<12+(getValue s.[1] a)<<6+(getValue s.[2] a))>>2) 1 (createArray 2 ' ') //lose the last two obsolete bits (3*6-2*8)
+| s.[3] == '=' = decodeOctet` (((getValue s.[0] a)<<12+(getValue s.[1] a)<<6+(getValue s.[2] a))>>2) 1 (createArray 2 ' ') //lose the last two obsolete bits (3*6-2*8b)
 | otherwise = decodeOctet` ((getValue s.[0] a)<<18+(getValue s.[1] a)<<12+(getValue s.[2] a)<<6+(getValue s.[3] a)) 2 (createArray 3 ' ')
 where
 	decodeOctet` :: Int Offset !*{#Char} -> *{#Char}
@@ -88,15 +82,7 @@ where
 	decodeOctet` oct off s = decodeOctet` (oct>>8) (off-1) {s & [off] = (fromInt (oct bitand 255))}
 
 	getValue :: !Char Alphabet -> Int
-	getValue c a = head([i \\ i<-[0..(size a-2)] | (a.[i] == c)])
-	where 
-		head :: [a] -> a | toString a
-		head [] = abort "Character encountered which is not present in the chosen alphabet."
-		head [a:as] = a
-	
+	getValue c a = [i \\ i<-[0..(size a-2)] | (a.[i] == c)] !! 0
+
 removeLineBreaks :: !{#Char} -> {#Char}
-removeLineBreaks src = {char \\ char <-: src | (notNewLine char)}
-where
-	notNewLine :: Char -> Bool
-	notNewLine '\n' = False
-	notNewLine _ = True
+removeLineBreaks src = {char \\ char <-: src | char <> '\n'}

@@ -17,7 +17,7 @@ definition module Base64
 base64Encode :: !String -> String
 
 /**
- * Converts a String to a Base64-encoded String given a maximum line lenght.
+ * Converts a String to a Base64-encoded String given a maximum line length.
  */
 base64EncodeLen :: !String !Length -> String
 
@@ -27,7 +27,7 @@ base64EncodeLen :: !String !Length -> String
 base64URLEncode :: !String -> String
 
 /**
- * Converts a String to an URL-safe Base64-encoded String given a maximum line lenght.
+ * Converts a String to an URL-safe Base64-encoded String given a maximum line length.
  */
 base64URLEncodeLen :: !String !Length -> String
 
@@ -37,6 +37,6 @@ base64URLEncodeLen :: !String !Length -> String
 base64Decode :: !String -> String
 
 /**
- * Converts an URL-safe Base64-encoded String to String
+ * Converts an URL-safe Base64-encoded String to String.
  */
 base64URLDecode :: !String -> String
