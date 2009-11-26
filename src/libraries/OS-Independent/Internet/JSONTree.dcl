@@ -36,7 +36,7 @@ instance getValue [JsonNode]
 * @param   The JsonNode-tree
 * @return  The String representation in JSON-format
 */
-toJsonLazy :: JsonNode -> String
+fromJSONTree :: JsonNode -> String
 
 /*
 * Convert a JSON-string into a JsonNode-tree
@@ -44,7 +44,7 @@ toJsonLazy :: JsonNode -> String
 * @param   The Json-string
 * @return  The JsonNode-tree
 */
-fromJsonLazy :: String -> Maybe JsonNode
+toJSONTree :: String -> Maybe JsonNode
 
 /*
 * Seek a specific value in the tree. 
@@ -54,4 +54,4 @@ fromJsonLazy :: String -> Maybe JsonNode
 *          assigned to them, e.g. 'node1\\2\\node 2' is a valid expression.
 * @return  The value of the node
 */
-queryJsonNode :: String JsonNode -> Maybe a | getValue a
+queryJSONTree :: String JsonNode -> Maybe a | getValue a

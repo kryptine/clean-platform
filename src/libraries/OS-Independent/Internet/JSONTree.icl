@@ -4,8 +4,8 @@ import StdEnv, StdMaybe
 import JSON
 
 //--- Decode ----------------------------------
-fromJsonLazy :: String -> Maybe JsonNode
-fromJsonLazy input
+toJSONTree :: String -> Maybe JsonNode
+toJSONTree input
 # p = (removeWhitespace (snd (lex input 0 [])))
 = (parser p)
 
@@ -18,6 +18,7 @@ where
 	isWhitespaceToken _						= False
 
 parser :: [Token] -> Maybe JsonNode
+parser []		  = Nothing
 parser [t:ts] 
 | isBracketOpen t = buildArrayNode ts "root"
 | isBraceOpen t   = buildObjectNode ts "root"
@@ -101,57 +102,57 @@ where
 	adjustLvl _					lvl = lvl
 
 //--- Encode ----------------------------------
-toJsonLazy :: JsonNode -> String
-toJsonLazy (JsonObject name val) = "{"+++jsonLazyToString val+++"}"
-toJsonLazy (JsonArray  name val) = "["+++jsonLazyToStringAnon val+++"]"
-toJsonLazy node                  = "{"+++jsonLazyToString node+++"}"
+fromJSONTree :: JsonNode -> String
+fromJSONTree (JsonObject name val) = "{"+++jsonTreeToString val+++"}"
+fromJSONTree (JsonArray  name val) = "["+++jsonTreeToStringAnon val+++"]"
+fromJSONTree node                  = "{"+++jsonTreeToString node+++"}"
 
-class jsonLazyToString a :: a -> String
+class jsonTreeToString a :: a -> String
 
-instance jsonLazyToString JsonNode
+instance jsonTreeToString JsonNode
 where
-	jsonLazyToString :: JsonNode -> String
-	jsonLazyToString (JsonInt name val) = "\""+++name+++"\" : "+++(toString val)
-	jsonLazyToString (JsonReal name val) = "\""+++name+++"\" : "+++(toString val)
-	jsonLazyToString (JsonBool name val) = "\""+++name+++"\" : "+++(toString val)
-	jsonLazyToString (JsonString name val) = "\""+++name+++"\" : \""+++(toString val)+++"\""
-	jsonLazyToString (JsonNull name) = "\""+++name+++"\" : null"
-	jsonLazyToString (JsonEmpty name ) = "\""+++name+++"\" : null"
-	jsonLazyToString (JsonObject name val) = "\""+++name+++"\" : {"+++jsonLazyToString val+++"}"
-	jsonLazyToString (JsonArray name val) = "\""+++name+++"\" : ["+++jsonLazyToStringAnon val+++"]"
+	jsonTreeToString :: JsonNode -> String
+	jsonTreeToString (JsonInt name val) = "\""+++name+++"\" : "+++(toString val)
+	jsonTreeToString (JsonReal name val) = "\""+++name+++"\" : "+++(toString val)
+	jsonTreeToString (JsonBool name val) = "\""+++name+++"\" : "+++(toString val)
+	jsonTreeToString (JsonString name val) = "\""+++name+++"\" : \""+++(toString val)+++"\""
+	jsonTreeToString (JsonNull name) = "\""+++name+++"\" : null"
+	jsonTreeToString (JsonEmpty name ) = "\""+++name+++"\" : null"
+	jsonTreeToString (JsonObject name val) = "\""+++name+++"\" : {"+++jsonTreeToString val+++"}"
+	jsonTreeToString (JsonArray name val) = "\""+++name+++"\" : ["+++jsonTreeToStringAnon val+++"]"
 
-instance jsonLazyToString [JsonNode]
+instance jsonTreeToString [JsonNode]
 where
-	jsonLazyToString :: [JsonNode] -> String
-	jsonLazyToString []     = ""
-	jsonLazyToString [n]    = jsonLazyToString n
-	jsonLazyToString [n:ns] = jsonLazyToString n +++ "," +++ jsonLazyToString ns
+	jsonTreeToString :: [JsonNode] -> String
+	jsonTreeToString []     = ""
+	jsonTreeToString [n]    = jsonTreeToString n
+	jsonTreeToString [n:ns] = jsonTreeToString n +++ "," +++ jsonTreeToString ns
 	
-class jsonLazyToStringAnon a :: a -> String
+class jsonTreeToStringAnon a :: a -> String
 
-instance jsonLazyToStringAnon JsonNode
+instance jsonTreeToStringAnon JsonNode
 where
-	jsonLazyToStringAnon :: JsonNode -> String
-	jsonLazyToStringAnon (JsonInt name val) = (toString val)
-	jsonLazyToStringAnon (JsonReal name val) = (toString val)
-	jsonLazyToStringAnon (JsonBool name val) = (toString val)
-	jsonLazyToStringAnon (JsonString name val) = "\""+++(toString val)+++"\""
-	jsonLazyToStringAnon (JsonNull name) = "null"
-	jsonLazyToStringAnon (JsonEmpty name ) = "null"
-	jsonLazyToStringAnon (JsonObject name val) = "{"+++jsonLazyToString val+++"}"
-	jsonLazyToStringAnon (JsonArray name val) = "["+++jsonLazyToStringAnon val+++"]"
+	jsonTreeToStringAnon :: JsonNode -> String
+	jsonTreeToStringAnon (JsonInt name val) = (toString val)
+	jsonTreeToStringAnon (JsonReal name val) = (toString val)
+	jsonTreeToStringAnon (JsonBool name val) = (toString val)
+	jsonTreeToStringAnon (JsonString name val) = "\""+++(toString val)+++"\""
+	jsonTreeToStringAnon (JsonNull name) = "null"
+	jsonTreeToStringAnon (JsonEmpty name ) = "null"
+	jsonTreeToStringAnon (JsonObject name val) = "{"+++jsonTreeToString val+++"}"
+	jsonTreeToStringAnon (JsonArray name val) = "["+++jsonTreeToStringAnon val+++"]"
 
-instance jsonLazyToStringAnon [JsonNode]
+instance jsonTreeToStringAnon [JsonNode]
 where
-	jsonLazyToStringAnon :: [JsonNode] -> String
-	jsonLazyToStringAnon []     = ""
-	jsonLazyToStringAnon [n]    = jsonLazyToStringAnon n
-	jsonLazyToStringAnon [n:ns] = jsonLazyToStringAnon n +++ "," +++ jsonLazyToStringAnon ns
+	jsonTreeToStringAnon :: [JsonNode] -> String
+	jsonTreeToStringAnon []     = ""
+	jsonTreeToStringAnon [n]    = jsonTreeToStringAnon n
+	jsonTreeToStringAnon [n:ns] = jsonTreeToStringAnon n +++ "," +++ jsonTreeToStringAnon ns
 	
 
 //--- Query -----------------------------------
-queryJsonNode :: String JsonNode -> Maybe a | getValue a
-queryJsonNode query tree
+queryJSONTree :: String JsonNode -> Maybe a | getValue a
+queryJSONTree query tree
 	# path = splitQuery query
 	= seekJsonTree path tree
 where
