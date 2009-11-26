@@ -8,11 +8,25 @@ definition module JSON
 * For more info about JSON see: http://www.json.org/
 */
 
-import StdGeneric
-import Maybe
+import StdGeneric, StdMaybe
 
-//Abstract token type which is the intermediary representation during JSON parsing
-:: JSONToken
+//Token type which is the intermediary representation during JSON parsing
+:: Token	= TokenInt Int
+			| TokenReal	Real
+			| TokenString String
+			| TokenBool	Bool
+			| TokenNull
+			| TokenBracketOpen
+			| TokenBracketClose
+			| TokenBraceOpen
+			| TokenBraceClose
+			| TokenName	String
+			| TokenColon
+			| TokenComma
+			| TokenWhitespace String
+			| TokenFail	
+
+:: JSON = JSON String	//String which is already in JSON encoding
 
 /**
 * Encodes any value to JSON format.
@@ -28,17 +42,31 @@ toJSON		:: a		-> String	| JSONEncode{|*|} a
 * @return Just the result, when parsing succeeds
 */
 fromJSON	:: String	-> Maybe a	| JSONDecode{|*|} a
+
+/**
+* Escapes a string for manual JSON construction
+*
+* @param The unescaped string
+* @return A properly escaped string
+*/
+jsonEscape	:: String	-> String
+
+/**
+* Lexer for Json-Strings. This function is used by the JSONTree-module.
+**/
+lex :: String Int [Token] -> (Int, [Token])
+
 /**
 * Generic encoding function. This function should not be used
 * directly but always through the toJSON function. It must be derived
 * for each type you want to encode in JSON format.
 */
 generic JSONEncode t :: t [String] -> [String]
-derive  JSONEncode Int, Real, Char, Bool, String, UNIT, PAIR, EITHER, FIELD, CONS, OBJECT, [], {}, {!}, Maybe
+derive  JSONEncode Int, Real, Char, Bool, String, UNIT, PAIR, EITHER, FIELD, CONS, OBJECT, [], (,), {}, {!}, Maybe, JSON
 /**
 * Generic decoding function. This function should not be used
 * directly, but always through the fromJSON function. It must be derived
 * for each type you want to parse from JSON format.
 */
-generic JSONDecode t :: [JSONToken] -> (Maybe t,[JSONToken])
-derive  JSONDecode Int, Real, Char, Bool, String, UNIT, PAIR, EITHER, FIELD, CONS, OBJECT, [], {}, {!}, Maybe
+generic JSONDecode t :: [Token] -> (Maybe t,[Token])
+derive  JSONDecode Int, Real, Char, Bool, String, UNIT, PAIR, EITHER, FIELD, CONS, OBJECT, [], (,), {}, {!}, Maybe

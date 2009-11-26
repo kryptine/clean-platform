@@ -1,7 +1,8 @@
 implementation module JSON
 
-import StdEnv, StdGeneric
-import Maybe, Text
+import StdEnv
+import StdGeneric, StdMaybe
+import Text
 
 //-------------------------------------------------------------------------------------------
 toJSON :: a -> String | JSONEncode{|*|} a
@@ -17,7 +18,7 @@ JSONEncode{|Real|} x c = [toString x:c]
 JSONEncode{|Char|} x c = [toString x:c]
 JSONEncode{|Bool|} True c = ["true":c]
 JSONEncode{|Bool|} False c = ["false":c]
-JSONEncode{|String|} x c = ["\"",escape x,"\"":c]
+JSONEncode{|String|} x c = ["\"",jsonEscape x,"\"":c]
 JSONEncode{|UNIT|} (UNIT) c = c
 JSONEncode{|PAIR|} fx fy (PAIR x y) c = fx x [", " : fy y c]
 JSONEncode{|EITHER|} fx fy (LEFT x) c = fx x c
@@ -30,17 +31,19 @@ JSONEncode{|CONS of d|} fx (CONS x) c
 	
 JSONEncode{|FIELD of d|} fx (FIELD x) c = ["\"", d.gfd_name, "\" : " : fx x c]							
 JSONEncode{|[]|} fx x c = JSONEncodeList fx x c
+JSONEncode{|(,)|} fx fy (x,y) c = ["[": fx x [",": fy y ["]":c]]]
 JSONEncode{|{}|} fx x c = JSONEncodeList fx [e \\ e <-: x] c
 JSONEncode{|{!}|} fx x c = JSONEncodeList fx [e \\ e <-: x] c
 JSONEncode{|Maybe|} fx (Just x) c = fx x c
 JSONEncode{|Maybe|} fx (Nothing) c = ["null":c]
+JSONEncode{|JSON|} (JSON s) c = [s:c]
 
 //List generation for lists and arrays
 JSONEncodeList fx x c = ["[": ( flatten ( intersperse [","] (map (flip fx []) x)) ) ++ ["]": c]]
 
 //Escape a string
-escape :: String -> String
-escape src = copyChars 0 0 reps src (createArray (size src + length reps) '\0')
+jsonEscape :: String -> String
+jsonEscape src = copyChars 0 0 reps src (createArray (size src + length reps) '\0')
 where
 	reps	= findChars 0 src	
 	//Find the special characters
@@ -99,29 +102,14 @@ intersperse i [x:xs] = [x,i:intersperse i xs]
 fromJSON :: String -> Maybe a | JSONDecode{|*|} a
 fromJSON input = fst (JSONDecode{|*|} (removeWhitespace (snd (lex input 0 []))))
 
-:: JSONToken	= JSONTokenInt Int
-				| JSONTokenReal	Real
-				| JSONTokenString String
-				| JSONTokenBool	Bool
-				| JSONTokenNull
-				| JSONTokenBracketOpen
-				| JSONTokenBracketClose
-				| JSONTokenBraceOpen
-				| JSONTokenBraceClose
-				| JSONTokenName	String
-				| JSONTokenColon
-				| JSONTokenComma
-				| JSONTokenWhitespace String
-				| JSONTokenFail		
-
-removeWhitespace :: [JSONToken] -> [JSONToken]
+removeWhitespace :: [Token] -> [Token]
 removeWhitespace l = filter (not o isWhitespaceToken) l
 
-isWhitespaceToken :: JSONToken -> Bool
-isWhitespaceToken (JSONTokenWhitespace _)	= True
-isWhitespaceToken _							= False
+isWhitespaceToken :: Token -> Bool
+isWhitespaceToken (TokenWhitespace _)	= True
+isWhitespaceToken _						= False
 
-lex :: String Int [JSONToken] -> (Int, [JSONToken])
+lex :: String Int [Token] -> (Int, [Token])
 lex input offset tokens
 	| offset >= size input	= (offset, reverse tokens) 				//Done
 							= lex input newOffset [token:tokens]	//Lex another token and recurse
@@ -141,8 +129,8 @@ where
 							  , lexString
 							  ]
 	//Try any of the lexers in the list until one succeeds
-	lexAny :: String Int [(String Int -> Maybe (Int, JSONToken))] -> (Int, JSONToken) 
-	lexAny input offset [] = (size input, JSONTokenFail)
+	lexAny :: String Int [(String Int -> Maybe (Int, Token))] -> (Int, Token) 
+	lexAny input offset [] = (size input, TokenFail)
 	lexAny input offset [f:fs] = case f input offset of
 		(Just result)	= result
 		(Nothing)		= lexAny input offset fs
@@ -153,35 +141,35 @@ where
 																= Nothing
 	//Single character lex functions													
 	
-	lexBracketOpen	= lexFixed "[" JSONTokenBracketOpen
-	lexBracketClose	= lexFixed "]" JSONTokenBracketClose
-	lexBraceOpen	= lexFixed "{" JSONTokenBraceOpen
-	lexBraceClose	= lexFixed "}" JSONTokenBraceClose
-	lexColon		= lexFixed ":" JSONTokenColon
-	lexComma		= lexFixed "," JSONTokenComma
+	lexBracketOpen	= lexFixed "[" TokenBracketOpen
+	lexBracketClose	= lexFixed "]" TokenBracketClose
+	lexBraceOpen	= lexFixed "{" TokenBraceOpen
+	lexBraceClose	= lexFixed "}" TokenBraceClose
+	lexColon		= lexFixed ":" TokenColon
+	lexComma		= lexFixed "," TokenComma
 	
 	//Fixed width lex functions
 	
-	lexNull			= lexFixed "null" JSONTokenNull
-	lexTrue			= lexFixed "true" (JSONTokenBool True)
-	lexFalse		= lexFixed "false" (JSONTokenBool False)
+	lexNull			= lexFixed "null" TokenNull
+	lexTrue			= lexFixed "true" (TokenBool True)
+	lexFalse		= lexFixed "false" (TokenBool False)
 	
 	//Variable width lex functions
 	
 	//Whitespace
 	lexWhitespace input offset
 		| last == offset	= Nothing
-							= Just (last, JSONTokenWhitespace (input % (offset,last - 1)))
+							= Just (last, TokenWhitespace (input % (offset,last - 1)))
 	where
 		last = findEnd isSpace input offset
 	//Numbers
 	lexNumber input offset
 		| intpart == offset	= Nothing
 		| otherwise
-			| fracpart == intpart	= Just (intpart, JSONTokenInt (toInt (input % (offset,intpart - 1))))
+			| fracpart == intpart	= Just (intpart, TokenInt (toInt (input % (offset,intpart - 1))))
 			| otherwise
-				| exppart == fracpart	= Just (fracpart, JSONTokenReal (toReal (input % (offset, fracpart - 1))))
-				| otherwise				= Just (exppart, JSONTokenReal (toReal (input % (offset, exppart - 1))))
+				| exppart == fracpart	= Just (fracpart, TokenReal (toReal (input % (offset, fracpart - 1))))
+				| otherwise				= Just (exppart, TokenReal (toReal (input % (offset, exppart - 1))))
 	where	
 		intpart		= findEnd isDigit input (optMin input offset)
 		fracpart	= optFrac input intpart
@@ -217,7 +205,7 @@ where
 	lexString input offset
 		| offset >= size input			= Nothing
 		| input.[offset] <> '"'			= Nothing
-										= Just (end, JSONTokenString (input % (offset + 1, end - 2)))
+										= Just (end, TokenString (input % (offset + 1, end - 2)))
 	where
 		end = findStringEnd input (offset + 1)
 		
@@ -231,30 +219,30 @@ where
 /*
 * Generic JSON parser, using a list of tokens
 */
-generic JSONDecode t :: [JSONToken] -> (Maybe t, [JSONToken])
+generic JSONDecode t :: [Token] -> (Maybe t, [Token])
 
-JSONDecode{|Int|} [JSONTokenInt i:xs]	= (Just i, xs)
+JSONDecode{|Int|} [TokenInt i:xs]		= (Just i, xs)
 JSONDecode{|Int|} l						= (Nothing, l)
 
-JSONDecode{|Real|} [JSONTokenReal r:xs]	= (Just r, xs)
-JSONDecode{|Real|} [JSONTokenInt i:xs]	= (Just (toReal i), xs)
+JSONDecode{|Real|} [TokenReal r:xs]		= (Just r, xs)
+JSONDecode{|Real|} [TokenInt i:xs]		= (Just (toReal i), xs)
 JSONDecode{|Real|} l					= (Nothing, l)
 
-JSONDecode{|Char|} l =: [JSONTokenString s:xs]
+JSONDecode{|Char|} l =: [TokenString s:xs]
 	| size s == 1						= (Just s.[0],xs)
 										= (Nothing, l)
 JSONDecode{|Char|} l					= (Nothing, l)
 
-JSONDecode{|Bool|} [JSONTokenBool b:xs]	= (Just b,xs)
+JSONDecode{|Bool|} [TokenBool b:xs]		= (Just b,xs)
 JSONDecode{|Bool|} l					= (Nothing, l)
 
-JSONDecode{|String|} [JSONTokenString s:xs]	= (Just (unescape s), xs)
+JSONDecode{|String|} [TokenString s:xs]	= (Just (unescape s), xs)
 JSONDecode{|String|} l					= (Nothing, l)
 
 JSONDecode{|UNIT|} l					= (Just UNIT, l)
 
 JSONDecode{|PAIR|} fx fy l = case fx l of
-	(Just x,[JSONTokenComma :xs])	= case fy xs of
+	(Just x,[TokenComma :xs])	= case fy xs of
 		(Just y, ys)			= (Just (PAIR x y), ys)
 		_						= (Nothing, l)
 	_							= (Nothing, l)
@@ -271,28 +259,28 @@ JSONDecode{|OBJECT|} fx l = case fx l of
 
 JSONDecode{|CONS of d|} fx l
 	| length d.gcd_fields <> 0	= case l of
-		[JSONTokenBraceOpen: xs] = case fx xs of
-			(Just x, [JSONTokenBraceClose :ys])	= (Just (CONS x),ys)
-			_									= (Nothing, l)
-		_										= (Nothing, l)
+		[TokenBraceOpen: xs] = case fx xs of
+			(Just x, [TokenBraceClose :ys])	= (Just (CONS x),ys)
+			_								= (Nothing, l)
+		_									= (Nothing, l)
 	| d.gcd_arity == 0			= case l of
-		[JSONTokenString name: xs]
+		[TokenString name: xs]
 			| name == d.gcd_name			= case fx xs of
 				(Just x, ys)				= (Just (CONS x),ys)
 				_							= (Nothing, l)
 			| otherwise						= (Nothing, l)
 		_									= (Nothing, l)
 	| otherwise					= case l of
-		[JSONTokenBracketOpen, JSONTokenString name, JSONTokenComma:xs]
+		[TokenBracketOpen, TokenString name, TokenComma:xs]
 			| name == d.gcd_name			= case fx xs of
-				(Just x, [JSONTokenBracketClose:ys])	= (Just (CONS x),ys)
+				(Just x, [TokenBracketClose:ys])	= (Just (CONS x),ys)
 				_									= (Nothing, l)
 			| otherwise								= (Nothing, l)
 		_									= (Nothing, l)
 
 JSONDecode{|CONS|} fx l = (Nothing, l)
 										
-JSONDecode{|FIELD of d|} fx l =: [JSONTokenString name, JSONTokenColon : value]
+JSONDecode{|FIELD of d|} fx l =: [TokenString name, TokenColon : value]
 	| d.gfd_name == name	= case fx value of
 		(Just x, xs)		= (Just (FIELD x),xs)
 		(Nothing,_)			= (Nothing, l)
@@ -301,36 +289,46 @@ JSONDecode{|FIELD of d|} fx l =: [JSONTokenString name, JSONTokenColon : value]
 JSONDecode{|FIELD|} fx l = (Nothing, l)
 
 JSONDecode{|[]|} fx l = case l of
-	[JSONTokenBracketOpen,JSONTokenBracketClose: xs] = (Just [], xs)
-	[JSONTokenBracketOpen: xs] = case decodeItems fx xs of
+	[TokenBracketOpen,TokenBracketClose: xs] = (Just [], xs)
+	[TokenBracketOpen: xs] = case decodeItems fx xs of
 		(Just items, ys)	= (Just items, ys)
 		_					= (Nothing, l)
 	_						= (Nothing, l)
+
+JSONDecode{|(,)|} fx fy l = case l of
+	[TokenBracketOpen:xs] = case fx xs of
+		(Just x, [TokenComma:ys]) = case fy ys of
+			(Just y, [TokenBracketClose: zs])	= (Just (x,y), zs)
+			_									= (Nothing, l)
+		_										= (Nothing, l)
+	_											= (Nothing, l)
+
 	
 JSONDecode{|{}|} fx l = case l of
-	[JSONTokenBracketOpen,JSONTokenBracketClose: xs] = (Just {}, xs)
-	[JSONTokenBracketOpen: xs] = case decodeItems fx xs of
+	[TokenBracketOpen,TokenBracketClose: xs] = (Just {}, xs)
+	[TokenBracketOpen: xs] = case decodeItems fx xs of
 		(Just items, ys)	= (Just {e \\ e <- items}, ys)
 		_					= (Nothing, l)
 	_						= (Nothing, l)
 	
 JSONDecode{|{!}|} fx l = case l of
-	[JSONTokenBracketOpen,JSONTokenBracketClose: xs] = (Just {}, xs)
-	[JSONTokenBracketOpen: xs] = case decodeItems fx xs of
+	[TokenBracketOpen,TokenBracketClose: xs] = (Just {}, xs)
+	[TokenBracketOpen: xs] = case decodeItems fx xs of
 		(Just items, ys)	= (Just {e \\ e <- items}, ys)
 		_					= (Nothing, l)
 	_						= (Nothing, l)
 
 
 decodeItems fx l = case fx l of
-	(Just x,[JSONTokenComma:l`]) = case decodeItems fx l` of
+	(Just x,[TokenComma:l`]) = case decodeItems fx l` of
 		(Just xs, l``)				= (Just [x:xs], l``)
 		_							= (Nothing, l)
-	(Just x,[JSONTokenBracketClose:xs])	= (Just [x], xs)
+	(Just x,[TokenBracketClose:xs])	= (Just [x], xs)
 	_								= (Nothing, l)
 
-JSONDecode{|Maybe|} fx [JSONTokenNull:xs]	= (Just Nothing, xs)
+JSONDecode{|Maybe|} fx [TokenNull:xs]	= (Just Nothing, xs)
 JSONDecode{|Maybe|} fx l = case fx l of
-	(Just x,xs)								= (Just (Just x), xs)
-	_										= (Nothing,l)
+	(Just x,xs)							= (Just (Just x), xs)
+	_									= (Nothing,l)
+
 
