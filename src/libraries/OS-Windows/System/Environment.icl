@@ -1,7 +1,7 @@
 implementation module Environment
 
 import StdOverloaded, StdInt, StdArray, StdChar, StdString
-import StdMaybe
+import Maybe
 import Pointer
 
 import code from library "kernel32.txt"

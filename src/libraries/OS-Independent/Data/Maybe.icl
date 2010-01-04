@@ -11,7 +11,7 @@ fmap :: (.a -> .b) (Maybe .a) -> Maybe .b
 fmap _ Nothing  = Nothing
 fmap f (Just x) = Just (f x)
 
-maybe :: .a (.a -> .a) !(Maybe .a) -> .a
+maybe :: .b (.a -> .b) !(Maybe .a) -> .b
 maybe x _ Nothing  = x
 maybe _ f (Just x) = f x
 

@@ -21,7 +21,7 @@ fmap :: (.a -> .b) (Maybe .a) -> Maybe .b
  * Apply a function to the the contents of a Just value and directly return
  * the result, or return a default value if the argument is a Nothing value.
  */
-maybe :: .a (.a -> .a) !(Maybe .a) -> .a
+maybe :: .b (.a -> .b) !(Maybe .a) -> .b
 
 /**
  * Return True when the argument is a Nothing value and return False otherwise.

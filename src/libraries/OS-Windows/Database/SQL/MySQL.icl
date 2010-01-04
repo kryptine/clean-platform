@@ -24,6 +24,7 @@ import code from library "libmysql.txt"
 
 //MySQL C-API Constants and Offsets
 ENUM_FLAG				:== 256
+CLIENT_FOUND_ROWS		:== 2
 
 MYSQL_TYPE_TINY			:== 1
 MYSQL_TYPE_SHORT		:== 2
@@ -131,10 +132,11 @@ where
 		# conn_ptr	= mysql_init 0
 		| conn_ptr == 0		= (Just (SQLInterfaceError 1 "Could not initialize a connection"), Nothing, context)
 		//Connect
-		# ok_ptr	= mysql_real_connect conn_ptr (packString host) (packString username) (packString password) (packString database) 0 0 0
+		# ok_ptr	= mysql_real_connect conn_ptr (packString host) (packString username) (packString password) (packString database) 0 0 CLIENT_FOUND_ROWS
 		| ok_ptr == 0
 			# errno 	= mysql_errno conn_ptr
 			# errmsg	= derefString (mysql_error conn_ptr)
+			| errno <> errno || errmsg <> errmsg	= undef //Force execution
 			= (Just (SQLDatabaseError errno errmsg), Nothing, context) 
 		//Success
 		= (Nothing, Just {MySQLConnection|conn_ptr = conn_ptr}, context)
@@ -167,17 +169,19 @@ where
 		| dummy <> dummy = undef	// Force execution of void function
 		= (Nothing,connection)
 
-
 instance SQLCursor MySQLCursor
 where
 	execute	:: !SQLStatement ![SQLValue] !*MySQLCursor -> (!(Maybe SQLError), !*MySQLCursor)
-	execute statement values cursor=:{MySQLCursor|conn_ptr}
+	execute statement values cursor=:{MySQLCursor|conn_ptr,result_ptr}
 		# (error, stmt, cursor)		= mkStatement statement values cursor
 		| isJust error				= (error, cursor)
+		# dummy						= if (result_ptr <> 0) (mysql_free_result result_ptr) 0
+		| dummy <> dummy			= undef // Force execution of void function
 		# ok						= mysql_real_query conn_ptr stmt (size stmt)
 		| ok <> 0
 			# errno 	= mysql_errno conn_ptr
 			# errmsg	= derefString (mysql_error conn_ptr)
+			| errno <> errno || errmsg <> errmsg	= undef //Force execution
 			= (Just (SQLDatabaseError errno errmsg),cursor)
 		# result_ptr				= mysql_store_result conn_ptr
 		| result_ptr == 0
@@ -273,6 +277,7 @@ where
 				= (Nothing, Nothing, {MySQLCursor|cursor & row_ptr = 0})
 			| otherwise
 				# errmsg	= derefString (mysql_error conn_ptr)
+				| errmsg <> errmsg	= undef //Force execution
 				= (Just (SQLDatabaseError errno errmsg), Nothing, {MySQLCursor|cursor & row_ptr = 0})
 		| otherwise
 			# row_lengths		= mysql_fetch_lengths result_ptr	

@@ -67,14 +67,14 @@ import StdString, Maybe
 //						statements
 // NotSupportedError:	An operation is not supported by the database library
 
-:: SQLError	= SQLWarning			Int String	
-			| SQLInterfaceError		Int String	
-			| SQLDatabaseError		Int String	
-			| SQLDataError			Int String	
-			| SQLOperationalError	Int String
-			| SQLIntegrityError		Int String
-			| SQLInternalError		Int	String
-			| SQLProgrammingError 	Int String
+:: SQLError	= SQLWarning			!Int !String	
+			| SQLInterfaceError		!Int !String	
+			| SQLDatabaseError		!Int !String	
+			| SQLDataError			!Int !String	
+			| SQLOperationalError	!Int !String
+			| SQLIntegrityError		!Int !String
+			| SQLInternalError		!Int !String
+			| SQLProgrammingError 	!Int !String
 			| SQLNotSupportedError
 
 
