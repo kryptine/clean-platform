@@ -3,12 +3,21 @@ implementation module Time
 import StdString, StdArray, StdClass, StdOverloaded, StdInt
 import Pointer
 import StdEnv
-import StdDebug
 
 import code from library "msvcrt.txt"
 
 //String buffer size
 MAXBUF :== 256
+
+instance == Timestamp
+where
+	(==) (Timestamp t1) (Timestamp t2) = t1 == t2
+	
+instance < Timestamp
+where
+	(<) (Timestamp t1) (Timestamp t2) = t1 < t2 
+
+
 
 instance toString Tm
 where
@@ -18,9 +27,9 @@ where
 		toStringTmC a0 = code {
 			ccall asctime@4 "A:I"
 		}
-instance toString Time
+instance toString Timestamp
 where
-	toString (Time t) = derefString (toStringTimeC (packInt t))
+	toString (Timestamp t) = derefString (toStringTimeC (packInt t))
 	where	
 		toStringTimeC :: !{#Int} -> Pointer
 		toStringTimeC a0 = code {
@@ -29,6 +38,9 @@ where
 instance toString Clock
 where
 	toString (Clock c) = toString c
+instance toInt Timestamp
+where
+	toInt (Timestamp i) = i
 
 clock :: !*World -> (!Clock, !*World)
 clock world
@@ -40,10 +52,10 @@ clock world
 		ccall clock@0 ":I:A"
 	}
 
-time :: !*World -> (!Time, !*World)
+time :: !*World -> (!Timestamp, !*World)
 time world
 	# (t, world)	= timeC 0 world
-	= (Time t, world)
+	= (Timestamp t, world)
 	where
 	timeC :: !Int !*World -> (!Int,!*World)
 	timeC a0 world = code {
@@ -52,7 +64,7 @@ time world
 
 gmTime :: !*World -> (!Tm, !*World)
 gmTime world
-	# ((Time t),world)	= time world
+	# ((Timestamp t),world)	= time world
 	# (tm, world)		= gmTimeC (packInt t) world
 	= (derefTm tm, world)
 	where
@@ -63,7 +75,7 @@ gmTime world
 
 localTime :: !*World -> (!Tm, !*World)
 localTime world
-	# ((Time t),world)	= time world
+	# ((Timestamp t),world)	= time world
 	# (tm,world)		= localTimeC (packInt t) world
 	= (derefTm tm, world)
 	where
@@ -72,18 +84,18 @@ localTime world
     	ccall localtime@4 "A:I:A"
 	}
 
-mkTime :: !Tm -> Time
+mkTime :: !Tm -> Timestamp
 mkTime tm 
 	# t = mkTimeC (packTm tm)
-	= Time t
+	= Timestamp t
 	where
 	mkTimeC :: !{#Int} -> Int
 	mkTimeC tm = code {
 		ccall mktime@4 "A:I"
 	}
 
-diffTime :: !Time !Time -> Int
-diffTime (Time t1) (Time t2) = t1 - t2
+diffTime :: !Timestamp !Timestamp -> Int
+diffTime (Timestamp t1) (Timestamp t2) = t1 - t2
 
 strfTime :: !String !Tm -> String
 strfTime format tm 

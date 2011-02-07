@@ -3,9 +3,6 @@ implementation module Map
 import StdEnv
 import Maybe
 
-:: Map k v	= MNode (Map k v) k Int v (Map k v)
-			| MLeaf
-
 //Create function
 newMap :: w:(Map k u:v), [ w <= u]
 newMap = MLeaf
@@ -121,6 +118,12 @@ fromList :: w:[x:(k,u:v)] -> y:(Map k u:v) | Eq k & Ord k, [x y <= u, w <= x, w 
 fromList [] = newMap
 fromList [(k,v):xs] = put k v (fromList xs)
 
+putList :: w:[x:(k,u:v)] w:(Map k u:v) -> y:(Map k u:v) | Eq k & Ord k, [x y <= u, w <= x, w <= y]
+putList [] map = map
+putList [(k,v):xs] map = putList xs (put k v map)
+
+delList :: [k] w:(Map k u:v) -> y:(Map k u:v) | Eq k & Ord k, [w y <= u, w <= y]
+delList list map = seq [\map -> snd (delU key map) \\ key <- list] map
 //Helper functions
 
 //Determine the height of a tree

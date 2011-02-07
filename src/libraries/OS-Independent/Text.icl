@@ -19,13 +19,7 @@ instance Text String
 	join sep [x:xs] = x +++ sep +++ (join sep xs)
 
     indexOf :: !String !String -> Int
-	indexOf "" haystack = -1
-	indexOf needle haystack = `indexOf needle haystack 0
-		where
-		`indexOf needle haystack n
-			| (n + size needle) > (size haystack)									= -1
-			| and [needle.[i] == haystack.[n + i] \\ i <- [0..((size needle) - 1)]]	= n
-																					= `indexOf needle haystack (n + 1)
+	indexOf needle haystack = indexOfAfter 0 needle haystack
 
     lastIndexOf :: !String !String -> Int
 	lastIndexOf "" haystack = -1
@@ -35,6 +29,15 @@ instance Text String
 			| n < 0																	= -1		
 			| and [needle.[i] == haystack.[n + i] \\ i <- [0..((size needle) - 1)]]	= n
 																					= `lastIndexOf needle haystack (n - 1)
+																					
+	indexOfAfter :: !Int !String !String -> Int
+	indexOfAfter _ "" haystack = -1
+	indexOfAfter offs needle haystack = `indexOf needle haystack offs
+		where
+		`indexOf needle haystack n
+			| (n + size needle) > (size haystack)									= -1
+			| and [needle.[i] == haystack.[n + i] \\ i <- [0..((size needle) - 1)]]	= n
+																					= `indexOf needle haystack (n + 1)
 
     startsWith :: !String !String -> Bool
 	startsWith needle haystack = indexOf needle haystack == 0
@@ -81,3 +84,7 @@ instance Text String
 
     toUpperCase :: !String -> String
 	toUpperCase s = {toUpper c \\ c <-: s}
+	
+	upperCaseFirst :: !String -> String
+	upperCaseFirst "" = ""
+	upperCaseFirst s = {if (i == 0) (toUpper c) c \\ c <-: s & i <- [0..]}
