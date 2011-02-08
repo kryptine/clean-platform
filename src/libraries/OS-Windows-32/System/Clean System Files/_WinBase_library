@@ -1,0 +1,14 @@
+kernel32.dll
+CloseHandle@4
+CreateFileA@28
+DeleteFileA@4
+FindClose@4
+FindFirstFileA@8
+FormatMessageA@28
+GetEnvironmentVariableA@12
+GetExitCodeProcess@8
+GetLastError@0
+LocalFree@4
+SetEnvironmentVariableA@8
+WaitForSingleObject@8
+

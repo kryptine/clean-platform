@@ -1,9 +1,6 @@
 definition module Maybe 
 
-import StdBool
-import StdFunc
-import StdMisc
-
+from StdOverloaded import class ==(..)
 
 /**
  * The Maybe type represents an optional value by providing a constructor 
@@ -11,11 +8,15 @@ import StdMisc
  */
 :: Maybe a = Nothing | Just a
 
-
 /** 
  * Apply a function to the contents of a Just value, if such a value is present.
  */
 fmap :: (.a -> .b) (Maybe .a) -> Maybe .b
+
+/** 
+ * Equality on Maybes:
+ */
+instance == (Maybe x) | == x
 
 /**
  * Apply a function to the the contents of a Just value and directly return
