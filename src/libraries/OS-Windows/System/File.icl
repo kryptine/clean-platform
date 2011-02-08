@@ -17,12 +17,11 @@ from _Windows import
 	::HANDLE, 
 	:: LPWIN32_FIND_DATA, 
 	WIN32_FIND_DATA_size_int, 
-	findFirstFileA, 
 	INVALID_HANDLE_VALUE,
-	findClose
+	deleteFileA, 
+	findClose,
+	findFirstFileA
 	
-from _Windows import qualified deleteFile
-
 instance toString FileError
 where
 	toString CannotOpen = "Cannot open"
@@ -73,6 +72,6 @@ fileExists filename world
 
 deleteFile :: !String *World -> (MaybeOSError Void, *World)
 deleteFile path world 
-	# (ok, world) = '_Windows'.deleteFile path world
+	# (ok, world) = deleteFileA (packString path) world
 	| ok == 0 = getLastOSError world
 	= (Ok Void, world)

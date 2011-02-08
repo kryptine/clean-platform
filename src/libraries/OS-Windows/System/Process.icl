@@ -28,7 +28,7 @@ runProcess path args mCurrentDirectory world
 				}
 # processInformation = createArray PROCESS_INFORMATION_size_int 0
 # (ok, world) = case mCurrentDirectory of
-	Just dir	-> createProcessA_dir (packString path) commandLine 0 0 True DETACHED_PROCESS 0 dir startupInfo processInformation world
+	Just dir	-> createProcessA_dir (packString path) commandLine 0 0 True DETACHED_PROCESS 0 (packString dir) startupInfo processInformation world
 	Nothing 	-> createProcessA (packString path) commandLine 0 0 True DETACHED_PROCESS 0 0 startupInfo processInformation world
 | not ok = getLastOSError world
 # processHandle = { processHandle = processInformation.[PROCESS_INFORMATION_hProcess_int_offset]

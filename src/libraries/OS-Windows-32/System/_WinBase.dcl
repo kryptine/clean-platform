@@ -58,7 +58,7 @@ createProcessA :: !String !String !LPSECURITY_ATTRIBUTES !LPSECURITY_ATTRIBUTES 
 createProcessA_dir :: !String !String !LPSECURITY_ATTRIBUTES !LPSECURITY_ATTRIBUTES !Bool !Int !LPVOID
 					!String !LPSTARTUPINFO !LPPROCESS_INFORMATION !*World -> (!Bool,!*World)
 
-deleteFile :: !String !*World -> (!Int, !*World)
+deleteFileA :: !String !*World -> (!Int, !*World)
 
 findClose :: !HANDLE !*World -> (!Bool, !*World)
 

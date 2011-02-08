@@ -33,8 +33,8 @@ createProcessA_dir lpApplicationName commandLine lpProcessAttributes lpThreadAtt
 		ccall CreateProcessA@40 "PssIIIIIsAA:I:I"
 	}
 	
-deleteFile :: !String !*World -> (!Int, !*World)
-deleteFile path world = code inline {
+deleteFileA :: !String !*World -> (!Int, !*World)
+deleteFileA path world = code inline {
 	ccall DeleteFileA@4 "Ps:I:I"
 }
 
