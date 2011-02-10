@@ -21,7 +21,7 @@ import _Windows
 
 runProcess :: !FilePath ![String] !(Maybe String) !*World -> (MaybeOSError ProcessHandle, *World)
 runProcess path args mCurrentDirectory world
-# commandLine = packString (foldr (\a b -> a +++ " " +++ b) "" [path:args])
+# commandLine = packString (foldr (\a b -> a +++ " " +++ b) "" ["\"" +++ path +++ "\"":args])
 # startupInfo = { createArray STARTUPINFO_size_int 0
   			 	& [STARTUPINFO_cb_int_offset] 		 = STARTUPINFO_size_bytes
 			 	, [STARTUPINFO_dwFlags_int_offset]	 = STARTF_USESTDHANDLES
