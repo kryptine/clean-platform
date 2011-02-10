@@ -7,9 +7,10 @@ import StdString
 import FilePath
 
 import Text
+import _OS
 
 pathSeparator :: Char
-pathSeparator = '\\'
+pathSeparator = OS_PATH_SEPARATOR
 
 pathSeparators :: [Char]
 pathSeparators = ['\\', '/']
