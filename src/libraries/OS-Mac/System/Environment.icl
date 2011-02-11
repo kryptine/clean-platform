@@ -3,7 +3,7 @@ implementation module Environment
 * Module for accessing environment variables
 */
 import StdOverloaded, StdInt
-import Maybe, Pointer_
+import Maybe, _Pointer
 
 getEnvironmentVariable :: !String !*World -> (Maybe String, *World)
 getEnvironmentVariable name world
@@ -13,7 +13,7 @@ getEnvironmentVariable name world
 	where
 		getenvC :: !{#Char} -> Pointer
 		getenvC a0 = code {
-			ccall getenv "s:I"
+			ccall getenv "s:p"
 		}
 
 setEnvironmentVariable :: !String !String !*World -> *World

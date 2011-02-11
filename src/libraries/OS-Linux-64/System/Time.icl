@@ -1,7 +1,7 @@
 implementation module Time
 
 import StdString, StdArray, StdClass, StdOverloaded, StdInt
-import Pointer
+import _Pointer
 
 //String buffer size
 MAXBUF :== 256
@@ -12,7 +12,7 @@ where
 	where
 		toStringTmC :: !{#Int} -> Pointer
 		toStringTmC a0 = code {
-			ccall asctime "A:I"
+			ccall asctime "A:p"
 		}
 instance toString Time
 where
@@ -20,7 +20,7 @@ where
 	where	
 		toStringTimeC :: !{#Int} -> Pointer
 		toStringTimeC a0 = code {
-			ccall ctime "A:I"
+			ccall ctime "A:p"
 		}
 instance toString Clock
 where
@@ -33,7 +33,7 @@ clock world
 	where
 	clockC :: !*World -> (!Int, !*World)
 	clockC world = code {
-		ccall clock ":I:A"
+		ccall clock ":I:p"
 	}
 
 time :: !*World -> (!Time, !*World)
@@ -43,7 +43,7 @@ time world
 	where
 	timeC :: !Int !*World -> (!Int,!*World)
 	timeC a0 world = code {
-		ccall time "I:I:A"
+		ccall time "I:I:p"
 	}
 
 gmTime :: !*World -> (!Tm, !*World)
@@ -54,7 +54,7 @@ gmTime world
 	where
 	gmTimeC :: !{#Int} !*World -> (!Int, !*World)
 	gmTimeC tm world = code {
-    	ccall gmtime "A:I:A"
+    	ccall gmtime "A:p:p"
 	}
 
 localTime :: !*World -> (!Tm, !*World)
@@ -65,7 +65,7 @@ localTime world
 	where
 	localTimeC :: !{#Int} !*World -> (!Int, !*World)
 	localTimeC tm world = code {
-    	ccall localtime "A:I:A"
+    	ccall localtime "A:p:p"
 	}
 
 mkTime :: !Tm -> Time
@@ -94,24 +94,21 @@ strfTime format tm
 
 //Custom deref and pack for the Tm structure
 derefTm :: !Int -> Tm
-derefTm tm =	{ sec = readInt tm 0
-				, min = readInt tm 4
-				, hour = readInt tm 8 
-				, mday = readInt tm 12 
-				, mon = readInt tm 16
-				, year = readInt tm 20
-				, wday = readInt tm 24
-				, yday = readInt tm 28 
-				, isdst = readInt tm 32 <> 0
+derefTm tm =	{ sec = readInt4Z tm 0
+				, min = readInt4Z tm 4
+				, hour = readInt4Z tm 8
+				, mday = readInt4Z tm 12
+				, mon = readInt4Z tm 16
+				, year = readInt4Z tm 20 
+				, wday = readInt4Z tm 24
+				, yday = readInt4Z tm 28 
+				, isdst = readInt4Z tm 32 <> 0
 				}
+
 packTm :: !Tm -> {#Int}
-packTm tm = 	{ tm.sec
-				, tm.min
-				, tm.hour
-				, tm.mday
-				, tm.mon
-				, tm.year
-				, tm.wday
-				, tm.yday
-				, if tm.isdst 1 0
+packTm tm = 	{ ((tm.min << 32) bitor (tm.sec bitand 0xFFFFFFFF))
+				, ((tm.mday << 32) bitor (tm.hour bitand 0xFFFFFFFF))
+				, ((tm.year << 32) bitor (tm.mon bitand 0xFFFFFFFF))
+				, ((tm.yday << 32) bitor (tm.wday bitand 0xFFFFFFFF))
+				, (if tm.isdst 1 0) bitand 0xFFFFFFFF
 				}
