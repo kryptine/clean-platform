@@ -5,7 +5,7 @@ import _Pointer
 
 getCommandLine :: *World -> ([String],*World)
 getCommandLine world 
-	# argc = derefInt global_argc
+	# argc = readInt4Z global_argc 0
 	# argv = derefInt global_argv
 	= ([derefString (readInt argv (i << (IF_INT_64_OR_32 3 2)) ) \\ i <- [0..argc - 1]], world)
 where
