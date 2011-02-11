@@ -9,7 +9,7 @@ import StdString
 import Error
 import Void
 import OSError
-import Pointer
+import _Pointer
 
 CHUNK_SIZE :== 1024
 

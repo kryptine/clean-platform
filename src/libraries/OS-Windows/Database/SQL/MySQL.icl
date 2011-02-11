@@ -2,7 +2,7 @@ implementation module MySQL
 //MySQL implementation of the Clean SQL database API
 // 
 import SQL
-import StdEnv, Maybe, Pointer
+import StdEnv, Maybe, _Pointer
 import code from library "libmysql.txt"
 
 //MySQL Does not really need a context

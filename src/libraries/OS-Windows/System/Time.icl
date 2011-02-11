@@ -1,8 +1,7 @@
 implementation module Time
 
 import StdString, StdArray, StdClass, StdOverloaded, StdInt
-import Pointer
-import StdEnv
+import _Pointer
 
 import code from library "msvcrt.txt"
 

@@ -15,7 +15,7 @@ from _Windows import
 	LANGUAGE_NEUTRAL_SUBLANG_DEFAULT, 
 	NULL
 from _Windows import qualified getLastError, formatMessage, localFree
-import Pointer
+import _Pointer
 
 getLastOSError :: *World -> (MaybeOSError a, *World)
 getLastOSError world

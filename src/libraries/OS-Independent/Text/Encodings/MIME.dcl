@@ -12,7 +12,7 @@ definition module MIME
 /**
 * Encode a multi-part MIME message
 */
-encodeMimeMultipart :: !MIMEBoundary [!MIMEPart] -> String
+encodeMimeMultipart :: !MIMEBoundary [MIMEPart] -> String
 /**
 * Decode a multi-part MIME message
 */

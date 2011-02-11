@@ -3,7 +3,7 @@ implementation module IP
 * Small module which provides basic IP functionality
 */
 import StdString, StdInt, StdArray
-import Maybe, Text, Pointer
+import Maybe, Text, _Pointer
 import code from library "wsock32.txt"
 
 /**

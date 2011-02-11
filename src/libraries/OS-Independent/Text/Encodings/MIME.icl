@@ -3,7 +3,7 @@ implementation module MIME
 import StdOverloaded, StdString, StdList, StdArray
 import Maybe, Text
 
-encodeMimeMultipart :: !MIMEBoundary [!MIMEPart] -> String
+encodeMimeMultipart :: !MIMEBoundary [MIMEPart] -> String
 encodeMimeMultipart boundary parts
 	= "This is a message with multiple parts in MIME format.\r\n" 
 	+++ "--" +++ boundary +++ "\r\n"
@@ -23,7 +23,7 @@ decodeMimeMultipart boundary body
 	# parts				= split ("\r\n" +++ "--" +++ boundary +++ "\r\n") body
 	= map parsePart parts
 where
-	parsePart :: String -> ([(String,String)], String)
+	parsePart :: String -> ([(!String,!String)], String)
 	parsePart part 
 		# index 		= indexOf "\r\n\r\n" part
 		| index < 1 	= ([], part)

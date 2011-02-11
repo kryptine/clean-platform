@@ -15,7 +15,7 @@ import Void
 //System
 import FilePath
 import OSError
-import Pointer
+import _Pointer
 
 import _Windows
 
