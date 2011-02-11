@@ -1,9 +1,32 @@
 #!/usr/bin/python
-import os, os.path
+import os, os.path, sys, math
+
+#Determine if we are on Linux or OS X
+uname = os.uname()[0]
+is64 = (math.log(sys.maxsize,2) > 32)
+
+if uname == 'Darwin':
+	usedirs = ['OS-Independent','OS-Posix','OS-Mac']
+if uname == 'Linux':
+	if is64:
+		usedirs = ['OS-Independent','OS-Posix','OS-Linux','OS-Linux-64']
+	else:
+		usedirs = ['OS-Independent','OS-Posix','OS-Linux','OS-Linux-32']
 
 #Check if a directory is ok
 def okLibDir(dir):
-	return (dir.find(".svn") == -1 and dir.find("Clean System Files") == -1 and dir.find("OS-Windows") == -1)
+	if dir.find(".svn") != -1:
+		return False
+	if dir.find("Clean System Files") != -1:
+		return False
+	if(dir.find("OS-") != 0):
+		for allowed in usedirs:
+			if dir.find(allowed) != -1:
+				return True
+
+		return False
+	
+	return True
 
 #Create dirs file
 print ("Creating env/Clean Platform.dirs...")
