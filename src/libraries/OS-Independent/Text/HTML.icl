@@ -548,10 +548,10 @@ instance html HtmlTag
 where
 	html h = h
 	
-instance html [HtmlTag]
+instance html [a] | html a
 where
-	html [h]	= h
-	html h		= SpanTag [] h
+	html [h]	= html h
+	html h		= SpanTag [] (map html h)
 		
 instance html (Maybe a) | html a
 where

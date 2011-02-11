@@ -239,5 +239,5 @@ where
 	
 instance html String
 instance html HtmlTag
-instance html [HtmlTag]
+instance html [a] | html a
 instance html (Maybe a) | html a
