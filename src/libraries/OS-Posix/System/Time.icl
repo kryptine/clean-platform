@@ -106,9 +106,18 @@ derefTm tm =	{ sec = readInt4Z tm 0
 				}
 
 packTm :: !Tm -> {#Int}
-packTm tm = 	{ ((tm.min << 32) bitor (tm.sec bitand 0xFFFFFFFF))
-				, ((tm.mday << 32) bitor (tm.hour bitand 0xFFFFFFFF))
-				, ((tm.year << 32) bitor (tm.mon bitand 0xFFFFFFFF))
-				, ((tm.yday << 32) bitor (tm.wday bitand 0xFFFFFFFF))
-				, (if tm.isdst 1 0) bitand 0xFFFFFFFF
-				}
+packTm tm = IF_INT_64_OR_32
+	//64-bit
+ 	{ ((tm.min << 32) bitor (tm.sec bitand 0xFFFFFFFF))
+	, ((tm.mday << 32) bitor (tm.hour bitand 0xFFFFFFFF))
+	, ((tm.year << 32) bitor (tm.mon bitand 0xFFFFFFFF))
+	, ((tm.yday << 32) bitor (tm.wday bitand 0xFFFFFFFF))
+	, (if tm.isdst 1 0) bitand 0xFFFFFFFF
+	}
+	//32-bit
+ 	{ tm.sec, tm.min
+	, tm.hour, tm.mday
+	, tm.mon, tm.year
+	, tm.wday, tm.yday
+	, if tm.isdst 1 0
+	}
