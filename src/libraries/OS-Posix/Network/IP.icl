@@ -3,7 +3,8 @@ implementation module IP
 * Small module which provides basic IP functionality
 */
 import StdString, StdInt
-import Maybe, Text, Pointer
+import Maybe, Text, _Pointer
+import StdDebug
 
 /**
 * Type which represents an IP (v4) address
@@ -44,12 +45,12 @@ lookupIPAddress :: !String !*World -> (!Maybe IPAddress, !*World)
 lookupIPAddress name world
 	# (ptrhe,world) = gethostbynameC (packString name) world
 	| ptrhe == 0	= (Nothing, world)	//Fail
-	# ptrli			= readInt ptrhe 16
+	# ptrli			= readInt ptrhe (IF_INT_64_OR_32 24 16) 
 	# ptrad			= readInt ptrli 0
-	# addr			= readInt ptrad 0
-	= (Just (IPAddress addr), world)
+	# addr			= readInt4Z ptrad 0
+	= (Just (IPAddress addr), world)	
 	where
 		gethostbynameC :: !{#Char} !*World -> (!Pointer, !*World)
-		gethostbynameC a0 a2 = code {
-			ccall gethostbyname "s:I:A"
+		gethostbynameC a0 a1 = code {
+			ccall gethostbyname "s:p:p"
 		}
