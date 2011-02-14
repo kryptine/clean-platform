@@ -39,4 +39,8 @@ formatMessage errorCode
      # hMem = '_Windows'.localFree msgBuf.[0]
      | hMem <> hMem = undef					//Force eval of hMem
      = message % (0, size message - 3)		//Strip CR+LF
-    
+
+getLastOSErrorCode :: *World -> (MaybeOSErrorCode a, *World)
+getLastOSErrorCode world
+# (errorCode, world) = '_Windows'.getLastError world
+= (Error errorCode, world)
