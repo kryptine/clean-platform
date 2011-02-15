@@ -55,3 +55,10 @@ splitFileName path =
 
 takeDirectory :: !FilePath -> FilePath
 takeDirectory path = fst (splitFileName path) 
+
+dropDirectory :: !FilePath -> String
+dropDirectory path =
+	case lastIndexOf {pathSeparator} path of
+		-1	-> path
+		i	-> (subString (i+1) (size path - i - 1) path)
+

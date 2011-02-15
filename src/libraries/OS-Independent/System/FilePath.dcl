@@ -55,3 +55,8 @@ replaceExtension :: !FilePath !String -> FilePath
 * the result is the parent directory.
 */
 takeDirectory :: !FilePath -> FilePath
+
+/**
+* Drop the directory part of a FilePath. Keep only the filename.
+*/
+dropDirectory :: !FilePath -> String
