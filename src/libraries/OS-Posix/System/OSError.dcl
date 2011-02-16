@@ -9,6 +9,6 @@ import Error
 :: MaybeOSError a :== MaybeError OSError a
 :: MaybeOSErrorCode a :== MaybeError OSErrorCode a
 
-getLastOSError :: *World -> (MaybeOSError a, *World)
+getLastOSError :: *World -> (MaybeOSError .a, *World)
 
-getLastOSErrorCode :: *World -> (MaybeOSErrorCode a, *World)
+getLastOSErrorCode :: *World -> (MaybeOSErrorCode .a, *World)

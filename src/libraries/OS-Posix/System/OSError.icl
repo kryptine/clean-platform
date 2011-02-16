@@ -3,7 +3,7 @@ implementation module OSError
 import Error, _Pointer
 from _Posix import qualified errno, strerr
 
-getLastOSError :: *World -> (MaybeOSError a, *World)
+getLastOSError :: *World -> (MaybeOSError .a, *World)
 getLastOSError world 
 	# (errno,world) = '_Posix'.errno world
 	= (Error (errno, message errno),world)
@@ -13,7 +13,7 @@ where
 		# ptr = '_Posix'.strerr errno
 		= derefString ptr
 
-getLastOSErrorCode :: *World -> (MaybeOSErrorCode a, *World)
+getLastOSErrorCode :: *World -> (MaybeOSErrorCode .a, *World)
 getLastOSErrorCode world 
 	# (errno,world) = '_Posix'.errno world
 	= (Error errno, world)
