@@ -16,15 +16,15 @@ isError			:: !(MaybeError a b) -> Bool
 /**
  * Return the contents of an Ok value and abort at run-time otherwise.
  */
-fromOk			:: !(MaybeError a b) -> b
+fromOk			:: !(MaybeError .a .b) -> .b
 
 /**
  * Return the contents of an Error value and abort at run-time otherwise.
  */
-fromError		:: !(MaybeError a b) -> a
+fromError		:: !(MaybeError .a .b) -> .a
 
 /**
  * Lifts a (MaybeError a b) to another MaybeError
  * @precondition: isError x == True
  */
-liftError 		:: !(MaybeError a b) -> (MaybeError a c)
+liftError 		:: !(MaybeError .a .b) -> (MaybeError .a .c)

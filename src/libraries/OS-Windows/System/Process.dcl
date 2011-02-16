@@ -1,9 +1,8 @@
 definition module Process
 
-import Maybe
+import Void, Maybe, Either
 import OSError
 import FilePath
-import Void
 
 /*
 Not yet implemented:
@@ -29,14 +28,14 @@ runProcess :: !FilePath ![String] !(Maybe String) !*World -> (MaybeOSError Proce
 * @param Process handle to the process
 * @return Boolean indicating if process is still running
 */
-getExitCode :: !ProcessHandle *World -> (MaybeOSError (Maybe Int), *World)
+checkProcess :: !ProcessHandle !*World -> (MaybeOSError (Maybe Int), *World)
 
 /**
 * Wait for a process to terminate, closes the handle and returns the exit code
 * @param Process handle to the process
 * @return Exit code of the process
 */
-waitForProcess :: !ProcessHandle *World -> (MaybeOSError Int, *World)
+waitForProcess :: !ProcessHandle !*World -> (MaybeOSError Int, *World)
 
 /**
 * runs a new process and wait for it to terminate
@@ -45,12 +44,4 @@ waitForProcess :: !ProcessHandle *World -> (MaybeOSError Int, *World)
 * @param (optional) startup directory
 * @return Exit code of the process
 */
-callProcess :: !FilePath ![String] !(Maybe String) *World -> (MaybeOSError Int, *World)
-
-/**
-* Close a process handle
-* @param Process handle to the process
-* @return Process handle closed successfully
-*/
-closeProcessHandle :: !ProcessHandle *World -> (MaybeOSError Void, *World)
-
+callProcess :: !FilePath ![String] !(Maybe String) !*World -> (MaybeOSError Int, *World)

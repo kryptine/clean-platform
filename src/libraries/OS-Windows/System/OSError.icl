@@ -17,7 +17,7 @@ from _Windows import
 from _Windows import qualified getLastError, formatMessage, localFree
 import _Pointer
 
-getLastOSError :: *World -> (MaybeOSError a, *World)
+getLastOSError :: *World -> (MaybeOSError .a, *World)
 getLastOSError world
 # (errorCode, world) = '_Windows'.getLastError world
 = (Error (errorCode, formatMessage errorCode), world)
@@ -40,7 +40,7 @@ formatMessage errorCode
      | hMem <> hMem = undef					//Force eval of hMem
      = message % (0, size message - 3)		//Strip CR+LF
 
-getLastOSErrorCode :: *World -> (MaybeOSErrorCode a, *World)
+getLastOSErrorCode :: *World -> (MaybeOSErrorCode .a, *World)
 getLastOSErrorCode world
 # (errorCode, world) = '_Windows'.getLastError world
 = (Error errorCode, world)
