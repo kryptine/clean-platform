@@ -18,6 +18,10 @@ fromError	:: !(MaybeError a b) -> b
 fromError	(Error b) 	= b
 fromError	(Ok _)		= abort "Data.Error.fromError: argument is Ok"
 
+mapMaybeError	:: !(a -> c) !(MaybeError a b) -> (MaybeError c b)
+mapMaybeError mapf (Ok v)	= Ok (mapf v)
+mapMaybeError _ (Error e)	= Error e
+
 liftError :: !(MaybeError a b) -> (MaybeError c b)
 liftError	(Error b)	= Error b
 liftError	(Ok _)		= abort "Data.Error.liftError: argument is Ok"
