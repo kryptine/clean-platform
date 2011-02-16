@@ -28,17 +28,17 @@ where
 	toString CannotClose = "Cannot close"
 	toString IOError = "I/O error"
 
-readFile :: !String *env -> (MaybeError String FileError, *env) | FileSystem env
+readFile :: !String *env -> (MaybeError FileError String, *env) | FileSystem env
 readFile filename env = withFile filename FReadData readAll env
 
-readAll :: *File -> (MaybeError String FileError, *File)
+readAll :: *File -> (MaybeError FileError String, *File)
 readAll file
 # (result, file) = readAcc file []
 = case result of
 	Error e	   = (Error e, file)
 	Ok contents = (Ok ((foldr (+++) "" (reverse contents))), file)
 where
-	readAcc :: *File [String] -> (MaybeError [String] FileError, *File)
+	readAcc :: *File [String] -> (MaybeError FileError [String], *File)
 	readAcc file acc
 		# (str,file)	= freads file CHUNK_SIZE
 		# (err,file)	= ferror file
@@ -47,12 +47,12 @@ where
 		| eof			= (Ok [str:acc],file)
 		| otherwise		= readAcc file [str:acc]			
 
-writeFile :: !String !String *env -> (MaybeError Void FileError, *env) | FileSystem env
+writeFile :: !String !String *env -> (MaybeError FileError Void, *env) | FileSystem env
 writeFile filename contents env = 
 	withFile filename FWriteData (\file -> (Ok Void, fwrites contents file)) env
 
-withFile :: !String Int (*File -> (MaybeError a FileError,*File)) *env 
-			-> (MaybeError a FileError, *env) | FileSystem env
+withFile :: !String Int (*File -> (MaybeError FileError a,*File)) *env 
+			-> (MaybeError FileError a, *env) | FileSystem env
 withFile filename filemode operation env
 # (ok,file,env)	= fopen filename filemode env
 | not ok			= (Error CannotOpen, env)

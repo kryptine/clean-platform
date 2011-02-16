@@ -9,11 +9,6 @@ from StdOverloaded import class ==(..)
 :: Maybe a = Nothing | Just a
 
 /** 
- * Apply a function to the contents of a Just value, if such a value is present.
- */
-fmap :: (.a -> .b) (Maybe .a) -> Maybe .b
-
-/** 
  * Equality on Maybes:
  */
 instance == (Maybe x) | == x

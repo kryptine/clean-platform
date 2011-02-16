@@ -6,8 +6,8 @@ import Error
 :: OSErrorMessage :== String
 
 :: OSError :== (OSErrorCode, OSErrorMessage)
-:: MaybeOSError a :== MaybeError a OSError
-:: MaybeOSErrorCode a :== MaybeError a OSErrorCode
+:: MaybeOSError a :== MaybeError OSError a
+:: MaybeOSErrorCode a :== MaybeError OSErrorCode a
 
 getLastOSError :: *World -> (MaybeOSError a, *World)
 

@@ -10,18 +10,14 @@ isError		:: !(MaybeError a b) -> Bool
 isError		(Ok _) 		= False
 isError		(Error _)	= True
 
-fromOk		:: !(MaybeError a b) -> a
-fromOk		(Ok a) 		= a
+fromOk		:: !(MaybeError a b) -> b
+fromOk		(Ok b) 		= b
 fromOk		(Error _)	= abort "Data.Error.fromOk: argument is Error"
 
-fromError	:: !(MaybeError a b) -> b
-fromError	(Error b) 	= b
+fromError	:: !(MaybeError a b) -> a
+fromError	(Error a) 	= a
 fromError	(Ok _)		= abort "Data.Error.fromError: argument is Ok"
 
-mapMaybeError	:: !(a -> c) !(MaybeError a b) -> (MaybeError c b)
-mapMaybeError mapf (Ok v)	= Ok (mapf v)
-mapMaybeError _ (Error e)	= Error e
-
-liftError :: !(MaybeError a b) -> (MaybeError c b)
-liftError	(Error b)	= Error b
+liftError :: !(MaybeError a b) -> (MaybeError a c)
+liftError	(Error a)	= Error a
 liftError	(Ok _)		= abort "Data.Error.liftError: argument is Ok"

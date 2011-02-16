@@ -1,8 +1,8 @@
 definition module Error
 
-:: MaybeError a b = Ok a | Error b
+:: MaybeError a b = Error a | Ok b 
 
-:: MaybeErrorString a :== MaybeError a String
+:: MaybeErrorString a :== MaybeError String a
 
 /**
  * Return True when the argument is an Ok value and return False otherwise.
@@ -16,21 +16,15 @@ isError			:: !(MaybeError a b) -> Bool
 /**
  * Return the contents of an Ok value and abort at run-time otherwise.
  */
-fromOk			:: !(MaybeError a b) -> a
+fromOk			:: !(MaybeError a b) -> b
 
 /**
  * Return the contents of an Error value and abort at run-time otherwise.
  */
-fromError		:: !(MaybeError a b) -> b
-
-/**
- * Maps the contents of an Ok value to another type if there is no error.
- * Otherwise give the same error.
- */
-mapMaybeError	:: !(a -> c) !(MaybeError a b) -> (MaybeError c b)
+fromError		:: !(MaybeError a b) -> a
 
 /**
  * Lifts a (MaybeError a b) to another MaybeError
  * @precondition: isError x == True
  */
-liftError 		:: !(MaybeError a b) -> (MaybeError c b)
+liftError 		:: !(MaybeError a b) -> (MaybeError a c)
