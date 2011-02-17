@@ -16,7 +16,7 @@ instance toString FileError
 * @param Path to the file to read
 * @return contents of the file
 */
-readFile :: !String *env -> (MaybeError FileError Void, *env) | FileSystem env
+readFile :: !String *env -> (MaybeError FileError String, *env) | FileSystem env
 
 /**
 * Read all contents of a *File to a String. 
