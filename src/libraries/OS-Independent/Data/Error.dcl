@@ -1,8 +1,12 @@
 definition module Error
 
+import Functor
+
 :: MaybeError a b = Error a | Ok b 
 
 :: MaybeErrorString a :== MaybeError String a
+
+instance Functor (MaybeError a)
 
 /**
  * Return True when the argument is an Ok value and return False otherwise.

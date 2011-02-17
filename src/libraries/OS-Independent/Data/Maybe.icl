@@ -3,6 +3,7 @@ implementation module Maybe
 import StdBool
 import StdFunc
 import StdMisc
+import Functor
 
 :: Maybe a = Nothing | Just a
 
@@ -11,8 +12,13 @@ instance == (Maybe x) | == x where
 							Nothing -> True
 							just    -> False
 	(==) (Just a) maybe	= case maybe of
-							Just b  -> a==b
+							Just b  -> a == b
 							nothing -> False
+
+instance Functor Maybe
+where
+	fmap f Nothing	= Nothing
+	fmap f (Just a)	= Just (f a)
 
 maybe :: .b (.a -> .b) !(Maybe .a) -> .b
 maybe x _ Nothing  = x

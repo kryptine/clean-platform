@@ -1,6 +1,12 @@
 implementation module Error
 
 import StdMisc
+import Functor
+	
+instance Functor (MaybeError a)
+where
+	fmap f (Ok x)		= Ok (f x)
+	fmap f (Error x)	= Error x
 
 isOk		:: !(MaybeError a b) -> Bool
 isOk		(Ok _) 		= True

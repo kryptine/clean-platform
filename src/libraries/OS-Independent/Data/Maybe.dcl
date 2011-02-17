@@ -1,6 +1,7 @@
 definition module Maybe 
 
 from StdOverloaded import class ==(..)
+import Functor
 
 /**
  * The Maybe type represents an optional value by providing a constructor 
@@ -12,6 +13,8 @@ from StdOverloaded import class ==(..)
  * Equality on Maybes:
  */
 instance == (Maybe x) | == x
+
+instance Functor Maybe
 
 /**
  * Apply a function to the the contents of a Just value and directly return
