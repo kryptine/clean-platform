@@ -7,7 +7,7 @@ import StdString
 import FilePath
 
 import Text
-import _OS
+import OS
 
 pathSeparator :: Char
 pathSeparator = OS_PATH_SEPARATOR
