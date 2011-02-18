@@ -56,14 +56,14 @@ withFile filename filemode operation env
 
 fileExists ::  !String *World -> (Bool, *World)
 fileExists path world 
-	# buf		= createArray (IF_INT_64_OR_32 144 88) '\0'
-	# ok		= '_Posix'.stat (packString path) buf
-	| ok == 0	= (True, world)
-				= (False, world)
+	# buf			= createArray (IF_INT_64_OR_32 144 88) '\0'
+	# (ok,world)	= '_Posix'.stat (packString path) buf world
+	| ok == 0		= (True, world)
+					= (False, world)
 	
 deleteFile :: !String *World -> (MaybeOSError Void, *World)
 deleteFile path world
-	# ok		= '_Posix'.unlink (packString path) 
-	| ok <> 0	= getLastOSError world
-				= (Ok Void, world)
+	# (ok,world)	= '_Posix'.unlink (packString path) world
+	| ok <> 0		= getLastOSError world
+					= (Ok Void, world)
 
