@@ -21,6 +21,10 @@ instance Functor Maybe
  * the result, or return a default value if the argument is a Nothing value.
  */
 maybe :: .b (.a -> .b) !(Maybe .a) -> .b
+/**
+ * Directly return a Just value or return a default value if the argument is a Nothing value.
+ */
+fromMaybe :: .a !(Maybe .a) -> .a
 
 /**
  * Return True when the argument is a Nothing value and return False otherwise.

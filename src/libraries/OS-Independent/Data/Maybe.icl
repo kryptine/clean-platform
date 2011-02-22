@@ -24,6 +24,9 @@ maybe :: .b (.a -> .b) !(Maybe .a) -> .b
 maybe x _ Nothing  = x
 maybe _ f (Just x) = f x
 
+fromMaybe :: .a !(Maybe .a) -> .a
+fromMaybe x mb = maybe x id mb
+
 isNothing :: !(Maybe .a) -> Bool
 isNothing Nothing = True
 isNothing _       = False
