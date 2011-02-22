@@ -22,7 +22,7 @@ import _Posix
 runProcess :: !FilePath ![String] !(Maybe String) !*World -> (MaybeOSError ProcessHandle, *World)
 runProcess path args mCurrentDirectory world
 	//Fork
-	# (argv,args_memory)	= makeArgv ["\"" +++ path +++ "\"":args]
+	# (argv,args_memory)	= makeArgv [path:args]
 	# (pid, world)			= fork world
 	| pid == 0
 		//Exec
