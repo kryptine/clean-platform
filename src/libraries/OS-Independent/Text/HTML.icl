@@ -538,7 +538,7 @@ writeAttr name value dest dest_i
 
 class html a 
 where
-	html :: a -> HtmlTag
+	html :: !a -> HtmlTag
 	
 instance html String
 where

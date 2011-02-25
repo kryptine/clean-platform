@@ -16,7 +16,7 @@ from StdOverloaded	import class ==, class <
 * stored in the mapping. For example "Map Int String" is a mapping
 * "from" integers "to" strings.
 */
-:: Map k v	= MNode (Map k v) k Int v (Map k v)
+:: Map k v	= MNode !(Map k v) !k !Int v !(Map k v)
 			| MLeaf
 
 //Basic functions
@@ -35,7 +35,7 @@ newMap		:: w:(Map k u:v), [ w <= u]
 * @param The original mapping
 * @return The modified mapping with the added value
 */
-put 		:: k u:v w:(Map k u:v) -> x:(Map k u:v) | Eq k & Ord k, [ w x <= u, w <= x]
+put 		:: !k u:v !w:(Map k u:v) -> x:(Map k u:v) | Eq k & Ord k, [ w x <= u, w <= x]
 /**
 * Searches for a value at a given key position. Works only for non-unique
 * mappings.
@@ -44,7 +44,7 @@ put 		:: k u:v w:(Map k u:v) -> x:(Map k u:v) | Eq k & Ord k, [ w x <= u, w <= x
 * @param The orginal mapping
 * @return When found, the value at the key position, if not: Nothing
 */
-get			:: k (Map k v) -> Maybe v | Eq k & Ord k
+get			:: !k !(Map k v) -> Maybe v | Eq k & Ord k
 /**
 * Searches for a value at a given key position and returns the mapping
 * as a result as well. This makes it possible to have use mappings with a unique spine
@@ -54,7 +54,7 @@ get			:: k (Map k v) -> Maybe v | Eq k & Ord k
 * @return When found, the value at the key position, if not: Nothing
 * @return The original mapping (to enable Maps wth a unique spine, !but without unique values!)
 */
-getU		:: k w:(Map k v) -> x:(Maybe v, y:(Map k v)) | Eq k & Ord k, [ x <= y, w <= y ]
+getU		:: !k !w:(Map k v) -> x:(Maybe v, !y:(Map k v)) | Eq k & Ord k, [ x <= y, w <= y ]
 /**
 * Removes the value at a given key position. The mapping itself can be spine unique.
 *
@@ -62,7 +62,7 @@ getU		:: k w:(Map k v) -> x:(Maybe v, y:(Map k v)) | Eq k & Ord k, [ x <= y, w <
 * @param The original mapping
 * @return The modified mapping with the value/key removed
 */
-del			:: k w:(Map k v) -> x:(Map k v) | Eq k & Ord k, [ w <= x]
+del			:: !k !w:(Map k v) -> x:(Map k v) | Eq k & Ord k, [ w <= x]
 /**
 * Removes and returns the value at a given key position. Because the value is returned this
 * makes it possible to store unique values in the mapping and safely remove them without losing
@@ -73,7 +73,7 @@ del			:: k w:(Map k v) -> x:(Map k v) | Eq k & Ord k, [ w <= x]
 * @return When found, the value removed at the key position, if not: Nothing
 * @return The modified mapping with the value/key removed
 */
-delU		:: k w:(Map k u:v) -> x:(Maybe u:v, y:(Map k u:v)) | Eq k & Ord k, [ w y <= u, x <= y, w <= y]
+delU		:: !k !w:(Map k u:v) -> x:(Maybe u:v, !y:(Map k u:v)) | Eq k & Ord k, [ w y <= u, x <= y, w <= y]
 
 //Conversion functions
 
@@ -85,7 +85,7 @@ delU		:: k w:(Map k u:v) -> x:(Maybe u:v, y:(Map k u:v)) | Eq k & Ord k, [ w y <
 * @param The original mapping
 * @return A list of key/value tuples in the mapping
 */
-toList		:: 		w:(Map k u:v)	-> x:[y:(k,u:v)] , [w y <= u, x <= y, w <= x]
+toList		:: 		!w:(Map k u:v)	-> x:[y:(!k,u:v)] , [w y <= u, x <= y, w <= x]
 
 /**
 * Converts a list of key/value tuples to a mapping.
@@ -93,7 +93,7 @@ toList		:: 		w:(Map k u:v)	-> x:[y:(k,u:v)] , [w y <= u, x <= y, w <= x]
 * @param A list of key/value tuples
 * @return A mapping containing all the tuples in the list
 */
-fromList	:: w:[x:(k,u:v)]		-> y:(Map k u:v) | Eq k & Ord k, [x y <= u, w <= x, w <= y]
+fromList	:: !w:[x:(!k,u:v)]		-> y:(Map k u:v) | Eq k & Ord k, [x y <= u, w <= x, w <= y]
 
 /**
 * Adds or replaces a list of key/value pairs.
@@ -102,7 +102,7 @@ fromList	:: w:[x:(k,u:v)]		-> y:(Map k u:v) | Eq k & Ord k, [x y <= u, w <= x, w
 * @param The original mapping
 * @return The modified mapping with the added values
 */
-putList		:: w:[x:(k,u:v)] w:(Map k u:v) -> y:(Map k u:v) | Eq k & Ord k, [x y <= u, w <= x, w <= y]
+putList		:: !w:[x:(!k,u:v)] !w:(Map k u:v) -> y:(Map k u:v) | Eq k & Ord k, [x y <= u, w <= x, w <= y]
 
 /**
 * Removes the values at given key positions. The mapping itself can be spine unique.
@@ -111,4 +111,4 @@ putList		:: w:[x:(k,u:v)] w:(Map k u:v) -> y:(Map k u:v) | Eq k & Ord k, [x y <=
 * @param The original mapping
 * @return The modified mapping with the values/keys removed
 */
-delList 	:: [k] w:(Map k u:v) -> y:(Map k u:v) | Eq k & Ord k, [w y <= u, w <= y]
+delList 	:: ![k] !w:(Map k u:v) -> y:(Map k u:v) | Eq k & Ord k, [w y <= u, w <= y]

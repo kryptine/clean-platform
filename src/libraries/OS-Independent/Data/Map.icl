@@ -8,7 +8,7 @@ newMap :: w:(Map k u:v), [ w <= u]
 newMap = MLeaf
 
 //Insert function
-put :: k u:v w:(Map k u:v) -> x:(Map k u:v) | Eq k & Ord k, [w x <= u, w <= x]
+put :: !k u:v !w:(Map k u:v) -> x:(Map k u:v) | Eq k & Ord k, [w x <= u, w <= x]
 put k v MLeaf	= MNode MLeaf k 1 v MLeaf
 put k v (MNode left nk h nv right) 
 	| k == nk	= (MNode left k h v right)
@@ -26,7 +26,7 @@ where
 		= balance (MNode left nk h nv right)
 
 //Lookup function, non-unique version
-get :: k (Map k v) -> Maybe v | Eq k & Ord k
+get :: !k !(Map k v) -> Maybe v | Eq k & Ord k
 get k MLeaf = Nothing
 get k (MNode left nk _ nv right)
 	| k == nk	= Just nv
@@ -34,7 +34,7 @@ get k (MNode left nk _ nv right)
 				= get k right
 
 //Lookup function, possibly spine unique version
-getU :: k w:(Map k v) -> x:(Maybe v,y:(Map k v)) | Eq k & Ord k, [ x <= y, w <= y]
+getU :: !k !w:(Map k v) -> x:(Maybe v,!y:(Map k v)) | Eq k & Ord k, [ x <= y, w <= y]
 getU k MLeaf = (Nothing, MLeaf)
 getU k (MNode left nk h nv right)
 	| k == nk	= (Just nv, MNode left nk h nv right)
@@ -46,11 +46,11 @@ getU k (MNode left nk h nv right)
 		= (mbv, MNode left nk h nv right)
 
 //Delete function, only spine unique version
-del :: k w:(Map k v) -> x:(Map k v) | Eq k & Ord k, [ w <= x]
+del :: !k !w:(Map k v) -> x:(Map k v) | Eq k & Ord k, [ w <= x]
 del k mapping = snd (delU k mapping)
 
 //Delete function
-delU :: k w:(Map k u:v) -> x:(Maybe u:v, y:(Map k u:v)) | Eq k & Ord k, [ w y <= u, x <= y, w <= y]
+delU :: !k !w:(Map k u:v) -> x:(Maybe u:v, !y:(Map k u:v)) | Eq k & Ord k, [ w y <= u, x <= y, w <= y]
 delU k MLeaf = (Nothing, MLeaf)							//Do nothing
 delU k (MNode MLeaf nk h nv MLeaf)						//A node with just leaves as children can be safely removed
 	| k == nk	= (Just nv, MLeaf)
@@ -106,34 +106,34 @@ where
 		= (h, left, right)
 
 //Conversion functions
-toList :: w:(Map k u:v)	-> x:[y:(k,u:v)] , [w y <= u, x <= y, w <= x]
+toList :: !w:(Map k u:v)	-> x:[y:(!k,u:v)] , [w y <= u, x <= y, w <= x]
 toList m = toList` m []
 where
 	toList` MLeaf c = c
 	toList` (MNode left k h v right) c = toList` left [(k,v): toList` right c]
 
 
-fromList :: w:[x:(k,u:v)] -> y:(Map k u:v) | Eq k & Ord k, [x y <= u, w <= x, w <= y]
+fromList :: !w:[x:(!k,u:v)] -> y:(Map k u:v) | Eq k & Ord k, [x y <= u, w <= x, w <= y]
 //fromList :: [(k,v)] -> (Map k v) | Eq k & Ord k
 fromList [] = newMap
 fromList [(k,v):xs] = put k v (fromList xs)
 
-putList :: w:[x:(k,u:v)] w:(Map k u:v) -> y:(Map k u:v) | Eq k & Ord k, [x y <= u, w <= x, w <= y]
+putList :: !w:[x:(!k,u:v)] !w:(Map k u:v) -> y:(Map k u:v) | Eq k & Ord k, [x y <= u, w <= x, w <= y]
 putList [] map = map
 putList [(k,v):xs] map = putList xs (put k v map)
 
-delList :: [k] w:(Map k u:v) -> y:(Map k u:v) | Eq k & Ord k, [w y <= u, w <= y]
+delList :: ![k] !w:(Map k u:v) -> y:(Map k u:v) | Eq k & Ord k, [w y <= u, w <= y]
 delList list map = seq [\map -> snd (delU key map) \\ key <- list] map
 //Helper functions
 
 //Determine the height of a tree
 //This information is stored inside the tree to prevent complete traversals of the tree
-height :: u:(Map k w:v) -> x:(Int, y:(Map k w:v)), [u y <= w, x <= y, u <= y]
+height :: !u:(Map k w:v) -> x:(!Int, y:(Map k w:v)), [u y <= w, x <= y, u <= y]
 height MLeaf				= (0,MLeaf)
 height (MNode left k h v right)	= (h, MNode left k h v right)
 
 //Balance a tree locally (E.g. not recursive. only inspect and rearrange the top of the tree)
-balance :: u:(Map k w:v) -> x:(Map k w:v), [u x <= w, u <= x] 
+balance :: !u:(Map k w:v) -> x:(Map k w:v), [u x <= w, u <= x] 
 balance MLeaf = MLeaf
 balance (MNode left k h v right)
 	# (hleft,left)		= height left

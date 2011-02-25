@@ -33,7 +33,7 @@ instance fromString JSONNode
 * @param The value to encode
 * @return The JSON encoded value
 */
-toJSON		:: a		-> JSONNode	| JSONEncode{|*|} a
+toJSON		:: !a		-> JSONNode	| JSONEncode{|*|} a
 /**
 * Tries to parse a JSON encoded string.
 * When parsing fails, the result is Nothing.
@@ -41,7 +41,7 @@ toJSON		:: a		-> JSONNode	| JSONEncode{|*|} a
 * @param The JSON encoded input
 * @return Just the result, when parsing succeeds
 */
-fromJSON	:: JSONNode	-> Maybe a	| JSONDecode{|*|} a
+fromJSON	:: !JSONNode	-> Maybe a	| JSONDecode{|*|} a
 
 /**
 * Escapes a string for manual JSON construction
@@ -75,12 +75,12 @@ jsonQuery :: !String !JSONNode -> Maybe a | JSONDecode{|*|} a
 * directly but always through the toJSON function. It must be derived
 * for each type you want to encode in JSON format.
 */
-generic JSONEncode t :: t -> [JSONNode]
+generic JSONEncode t :: !t -> [JSONNode]
 derive  JSONEncode Int, Real, Char, Bool, String, UNIT, PAIR, EITHER, FIELD, CONS, OBJECT, [], (,), (,,), (,,,), (,,,,), {}, {!}, Maybe, JSONNode, Dynamic, (->)
 /**
 * Generic decoding function. This function should not be used
 * directly, but always through the fromJSON function. It must be derived
 * for each type you want to parse from JSON format.
 */
-generic JSONDecode t :: [JSONNode] -> (!Maybe t,![JSONNode])
+generic JSONDecode t :: ![JSONNode] -> (!Maybe t,![JSONNode])
 derive  JSONDecode Int, Real, Char, Bool, String, UNIT, PAIR, EITHER, FIELD, CONS, OBJECT, [], (,), (,,), (,,,), (,,,,), {}, {!}, Maybe, JSONNode, Dynamic, (->)

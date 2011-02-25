@@ -3,19 +3,19 @@ implementation module JSON
 import StdGeneric, Maybe, StdList, StdString, _SystemArray, StdTuple, StdBool, StdFunc, Text, Base64, dynamic_string
 
 //Token type which is the intermediary representation during JSON parsing
-:: Token	= TokenInt Int
-			| TokenReal	Real
-			| TokenString String
-			| TokenBool	Bool
+:: Token	= TokenInt !Int
+			| TokenReal	!Real
+			| TokenString !String
+			| TokenBool	!Bool
 			| TokenNull
 			| TokenBracketOpen
 			| TokenBracketClose
 			| TokenBraceOpen
 			| TokenBraceClose
-			| TokenName	String
+			| TokenName	!String
 			| TokenColon
 			| TokenComma
-			| TokenWhitespace String
+			| TokenWhitespace !String
 			| TokenFail	
 
 //Basic JSON serialization
@@ -301,7 +301,7 @@ intersperse i [x:xs] = [x,i:intersperse i xs]
 
 //-------------------------------------------------------------------------------------------
 
-toJSON :: a -> JSONNode | JSONEncode{|*|} a
+toJSON :: !a -> JSONNode | JSONEncode{|*|} a
 toJSON x = case (JSONEncode{|*|} x) of
 	[node]	= node
 	_		= JSONError 
@@ -309,7 +309,7 @@ toJSON x = case (JSONEncode{|*|} x) of
 /*
 * Generic JSON encoder
 */
-generic JSONEncode t :: t -> [JSONNode]
+generic JSONEncode t :: !t -> [JSONNode]
 
 JSONEncode{|Int|} x = [JSONInt x]
 JSONEncode{|Real|} x = [JSONReal x]
@@ -344,13 +344,13 @@ JSONEncode{|Dynamic|} dyn = [JSONString (base64Encode (dynamic_to_string dyn))]
 JSONEncode{|(->)|} _ _ f = [JSONString (base64Encode (copy_to_string f))]
 
 //-------------------------------------------------------------------------------------------
-fromJSON :: JSONNode -> Maybe a | JSONDecode{|*|} a
+fromJSON :: !JSONNode -> Maybe a | JSONDecode{|*|} a
 fromJSON node = fst (JSONDecode{|*|} [node])
 
 /*
 * Generic JSON parser, using a list of tokens
 */
-generic JSONDecode t :: [JSONNode] -> (!Maybe t, ![JSONNode])
+generic JSONDecode t :: ![JSONNode] -> (!Maybe t, ![JSONNode])
 
 JSONDecode{|Int|} [JSONInt i:xs]		= (Just i, xs)
 JSONDecode{|Int|} l						= (Nothing, l)
