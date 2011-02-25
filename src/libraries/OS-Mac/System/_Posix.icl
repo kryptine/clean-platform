@@ -43,6 +43,38 @@ exit :: !Int !*World -> (!.a,!*World)
 exit num world = code {
 	ccall exit "I:p:A"
 }
+getcwd :: !{#Char} !Int !*World -> (!Pointer,!*World)
+getcwd buf size_t world = code {
+	ccall getcwd "sI:p:A"
+}
+chdir :: !{#Char} !*World -> (!Int,!*World)
+chdir name world = code {
+	ccall chdir "s:I:A"
+}
+mkdir :: !{#Char} !Int !*World -> (!Int,!*World)
+mkdir name mode world = code {
+	ccall mkdir "sI:I:A"
+}
+rmdir :: !{#Char} !*World -> (!Int,!*World)
+rmdir name world = code {
+	ccall rmdir "s:I:A"
+}
+rename :: !{#Char} !{#Char} !*World -> (!Int,!*World)
+rename old new world = code {
+	ccall rename "ss:I:A"
+}
+opendir	:: !{#Char} !*World -> (!Pointer,!*World)
+opendir path world = code {
+	ccall opendir "s:p:A"
+}
+closedir :: !Pointer !*World -> (!Int,!*World)
+closedir dir world = code {
+	ccall closedir "p:I:A"
+}
+readdir	:: !Pointer !*World -> (!Pointer,!*World)
+readdir dir world = code {
+	ccall readdir "p:p:A"
+}
 
 malloc :: !Int -> Pointer
 malloc num = code {
