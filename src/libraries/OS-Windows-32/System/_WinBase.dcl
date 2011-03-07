@@ -17,7 +17,6 @@ STARTUPINFO_hStdError_int_offset :== 16
 
 :: LPWIN32_FIND_DATA :== {#Char}
 WIN32_FIND_DATA_size_bytes :== 320
-WIN32_FIND_DATA_size_int :== 80
 WIN32_FIND_DATA_cFileName_int_offset :== 11
 WIN32_FIND_DATA_cFileName_bytes_offset :== 48
 

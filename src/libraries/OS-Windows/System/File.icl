@@ -16,7 +16,7 @@ CHUNK_SIZE :== 1024
 from _Windows import 
 	::HANDLE, 
 	:: LPWIN32_FIND_DATA, 
-	WIN32_FIND_DATA_size_int, 
+	WIN32_FIND_DATA_size_bytes, 
 	INVALID_HANDLE_VALUE,
 	deleteFileA, 
 	findClose,
@@ -64,7 +64,7 @@ withFile filename filemode operation env
 
 fileExists ::  !String *World -> (Bool, *World)
 fileExists filename world
-# win32FindData = createArray WIN32_FIND_DATA_size_int 0
+# win32FindData = createArray WIN32_FIND_DATA_size_bytes '\0'
 # (handle, world) = findFirstFileA (packString filename) win32FindData world
 | handle == INVALID_HANDLE_VALUE = (False, world)
 # (_,world) = findClose handle world
