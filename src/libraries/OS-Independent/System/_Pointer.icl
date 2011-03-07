@@ -446,3 +446,10 @@ packInt i = {i}
 
 packString :: !String -> {#Char}
 packString s = s +++ "\0"
+
+unpackString :: !{#Char} -> String
+unpackString s = unpack 0
+where
+	unpack :: Int -> String
+	unpack off	| s.[off] == '\0' = s % (0, off - 1)
+				| otherwise       = unpack (off + 1)

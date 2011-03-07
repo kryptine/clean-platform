@@ -13,3 +13,4 @@ INVALID_HANDLE_VALUE :== -1
 
 NULL :== 0
 
+MAX_PATH :== 260

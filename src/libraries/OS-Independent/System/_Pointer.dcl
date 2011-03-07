@@ -98,7 +98,12 @@ derefString :: !Pointer -> String
 */
 packInt :: !Int -> {#Int}
 /**
-* Wraps a Clean-string as a NUL-terminated C-string to enable passing
+* Wraps a Clean-string as a NULL-terminated C-string to enable passing
 * a pointer to a ccall using the C conventions.
 */
 packString :: !String -> {#Char}
+
+/**
+* Unpacks a NULL-terminated C-string into a Clean-string.
+*/
+unpackString :: !{#Char} -> String

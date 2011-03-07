@@ -15,9 +15,11 @@ STARTUPINFO_cb_int_offset :== 0
 STARTUPINFO_dwFlags_int_offset :== 11
 STARTUPINFO_hStdError_int_offset :== 16
 
-:: LPWIN32_FIND_DATA :== {#Int}
+:: LPWIN32_FIND_DATA :== {#Char}
 WIN32_FIND_DATA_size_bytes :== 320
 WIN32_FIND_DATA_size_int :== 80
+WIN32_FIND_DATA_cFileName_int_offset :== 11
+WIN32_FIND_DATA_cFileName_bytes_offset :== 48
 
 :: LPPROCESS_INFORMATION :== {#Int}
 PROCESS_INFORMATION_size_bytes :== 32
@@ -52,6 +54,8 @@ closeHandle :: !HANDLE !*World -> (!Bool,!*World)
 createFileA :: !LPCTSTR !DWORD !DWORD !LPSECURITY_ATTRIBUTES 
 	!DWORD !DWORD !HANDLE !*World -> (!Bool, !*World)
 
+createDirectoryA :: !String !LPSECURITY_ATTRIBUTES !*World -> (!Bool, !*World)
+
 createProcessA :: !String !String !LPSECURITY_ATTRIBUTES !LPSECURITY_ATTRIBUTES !Bool !Int !LPVOID
 					!LPCTSTR !LPSTARTUPINFO !LPPROCESS_INFORMATION !*World -> (!Bool,!*World)
 
@@ -64,7 +68,11 @@ findClose :: !HANDLE !*World -> (!Bool, !*World)
 
 findFirstFileA :: !String !LPWIN32_FIND_DATA !*World -> (!HANDLE, !*World)
 
+findNextFileA :: !HANDLE !LPWIN32_FIND_DATA !*World -> (!Bool, !*World)
+
 formatMessage :: !DWORD !LPCVOID !DWORD !DWORD !{#LPTSTR} !DWORD !Int -> DWORD
+
+getCurrentDirectoryA :: !DWORD !{#Char} !*World -> (!DWORD, *World)
 
 getExitCodeProcess :: !HANDLE !*World -> (!Bool,!Int,!*World);
 
@@ -72,5 +80,11 @@ getExitCodeProcess :: !HANDLE !*World -> (!Bool,!Int,!*World);
 getLastError :: !*World -> (!Int, !*World)
 
 localFree :: !HLOCAL -> HLOCAL
+
+moveFileA :: !String !String !*World -> (!Bool, !*World)
+
+removeDirectoryA :: !String !*World -> (!Bool, !*World)
+
+setCurrentDirectoryA :: !String !*World -> (!Bool, !*World)
 
 waitForSingleObject :: !HANDLE !Int !*World -> (!Int,!*World);

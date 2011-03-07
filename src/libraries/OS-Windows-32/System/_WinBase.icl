@@ -9,6 +9,12 @@ closeHandle handle world
 	= code {
 		ccall CloseHandle@4 "PI:I:I"
 	}
+	
+createDirectoryA :: !String !LPSECURITY_ATTRIBUTES !*World -> (!Bool, !*World)
+createDirectoryA lpFileName lpSecurityAttributes world
+	= code {
+		ccall CreateDirectoryA@8 "PsI:I:I"
+	}
 
 createFileA :: !LPCTSTR !DWORD !DWORD !LPSECURITY_ATTRIBUTES !DWORD !DWORD !HANDLE !*World -> (!Bool, !*World)
 createFileA lpFileName dwDesiredAccess dwShareMode lpSecurityAttributes 
@@ -50,12 +56,24 @@ findFirstFileA filename win32FindData world
 		ccall FindFirstFileA@8 "PsA:I:I"
 	}
 
+findNextFileA :: !HANDLE !LPWIN32_FIND_DATA !*World -> (!Bool, !*World)
+findNextFileA hFindFile lpFindFileData world
+	= code {
+		ccall FindNextFileA@8 "PIA:I:I"
+	}
+
 formatMessage :: !DWORD !LPCVOID !DWORD !DWORD !{#LPTSTR} !DWORD !Int -> DWORD
-formatMessage dwFlags lpSource dwMessageId dwLanguageId lpBuffer nSize args =
-	code {
+formatMessage dwFlags lpSource dwMessageId dwLanguageId lpBuffer nSize args
+	= code {
 		ccall FormatMessageA@28 "PIIIIAII:I"
 	}
 	
+getCurrentDirectoryA :: !DWORD !{#Char} !*World -> (!DWORD, *World)
+getCurrentDirectoryA nBufferLength lpBuffer world
+	= code {
+		ccall GetCurrentDirectoryA@8 "PIA:I:I"
+	}
+
 getExitCodeProcess :: !HANDLE !*World -> (!Bool,!Int,!*World);
 getExitCodeProcess handle world
 	= code {
@@ -63,15 +81,33 @@ getExitCodeProcess handle world
 	}
 
 getLastError :: !*World -> (!Int, !*World)
-getLastError world = 
-	code {
+getLastError world
+	= code {
 		ccall GetLastError@0 "P:I:A"
 	}
 
 localFree :: !HLOCAL -> HLOCAL
-localFree hMem =
-	code {
+localFree hMem
+	= code {
 		ccall LocalFree@4 "PI:I"
+	}
+
+moveFileA :: !String !String !*World -> (!Bool, !*World)
+moveFileA lpExistingFileName lpNewFileName world
+	= code {
+		ccall MoveFileA@8 "Pss:I:I"
+	}
+	
+removeDirectoryA :: !String !*World -> (!Bool, !*World)
+removeDirectoryA lpFileName world
+	= code {
+		ccall RemoveDirectoryA@4 "Ps:I:I"
+	}
+
+setCurrentDirectoryA :: !String !*World -> (!Bool, !*World)
+setCurrentDirectoryA lpPathName world
+	= code {
+		ccall SetCurrentDirectoryA@4 "Ps:I:I"
 	}
 
 waitForSingleObject :: !HANDLE !Int !*World -> (!Int,!*World);
