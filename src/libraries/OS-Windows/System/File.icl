@@ -2,14 +2,18 @@ implementation module File
 
 //StdEnv
 import StdArray
+import StdBool
 import StdFile
 import StdList
+import StdMisc
 import StdString
 
 import Error
 import Void
 import OSError
 import _Pointer
+import Time
+import _Windows
 
 CHUNK_SIZE :== 1024
 
@@ -71,7 +75,50 @@ fileExists filename world
 = (True, world)
 
 deleteFile :: !String *World -> (MaybeOSError Void, *World)
-deleteFile path world 
-	# (ok, world) = deleteFileA (packString path) world
+deleteFile filename world 
+	# (ok, world) = deleteFileA (packString filename) world
 	| ok == 0 = getLastOSError world
 	= (Ok Void, world)
+
+getFileInfo :: !String *World -> (MaybeOSError FileInfo, *World)
+getFileInfo filename world
+	# win32FindData = createArray WIN32_FIND_DATA_size_bytes '\0'
+	# (handle, world) = findFirstFileA (packString filename) win32FindData world
+	| handle == INVALID_HANDLE_VALUE = getLastOSError world
+	# (res, world) = filetimeToTm (win32FindData % (WIN32_FIND_DATA_ftCreationTime_bytes_offset, WIN32_FIND_DATA_ftCreationTime_bytes_offset + FILETIME_size_bytes)) world
+	| isError res = (liftError res, world)
+	# creationTime = fromOk res
+	# (res, world) = filetimeToTm (win32FindData % (WIN32_FIND_DATA_ftLastWriteTime_bytes_offset, WIN32_FIND_DATA_ftLastWriteTime_bytes_offset + FILETIME_size_bytes)) world
+	| isError res = (liftError res, world)
+	# lastModifiedTime = fromOk res
+	# (res, world) = filetimeToTm (win32FindData % (WIN32_FIND_DATA_ftLastAccessTime_bytes_offset, WIN32_FIND_DATA_ftLastAccessTime_bytes_offset + FILETIME_size_bytes)) world
+	| isError res = (liftError res, world)
+	# lastAccessedTime = fromOk res
+	# info = creationTime
+	# info =	{ directory			= WIN32_FIND_DATA_dwFileAttributes_bytes_offset bitand FILE_ATTRIBUTE_DIRECTORY > 0
+				, creationTime		= creationTime
+				, lastModifiedTime	= lastModifiedTime
+				, lastAccessedTime	= lastAccessedTime
+				, sizeHigh			= 0
+				, sizeLow			= size (win32FindData % (WIN32_FIND_DATA_ftCreationTime_bytes_offset, WIN32_FIND_DATA_ftCreationTime_bytes_offset + FILETIME_size_bytes))
+				}
+	= (Ok info, world)
+
+filetimeToTm :: !FILETIME *World -> (MaybeOSError Tm, *World)
+filetimeToTm filetime world
+	# systemtime = createArray (SYSTEMTIME_size_bytes + 4) '\0'
+	# (ok, world) = fileTimeToSystemTime filetime systemtime world
+	| ok <> ok = undef
+	# systemtime = systemtime % (4, 20) // !
+	| not ok = getLastOSError world
+	# tm=	{ sec	= toInt systemtime.[SYSTEMTIME_wSecond_offset]		+ (toInt systemtime.[SYSTEMTIME_wSecond_offset + 1]		<< 8)
+			, min	= toInt systemtime.[SYSTEMTIME_wMinute_offset]		+ (toInt systemtime.[SYSTEMTIME_wMinute_offset + 1]		<< 8)
+			, hour	= toInt systemtime.[SYSTEMTIME_wHour_offset]		+ (toInt systemtime.[SYSTEMTIME_wHour_offset + 1]		<< 8)
+			, mday	= toInt systemtime.[SYSTEMTIME_wDay_offset]			+ (toInt systemtime.[SYSTEMTIME_wDay_offset + 1]		<< 8)
+			, mon	= toInt systemtime.[SYSTEMTIME_wMonth_offset]		+ (toInt systemtime.[SYSTEMTIME_wMonth_offset + 1]		<< 8)
+			, year	= toInt systemtime.[SYSTEMTIME_wYear_offset]		+ (toInt systemtime.[SYSTEMTIME_wYear_offset + 1]		<< 8)
+			, wday	= toInt systemtime.[SYSTEMTIME_wDayOfWeek_offset]	+ (toInt systemtime.[SYSTEMTIME_wDayOfWeek_offset + 1]	<< 8)
+			, yday	= -1	//Not implemented
+			, isdst	= False //Not implemented
+			}
+	= (Ok tm, world)

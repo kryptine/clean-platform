@@ -44,6 +44,12 @@ deleteFileA path world = code inline {
 	ccall DeleteFileA@4 "Ps:I:I"
 }
 
+fileTimeToSystemTime :: !FILETIME !LPSYSTEMTIME !*World -> (!Bool, *World)
+fileTimeToSystemTime lpFileTime lpSystemTime world
+	= code {
+		ccall FileTimeToSystemTime@8 "PAA:I:I"
+	}
+
 findClose :: !HANDLE !*World -> (!Bool, !*World)
 findClose handle world
 	= code {

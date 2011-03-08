@@ -3,6 +3,7 @@ definition module File
 from StdFile import class FileSystem
 from StdClass import class toString
 
+import Time
 import Error
 import Void
 import OSError
@@ -56,4 +57,20 @@ fileExists ::  !String *World -> (Bool, *World)
 * @return delete succeeded
 */
 deleteFile :: !String *World -> (MaybeOSError Void, *World)
+
+:: FileInfo =
+	{ directory			:: !Bool
+	, creationTime		:: !Tm
+	, lastModifiedTime	:: !Tm	
+	, lastAccessedTime	:: !Tm
+	, sizeHigh			:: !Int
+	, sizeLow			:: !Int
+	}
+
+/**
+* retrieves file information
+* @param Path to the file 
+* @return FileInfo structure
+*/
+getFileInfo :: !String *World -> (MaybeOSError FileInfo, *World)
 

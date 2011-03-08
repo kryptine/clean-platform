@@ -36,7 +36,7 @@ renameDirectory oldpath newpath world
 readDirectory :: !FilePath !*World -> (!MaybeOSError [FilePath], !*World)
 readDirectory path world
 	# win32FindData = createArray WIN32_FIND_DATA_size_bytes '\0'
-	# (handle, world) = findFirstFileA (path </> "*.*") win32FindData world
+	# (handle, world) = findFirstFileA (packString (path </> "*.*")) win32FindData world
 	| handle == INVALID_HANDLE_VALUE = getLastOSError world
 	# (entry, world)	= readEntry win32FindData world
 	# (entries,world)	= readEntries handle win32FindData world

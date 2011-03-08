@@ -6,6 +6,21 @@ import _WinDef
  * Record definitions, size and field offsets
  */
 
+:: FILETIME :== {#Char}
+FILETIME_size_bytes :== 8
+FILETIME_size_int :== 2
+
+:: LPSYSTEMTIME :== {#Char}
+SYSTEMTIME_size_bytes :== 16
+SYSTEMTIME_wYear_offset :== 0
+SYSTEMTIME_wMonth_offset :== 2
+SYSTEMTIME_wDayOfWeek_offset :== 4
+SYSTEMTIME_wDay_offset :== 6
+SYSTEMTIME_wHour_offset :== 8
+SYSTEMTIME_wMinute_offset :== 10
+SYSTEMTIME_wSecond_offset :== 12
+SYSTEMTIME_wMilliseconds_offset :== 14
+
 :: LPSECURITY_ATTRIBUTES :== Int
 
 :: LPSTARTUPINFO :== {#Int}
@@ -17,8 +32,15 @@ STARTUPINFO_hStdError_int_offset :== 16
 
 :: LPWIN32_FIND_DATA :== {#Char}
 WIN32_FIND_DATA_size_bytes :== 320
-WIN32_FIND_DATA_cFileName_int_offset :== 11
+WIN32_FIND_DATA_dwFileAttributes_bytes_offset :== 0
+WIN32_FIND_DATA_ftCreationTime_bytes_offset :== 4
+WIN32_FIND_DATA_ftLastAccessTime_bytes_offset :== 12
+WIN32_FIND_DATA_ftLastWriteTime_bytes_offset :== 20
+WIN32_FIND_DATA_nFileSizeHigh_bytes_offset :==28 
+WIN32_FIND_DATA_nFileSizeLow_bytes_offset :== 32
 WIN32_FIND_DATA_cFileName_bytes_offset :== 48
+
+FILE_ATTRIBUTE_DIRECTORY :== 16
 
 :: LPPROCESS_INFORMATION :== {#Int}
 PROCESS_INFORMATION_size_bytes :== 32
@@ -62,6 +84,8 @@ createProcessA_dir :: !String !String !LPSECURITY_ATTRIBUTES !LPSECURITY_ATTRIBU
 					!String !LPSTARTUPINFO !LPPROCESS_INFORMATION !*World -> (!Bool,!*World)
 
 deleteFileA :: !String !*World -> (!Int, !*World)
+
+fileTimeToSystemTime :: !FILETIME !LPSYSTEMTIME !*World -> (!Bool, *World)
 
 findClose :: !HANDLE !*World -> (!Bool, !*World)
 

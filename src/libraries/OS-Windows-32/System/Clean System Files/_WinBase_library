@@ -4,6 +4,7 @@ CreateDirectoryA@8
 CreateFileA@28
 CreateProcessA@40
 DeleteFileA@4
+FileTimeToSystemTime@8
 FindClose@4
 FindFirstFileA@8
 FindNextFileA@8
