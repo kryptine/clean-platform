@@ -1,22 +1,19 @@
 implementation module XML
 
-import _SystemArray
-import StdBool
-import StdInt
-import StdList
-import Maybe
+import StdArray, StdBool, StdInt, StdList, StdTuple, Error, Maybe, Text, ParserCombinators, GenEq
 
 uname :: !String -> XMLQName
 uname name = XMLQName Nothing name
 
-qname :: !String !String -> XMLQName
+qname :: !XMLNamespacePrefix !String -> XMLQName
 qname namespace name = XMLQName (Just namespace) name
 
-addNamespaces :: !String [(!String,!String)] !XMLNode -> XMLNode
-addNamespaces defaultNamespace namespaces (XMLElem qname attrs children)
-	# ns = [ XMLAttr (XMLQName Nothing "xmlns") defaultNamespace
-           : map (\(prefix,uri) -> XMLAttr (XMLQName (Just "xmlns") prefix) uri) namespaces
-           ]
+addNamespaces :: !(Maybe XMLURI) [(!XMLNamespacePrefix,!String)] !XMLNode -> XMLNode
+addNamespaces mbDefaultNamespace namespaces (XMLElem qname attrs children)
+	# ns = map (\(prefix,uri) -> XMLAttr (XMLQName (Just "xmlns") prefix) uri) namespaces
+	# ns = case mbDefaultNamespace of
+		Nothing					= ns
+		Just defaultNamespace	= [XMLAttr (XMLQName Nothing "xmlns") defaultNamespace:ns]
 	= (XMLElem qname (ns ++ attrs) children)
 	
 docSize :: !XMLDoc -> Int
@@ -134,3 +131,193 @@ where
 		# docstring = createArray docsize '\0'
 		# (docstring,_) = serializeDoc doc docstring 0
 		= docstring
+
+instance fromString (MaybeErrorString XMLDoc)
+where
+	fromString xmlStr
+		# tokens = lex xmlStr 0 []
+		| isError tokens = liftError tokens
+		# xmlDoc = pXMLDoc (fromOk tokens)
+		| isEmpty xmlDoc = Error "parse error"
+		= Ok (snd (hd xmlDoc))
+
+//Token type which is the intermediary representation during XML parsing
+:: Token	= TokenAttrValue !String
+			| TokenCharData !String
+			| TokenName !String
+			| TokenStartTagOpen
+			| TokenTagClose
+			| TokenEmptyTagClose
+			| TokenEndTagOpen
+			| TokenDeclarationStart
+			| TokenDeclarationEnd
+			| TokenEqual
+			
+derive gEq Token
+instance == Token
+where
+	(==) a b = a === b
+	
+isName (TokenName _)			= True
+isName _						= False
+
+isCharData (TokenCharData _)	= True
+isCharData _					= False
+
+isAttrValue (TokenAttrValue _)	= True
+isAttrValue _					= False
+			
+:: LexFunctionResult = Token !Int !Token | NoToken !Int | Fail !String
+:: LexFunction :== String Int -> Maybe LexFunctionResult
+			
+lex :: !String !Int ![Token] -> MaybeErrorString [Token]
+lex input offset tokens 
+	| offset >= size input						= Ok (reverse tokens) //Done
+	| dataMode tokens && isJust charDataResult 	= processResult (fromJust charDataResult)
+	| otherwise									= processResult (lexAny input offset lexFunctions)
+		
+where
+	lexFunctions	=	[ lexWhitespace
+						, lexDeclarationStart
+						, lexDeclarationEnd
+						, lexEmptyTagClose
+						, lexTagClose
+						, lexEndTagOpen
+						, lexStartTagOpen
+						, lexEqual
+						, lexAttrValue
+						, lexName
+						]
+						
+	dataMode [TokenTagClose:_]		= True
+	dataMode [TokenEmptyTagClose:_]	= True
+	dataMode _						= False
+	
+	charDataResult = lexCharData input offset
+	
+	processResult r = case r of
+		Token offset token		= lex input offset [token:tokens] //Lex another token and do recursive call
+		NoToken offset			= lex input offset tokens
+		Fail err				= Error err
+	
+	//Try any of the lexers in the list until one succeeds
+	lexAny :: !String !Int ![LexFunction] -> LexFunctionResult
+	lexAny input offset [] = Fail ("invalid input character: '" +++ toString input.[offset] +++ "'")
+	lexAny input offset [f:fs] = case f input offset of
+		Just result	= result
+		Nothing		= lexAny input offset fs
+																
+	lexEqual			= lexFixed "="	TokenEqual
+	lexDeclarationEnd	= lexFixed "?>"	TokenDeclarationEnd
+	lexEndTagOpen		= lexFixed "</"	TokenEndTagOpen
+	lexStartTagOpen		= lexFixed "<"	TokenStartTagOpen
+	lexEmptyTagClose	= lexFixed "/>"	TokenEmptyTagClose
+	lexTagClose			= lexFixed ">"	TokenTagClose
+	
+	lexDeclarationStart	input offset = case lexFixed "<?xml" TokenDeclarationStart input offset of
+		Nothing				= Nothing
+		Just res
+			| offset == 0	= Just res
+			| otherwise		= Just (Fail ("XML declaration not at start of entity"))
+		
+	//Char data
+	lexCharData input offset
+		| isTextChar input.[offset]
+			# data = trim (input % (offset, end - 1))
+			| data <> ""	= Just (Token end (TokenCharData data))
+			| otherwise		= Nothing
+		| otherwise			= Nothing							
+	where
+		end = findEnd isTextChar input (offset + 1)
+		
+		isTextChar c = c <> '<' && c <> '&'
+		
+	//Names
+	lexName input offset
+		| isNameStartChar input.[offset]	= Just (Token end (TokenName (input % (offset, end - 1))))
+		| otherwise							= Nothing							
+	where
+		end = findEnd isNameChar input (offset + 1)
+		
+		isNameStartChar c
+			| c == ':' || c == '_'	= True
+			| c >= 'a' && c <= 'z'	= True
+			| c >= 'A' && c <= 'Z'	= True
+			| otherwise				= False
+			
+		isNameChar c
+			| isNameStartChar c		= True
+			| c == '-' || c == '.'	= True
+			| c >= '0' && c <= '9'	= True
+			| otherwise				= False
+			
+	//AttrValue
+	lexAttrValue input offset
+		| input.[offset] <> '"'			= Nothing
+										= Just (Token end (TokenAttrValue (input % (offset + 1, end - 2))))
+	where
+		end = findAttrValueEnd input (offset + 1)
+		
+		findAttrValueEnd input offset
+			| offset >= size input	= offset
+			| input.[offset] == '"'	= offset + 1
+			| otherwise				= findAttrValueEnd input (offset + 1)
+			
+	lexWhitespace input offset
+		| last == offset	= Nothing
+							= Just (NoToken last)
+	where
+		last = findEnd isWhitespace input offset
+		
+		isWhitespace '\x20'	= True
+		isWhitespace '\x9'	= True
+		isWhitespace '\xD'	= True
+		isWhitespace '\xA'	= True
+		isWhitespace _		= False
+	
+	//Lex token of fixed size
+	lexFixed chars token input offset
+		| input % (offset,offset + (size chars) - 1) == chars	= Just (Token (offset + size chars) token)
+																= Nothing
+	
+	//Find the first offset where the predicate no longer holds					
+	findEnd pred input offset
+			| offset >= size input		= offset
+			| pred input.[offset]		= findEnd pred input (offset + 1)
+										= offset
+	
+pXMLDoc :: Parser Token XMLDoc
+pXMLDoc = begin1 pXMLDoc`
+where
+	pXMLDoc` = mkXMLDoc @> pDocDeclaration -&+ pElem
+	
+	mkXMLDoc (XMLElem name attributes elements) = XMLDoc mbURI namespaces (XMLElem name attrs elements)
+	where
+		(mbURI,namespaces,attrs) = filterNamespaces attributes (Nothing,[],[])
+		
+		filterNamespaces [] acc = acc
+		filterNamespaces [attr=:(XMLAttr name val):rest] (mbURI,namespaces,attrs)
+			# acc = case name of
+				XMLQName Nothing "xmlns"	= (Just val,namespaces,attrs)
+				XMLQName (Just "xmlns") ns	= (mbURI,[(ns,val):namespaces],attrs)
+				_							= (mbURI,namespaces,[attr:attrs])
+			= filterNamespaces rest acc
+
+pDocDeclaration	= symbol TokenDeclarationStart &> (<+?> pAttr) <& symbol TokenDeclarationEnd
+pNode			= pCharData <@ (\d -> XMLText d) <!> pElem
+pElem			= pElemCont <!> pElemEmpty
+pElemCont		= pElemStart <&> (\(name,attributes) -> symbol TokenTagClose &> (<*?> pNode) <& pElemContEnd >?< ((==) name) <@ (\nodes -> XMLElem (toQName name) attributes nodes))
+pElemEmpty		= pElemStart <& symbol TokenEmptyTagClose <@ (\(name,attributes) -> XMLElem (toQName name) attributes [])
+pElemStart		= (\name attributes -> (name,attributes)) @> symbol TokenStartTagOpen -&+ pName +&+ (<*?> pAttr)
+pElemContEnd	= symbol TokenEndTagOpen &> pName <& symbol TokenTagClose
+pAttr			= (\name v -> XMLAttr (toQName name) v) @> pName +&- symbol TokenEqual +&+ pAttrValue
+pName			= satisfy isName		<@ (\(TokenName n) -> n)
+pAttrValue		= satisfy isAttrValue	<@ (\(TokenAttrValue v) -> v)
+pCharData		= satisfy isCharData	<@ (\(TokenCharData d) -> d)
+
+toQName :: !String -> XMLQName
+toQName name
+	| colonIdx > 0	= qname (subString 0 colonIdx name) (subString (colonIdx + 1) (textSize name - colonIdx) name)
+	| otherwise		= uname name
+where
+	colonIdx = indexOf ":" name 

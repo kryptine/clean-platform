@@ -4,9 +4,11 @@ definition module XML
 * This module provides data types for easy construction of XML documents.
 */
 
-from Maybe import ::Maybe
+import StdOverloaded
+from Maybe	import :: Maybe
+from Error	import :: MaybeErrorString, :: MaybeError
 
-:: XMLDoc = XMLDoc !XMLURI ![(!XMLNamespacePrefix,!XMLURI)] !XMLNode
+:: XMLDoc = XMLDoc !(Maybe XMLURI) ![(!XMLNamespacePrefix,!XMLURI)] !XMLNode
 
 :: XMLNode	= XMLElem !XMLQName ![XMLAttr] ![XMLNode]
 			| XMLText !String
@@ -31,6 +33,8 @@ uname ::         !String -> XMLQName
 * @param Qualified name
 * @return XMLQName containing the qualified name
 */
-qname :: !String !String -> XMLQName
+qname :: !XMLNamespacePrefix !String -> XMLQName
 
 instance toString XMLDoc
+instance fromString (MaybeErrorString XMLDoc)
+
