@@ -9,8 +9,6 @@ createDirectory :: !FilePath !*World -> (!MaybeOSError Void, !*World)
 
 removeDirectory :: !FilePath !*World -> (!MaybeOSError Void, !*World)
 
-renameDirectory :: !FilePath !FilePath !*World -> (!MaybeOSError Void, !*World)
-
 readDirectory :: !FilePath !*World -> (!MaybeOSError [FilePath], !*World)
 
 getCurrentDirectory :: !*World -> (!MaybeOSError FilePath, !*World)

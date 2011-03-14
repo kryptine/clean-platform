@@ -10,7 +10,7 @@ import Error
 import Void
 import OSError
 import _Pointer
-from _Posix import qualified stat, unlink
+from _Posix import qualified stat, unlink, rename
 
 CHUNK_SIZE :== 1024
 
@@ -67,3 +67,10 @@ deleteFile path world
 	| ok <> 0		= getLastOSError world
 					= (Ok Void, world)
 
+moveFile :: !String !String !*World -> (!MaybeOSError Void, !*World)
+moveFile oldpath newpath world
+	# (ret,world)	= '_Posix'.rename (packString oldpath) (packString newpath) world
+	| ret == 0
+		= (Ok Void, world)
+	| otherwise
+		= getLastOSError world

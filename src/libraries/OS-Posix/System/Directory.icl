@@ -25,14 +25,6 @@ removeDirectory path world
 	| otherwise
 		= getLastOSError world
 
-renameDirectory :: !FilePath !FilePath !*World -> (!MaybeOSError Void, !*World)
-renameDirectory oldpath newpath world
-	# (ret,world)	= rename (packString oldpath) (packString newpath) world
-	| ret == 0
-		= (Ok Void, world)
-	| otherwise
-		= getLastOSError world
-
 readDirectory :: !FilePath !*World -> (!MaybeOSError [FilePath], !*World)
 readDirectory path world
 	# (dirptr,world)	= opendir path world

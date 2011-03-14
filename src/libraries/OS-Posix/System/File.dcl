@@ -57,3 +57,9 @@ fileExists ::  !String *World -> (Bool, *World)
 */
 deleteFile :: !String *World -> (MaybeOSError Void, *World)
 
+/**
+* Moves or renames a file
+* @param Path to the current file
+* @param Path to the new file
+*/
+moveFile :: !String !String !*World -> (!MaybeOSError Void, !*World)

@@ -38,7 +38,7 @@ WIN32_FIND_DATA_ftLastAccessTime_bytes_offset :== 12
 WIN32_FIND_DATA_ftLastWriteTime_bytes_offset :== 20
 WIN32_FIND_DATA_nFileSizeHigh_bytes_offset :==28 
 WIN32_FIND_DATA_nFileSizeLow_bytes_offset :== 32
-WIN32_FIND_DATA_cFileName_bytes_offset :== 48
+WIN32_FIND_DATA_cFileName_bytes_offset :== 44
 
 FILE_ATTRIBUTE_DIRECTORY :== 16
 

@@ -106,10 +106,9 @@ getFileInfo filename world
 
 filetimeToTm :: !FILETIME *World -> (MaybeOSError Tm, *World)
 filetimeToTm filetime world
-	# systemtime = createArray (SYSTEMTIME_size_bytes + 4) '\0'
+	# systemtime = createArray SYSTEMTIME_size_bytes '\0'
 	# (ok, world) = fileTimeToSystemTime filetime systemtime world
 	| ok <> ok = undef
-	# systemtime = systemtime % (4, 20) // !
 	| not ok = getLastOSError world
 	# tm=	{ sec	= toInt systemtime.[SYSTEMTIME_wSecond_offset]		+ (toInt systemtime.[SYSTEMTIME_wSecond_offset + 1]		<< 8)
 			, min	= toInt systemtime.[SYSTEMTIME_wMinute_offset]		+ (toInt systemtime.[SYSTEMTIME_wMinute_offset + 1]		<< 8)
@@ -122,3 +121,12 @@ filetimeToTm filetime world
 			, isdst	= False //Not implemented
 			}
 	= (Ok tm, world)
+
+moveFile :: !String !String !*World -> (!MaybeOSError Void, !*World)
+moveFile oldpath newpath world
+	# (ok,world)	= moveFileA (packString oldpath) (packString newpath) world
+	| ok
+		= (Ok Void, world)
+	| otherwise
+		= getLastOSError world
+	

@@ -47,7 +47,7 @@ deleteFileA path world = code inline {
 fileTimeToSystemTime :: !FILETIME !LPSYSTEMTIME !*World -> (!Bool, *World)
 fileTimeToSystemTime lpFileTime lpSystemTime world
 	= code {
-		ccall FileTimeToSystemTime@8 "PAA:I:I"
+		ccall FileTimeToSystemTime@8 "Pss:I:I"
 	}
 
 findClose :: !HANDLE !*World -> (!Bool, !*World)
@@ -59,13 +59,13 @@ findClose handle world
 findFirstFileA :: !String !LPWIN32_FIND_DATA !*World -> (!HANDLE, !*World)
 findFirstFileA filename win32FindData world
 	= code {
-		ccall FindFirstFileA@8 "PsA:I:I"
+		ccall FindFirstFileA@8 "Pss:I:I"
 	}
 
 findNextFileA :: !HANDLE !LPWIN32_FIND_DATA !*World -> (!Bool, !*World)
 findNextFileA hFindFile lpFindFileData world
 	= code {
-		ccall FindNextFileA@8 "PIA:I:I"
+		ccall FindNextFileA@8 "PIs:I:I"
 	}
 
 formatMessage :: !DWORD !LPCVOID !DWORD !DWORD !{#LPTSTR} !DWORD !Int -> DWORD

@@ -3,6 +3,7 @@ implementation module Directory
 import StdArray, StdBool, StdClass, StdInt, StdChar, StdString
 
 import Void
+import File
 import FilePath
 import OSError
 
@@ -20,14 +21,6 @@ createDirectory path world
 removeDirectory :: !FilePath !*World -> (!MaybeOSError Void, !*World)
 removeDirectory path world
 	# (ok,world)	= removeDirectoryA (packString path) world
-	| ok
-		= (Ok Void, world)
-	| otherwise
-		= getLastOSError world
-
-renameDirectory :: !FilePath !FilePath !*World -> (!MaybeOSError Void, !*World)
-renameDirectory oldpath newpath world
-	# (ok,world)	= moveFileA (packString oldpath) (packString newpath) world
 	| ok
 		= (Ok Void, world)
 	| otherwise
@@ -54,8 +47,8 @@ where
 		= ([entry:entries],world)
 	
 	readEntry :: !LPWIN32_FIND_DATA !*World -> (!String,!*World) 
-	readEntry win32FindData world
-		= (unpackString (win32FindData % (WIN32_FIND_DATA_cFileName_bytes_offset, MAX_PATH)), world)
+	readEntry win32FindData world 
+		= (unpackString (win32FindData % (WIN32_FIND_DATA_cFileName_bytes_offset, WIN32_FIND_DATA_cFileName_bytes_offset + MAX_PATH - 1)), world)
 
 getCurrentDirectory :: !*World -> (!MaybeOSError FilePath, !*World)
 getCurrentDirectory world
