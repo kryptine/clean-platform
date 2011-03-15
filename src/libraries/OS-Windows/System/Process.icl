@@ -20,9 +20,11 @@ import _Pointer
 
 import _Windows
 
+import Text
+
 runProcess :: !FilePath ![String] !(Maybe String) !*World -> (MaybeOSError ProcessHandle, *World)
 runProcess path args mCurrentDirectory world
-	# commandLine = packString (foldr (\a b -> a +++ " " +++ b) "" ["\"" +++ path +++ "\"":args])
+	# commandLine = packString (foldr (\a b -> a +++ " " +++ b) "" (map escape [path:args]))
 	# startupInfo = { createArray STARTUPINFO_size_int 0
 	  			 	& [STARTUPINFO_cb_int_offset] 		 = STARTUPINFO_size_bytes
 				 	, [STARTUPINFO_dwFlags_int_offset]	 = STARTF_USESTDHANDLES
@@ -36,6 +38,11 @@ runProcess path args mCurrentDirectory world
 					  , threadHandle = processInformation.[PROCESS_INFORMATION_hThread_int_offset]
 					  }
 	= (Ok processHandle, world)
+	where
+		escape :: !String -> String
+		escape s | indexOf " " s == -1                                    = s
+				 | size s >= 2 && s.[0] == '"' && (s.[size s - 1] == '"') = s
+				 | otherwise                                              = "\"" +++ s +++ "\""
 
 checkProcess :: !ProcessHandle !*World -> (MaybeOSError (Maybe Int), *World)
 checkProcess handle=:{processHandle} world
