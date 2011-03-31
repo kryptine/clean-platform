@@ -1,6 +1,7 @@
 implementation module XML
 
-import StdArray, StdBool, StdInt, StdList, StdTuple, Error, Maybe, Text, ParserCombinators, GenEq
+import StdArray, StdBool, StdInt, StdList, StdTuple, StdGeneric, StdFunc
+import Error, Void, Either, Maybe, Text, ParserCombinators, GenEq
 
 uname :: !String -> XMLQName
 uname name = XMLQName Nothing name
@@ -321,3 +322,87 @@ toQName name
 	| otherwise		= uname name
 where
 	colonIdx = indexOf ":" name 
+	
+// generic printer
+
+toXML :: !a -> XMLDoc | XMLEncode{|*|} a
+toXML a = XMLDoc Nothing [] (wrapToElem (XMLEncode{|*|} a))
+
+toXMLString :: !a -> String | XMLEncode{|*|} a
+toXMLString a = toString (toXML a)
+
+:: XMLEncodeResult = XMLEncElem !(!XMLQName,![XMLAttr],![XMLNode]) | XMLEncText !(!String,!XMLQName) | XMLEncNodes ![XMLNode] !XMLQName | XMLEncNothing
+
+generic XMLEncode a :: !a -> XMLEncodeResult
+
+XMLEncode{|OBJECT|} fx (OBJECT o) = fx o
+XMLEncode{|CONS of d|} fx (CONS c)
+	# nodes	= getNodes (fx c)
+	# name	= uname (formatConsName d.gcd_name)
+	| not (isEmpty d.gcd_fields)		= XMLEncNodes (filter nonEmpty nodes) name
+	| d.gcd_type_def.gtd_num_conses > 1 = XMLEncElem (name,[],nodes)
+	| otherwise							= XMLEncNodes nodes name
+where
+	nonEmpty (XMLElem _ _ [])	= False
+	nonEmpty _					= True
+	
+	formatConsName name
+		| startsWith "_" name	= subString 1 (textSize name - 1) name
+		| otherwise				= name
+XMLEncode{|FIELD of d|} fx (FIELD f) = XMLEncElem (uname d.gfd_name,[],getNodes (fx f))
+XMLEncode{|EITHER|} fx fy either = case either of
+	LEFT x	= fx x
+	RIGHT y	= fy y
+XMLEncode{|PAIR|} fx fy (PAIR x y) = XMLEncNodes (getNodes` (fx x) ++ getNodes` (fy y)) (uname "PAIR")
+where
+	getNodes` (XMLEncNodes nodes _)	= nodes
+	getNodes` res					= [wrapToElem res]
+XMLEncode{|UNIT|} _ = XMLEncNodes [] (uname "UNIT")
+
+XMLEncode{|Int|} i		= basicXML "integer" i
+XMLEncode{|Char|} c		= basicXML "character" c
+XMLEncode{|Real|} r		= basicXML "float" r
+XMLEncode{|String|} s	= basicXML "string" s
+XMLEncode{|Bool|} b		= basicXML "boolean" b
+
+basicXML name v = XMLEncText (toString v,uname name)
+
+XMLEncode{|[]|} fx list = XMLEncNodes (map (wrapToElem o fx) list) (uname "list")
+XMLEncode{|Maybe|} fx (Just x)	= fx x
+XMLEncode{|Maybe|} _ Nothing	= XMLEncNothing
+
+XMLEncode{|XMLIntAttribute|}	fx (XMLIntAttribute name v x)		= encodeAttr name v (fx x)
+XMLEncode{|XMLCharAttribute|}	fx (XMLCharAttribute name v x)		= encodeAttr name v (fx x)
+XMLEncode{|XMLRealAttribute|}	fx (XMLRealAttribute name v x)		= encodeAttr name v (fx x)
+XMLEncode{|XMLStringAttribute|}	fx (XMLStringAttribute name v x)	= encodeAttr name v (fx x)
+XMLEncode{|XMLBoolAttribute|}	fx (XMLBoolAttribute name v x)		= encodeAttr name v (fx x)
+
+encodeAttr name a x = XMLEncElem (fromElem (wrapToElemAttr x [XMLAttr name (toString a)]))
+
+derive XMLEncode Void, Either, (,), (,,), (,,,)
+
+// auxiliary functions
+wrapToElem :: !XMLEncodeResult -> XMLNode
+wrapToElem x = wrapToElemAttr x []
+
+wrapToElemAttr :: !XMLEncodeResult ![XMLAttr] -> XMLNode
+wrapToElemAttr (XMLEncElem (name,attr,nodes))	attr` = XMLElem name (attr ++ attr`) nodes
+wrapToElemAttr (XMLEncText t=:(txt,name))		attr` = XMLElem name attr` [toText t]
+wrapToElemAttr (XMLEncNodes nodes wname)		attr` = XMLElem wname attr` nodes
+wrapToElemAttr XMLEncNothing					attr` = XMLElem (uname "nothing") attr` []
+
+toElem :: !(!XMLQName,![XMLAttr],![XMLNode]) -> XMLNode
+toElem (name,attr,nodes) = XMLElem name attr nodes
+
+fromElem :: !XMLNode -> (!XMLQName,![XMLAttr],![XMLNode])
+fromElem (XMLElem name attr nodes) = (name,attr,nodes)
+
+toText :: !(!String,!XMLQName) -> XMLNode
+toText (txt,_) = XMLText txt
+
+getNodes :: !XMLEncodeResult -> [XMLNode]
+getNodes (XMLEncElem elem)		= [toElem elem]
+getNodes (XMLEncText txt)		= [toText txt]
+getNodes (XMLEncNodes nodes _)	= nodes
+getNodes XMLEncNothing			= []
+

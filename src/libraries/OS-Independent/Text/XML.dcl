@@ -1,10 +1,11 @@
 definition module XML
 
 /**
-* This module provides data types for easy construction of XML documents.
+* This module provides data types for easy construction of XML documents and
+* a generic printer/parser.
 */
 
-import StdOverloaded
+import StdOverloaded, StdGeneric, Void, Either
 from Maybe	import :: Maybe
 from Error	import :: MaybeErrorString, :: MaybeError
 
@@ -37,4 +38,23 @@ qname :: !XMLNamespacePrefix !String -> XMLQName
 
 instance toString XMLDoc
 instance fromString (MaybeErrorString XMLDoc)
+
+// generic printer
+
+toXML			:: !a -> XMLDoc	| XMLEncode{|*|} a
+toXMLString		:: !a -> String	| XMLEncode{|*|} a
+
+:: XMLEncodeResult
+generic XMLEncode a :: !a -> XMLEncodeResult
+
+// special types for adding attributes to XML data
+:: XMLIntAttribute		a = XMLIntAttribute		!XMLQName !Int		!a
+:: XMLCharAttribute		a = XMLCharAttribute	!XMLQName !Char		!a
+:: XMLRealAttribute		a = XMLRealAttribute	!XMLQName !Real		!a
+:: XMLStringAttribute	a = XMLStringAttribute	!XMLQName !String	!a
+:: XMLBoolAttribute		a = XMLBoolAttribute	!XMLQName !Bool		!a
+
+derive XMLEncode OBJECT, CONS, FIELD, PAIR, EITHER, UNIT, Int, Char, Real, String, Bool
+derive XMLEncode Maybe, Void, Either, (,), (,,), (,,,), []
+derive XMLEncode XMLIntAttribute, XMLCharAttribute, XMLRealAttribute, XMLStringAttribute, XMLBoolAttribute
 
