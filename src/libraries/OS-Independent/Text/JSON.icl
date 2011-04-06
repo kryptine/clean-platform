@@ -1,6 +1,6 @@
 implementation module JSON
 
-import StdGeneric, Maybe, StdList, StdString, _SystemArray, StdTuple, StdBool, StdFunc, Text, Base64, dynamic_string
+import StdGeneric, Maybe, StdList, StdString, _SystemArray, StdTuple, StdBool, StdFunc, Text
 
 //Token type which is the intermediary representation during JSON parsing
 :: Token	= TokenInt !Int
@@ -340,8 +340,6 @@ JSONEncode{|{!}|} fx x = [JSONArray (flatten [fx e \\ e <-: x])]
 JSONEncode{|Maybe|} fx (Just x) = fx x
 JSONEncode{|Maybe|} fx (Nothing) = [JSONNull]
 JSONEncode{|JSONNode|} node = [node]
-JSONEncode{|Dynamic|} dyn = [JSONString (base64Encode (dynamic_to_string dyn))]
-JSONEncode{|(->)|} _ _ f = [JSONString (base64Encode (copy_to_string f))]
 
 //-------------------------------------------------------------------------------------------
 fromJSON :: !JSONNode -> Maybe a | JSONDecode{|*|} a
@@ -504,12 +502,6 @@ JSONDecode{|Maybe|} fx l = case fx l of
 
 JSONDecode{|JSONNode|} [x:xs]			= (Just x, xs)
 JSONDecode{|JSONNode|} l				= (Nothing, l)
-
-JSONDecode{|Dynamic|} [JSONString string:c]	= (Just (string_to_dynamic {s` \\ s` <-: base64Decode string}), c)
-JSONDecode{|Dynamic|} c						= (Nothing, c)
-
-JSONDecode{|(->)|} _ _ [JSONString string:c]	= (Just (fst(copy_from_string {s` \\ s` <-: base64Decode string})) ,c) 
-JSONDecode{|(->)|} _ _ c						= (Nothing,c)
 
 jsonQuery :: !String !JSONNode -> Maybe a | JSONDecode{|*|} a
 jsonQuery path node
