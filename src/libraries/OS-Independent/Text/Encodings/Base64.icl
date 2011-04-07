@@ -6,19 +6,19 @@ import StdChar, StdString, StdList, StdArray, StdMisc, StdBool
 stdAlphabet :== "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/="
 urlAlphabet :== "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_="
 			 
-base64Encode :: !String -> String
+base64Encode :: !.String -> .String
 base64Encode s = encodeString s stdAlphabet
 
-base64EncodeLen :: !String !Length -> String
+base64EncodeLen :: !.String !Length -> .String
 base64EncodeLen s l = addLineBreaks (encodeString s stdAlphabet) l
 
-base64URLEncode :: !String -> String
+base64URLEncode :: !.String -> .String
 base64URLEncode s = encodeString s urlAlphabet
 
-base64URLEncodeLen :: !String !Length -> String
+base64URLEncodeLen :: !.String !Length -> .String
 base64URLEncodeLen s l = addLineBreaks (encodeString s urlAlphabet) l
 
-encodeString :: !{#Char} !Alphabet -> {#Char}
+encodeString :: !.{#Char} !Alphabet -> .{#Char}
 encodeString s a
 	# destSize		= 4*((srcSize + 2) / 3)
 	# destString	= createArray destSize '\0'
@@ -43,23 +43,23 @@ where
 		
 	srcSize = size s
 
-addLineBreaks :: !String Length -> String
+addLineBreaks :: !.String Length -> .String
 addLineBreaks s l
 | l > 0 = addLineBreaks` s "" l
 | otherwise = abort "Length cannot be 0 or less."
 where
-	addLineBreaks` :: !String !String !Length -> String
+	addLineBreaks` :: !.String !.String !Length -> .String
 	addLineBreaks` src dest len
-	| len >= (size src) = (dest+++src)
+	| len >= (size src) = dest +++. src
 	| otherwise = addLineBreaks` (src % (len,(size src))) (dest+++(src % (0,len-1))+++"\n") len
 
-base64Decode :: !String -> String
+base64Decode :: !.String -> .String
 base64Decode s = decodeString (removeLineBreaks s) stdAlphabet
 
-base64URLDecode :: !String -> String
+base64URLDecode :: !.String -> .String
 base64URLDecode s = decodeString (removeLineBreaks s) urlAlphabet
 
-decodeString :: !String !Alphabet -> String
+decodeString :: !.String !Alphabet -> .String
 decodeString s a
 	| srcSize - (srcSize/4*4) <> 0 = abort "Base64: Invalid length, size of decoding string must be a multitude of 4."
 	# destString = createArray destSize '\0'
