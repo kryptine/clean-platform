@@ -4,7 +4,7 @@ definition module Serialization
 // :: Dynamic to :: DynamicTemp
 from _SystemDynamic import :: DynamicTemp
 
-from Maybe import ::Maybe
+from Error import ::MaybeError, ::MaybeErrorString
 
 /**
 * pack a value into a dynamic and serialize it as a SYSDYN string
@@ -13,10 +13,9 @@ serialize :: !a -> String | TC a
 
 /**
 * Deserialize a SYSDYN string to a dynamic and unpack it.
-* If string is incorrect or pattern match fails, return Nothing
+* If string is incorrect or pattern match fails, return Error
 */
-deserialize :: !String -> Maybe a | TC a
-
+deserialize :: !String -> MaybeErrorString a | TC a
 /**
 * pack a value into a dynamic and serialize it as a SYSDYN string
 */
@@ -24,7 +23,7 @@ serializeDynamic :: !Dynamic -> String
 
 /**
 * Deserialize a SYSDYN string to a dynamic
-* If string is incorrect, return Nothing
+* If string is incorrect, return Error
 */
-deserializeDynamic :: !String -> Maybe Dynamic
+deserializeDynamic :: !String -> MaybeErrorString Dynamic
  
