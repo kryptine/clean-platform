@@ -22,7 +22,7 @@ deserialize str =
 	where
 		unpack :: Dynamic -> MaybeErrorString a | TC a
 		unpack (value :: a^) = Ok value
-		unpack _ = Error "Data.Serialization, deserialize: unpacking dynamic failed"
+		unpack dyn = Error ("Data.Serialization, deserialize: unpacking dynamic of type " +++ (toString (typeCodeOfDynamic dyn))+++ " failed")
 
 serializeDynamic :: !Dynamic -> String
 serializeDynamic dynamic_value
