@@ -114,8 +114,8 @@ filetimeToTm filetime world
 			, min	= toInt systemtime.[SYSTEMTIME_wMinute_offset]		+ (toInt systemtime.[SYSTEMTIME_wMinute_offset + 1]		<< 8)
 			, hour	= toInt systemtime.[SYSTEMTIME_wHour_offset]		+ (toInt systemtime.[SYSTEMTIME_wHour_offset + 1]		<< 8)
 			, mday	= toInt systemtime.[SYSTEMTIME_wDay_offset]			+ (toInt systemtime.[SYSTEMTIME_wDay_offset + 1]		<< 8)
-			, mon	= toInt systemtime.[SYSTEMTIME_wMonth_offset]		+ (toInt systemtime.[SYSTEMTIME_wMonth_offset + 1]		<< 8)
-			, year	= toInt systemtime.[SYSTEMTIME_wYear_offset]		+ (toInt systemtime.[SYSTEMTIME_wYear_offset + 1]		<< 8)
+			, mon	= toInt systemtime.[SYSTEMTIME_wMonth_offset]		+ (toInt systemtime.[SYSTEMTIME_wMonth_offset + 1]		<< 8) - 1
+			, year	= toInt systemtime.[SYSTEMTIME_wYear_offset]		+ (toInt systemtime.[SYSTEMTIME_wYear_offset + 1]		<< 8) - 1900
 			, wday	= toInt systemtime.[SYSTEMTIME_wDayOfWeek_offset]	+ (toInt systemtime.[SYSTEMTIME_wDayOfWeek_offset + 1]	<< 8)
 			, yday	= -1	//Not implemented
 			, isdst	= False //Not implemented

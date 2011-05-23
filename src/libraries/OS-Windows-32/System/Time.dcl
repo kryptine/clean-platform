@@ -15,7 +15,7 @@ CLK_PER_SEC	:== 100
 * The Tm record structure contains date and time information
 * in a broken down format.
 */
-:: Tm	= { sec		:: Int	// Seconds (0-60)
+:: Tm	= { sec		:: Int	// Seconds (0-61) (generally 0-59. Extra range to accommodate for leap seconds in certain systems.)
 		  , min		:: Int	// Minutes (0-59)
 		  ,	hour	:: Int	// Hour (0-23)
 		  , mday	:: Int	// Day of the month (1-31)
