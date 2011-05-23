@@ -1,6 +1,6 @@
 implementation module Time
 
-import StdString, StdArray, StdClass, StdOverloaded, StdInt
+import StdString, StdArray, StdClass, StdOverloaded, StdInt, StdMisc
 import _Pointer
 
 import code from library "msvcrt.txt"
@@ -28,7 +28,9 @@ where
 		}
 instance toString Timestamp
 where
-	toString (Timestamp t) = derefString (toStringTimeC (packInt t))
+	toString (Timestamp t) 
+	| t < 0 = abort "System.Time: Timestamp cannot be negative" 
+	= derefString (toStringTimeC (packInt t))
 	where	
 		toStringTimeC :: !{#Int} -> Pointer
 		toStringTimeC a0 = code {
