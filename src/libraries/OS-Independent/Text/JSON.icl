@@ -274,24 +274,39 @@ where
 			rep '\n'	= 'n'
 			rep '\r'	= 'r'
 			rep '\t'	= 't'
-			
+	
 //Unescape a string
 jsonUnescape :: !String -> String
-jsonUnescape s = unescape` s 0
+jsonUnescape src = copyChars 0 0 reps src (createArray (size src - length reps) '\0')
 where
-	unescape` s offset
-		| offset >= size s	= s
-		| s.[offset] == '\\'
-			| offset + 1 >= size s		= s
-			| otherwise = tryReplace s (offset + 1) controlChars
-		| otherwise			= unescape` s (offset + 1)
-	
-	tryReplace s offset []	= unescape` s offset 
-	tryReplace s offset [(c,r):xs]
-		| s.[offset] == c	= s % (0, offset - 2) +++ r +++ jsonUnescape (s % (offset + 1, size s))
-		| otherwise			= tryReplace s offset xs
-		
-	controlChars = [('\\',"\\"),('"',"\""),('/',"/"),('b',"\b"),('f',"\f"),('n',"\n"),('t',"\t")]
+	reps	= findChars 0 src	
+	//Find the special characters
+	findChars :: Int String -> [(!Int,!Char)]
+	findChars i s
+		| i + 1 >= size s 	= []
+		| c0 == '\\'
+			= [(i,c1): findChars (i + 2) s] 
+			= findChars (i + 1) s
+		where 
+			c0 = s.[i]
+			c1 = s.[i + 1]
+	//Build the escaped string from the original and the replacements		
+	copyChars :: Int Int [(!Int, !Char)] String *String -> *String
+	copyChars is id [] src dest
+		| is < size src		=	copyChars (is + 1) (id + 1) [] src {dest & [id] = src.[is]}
+							=	dest
+	copyChars is id reps=:[(ir,c):rs] src dest
+		| is == ir			=	copyChars (is + 2) (id + 1) rs src {dest & [id] = rep c}
+							=	copyChars (is + 1) (id + 1) reps src {dest & [id] = src.[is]}
+		where
+			rep '\\'	= '\\'
+			rep '"'		= '"'
+			rep '/'		= '/'
+			rep 'b'		= '\b'
+			rep 'f'		= '\f'
+			rep 'n'		= '\n'
+			rep 'r'		= '\r'
+			rep 't'		= '\t'
 
 //Intersperse an element on a list
 intersperse :: a [a] -> [a]
