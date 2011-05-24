@@ -3,6 +3,7 @@ implementation module Graph
 import StdBool
 import StdFunc
 import StdList
+import StdOrdList
 import StdTuple
 
 import Map
@@ -197,6 +198,23 @@ where
 
 mapMap :: (a -> b) (Map k a) -> (Map k b) | Eq k & Ord k
 mapMap f m = (fromList o map (app2 (id,f)) o toList) m
+
+mapIndices :: [(NodeIndex,NodeIndex)] (Graph n e) -> Graph n e
+mapIndices updates { nodes, edges } 
+	# updMap = fromList updates
+	= { Graph
+	| nodes = fromList [ (fromJust (get k updMap),updateNode updMap v) \\ (k,v) <- toList nodes ]
+	, edges = fromList [ ((fromJust (get k updMap),fromJust (get l updMap)),v) \\ ((k,l),v) <- toList edges ]
+	, lastId = maxList (map snd (toList updMap))
+	}
+	where	
+	updateNode :: (Map NodeIndex NodeIndex) (Node n) -> Node n
+	updateNode updMap { data, predecessors, successors } =
+		{ Node
+		| data = data
+		, predecessors = [ fromJust (get k updMap) \\ k <- predecessors ]
+		, successors   = [ fromJust (get k updMap) \\ k <- successors   ]
+		}
 	
 //--------------------------------------------------------------------------------
 //Connectivity
@@ -251,5 +269,3 @@ sinkNode :: (Graph n e) -> Maybe NodeIndex
 sinkNode graph = case filterNodes (\_ successors _ -> isEmpty successors) graph of
 	[n] = Just n
 	_   = Nothing
-
-

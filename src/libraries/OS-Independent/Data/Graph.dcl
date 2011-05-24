@@ -40,6 +40,7 @@ setNodeData :: NodeIndex n (Graph n e) -> Graph n e
 //Mapping
 mapNodes :: (a -> b) (Graph a e) -> (Graph b e)
 mapEdges :: (a -> b) (Graph n a) -> (Graph n b)
+mapIndices :: [(NodeIndex,NodeIndex)] (Graph n e) -> Graph n e
 
 //Connectivity
 components :: (Graph n e) -> [Graph n e]
@@ -48,4 +49,3 @@ isConnected :: (Graph n e) -> Bool
 //Two-terminal graphs
 sourceNode :: (Graph n e) -> Maybe NodeIndex
 sinkNode :: (Graph n e) -> Maybe NodeIndex
-
