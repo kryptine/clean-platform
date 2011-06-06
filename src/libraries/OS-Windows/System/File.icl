@@ -95,7 +95,7 @@ getFileInfo filename world
 	| isError res = (liftError res, world)
 	# lastAccessedTime = fromOk res
 	# info = creationTime
-	# info =	{ directory			= WIN32_FIND_DATA_dwFileAttributes_bytes_offset bitand FILE_ATTRIBUTE_DIRECTORY > 0
+	# info =	{ directory			= toDWORD win32FindData bitand FILE_ATTRIBUTE_DIRECTORY > 0
 				, creationTime		= creationTime
 				, lastModifiedTime	= lastModifiedTime
 				, lastAccessedTime	= lastAccessedTime
@@ -103,6 +103,9 @@ getFileInfo filename world
 				, sizeLow			= size (win32FindData % (WIN32_FIND_DATA_ftCreationTime_bytes_offset, WIN32_FIND_DATA_ftCreationTime_bytes_offset + FILETIME_size_bytes))
 				}
 	= (Ok info, world)
+where
+	toDWORD :: {#Char} -> DWORD
+	toDWORD s = toInt s.[3] << 24 bitor toInt s.[2] << 16 bitor toInt s.[1] << 8 bitor toInt s.[0] //little-endian
 
 filetimeToTm :: !FILETIME *World -> (MaybeOSError Tm, *World)
 filetimeToTm filetime world
