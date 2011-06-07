@@ -438,15 +438,26 @@ renderCompact x
 /* -----------------------------------------------------------
  * Displayers: display
  * ----------------------------------------------------------- */
- 
-display :: SimpleDoc -> String
-display SEmpty             = ""
-display (SChar c x)        = toString c +++ display x
-display (SText l s x)      = s +++ display x
-display (SLine i x)        = "\n" +++ (spaceString i) +++ display x
+	
+display :: SimpleDoc -> String		
+display sdoc = display` sdoc (createArray (displaySize sdoc) '\0') 0
+where
+	display` 	SEmpty			dst	offset	= dst
+	display`	(SChar c x)		dst	offset	= display` x {dst & [offset] = c } (offset + 1)
+	display`	(SText l s x)	dst	offset	= display` x (copyChars offset 0 (size s) s dst) (offset + size s)
+	display`	(SLine i x)		dst	offset	= display` x (copyChars offset 0 (i+1) {spaceString (i+1) & [0] = '\n'} dst) (offset + i + 1)
+	
+	copyChars offset i num src dst
+	| i == num		= dst
+	| otherwise		= copyChars offset (inc i) num src {dst & [offset + i] = src.[i]}
+	
+	displaySize SEmpty             = 0
+	displaySize (SChar c x)        = 1 + displaySize x
+	displaySize (SText l s x)      = size s + displaySize x
+	displaySize (SLine i x)        = 1 + i + displaySize x
 
-spaceString :: Int -> String
-spaceString i = toString (spaces i)
+spaceString :: Int -> *{#Char}
+spaceString i = createArray i ' '
 
 /* -----------------------------------------------------------
  * Utility functions
