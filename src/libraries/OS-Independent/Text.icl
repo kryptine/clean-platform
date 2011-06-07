@@ -7,6 +7,16 @@ instance Text String
 	textSize :: !String -> Int 
 	textSize s = size s	
 
+	concat :: ![String] -> String
+	concat xs = concat` xs (createArray (sum (map size xs)) '\0') 0
+		where
+		concat` []     dst _		= dst
+		concat` [x:xs] dst offset	= concat` xs (copyChars offset 0 (size x) x dst) (offset + size x)
+	
+		copyChars offset i num src dst
+		| i == num		= dst
+		| otherwise		= copyChars offset (inc i) num src {dst & [offset + i] = src.[i]}
+
 	split :: !String !String -> [String]
 	split sep s
 		# index = indexOf sep s
@@ -14,9 +24,12 @@ instance Text String
 						= [s % (0, index - 1): split sep (s % (index + (size sep), size s))]
 
 	join :: !String ![String] -> String
-	join sep [] = ""
-	join sep [x:[]] = x
-	join sep [x:xs] = x +++ sep +++ (join sep xs)
+	join sep xs = concat (join` sep xs)
+	where
+		join` :: !String ![String] -> [String]
+		join` sep [] = []
+		join` sep [x] = [x]
+		join` sep [x:xs] = [x, sep : join` sep xs]
 
     indexOf :: !String !String -> Int
 	indexOf needle haystack = indexOfAfter 0 needle haystack

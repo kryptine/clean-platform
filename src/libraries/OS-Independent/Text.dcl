@@ -18,6 +18,11 @@ class Text s
 	textSize			:: !s -> Int
 	
 	/**
+	* Concatenates a list of strings.
+	*/
+	concat				:: ![s] -> s
+	
+	/**
 	* Splits a string into a list of strings using a separator string.
 	*
 	* @param The separator string.
