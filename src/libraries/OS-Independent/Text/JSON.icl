@@ -338,11 +338,14 @@ JSONEncode{|EITHER|} fx fy (RIGHT y) = fy y
 JSONEncode{|OBJECT|} fx (OBJECT x) = fx x
 JSONEncode{|CONS of d|} fx (CONS x)
 	//Record
-	| length d.gcd_fields <> 0	= [JSONObject [ (f.gfd_name, o)\\ o <- fx x & f <- d.gcd_fields ]]
+	| length d.gcd_fields <> 0	= [JSONObject [ (f.gfd_name, o)\\ o <- fx x & f <- d.gcd_fields | isNotNull o]]
 	//Constructor without parameters
 	| d.gcd_arity == 0			= [JSONString d.gcd_name]
 	//Constructor with parameters				
 	| otherwise					= [JSONArray [JSONString d.gcd_name : fx x]]
+where
+	isNotNull JSONNull = False
+	isNotNull _ = True
 	
 JSONEncode{|FIELD of d|} fx (FIELD x) = fx x							
 JSONEncode{|[]|} fx x = [JSONArray (flatten [fx e \\ e <- x])]
@@ -428,11 +431,10 @@ JSONDecode{|CONS of d|} fx l
 JSONDecode{|CONS|} fx l = (Nothing, l)
 
 JSONDecode{|FIELD of d|} fx l =: [JSONObject fields]
-	= case findField d.gfd_name fields of
-		(Just field)	= case fx [field] of
-			(Just x, _)	= (Just (FIELD x), l)
-			_			= (Nothing, l)
-		_				= (Nothing, l)
+	# field = maybe [] (\field -> [field]) (findField d.gfd_name fields)
+	= case fx field of
+		(Just x, _)	= (Just (FIELD x), l)
+		_			= (Nothing, l)
 where
 	findField match [] 	= Nothing
 	findField match [(l,x):xs]
@@ -510,6 +512,7 @@ decodeItems fx [ox:oxs]	= case fx [ox] of
 		_ 			= Nothing
 	_			= Nothing
 
+JSONDecode{|Maybe|} fx []				= (Just Nothing, [])
 JSONDecode{|Maybe|} fx [JSONNull:xs]	= (Just Nothing, xs)
 JSONDecode{|Maybe|} fx l = case fx l of
 	(Just x,xs)							= (Just (Just x), xs)
