@@ -17,7 +17,7 @@ instance toString FileError
 * @param Path to the file to read
 * @return contents of the file
 */
-readFile :: !String *env -> (MaybeError FileError String , *env) | FileSystem env
+readFile :: !String !*env -> (!MaybeError FileError String , !*env) | FileSystem env
 
 /**
 * Read all contents of a *File to a String. 
@@ -25,14 +25,14 @@ readFile :: !String *env -> (MaybeError FileError String , *env) | FileSystem en
 * @param Path to the file to read
 * @return contents of the file
 */
-readAll :: *File -> (MaybeError FileError String, *File)
+readAll :: !*File -> (!MaybeError FileError String,! *File)
 
 /**
 * Writes a string to a file
 * @param Path to the file to read
 * @param contents of the file
 */
-writeFile :: !String !String *env -> (MaybeError FileError Void, *env) | FileSystem env
+writeFile :: !String !String !*env -> (!MaybeError FileError Void, !*env) | FileSystem env
 
 /**
 * Performs a file operation on a given filename.
@@ -41,22 +41,22 @@ writeFile :: !String !String *env -> (MaybeError FileError Void, *env) | FileSys
 * @param file operation function
 * @return file operation result
 */
-withFile :: !String Int (*File -> (MaybeError FileError a,*File)) *env 
-			-> (MaybeError FileError a, *env) | FileSystem env
+withFile :: !String Int (*File -> (!MaybeError FileError a,!*File)) !*env 
+			-> (!MaybeError FileError a, !*env) | FileSystem env
 
 /**
 * Checks if a file exists
 * @param Path to the file 
 * @return file exists
 */
-fileExists ::  !String *World -> (Bool, *World)
+fileExists ::  !String !*World -> (!Bool, !*World)
 
 /**
 * Deletes a file from disk
 * @param Path to the file 
 * @return delete succeeded
 */
-deleteFile :: !String *World -> (MaybeOSError Void, *World)
+deleteFile :: !String !*World -> (!MaybeOSError Void, !*World)
 
 :: FileInfo =
 	{ directory			:: !Bool
@@ -72,7 +72,7 @@ deleteFile :: !String *World -> (MaybeOSError Void, *World)
 * @param Path to the file 
 * @return FileInfo structure
 */
-getFileInfo :: !String *World -> (MaybeOSError FileInfo, *World)
+getFileInfo :: !String !*World -> (!MaybeOSError FileInfo, !*World)
 
 
 /**

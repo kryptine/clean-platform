@@ -14,6 +14,7 @@ import OSError
 import _Pointer
 import Time
 import _Windows
+import Text
 
 CHUNK_SIZE :== 1024
 
@@ -32,17 +33,17 @@ where
 	toString CannotClose = "Cannot close"
 	toString IOError = "I/O error"
 
-readFile :: !String *env -> (MaybeError FileError String, *env) | FileSystem env
+readFile :: !String !*env -> (!MaybeError FileError String, !*env) | FileSystem env
 readFile filename env = withFile filename FReadData readAll env
 
-readAll :: *File -> (MaybeError FileError String, *File)
+readAll :: !*File -> (!MaybeError FileError String, !*File)
 readAll file
 # (result, file) = readAcc file []
 = case result of
 	Error e	   = (Error e, file)
-	Ok contents = (Ok ((foldr (+++) "" (reverse contents))), file)
+	Ok contents = (Ok (concat (reverse contents)), file)
 where
-	readAcc :: *File [String] -> (MaybeError FileError [String], *File)
+	readAcc :: !*File ![String] -> (!MaybeError FileError [String], !*File)
 	readAcc file acc
 		# (str,file)	= freads file CHUNK_SIZE
 		# (err,file)	= ferror file
@@ -51,12 +52,12 @@ where
 		| eof			= (Ok [str:acc],file)
 		| otherwise		= readAcc file [str:acc]			
 
-writeFile :: !String !String *env -> (MaybeError FileError Void, *env) | FileSystem env
+writeFile :: !String !String !*env -> (!MaybeError FileError Void, !*env) | FileSystem env
 writeFile filename contents env = 
 	withFile filename FWriteData (\file -> (Ok Void, fwrites contents file)) env
 
-withFile :: !String Int (*File -> (MaybeError FileError a,*File)) *env 
-			-> (MaybeError FileError a, *env) | FileSystem env
+withFile :: !String Int (*File -> (!MaybeError FileError a,!*File)) !*env 
+			-> (!MaybeError FileError a, !*env) | FileSystem env
 withFile filename filemode operation env
 # (ok,file,env)	= fopen filename filemode env
 | not ok			= (Error CannotOpen, env)
@@ -66,7 +67,7 @@ withFile filename filemode operation env
 | not ok			= (Error CannotClose, env)
 = (Ok (fromOk result), env)
 
-fileExists ::  !String *World -> (Bool, *World)
+fileExists ::  !String !*World -> (!Bool, !*World)
 fileExists filename world
 # win32FindData = createArray WIN32_FIND_DATA_size_bytes '\0'
 # (handle, world) = findFirstFileA (packString filename) win32FindData world
@@ -74,13 +75,13 @@ fileExists filename world
 # (_,world) = findClose handle world
 = (True, world)
 
-deleteFile :: !String *World -> (MaybeOSError Void, *World)
+deleteFile :: !String !*World -> (!MaybeOSError Void, !*World)
 deleteFile filename world 
 	# (ok, world) = deleteFileA (packString filename) world
 	| ok == 0 = getLastOSError world
 	= (Ok Void, world)
 
-getFileInfo :: !String *World -> (MaybeOSError FileInfo, *World)
+getFileInfo :: !String !*World -> (!MaybeOSError FileInfo, !*World)
 getFileInfo filename world
 	# win32FindData = createArray WIN32_FIND_DATA_size_bytes '\0'
 	# (handle, world) = findFirstFileA (packString filename) win32FindData world
@@ -104,10 +105,10 @@ getFileInfo filename world
 				}
 	= (Ok info, world)
 where
-	toDWORD :: {#Char} -> DWORD
+	toDWORD :: !{#Char} -> DWORD
 	toDWORD s = toInt s.[3] << 24 bitor toInt s.[2] << 16 bitor toInt s.[1] << 8 bitor toInt s.[0] //little-endian
 
-filetimeToTm :: !FILETIME *World -> (MaybeOSError Tm, *World)
+filetimeToTm :: !FILETIME !*World -> (!MaybeOSError Tm, !*World)
 filetimeToTm filetime world
 	# systemtime = createArray SYSTEMTIME_size_bytes '\0'
 	# (ok, world) = fileTimeToSystemTime filetime systemtime world
