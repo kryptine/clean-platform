@@ -70,3 +70,11 @@ diffTime	:: !Timestamp !Timestamp -> Int
 * Format the time structure using the format defined by C's time.h
 */
 strfTime	:: !String !Tm -> String
+/**
+* Convert a timestamp to a Tm record (local time)
+*/
+toLocalTime	:: !Timestamp !*World -> (!Tm,!*World)
+/**
+* Convert a timestamp to a Tm record (GMT time)
+*/
+toGmTime	:: !Timestamp -> Tm

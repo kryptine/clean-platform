@@ -50,7 +50,7 @@ clock world
 	where
 	clockC :: !*World -> (!Int, !*World)
 	clockC world = code {
-		ccall clock@0 ":I:A"
+		ccall clock@0 ":I:I"
 	}
 
 time :: !*World -> (!Timestamp, !*World)
@@ -60,30 +60,20 @@ time world
 	where
 	timeC :: !Int !*World -> (!Int,!*World)
 	timeC a0 world = code {
-		ccall time@4 "I:I:A"
+		ccall time@4 "I:I:I"
 	}
 
 gmTime :: !*World -> (!Tm, !*World)
 gmTime world
 	# ((Timestamp t),world)	= time world
-	# (tm, world)		= gmTimeC (packInt t) world
+	# tm					= gmTimeC (packInt t)
 	= (derefTm tm, world)
-	where
-	gmTimeC :: !{#Int} !*World -> (!Int, !*World)
-	gmTimeC tm world = code {
-    	ccall gmtime@4 "A:I:A"
-	}
 
 localTime :: !*World -> (!Tm, !*World)
 localTime world
 	# ((Timestamp t),world)	= time world
-	# (tm,world)		= localTimeC (packInt t) world
+	# (tm,world)			= localTimeC (packInt t) world
 	= (derefTm tm, world)
-	where
-	localTimeC :: !{#Int} !*World -> (!Int, !*World)
-	localTimeC tm world = code {
-    	ccall localtime@4 "A:I:A"
-	}
 
 mkTime :: !Tm -> Timestamp
 mkTime tm 
@@ -108,6 +98,24 @@ strfTime format tm
 		strfTimeC a0 a1 a2 a3 a4 = code {
 			ccall strftime@16 "sIsA:I:A"
 		}
+		
+toLocalTime :: !Timestamp !*World -> (!Tm,!*World)
+toLocalTime (Timestamp t) world
+	# (tm,world) = localTimeC (packInt t) world
+	= (derefTm tm, world)
+
+toGmTime :: !Timestamp -> Tm
+toGmTime (Timestamp t) = derefTm (gmTimeC (packInt t))
+
+gmTimeC :: !{#Int} -> !Int
+gmTimeC tm = code {
+	ccall gmtime@4 "A:I"
+}
+
+localTimeC :: !{#Int} !*World -> (!Int, !*World)
+localTimeC tm world = code {
+	ccall localtime@4 "A:I:I"
+}
 
 //Custom deref and pack for the Tm structure
 derefTm :: !Int -> Tm
