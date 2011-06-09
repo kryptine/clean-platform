@@ -518,6 +518,7 @@ JSONDecode{|Maybe|} fx l = case fx l of
 	(Just x,xs)							= (Just (Just x), xs)
 	_									= (Nothing,l)
 
+JSONDecode{|JSONNode|} []				= (Just JSONNull, [])
 JSONDecode{|JSONNode|} [x:xs]			= (Just x, xs)
 JSONDecode{|JSONNode|} l				= (Nothing, l)
 
