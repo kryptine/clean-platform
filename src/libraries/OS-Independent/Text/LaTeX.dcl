@@ -32,5 +32,8 @@ definition module LaTeX
 		 	| EnDash
 		 	| EmDash
 		 	| NewParagraph
+		 	
+		 	//Custom
+		 	| Environment !String ![LaTeX]
 
 printLaTeX :: ![LaTeX] -> String

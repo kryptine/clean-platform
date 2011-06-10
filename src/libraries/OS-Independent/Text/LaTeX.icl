@@ -28,9 +28,10 @@ where
 	pretty (Label label) = textCommand "label" label
 	pretty (Cite ref) = textCommand "cite" ref
 	pretty (Index ref) = textCommand "index" ref
-	pretty NewParagraph = linebreak
 	pretty EnDash = text "--"
 	pretty EmDash = text "---"
+	pretty NewParagraph = linebreak
+	pretty (Environment name latex) = latexEnvironment name latex
 	
 instance Pretty [LaTeX]
 where
