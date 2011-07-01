@@ -30,7 +30,7 @@ where
 	where
 		ii = inc i
 		
-genRandInt :: Int -> [Int]
+genRandInt :: !Int -> [Int]
 genRandInt seed 
 	#! first_mt = initrand seed (createArray n 0)
 	= gr_mti 0 (new_mti 0 first_mt)
@@ -61,6 +61,6 @@ where
 
 uint2Real i :== if (i >= 0) (toReal i) (4294967296.0 + toReal i)
 
-genRandReal :: Int -> [Real]
+genRandReal :: !Int -> [Real]
 genRandReal seed = map (\y -> (uint2Real y) / 4294967295.0) (genRandInt seed)
 

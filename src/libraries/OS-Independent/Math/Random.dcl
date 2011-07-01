@@ -27,7 +27,7 @@ definition module Random
 * @param The integer to be used as seed value
 * @return an infinite list of pseudorandom real values
 */
-genRandReal :: Int -> [Real]
+genRandReal :: !Int -> [Real]
 
 /**
 * Generates an infinite list of in [-(2^31), (2^31)-1] uniformly distributed 
@@ -37,4 +37,4 @@ genRandReal :: Int -> [Real]
 * @param The integer to be used as seed value
 * @return an infinite list of pseudorandom integer values
 */
-genRandInt :: Int -> [Int]
+genRandInt :: !Int -> [Int]

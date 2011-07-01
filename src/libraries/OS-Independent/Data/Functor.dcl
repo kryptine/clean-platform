@@ -2,4 +2,4 @@ definition module Functor
 
 class Functor f
 where
-	fmap :: (.a -> .b) (f .a) -> f .b
+	fmap :: !(.a -> .b) !u:(f .a) -> u:(f .b)

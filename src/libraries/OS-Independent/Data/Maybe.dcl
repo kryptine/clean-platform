@@ -57,7 +57,7 @@ maybeToList :: !(Maybe .a) -> [.a]
 /** 
  * Return a Nothing value for an empty list or a Just value with the head of the list.
  */
-listToMaybe :: [.a] -> Maybe .a
+listToMaybe :: ![.a] -> Maybe .a
 
 /** 
  * Collect the contents of all the Just values and discard the Nothing values.

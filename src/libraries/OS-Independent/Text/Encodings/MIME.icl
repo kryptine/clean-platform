@@ -3,7 +3,7 @@ implementation module MIME
 import StdOverloaded, StdString, StdList, StdArray
 import Maybe, Text
 
-encodeMimeMultipart :: !MIMEBoundary [MIMEPart] -> String
+encodeMimeMultipart :: !MIMEBoundary ![MIMEPart] -> String
 encodeMimeMultipart boundary parts
 	= "This is a message with multiple parts in MIME format.\r\n" 
 	+++ "--" +++ boundary +++ "\r\n"

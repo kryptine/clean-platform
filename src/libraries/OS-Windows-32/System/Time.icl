@@ -107,7 +107,7 @@ toLocalTime (Timestamp t) world
 toGmTime :: !Timestamp -> Tm
 toGmTime (Timestamp t) = derefTm (gmTimeC (packInt t))
 
-gmTimeC :: !{#Int} -> !Int
+gmTimeC :: !{#Int} -> Int
 gmTimeC tm = code {
 	ccall gmtime@4 "A:I"
 }
