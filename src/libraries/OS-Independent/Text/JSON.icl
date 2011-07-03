@@ -1,6 +1,6 @@
 implementation module JSON
 
-import StdGeneric, Maybe, StdList, StdString, _SystemArray, StdTuple, StdBool, StdFunc, Text
+import StdGeneric, Maybe, StdList, StdOrdList, StdString, _SystemArray, StdTuple, StdBool, StdFunc, Text
 
 //Token type which is the intermediary representation during JSON parsing
 :: Token	= TokenInt !Int
@@ -542,4 +542,22 @@ where
 	
 	findField s []			= Nothing
 	findField s [(l,x):xs]	= if (l == s) (Just x) (findField s xs)
-	
+
+instance == JSONNode
+where
+	(==) JSONNull 			JSONNull 			= True
+	(==) (JSONBool x) 		(JSONBool y)		= x == y
+	(==) (JSONInt x) 		(JSONInt y)			= x == y
+	(==) (JSONReal x)		(JSONReal y)		= toString x == toString y
+	(==) (JSONInt x)		(JSONReal y)		= toString (toReal x) == toString y
+	(==) (JSONReal x)		(JSONInt y)			= toString x == toString (toReal y)
+	(==) (JSONString x)		(JSONString y)		= x == y
+	(==) (JSONArray xs) 	(JSONArray ys)		= xs == ys
+	(==) (JSONObject xs) 	(JSONObject ys)		= sortBy cmpFst (filter (notNull o snd) xs) == sortBy cmpFst (filter (notNull o snd) ys)
+	where
+		cmpFst a b = fst a < fst b
+		notNull JSONNull	= False
+		notNull _			= True
+	(==) (JSONRaw x)		(JSONRaw y)			= x == y
+	(==) JSONError			JSONError			= True
+	(==) _ 					_ 					= False

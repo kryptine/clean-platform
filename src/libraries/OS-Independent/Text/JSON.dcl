@@ -84,3 +84,10 @@ derive  JSONEncode Int, Real, Char, Bool, String, UNIT, PAIR, EITHER, FIELD, CON
 */
 generic JSONDecode t :: ![JSONNode] -> (!Maybe t,![JSONNode])
 derive  JSONDecode Int, Real, Char, Bool, String, UNIT, PAIR, EITHER, FIELD, CONS, OBJECT, [], (,), (,,), (,,,), (,,,,), {}, {!}, Maybe, JSONNode
+
+/**
+* Equality of JSON nodes.
+* JSON Reals are considered equal if their string representation is equal.
+* JSON Objects are considered equal if they contain the same non-null fields.
+*/
+instance == JSONNode
