@@ -23,6 +23,8 @@ SYSTEMTIME_wMilliseconds_offset :== 14
 
 :: LPSECURITY_ATTRIBUTES :== Int
 
+:: LPOVERLAPPED :== Int
+
 :: LPSTARTUPINFO :== {#Int}
 STARTUPINFO_size_bytes :== 68
 STARTUPINFO_size_int :== 17
@@ -66,14 +68,42 @@ WAIT_FAILED :== 0xFFFFFFFF
 WAIT_OBJECT_0 :== 0
 WAIT_TIMEOUT :== 258
 
+GENERIC_READ :== 0x80000000
+GENERIC_WRITE :== 0x40000000
+FILE_SHARE_READ :== 0x00000001
+FILE_SHARE_WRITE :== 0x00000002
+
+CREATE_ALWAYS		:== 2
+CREATE_NEW			:== 1
+OPEN_ALWAYS			:== 4
+OPEN_EXISTING		:== 3
+TRUNCATE_EXISTING	:== 5
+
+FILE_ATTRIBUTE_NORMAL :== 128
+LOCKFILE_EXCLUSIVE_LOCK :== 0x00000002
+
+HEAP_ZERO_MEMORY :== 0x00000008
+
 /*
  * Windows API calls 
  */
 
 closeHandle :: !HANDLE !*World -> (!Bool,!*World)
+	
+createFile :: !String !DWORD !DWORD !LPSECURITY_ATTRIBUTES 
+	!DWORD !DWORD !HANDLE !*World -> (!HANDLE, !*World)
+	
+readFile :: !HANDLE !LPVOID !DWORD !LPDWORD !LPOVERLAPPED !*World -> (!Bool, !*World)
 
-createFileA :: !LPCTSTR !DWORD !DWORD !LPSECURITY_ATTRIBUTES 
-	!DWORD !DWORD !HANDLE !*World -> (!Bool, !*World)
+writeFile :: !HANDLE !LPVOID !DWORD !LPDWORD !LPOVERLAPPED !*World -> (!Bool, !*World)
+
+setEndOfFile :: !HANDLE !*World -> (!Bool, !*World)
+
+lockFileEx :: !HANDLE !DWORD !DWORD !DWORD !DWORD !LPOVERLAPPED !*World -> (!Bool, !*World)
+
+unlockFile :: !HANDLE !DWORD !DWORD !DWORD !DWORD !*World -> (!Bool, !*World)
+
+getFileSize :: !HANDLE !LPDWORD !*World -> (!DWORD, !*World)
 
 createDirectoryA :: !String !LPSECURITY_ATTRIBUTES !*World -> (!Bool, !*World)
 
@@ -111,3 +141,9 @@ removeDirectoryA :: !String !*World -> (!Bool, !*World)
 setCurrentDirectoryA :: !String !*World -> (!Bool, !*World)
 
 waitForSingleObject :: !HANDLE !Int !*World -> (!Int,!*World);
+
+getProcessHeap :: !*World -> (!HANDLE, !*World)
+
+heapAlloc :: !HANDLE !DWORD !SIZE_T !*World -> (!LPVOID, !*World)
+
+heapFree :: !HANDLE !DWORD !LPVOID !*World -> (!Bool, !*World)

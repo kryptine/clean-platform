@@ -93,6 +93,14 @@ derefInt :: !Pointer -> Int
 */
 derefString :: !Pointer -> String
 /**
+* Reads the array with given length indicated by the pointer.
+*/
+derefCharArray :: !Pointer !Int -> {#Char}
+/**
+* Writes Clean char array to given pointer.
+*/
+writeCharArray :: !Pointer !{#Char} -> Int
+/**
 * Wraps an integer in an array to enable passing a pointer instead
 * of a value to a ccall.
 */

@@ -7,12 +7,12 @@ import File
 import FilePath
 import OSError
 
-import _Windows
+import qualified _Windows
 import _Pointer
 
 createDirectory :: !FilePath !*World -> (!MaybeOSError Void, !*World)
 createDirectory path world
-	# (ok,world)	= createDirectoryA (packString path) NULL world
+	# (ok,world)	= '_Windows'.createDirectoryA (packString path) '_Windows'.NULL world
 	| ok
 		= (Ok Void, world)
 	| otherwise
@@ -20,7 +20,7 @@ createDirectory path world
 
 removeDirectory :: !FilePath !*World -> (!MaybeOSError Void, !*World)
 removeDirectory path world
-	# (ok,world)	= removeDirectoryA (packString path) world
+	# (ok,world)	= '_Windows'.removeDirectoryA (packString path) world
 	| ok
 		= (Ok Void, world)
 	| otherwise
@@ -28,40 +28,40 @@ removeDirectory path world
 
 readDirectory :: !FilePath !*World -> (!MaybeOSError [FilePath], !*World)
 readDirectory path world
-	# win32FindData = createArray WIN32_FIND_DATA_size_bytes '\0'
-	# (handle, world) = findFirstFileA (packString (path </> "*.*")) win32FindData world
-	| handle == INVALID_HANDLE_VALUE = getLastOSError world
+	# win32FindData = createArray '_Windows'.WIN32_FIND_DATA_size_bytes '\0'
+	# (handle, world) = '_Windows'.findFirstFileA (packString (path </> "*.*")) win32FindData world
+	| handle == '_Windows'.INVALID_HANDLE_VALUE = getLastOSError world
 	# (entry, world)	= readEntry win32FindData world
 	# (entries,world)	= readEntries handle win32FindData world
-	# (ok,world) = findClose handle world
+	# (ok,world) = '_Windows'.findClose handle world
 	| not ok = getLastOSError world
 	= (Ok [entry:entries], world)
 where
-	readEntries :: !HANDLE !LPWIN32_FIND_DATA !*World -> (![String],!*World)
+	readEntries :: !'_Windows'.HANDLE !'_Windows'.LPWIN32_FIND_DATA !*World -> (![String],!*World)
 	readEntries handle win32FindData world
-		# (ok,world)	= findNextFileA handle win32FindData world
+		# (ok,world)	= '_Windows'.findNextFileA handle win32FindData world
 		| not ok
 			= ([],world)
 		# (entry,world)		= readEntry win32FindData world
 		# (entries,world)	= readEntries handle win32FindData world
 		= ([entry:entries],world)
 	
-	readEntry :: !LPWIN32_FIND_DATA !*World -> (!String,!*World) 
+	readEntry :: !'_Windows'.LPWIN32_FIND_DATA !*World -> (!String,!*World) 
 	readEntry win32FindData world 
-		= (unpackString (win32FindData % (WIN32_FIND_DATA_cFileName_bytes_offset, WIN32_FIND_DATA_cFileName_bytes_offset + MAX_PATH - 1)), world)
+		= (unpackString (win32FindData % ('_Windows'.WIN32_FIND_DATA_cFileName_bytes_offset, '_Windows'.WIN32_FIND_DATA_cFileName_bytes_offset + '_Windows'.MAX_PATH - 1)), world)
 
 getCurrentDirectory :: !*World -> (!MaybeOSError FilePath, !*World)
 getCurrentDirectory world
-	# buf			= createArray MAX_PATH '\0'
-	# (res,world)	= getCurrentDirectoryA MAX_PATH buf world
+	# buf			= createArray '_Windows'.MAX_PATH '\0'
+	# (res,world)	= '_Windows'.getCurrentDirectoryA '_Windows'.MAX_PATH buf world
 	| res == 0
 		= getLastOSError world
 	| otherwise
-		= (Ok {c \\ c <-: buf | c <> '\0'},world)
+		= (Ok (unpackString buf),world)
 
 setCurrentDirectory :: !FilePath !*World -> (!MaybeOSError Void, !*World)
 setCurrentDirectory path world 
-	# (ok,world)	= setCurrentDirectoryA (packString path) world
+	# (ok,world)	= '_Windows'.setCurrentDirectoryA (packString path) world
 	| ok
 		= (Ok Void, world)
 	| otherwise

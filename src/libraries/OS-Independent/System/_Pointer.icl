@@ -435,11 +435,31 @@ where
 		# char = load_char (ptr+off)
 		| char <> '\0'	= copy ptr (off + 1) {arr & [off] = char}
 						= arr
-						
-	load_char :: !Pointer -> Char
-	load_char ptr = code inline {
+	
+derefCharArray :: !Pointer !Int -> {#Char}
+derefCharArray ptr len = copy 0 (createArray len '\0')
+where
+	copy :: !Offset *{#Char} -> *{#Char}
+	copy off arr
+		# char = load_char (ptr+off)
+		| off < len	= copy (inc off) {arr & [off] = char}
+					= arr
+
+load_char :: !Pointer -> Char
+load_char ptr = code inline {
 		load_ui8 0
 	}
+	
+writeCharArray :: !Pointer !{#Char} -> Int
+writeCharArray ptr array = copy ptr 0
+where
+	len = size array
+	
+	copy :: !Pointer !Offset -> Pointer
+	copy ptr off
+		# char = array.[off]
+		| off < len	= copy (writeChar ptr off char) (inc off)
+					= ptr
 
 packInt :: !Int -> {#Int}
 packInt i = {i}

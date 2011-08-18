@@ -15,12 +15,48 @@ createDirectoryA lpFileName lpSecurityAttributes world
 	= code {
 		ccall CreateDirectoryA@8 "PsI:I:I"
 	}
-
-createFileA :: !LPCTSTR !DWORD !DWORD !LPSECURITY_ATTRIBUTES !DWORD !DWORD !HANDLE !*World -> (!Bool, !*World)
-createFileA lpFileName dwDesiredAccess dwShareMode lpSecurityAttributes 
+	
+createFile :: !String !DWORD !DWORD !LPSECURITY_ATTRIBUTES !DWORD !DWORD !HANDLE !*World -> (!HANDLE, !*World)
+createFile lpFileName dwDesiredAccess dwShareMode lpSecurityAttributes 
 	dwCreationDisposition dwFlagsAndAttributes hTemplateFile world
 	= code {
-		ccall CreateFile@28 "PsIIAIII:I:I"
+		ccall CreateFileA@28 "PsIIIIII:I:I"
+	}
+	
+readFile :: !HANDLE !LPVOID !DWORD !LPDWORD !LPOVERLAPPED !*World -> (!Bool, !*World)
+readFile hFile lpBuffer nNumberOfBytesToRead lpNumberOfBytesRead lpOverlapped world
+	= code {
+		ccall ReadFile@20 "PIpIAp:I:I"
+	}
+	
+writeFile :: !HANDLE !LPVOID !DWORD !LPDWORD !LPOVERLAPPED !*World -> (!Bool, !*World)
+writeFile hFile lpBuffer nNumberOfBytesToWrite lpNumberOfBytesWritten lpOverlapped world
+	= code {
+		ccall WriteFile@20 "PIpIAp:I:I"
+	}
+	
+setEndOfFile :: !HANDLE !*World -> (!Bool, !*World)
+setEndOfFile hFile world
+	= code {
+		ccall SetEndOfFile@4 "PI:I:I"
+	}
+
+lockFileEx :: !HANDLE !DWORD !DWORD !DWORD !DWORD !LPOVERLAPPED !*World -> (!Bool, !*World)
+lockFileEx hFile dwFlags dwReserved nNumberOfBytesToLockLow nNumberOfBytesToLockHigh lpOverlapped world
+	= code {
+		ccall LockFileEx@24 "PIIIIIp:I:I"
+	}
+	
+unlockFile :: !HANDLE !DWORD !DWORD !DWORD !DWORD !*World -> (!Bool, !*World)
+unlockFile hFile dwFileOffsetLow dwFileOffsetHigh nNumberOfBytesToUnlockLow nNumberOfBytesToUnlockHigh world
+	= code {
+		ccall UnlockFile@20 "PIIIII:I:I"
+	}
+	
+getFileSize :: !HANDLE !LPDWORD !*World -> (!DWORD, !*World)
+getFileSize hFile lpFileSizeHigh world
+	= code {
+		ccall GetFileSize@8 "PIA:I:I"
 	}
 
 createProcessA :: !String !String !LPSECURITY_ATTRIBUTES !LPSECURITY_ATTRIBUTES !Bool !Int !LPVOID
@@ -120,4 +156,22 @@ waitForSingleObject :: !HANDLE !Int !*World -> (!Int,!*World);
 waitForSingleObject handle timeout world
 	= code {
 		ccall WaitForSingleObject@8 "PpI:I:I"
+	}
+
+getProcessHeap :: !*World -> (!HANDLE, !*World)
+getProcessHeap world
+	= code {
+		ccall GetProcessHeap@0 "P:I:I"
+	}
+	
+heapAlloc :: !HANDLE !DWORD !SIZE_T !*World -> (!LPVOID, !*World)
+heapAlloc hHeap dwFlags dwBytes world
+	= code {
+		ccall HeapAlloc@12 "PIII:p:I"
+	}
+	
+heapFree :: !HANDLE !DWORD !LPVOID !*World -> (!Bool, !*World)
+heapFree hHeap dwFlags lpMem world
+	= code {
+		ccall HeapFree@12 "PIIp:I:I"
 	}

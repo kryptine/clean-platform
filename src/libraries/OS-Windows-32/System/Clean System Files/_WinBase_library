@@ -2,6 +2,9 @@ kernel32.dll
 CloseHandle@4
 CreateDirectoryA@8
 CreateFileA@28
+LockFileEx@24
+UnlockFile@20
+SetEndOfFile@4
 CreateProcessA@40
 DeleteFileA@4
 FileTimeToSystemTime@8
@@ -19,3 +22,6 @@ RemoveDirectoryA@4
 SetCurrentDirectoryA@4
 SetEnvironmentVariableA@8
 WaitForSingleObject@8
+GetProcessHeap@0
+HeapAlloc@12
+HeapFree@12

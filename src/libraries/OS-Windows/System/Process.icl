@@ -68,21 +68,10 @@ closeProcessHandle handle world
 	| not ok = getLastOSError world
 	= (Ok Void, world)
 
-waitForSingleObject :: !HANDLE !Int !*World -> (!Int,!*World);
-waitForSingleObject handle timeout world
-	= code {
-		ccall WaitForSingleObject@8 "PpI:I:I"
-	}
-
-getExitCodeProcess :: !HANDLE !*World -> (!Bool,!Int,!*World);
-getExitCodeProcess handle world
-	= code {
-		ccall GetExitCodeProcess@8 "PI:II:I"
-	}
-
 callProcess :: !FilePath ![String] !(Maybe String) !*World -> (MaybeOSError Int, *World)
 callProcess path args mCurrentDirectory world
 	# (res, world) = runProcess path args mCurrentDirectory world
 	= case res of
 		Error e		= (Error e,world)
 		Ok handle	= waitForProcess handle world
+		

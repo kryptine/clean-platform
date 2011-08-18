@@ -2,10 +2,12 @@ definition module _WinDef
 
 :: HANDLE	:== Int
 :: DWORD	:== Int
+:: LPDWORD	:== {#Int}
 :: LPCTSTR	:== Int
 :: LPTSTR	:== Int
 :: LPVOID	:== Int
 :: LPCVOID	:== Int
+:: SIZE_T	:== Int
 
 :: HLOCAL   :== HANDLE
 
