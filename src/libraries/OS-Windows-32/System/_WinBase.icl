@@ -175,3 +175,8 @@ heapFree hHeap dwFlags lpMem world
 	= code {
 		ccall HeapFree@12 "PIIp:I:I"
 	}
+	
+CreateThread :: !LPSECURITY_ATTRIBUTES !SIZE_T !LPTHREAD_START_ROUTINE !LPVOID !DWORD !*World -> (!HANDLE,!DWORD,!*World)
+CreateThread threadAttributes stackSize startAddress parameter creationFlags world = code {
+	ccall CreateThread "ppppI:pI:p"
+}

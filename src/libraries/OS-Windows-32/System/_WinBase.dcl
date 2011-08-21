@@ -22,7 +22,7 @@ SYSTEMTIME_wSecond_offset :== 12
 SYSTEMTIME_wMilliseconds_offset :== 14
 
 :: LPSECURITY_ATTRIBUTES :== Int
-
+:: LPTHREAD_START_ROUTINE:==Int
 :: LPOVERLAPPED :== Int
 
 :: LPSTARTUPINFO :== {#Int}
@@ -147,3 +147,5 @@ getProcessHeap :: !*World -> (!HANDLE, !*World)
 heapAlloc :: !HANDLE !DWORD !SIZE_T !*World -> (!LPVOID, !*World)
 
 heapFree :: !HANDLE !DWORD !LPVOID !*World -> (!Bool, !*World)
+
+CreateThread :: !LPSECURITY_ATTRIBUTES !SIZE_T !LPTHREAD_START_ROUTINE !LPVOID !DWORD !*World -> (!HANDLE,!DWORD,!*World)
