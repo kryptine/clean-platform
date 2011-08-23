@@ -178,5 +178,10 @@ heapFree hHeap dwFlags lpMem world
 	
 CreateThread :: !LPSECURITY_ATTRIBUTES !SIZE_T !LPTHREAD_START_ROUTINE !LPVOID !DWORD !*World -> (!HANDLE,!DWORD,!*World)
 CreateThread threadAttributes stackSize startAddress parameter creationFlags world = code {
-	ccall CreateThread "ppppI:pI:p"
+	ccall CreateThread "pIppI:II:I"
+}
+
+initializeCriticalSection :: !LPCRITICAL_SECTION !*World -> *World
+initializeCriticalSection lpCriticalSection world = code {
+	ccall InitializeCriticalSection@4 "p:V:I"
 }

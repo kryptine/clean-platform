@@ -1,10 +1,10 @@
 implementation module SharedFile
 
 import _WinBase, _Pointer, StdInt, StdArray, StdBool, StdFunc, FilePath, SharedDataSource
-import StdMisc, Text, StdString
+import StdMisc
 
-sharedFile :: !FilePath -> SymmetricSharedDataSource String *World
-sharedFile path = createBasicDataSource "sharedFile:" path mkOps id const
+sharedFile :: !FilePath -> Shared String *World
+sharedFile path = createBasicDataSource "sharedFile" path mkOps id const
 where
 	mkOps world
 		# (heap, world)	= getProcessHeap world
@@ -49,7 +49,7 @@ where
 			# (pBuffer, world)	= heapAlloc heap 0 len world
 			// check NULL
 			# pBuffer	= writeCharArray pBuffer b
-			# (overlapped, world)	= heapAlloc heap HEAP_ZERO_MEMORY 20 world
+			# (overlapped, world)	= heapAlloc heap HEAP_ZERO_MEMORY OVERLAPPED_SIZE_BYTES world
 			// check NULL
 			# (ok, world)	= writeFile handle pBuffer len (packInt 0) overlapped world
 			| not ok = abort "write error"
@@ -70,7 +70,7 @@ where
 		lockExcl = lock` LOCKFILE_EXCLUSIVE_LOCK
 			
 		lock` flags	world
-			# (overlapped, world)	= heapAlloc heap HEAP_ZERO_MEMORY 20 world
+			# (overlapped, world)	= heapAlloc heap HEAP_ZERO_MEMORY OVERLAPPED_SIZE_BYTES world
 			// check NULL
 			# (ok, world)		= lockFileEx
 									handle

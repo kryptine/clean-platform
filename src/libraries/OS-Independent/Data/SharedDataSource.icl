@@ -1,39 +1,8 @@
 implementation module SharedDataSource
 
-import StdTuple, FilePath, Void, Maybe, StdBool, StdMisc, StdList, StdFunc, StdString, StdOrdList, Tuple, Func
+import SharedDataSourceTypes, StdTuple, FilePath, Void, Maybe, StdBool, StdMisc, StdList, StdFunc, StdString, StdOrdList, Tuple, Func
 import qualified Map
 
-:: SharedDataSource r w *st
-	= E.b:				BasicSource !(BasicSource b r w st) & TC b
-	| E.rx wx ry wy:	ComposedSource !(ComposedSource r w rx wx ry wy st)
-
-:: BasicSource b r w *st =
-	{ id			:: !SharedId
-	, mkOps			:: !st -> *(!BasicSourceOps b st, !st)
-	, get			:: !b -> r
-	, putback		:: !w b -> b
-	}
-	
-:: ComposedSource r w rx wx ry wy *st =
-	{ srcX		:: !SharedDataSource rx wx st
-	, srcY		:: !SharedDataSource ry wy st
-	, get		:: !rx ry -> r
-	, putback	:: !w rx ry -> (!wx, !wy)
-	}
-	
-:: SharedId :== String
-
-:: SharedDataSourceOps r w *st
-	= E.b:				BasicSourceOps !(b -> r) !(w b -> b) !(BasicSourceOps b st) & TC b
-	| E.rx wx ry wy:	ComposedSourceOps !(ComposedSourceOps r w rx wx ry wy st)
-	
-:: ComposedSourceOps r w rx wx ry wy *st =
-	{ opsX		:: !SharedDataSourceOps rx wx st
-	, opsY		:: !SharedDataSourceOps ry wy st
-	, get		:: !rx ry -> r
-	, putback	:: !w rx ry -> (!wx,!wy)
-	}
-	
 createBasicDataSource ::
 	!String
 	!String
@@ -41,7 +10,7 @@ createBasicDataSource ::
 	!(b -> r)
 	!(w b -> b)
 	->
-	SharedDataSource r w *st
+	ReadWriteShared r w *st
 	| TC b
 createBasicDataSource type id mkOps get putback = BasicSource
 	{ id = type +++ ":" +++ id
@@ -50,30 +19,43 @@ createBasicDataSource type id mkOps get putback = BasicSource
 	, putback = putback
 	}
 		
-readSharedData :: !(SharedDataSource r w *st) !*st ->(!r, !SharedVersion, !*st)
-readSharedData shared st
+readShared :: !(ReadWriteShared r w *st) !*st ->(!r, !SharedVer, !*st)
+readShared shared st
 	# (ops, st)		= lock False shared st
 	# (r, ver, st)	= readSharedData` ops st
 	# st			= close ops st
 	= (r, ver, st)
 	
-writeSharedData :: !w !(SharedDataSource r w *st) !*st -> *st
-writeSharedData w shared st
+writeShared :: !w !(ReadWriteShared r w *st) !*st -> *st
+writeShared w shared st
 	# (ops, st)		= lock True shared st
 	# st			= writeSharedData` w ops st
 	# st			= close ops st
 	= st
 
-readWriteSharedData :: !(r SharedVersion -> (x,w)) !(SharedDataSource r w *st) !*st -> (!x, !*st)
-readWriteSharedData f shared st
+getVersion :: !(ReadWriteShared r w *st) !*st -> (!SharedVer, !*st)
+getVersion shared st
+	# (ops, st)		= lock False shared st
+	# (ver, st)		= getVersion` ops st
+	# st			= close ops st
+	= (ver, st)
+
+updateShared :: !(r SharedVer -> (UpdRes w a)) !(ReadWriteShared r w *st) !*st -> (!a, !*st)
+updateShared f shared st
 	# (ops, st)		= lock True shared st
 	# (r, ver, st)	= readSharedData` ops st
-	# (x, w)		= f r ver
-	# st			= writeSharedData` w ops st
+	# (a, st) = case f r ver of
+		NoOp a
+			= (a, st)
+		Update w a
+			# st	= writeSharedData` w ops st
+			= (a, st)
+		Wait
+			= abort "not implemented"
 	# st			= close ops st
-	= (x, st)
+	= (a, st)
 
-lock :: !Bool !(SharedDataSource r w *st) !*st -> (SharedDataSourceOps r w *st, !*st)
+lock :: !Bool !(ReadWriteShared r w *st) !*st -> (SharedOps r w *st, !*st)
 lock exclusive shared st
 	# (locks, ops, st)	= lock` shared st
 	// sort locks to avoid deadlocks
@@ -81,7 +63,7 @@ lock exclusive shared st
 	# st				= seqSt (\(_,lock) st -> lock st) locks st
 	= (ops, st)
 where
-	lock` :: !(SharedDataSource r w *st) !*st -> ([(SharedId, *st -> *st)], SharedDataSourceOps r w *st, !*st)
+	lock` :: !(ReadWriteShared r w *st) !*st -> ([(SharedId, *st -> *st)], SharedOps r w *st, !*st)
 	lock` (BasicSource {BasicSource|id, mkOps, get, putback}) st
 		# (ops, st) = mkOps st
 		# lockF		= if exclusive ops.lockExcl ops.lock
@@ -94,7 +76,7 @@ where
 	removeDup` [x:xs] = [x:removeDup` (filter (\y -> fst x <> fst y) xs)]
 	removeDup` _      = []
 	
-readSharedData` :: !(SharedDataSourceOps r w *st) !*st ->(!r, !SharedVersion, !*st)	
+readSharedData` :: !(SharedOps r w *st) !*st ->(!r, !SharedVer, !*st)	
 readSharedData` (BasicSourceOps get _ {BasicSourceOps|read}) st
 	= appFst3 get (read st)
 readSharedData` (ComposedSourceOps {opsX, opsY, get}) st
@@ -102,7 +84,7 @@ readSharedData` (ComposedSourceOps {opsX, opsY, get}) st
 	# (ry, very, st)	= readSharedData` opsY st
 	= (get rx ry, verx + very, st)
 	
-writeSharedData` :: !w !(SharedDataSourceOps r w *st) !*st -> *st	
+writeSharedData` :: !w !(SharedOps r w *st) !*st -> *st	
 writeSharedData` w (BasicSourceOps _ putback {BasicSourceOps|read, write}) st
 	# (b, _, st)	= read st
 	# st			= write (putback w b) st
@@ -115,7 +97,15 @@ writeSharedData` w (ComposedSourceOps {opsX, opsY, get, putback}) st
 	# st				= writeSharedData` wy opsY st
 	= st
 
-close :: !(SharedDataSourceOps r w *st) !*st -> *st
+getVersion` :: !(SharedOps r w *st) !*st ->(!SharedVer, !*st)	
+getVersion` (BasicSourceOps get _ {BasicSourceOps|getVersion}) st
+	= getVersion st
+getVersion` (ComposedSourceOps {opsX, opsY, get}) st
+	# (verx, st)	= getVersion` opsX st
+	# (very, st)	= getVersion` opsY st
+	= (verx + very, st)
+
+close :: !(SharedOps r w *st) !*st -> *st
 close (BasicSourceOps _ _ {BasicSourceOps|unlock, close}) st
 	= close (unlock st)
 close (ComposedSourceOps {opsX, opsY}) st
@@ -124,7 +114,7 @@ close (ComposedSourceOps {opsX, opsY}) st
 	= st
 
 
-mapSharedRead :: !(r -> r`) !(SharedDataSource r w *st) -> SharedDataSource r` w *st
+mapSharedRead :: !(r -> r`) !(ReadWriteShared r w *st) -> ReadWriteShared r` w *st
 mapSharedRead get` (BasicSource shared=:{BasicSource|get}) = BasicSource
 	{ BasicSource
 	| shared
@@ -136,7 +126,7 @@ mapSharedRead get` (ComposedSource shared=:{ComposedSource|get}) = ComposedSourc
 	& get = \rx ry -> get` (get rx ry)
 	}
 
-mapSharedWrite	:: !(w` r -> w) !(SharedDataSource r w *st) -> SharedDataSource r w` *st
+mapSharedWrite	:: !(w` r -> w) !(ReadWriteShared r w *st) -> ReadWriteShared r w` *st
 mapSharedWrite putback` (BasicSource shared=:{BasicSource|get, putback}) = BasicSource
 	{ BasicSource
 	| shared
@@ -148,10 +138,17 @@ mapSharedWrite putback` (ComposedSource shared=:{ComposedSource|get, putback}) =
 	& putback = \w rx ry -> putback (putback` w (get rx ry)) rx ry
 	}
 
-mapShared :: !(!r -> r`,!w` r -> w) !(SharedDataSource r w *st) -> SharedDataSource r` w` *st
+mapShared :: !(!r -> r`,!w` r -> w) !(ReadWriteShared r w *st) -> ReadWriteShared r` w` *st
 mapShared (readMap,writeMap) shared = mapSharedRead readMap (mapSharedWrite writeMap shared)
 
-toReadOnlyShared :: !(SharedDataSource r w *st) -> SharedDataSource r Void *st
+symmetricLens :: !(a b -> b) !(b a -> a) !(Shared a *st) !(Shared b *st) -> (!Shared a *st, !Shared b *st)
+symmetricLens putr putl sharedA sharedB = (newSharedA,newSharedB)
+where
+	sharedAll = sharedA >+< sharedB 
+	newSharedA = mapShared (fst,\a (_,b) -> (a,putr a b)) sharedAll
+	newSharedB = mapShared (snd,\b (a,_) -> (putl b a,b)) sharedAll
+
+toReadOnlyShared :: !(ReadWriteShared r w *st) -> ReadWriteShared r Void *st
 toReadOnlyShared (BasicSource shared=:{BasicSource|get, putback}) = BasicSource
 	{ BasicSource
 	| shared
@@ -165,25 +162,25 @@ toReadOnlyShared (ComposedSource shared=:{ComposedSource|srcX, srcY}) = Composed
 	, putback = \_ _ _ -> (Void, Void)
 	}
 
-(>+<) infixl 6 :: !(SharedDataSource rx wx *st) !(SharedDataSource ry wy *st) -> SharedDataSource (rx,ry) (wx,wy) *st
+(>+<) infixl 6 :: !(ReadWriteShared rx wx *st) !(ReadWriteShared ry wy *st) -> ReadWriteShared (rx,ry) (wx,wy) *st
 (>+<) srcX srcY = ComposedSource {srcX = srcX, srcY = srcY, get = tuple, putback = \w _ _ -> w}
 
-(>+|) infixl 6 :: !(SharedDataSource rx wx *st) !(SharedDataSource ry wy *st) -> SharedDataSource (rx,ry) wx *st
+(>+|) infixl 6 :: !(ReadWriteShared rx wx *st) !(ReadWriteShared ry wy *st) -> ReadWriteShared (rx,ry) wx *st
 (>+|) srcX srcY = ComposedSource {srcX = srcX, srcY = toReadOnlyShared srcY, get = tuple, putback = \w _ _ -> (w, Void)}
 
-(|+<) infixl 6 :: !(SharedDataSource rx wx *st) !(SharedDataSource ry wy *st) -> SharedDataSource (rx,ry) wy *st
+(|+<) infixl 6 :: !(ReadWriteShared rx wx *st) !(ReadWriteShared ry wy *st) -> ReadWriteShared (rx,ry) wy *st
 (|+<) srcX srcY = ComposedSource {srcX = toReadOnlyShared srcX, srcY = srcY, get = tuple, putback = \w _ _ -> (Void, w)}
 
-(|+|) infixl 6 :: !(SharedDataSource rx wx *st) !(SharedDataSource ry wy *st) -> SharedDataSource (rx,ry) wy *st
+(|+|) infixl 6 :: !(ReadWriteShared rx wx *st) !(ReadWriteShared ry wy *st) -> ReadWriteShared (rx,ry) Void *st
 (|+|) srcX srcY = ComposedSource {srcX = toReadOnlyShared srcX, srcY = toReadOnlyShared srcY, get = tuple, putback = \_ _ _ -> (Void, Void)}
 
 // STM
 :: *Transaction *st =	{ st	:: !st
 						, log	:: !*'Map'.Map SharedId (TLogEntry st)
 						}
-:: TLogEntry *st = E.b w: TLogEntry !b !SharedVersion !Bool !(BasicSourceOps b st) & TC b
+:: TLogEntry *st = E.b: TLogEntry !b !SharedVer !Bool !(BasicSourceOps b st) & TC b
 
-atomic :: !((*Transaction *st) -> (!TransactionResult a, !*Transaction *st)) !*st -> (!a, !*st)
+atomic :: !((*Transaction *st) -> (!TRes a, !*Transaction *st)) !*st -> (!a, !*st)
 atomic trF st
 	# tr					 =	{ st	= st
 								, log	= 'Map'.newMap
@@ -213,7 +210,7 @@ where
 			# st			= if (not retry && doWrite) (write b st) st
 			= (retry, st)
 
-transactionRead :: !(SharedDataSource r w *st) !(Transaction *st) -> (!r, !(Transaction *st))	
+transactionRead :: !(ReadWriteShared r w *st) !(Transaction *st) -> (!r, !(Transaction *st))	
 transactionRead (BasicSource {BasicSource|id, get, mkOps}) tr=:{log, st}
 	# (mbEntry, log)	= 'Map'.getU id log
 	= case mbEntry of
@@ -236,7 +233,7 @@ transactionRead (ComposedSource {srcX, srcY, get}) tr
 	# (ry, tr)	= transactionRead srcY tr
 	= (get rx ry, tr)
 	
-transactionWrite :: !w !(SharedDataSource r w *st) !(Transaction *st) -> (Transaction *st)
+transactionWrite :: !w !(ReadWriteShared r w *st) !(Transaction *st) -> (Transaction *st)
 transactionWrite w (BasicSource {BasicSource|id, putback, mkOps}) tr=:{log, st}
 	# (mbEntry, log)	= 'Map'.getU id log
 	= case mbEntry of
