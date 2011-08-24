@@ -1,7 +1,7 @@
 implementation module SharedDataSource
 
 import SharedDataSourceTypes, StdTuple, FilePath, Void, Maybe, StdBool, StdMisc, StdList, StdFunc, StdString, StdOrdList, Tuple, Func
-import qualified Map
+from Map import qualified :: Map, newMap, toList, getU, put
 
 createBasicDataSource ::
 	!String
@@ -178,7 +178,7 @@ toReadOnlyShared (ComposedSource shared=:{ComposedSource|srcX, srcY}) = Composed
 :: *Transaction *st =	{ st	:: !st
 						, log	:: !*'Map'.Map SharedId (TLogEntry st)
 						}
-:: TLogEntry *st = E.b: TLogEntry !b !SharedVer !Bool !(BasicSourceOps b st) & TC b
+:: TLogEntry *st = E.b: TLogEntry !b !SharedVer !Bool !(BasicSourceOps b st)
 
 atomic :: !((*Transaction *st) -> (!TRes a, !*Transaction *st)) !*st -> (!a, !*st)
 atomic trF st

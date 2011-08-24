@@ -183,5 +183,15 @@ CreateThread threadAttributes stackSize startAddress parameter creationFlags wor
 
 initializeCriticalSection :: !LPCRITICAL_SECTION !*World -> *World
 initializeCriticalSection lpCriticalSection world = code {
-	ccall InitializeCriticalSection@4 "p:V:I"
+	ccall InitializeCriticalSection@4 "Pp:V:I"
+}
+
+enterCriticalSection :: !LPCRITICAL_SECTION !*World -> *World
+enterCriticalSection lpCriticalSection world = code {
+	ccall EnterCriticalSection@4 "Pp:V:I"
+}
+	
+leaveCriticalSection :: !LPCRITICAL_SECTION !*World -> *World
+leaveCriticalSection lpCriticalSection world = code {
+	ccall EnterCriticalSection@4 "Pp:V:I"
 }

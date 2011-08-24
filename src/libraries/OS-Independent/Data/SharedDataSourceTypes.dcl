@@ -3,7 +3,7 @@ definition module SharedDataSourceTypes
 from SharedDataSource import :: BasicSourceOps
 
 :: ReadWriteShared r w *st
-	= E.b:				BasicSource !(BasicSource b r w st) & TC b
+	= E.b:				BasicSource !(BasicSource b r w st)
 	| E.rx wx ry wy:	ComposedSource !(ComposedSource r w rx wx ry wy st)
 
 :: BasicSource b r w *st =
@@ -23,7 +23,7 @@ from SharedDataSource import :: BasicSourceOps
 :: SharedId :== String
 
 :: SharedOps r w *st
-	= E.b:				BasicSourceOps !(b -> r) !(w b -> b) !(BasicSourceOps b st) & TC b
+	= E.b:				BasicSourceOps !(b -> r) !(w b -> b) !(BasicSourceOps b st)
 	| E.rx wx ry wy:	ComposedSourceOps !(ComposedSourceOps r w rx wx ry wy st)
 	
 :: ComposedSourceOps r w rx wx ry wy *st =

@@ -26,3 +26,5 @@ GetProcessHeap@0
 HeapAlloc@12
 HeapFree@12
 InitializeCriticalSection@4
+EnterCriticalSection@4
+LeaveCriticalSection@4

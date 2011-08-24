@@ -154,3 +154,5 @@ heapFree :: !HANDLE !DWORD !LPVOID !*World -> (!Bool, !*World)
 CreateThread :: !LPSECURITY_ATTRIBUTES !SIZE_T !LPTHREAD_START_ROUTINE !LPVOID !DWORD !*World -> (!HANDLE,!DWORD,!*World)
 
 initializeCriticalSection :: !LPCRITICAL_SECTION !*World -> *World
+enterCriticalSection :: !LPCRITICAL_SECTION !*World -> *World
+leaveCriticalSection :: !LPCRITICAL_SECTION !*World -> *World
