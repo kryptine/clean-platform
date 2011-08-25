@@ -1,6 +1,6 @@
 definition module Threads
 
-:: ThreadId :== Int
+:: ThreadId
 
 fork :: !(*World -> *World) !*World -> (!ThreadId, !*World)
 waitForThread :: !ThreadId !*World -> *World

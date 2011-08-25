@@ -3,6 +3,9 @@ implementation module Threads
 import _WinBase, _Pointer, StdArray, StdInt, StdClass, dynamic_string, _Unsafe
 foreign export threadFunc
 
+:: WinThreadHandle :== HANDLE
+:: ThreadId :== WinThreadHandle
+
 fork :: !(*World -> *World) !*World -> (!ThreadId, !*World)
 fork threadF world
 	# threadFStr = copy_to_string threadF
