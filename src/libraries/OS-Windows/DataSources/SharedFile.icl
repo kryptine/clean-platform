@@ -9,7 +9,7 @@ where
 	mkOps world
 		# (heap, world)	= getProcessHeap world
 		// check NULL
-		# (handle, world)	= createFile
+		# (handle, world)	= createFileA
 								(packString path)
 								(GENERIC_READ + GENERIC_WRITE)
 								(FILE_SHARE_READ + FILE_SHARE_WRITE)

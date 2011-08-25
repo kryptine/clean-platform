@@ -16,8 +16,8 @@ createDirectoryA lpFileName lpSecurityAttributes world
 		ccall CreateDirectoryA@8 "PsI:I:I"
 	}
 	
-createFile :: !String !DWORD !DWORD !LPSECURITY_ATTRIBUTES !DWORD !DWORD !HANDLE !*World -> (!HANDLE, !*World)
-createFile lpFileName dwDesiredAccess dwShareMode lpSecurityAttributes 
+createFileA :: !String !DWORD !DWORD !LPSECURITY_ATTRIBUTES !DWORD !DWORD !HANDLE !*World -> (!HANDLE, !*World)
+createFileA lpFileName dwDesiredAccess dwShareMode lpSecurityAttributes 
 	dwCreationDisposition dwFlagsAndAttributes hTemplateFile world
 	= code {
 		ccall CreateFileA@28 "PsIIIIII:I:I"
@@ -104,8 +104,8 @@ findNextFileA hFindFile lpFindFileData world
 		ccall FindNextFileA@8 "PIs:I:I"
 	}
 
-formatMessage :: !DWORD !LPCVOID !DWORD !DWORD !{#LPTSTR} !DWORD !Int -> DWORD
-formatMessage dwFlags lpSource dwMessageId dwLanguageId lpBuffer nSize args
+formatMessageA :: !DWORD !LPCVOID !DWORD !DWORD !{#LPTSTR} !DWORD !Int -> DWORD
+formatMessageA dwFlags lpSource dwMessageId dwLanguageId lpBuffer nSize args
 	= code {
 		ccall FormatMessageA@28 "PIIIIAII:I"
 	}
@@ -175,6 +175,11 @@ heapFree hHeap dwFlags lpMem world
 	= code {
 		ccall HeapFree@12 "PIIp:I:I"
 	}
+
+heapCreate :: !DWORD !SIZE_T !SIZE_T !*World -> (!HANDLE, !*World)
+heapCreate flOptions dwInitialSize dwMaximumSize world = code {
+	ccall HeapCreate@12 "PIII:I:I"
+}
 	
 CreateThread :: !LPSECURITY_ATTRIBUTES !SIZE_T !LPTHREAD_START_ROUTINE !LPVOID !DWORD !*World -> (!HANDLE,!DWORD,!*World)
 CreateThread threadAttributes stackSize startAddress parameter creationFlags world = code {
@@ -186,6 +191,11 @@ initializeCriticalSection lpCriticalSection world = code {
 	ccall InitializeCriticalSection@4 "Pp:V:I"
 }
 
+initializeCriticalSectionAndSpinCount :: !LPCRITICAL_SECTION !DWORD !*World -> (!Bool, !*World)
+initializeCriticalSectionAndSpinCount lpCriticalSection dwSpinCount world = code {
+	ccall InitializeCriticalSectionAndSpinCount@8 "PpI:I:I"
+}
+
 enterCriticalSection :: !LPCRITICAL_SECTION !*World -> *World
 enterCriticalSection lpCriticalSection world = code {
 	ccall EnterCriticalSection@4 "Pp:V:I"
@@ -194,4 +204,14 @@ enterCriticalSection lpCriticalSection world = code {
 leaveCriticalSection :: !LPCRITICAL_SECTION !*World -> *World
 leaveCriticalSection lpCriticalSection world = code {
 	ccall EnterCriticalSection@4 "Pp:V:I"
+}
+
+createMutex :: !LPSECURITY_ATTRIBUTES !Bool !LPCTSTR !*World -> (!HANDLE, !*World)
+createMutex lpMutexAttributes bInitialOwner lpName world = code {
+	ccall CreateMutexA@12 "PpIp:I:I"
+}
+
+releaseMutex :: !HANDLE !*World -> (!Bool, !*World)
+releaseMutex hMutex world = code {
+	ccall ReleaseMutex@4 "PI:I:I"
 }

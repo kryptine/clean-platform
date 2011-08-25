@@ -13,7 +13,6 @@ import Void
 import OSError
 import _Pointer
 import Time
-import _Windows
 import Text
 
 CHUNK_SIZE :== 1024
@@ -25,7 +24,25 @@ from _Windows import
 	INVALID_HANDLE_VALUE,
 	deleteFileA, 
 	findClose,
-	findFirstFileA
+	findFirstFileA,
+	:: DWORD,
+	SYSTEMTIME_wYear_offset,
+	SYSTEMTIME_wMinute_offset,
+	SYSTEMTIME_wSecond_offset,
+	SYSTEMTIME_wHour_offset,
+	SYSTEMTIME_wMonth_offset,
+	SYSTEMTIME_wDay_offset,
+	SYSTEMTIME_wDayOfWeek_offset,
+	SYSTEMTIME_size_bytes,
+	WIN32_FIND_DATA_ftCreationTime_bytes_offset,
+	WIN32_FIND_DATA_ftLastWriteTime_bytes_offset,
+	WIN32_FIND_DATA_ftLastAccessTime_bytes_offset,
+	FILETIME_size_bytes,
+	FILE_ATTRIBUTE_DIRECTORY,
+	moveFileA,
+	:: FILETIME,
+	fileTimeToSystemTime,
+	:: LPSYSTEMTIME
 	
 instance toString FileError
 where

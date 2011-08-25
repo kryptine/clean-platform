@@ -14,7 +14,7 @@ from _Windows import
 	FORMAT_MESSAGE_IGNORE_INSERTS,
 	LANGUAGE_NEUTRAL_SUBLANG_DEFAULT, 
 	NULL
-from _Windows import qualified getLastError, formatMessage, localFree
+from _Windows import qualified getLastError, formatMessageA, localFree
 import _Pointer
 
 getLastOSError :: *World -> (MaybeOSError .a, *World)
@@ -25,7 +25,7 @@ getLastOSError world
 formatMessage :: !Int -> String
 formatMessage errorCode
 	# msgBuf = createArray 1 0
-	# ok = '_Windows'.formatMessage
+	# ok = '_Windows'.formatMessageA
         (FORMAT_MESSAGE_ALLOCATE_BUFFER bitor FORMAT_MESSAGE_FROM_SYSTEM bitor FORMAT_MESSAGE_IGNORE_INSERTS)
         NULL
         errorCode

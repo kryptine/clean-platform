@@ -93,7 +93,7 @@ HEAP_ZERO_MEMORY :== 0x00000008
 
 closeHandle :: !HANDLE !*World -> (!Bool,!*World)
 	
-createFile :: !String !DWORD !DWORD !LPSECURITY_ATTRIBUTES 
+createFileA :: !String !DWORD !DWORD !LPSECURITY_ATTRIBUTES 
 	!DWORD !DWORD !HANDLE !*World -> (!HANDLE, !*World)
 	
 readFile :: !HANDLE !LPVOID !DWORD !LPDWORD !LPOVERLAPPED !*World -> (!Bool, !*World)
@@ -126,7 +126,7 @@ findFirstFileA :: !String !LPWIN32_FIND_DATA !*World -> (!HANDLE, !*World)
 
 findNextFileA :: !HANDLE !LPWIN32_FIND_DATA !*World -> (!Bool, !*World)
 
-formatMessage :: !DWORD !LPCVOID !DWORD !DWORD !{#LPTSTR} !DWORD !Int -> DWORD
+formatMessageA :: !DWORD !LPCVOID !DWORD !DWORD !{#LPTSTR} !DWORD !Int -> DWORD
 
 getCurrentDirectoryA :: !DWORD !{#Char} !*World -> (!DWORD, *World)
 
@@ -148,11 +148,15 @@ waitForSingleObject :: !HANDLE !Int !*World -> (!Int,!*World);
 getProcessHeap :: !*World -> (!HANDLE, !*World)
 
 heapAlloc :: !HANDLE !DWORD !SIZE_T !*World -> (!LPVOID, !*World)
-
 heapFree :: !HANDLE !DWORD !LPVOID !*World -> (!Bool, !*World)
+heapCreate :: !DWORD !SIZE_T !SIZE_T !*World -> (!HANDLE, !*World)
 
 CreateThread :: !LPSECURITY_ATTRIBUTES !SIZE_T !LPTHREAD_START_ROUTINE !LPVOID !DWORD !*World -> (!HANDLE,!DWORD,!*World)
 
 initializeCriticalSection :: !LPCRITICAL_SECTION !*World -> *World
+initializeCriticalSectionAndSpinCount :: !LPCRITICAL_SECTION !DWORD !*World -> (!Bool, !*World)
 enterCriticalSection :: !LPCRITICAL_SECTION !*World -> *World
 leaveCriticalSection :: !LPCRITICAL_SECTION !*World -> *World
+
+createMutex :: !LPSECURITY_ATTRIBUTES !Bool !LPCTSTR !*World -> (!HANDLE, !*World)
+releaseMutex :: !HANDLE !*World -> (!Bool, !*World)
