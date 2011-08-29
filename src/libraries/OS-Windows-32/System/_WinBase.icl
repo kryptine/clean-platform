@@ -186,9 +186,30 @@ CreateThread threadAttributes stackSize startAddress parameter creationFlags wor
 	ccall CreateThread "pIppI:II:I"
 }
 
+ResumeThread :: !HANDLE !*World -> (!DWORD, *World)
+ResumeThread threadHandle world = code {
+	ccall ResumeThread@4 "PI:I:I"
+}
+
 initializeCriticalSection :: !LPCRITICAL_SECTION !*World -> *World
 initializeCriticalSection lpCriticalSection world = code {
 	ccall InitializeCriticalSection@4 "Pp:V:I"
+}
+
+WinGetThreadId :: !HANDLE !*World -> (!DWORD, !*World);
+WinGetThreadId handle world = code {
+	ccall GetThreadId@4 "Pp:I:I"
+}
+
+WinGetCurrentThreadId :: !*World -> (!DWORD, !*World)
+WinGetCurrentThreadId world = code {
+	ccall GetCurrentThreadId@0 "P:I:I"
+}
+
+WinOpenThread :: !DWORD !Bool !DWORD *World -> (!DWORD, !*World)
+WinOpenThread dwDesiredAccess bInheritHandle dwThreadId world
+ = code {
+	ccall OpenThread@12 "PIII:I:I"
 }
 
 initializeCriticalSectionAndSpinCount :: !LPCRITICAL_SECTION !DWORD !*World -> (!Bool, !*World)

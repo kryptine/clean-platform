@@ -3,9 +3,42 @@ implementation module Threads
 import _WinBase, _Pointer, StdArray, StdInt, StdClass, dynamic_string, _Unsafe
 foreign export threadFunc
 
-:: WinThreadHandle :== HANDLE
-:: ThreadId :== WinThreadHandle
+forceI :: !Int !*World -> *World
+forceI h w
+	= code inline {
+		pop_b 1
+		fill_a 0 1
+		pop_a 1				
+	}
 
+getCurrentThreadId :: !*World -> (!ThreadId, !*World)
+getCurrentThreadId world = WinGetCurrentThreadId world
+
+send :: !ThreadId !a !*World -> *(!Bool, !*World) | TC a
+send tid msg world
+	# msgStr = dynamic_to_string (dynamic msg)
+	# res = mq_send_message tid msgStr
+	= (not res, world)
+where
+	mq_send_message :: !DWORD !String -> Bool
+	mq_send_message tid msg = code {
+		.d 1 1 i
+			jsr mqueue_send_message
+		.o 0 1 b	
+	}
+
+receive :: !*World -> *(!Int, !Dynamic, !*World)
+receive world
+	# (sender, paramstr) = mq_recv_message
+	= (sender, string_to_dynamic paramstr, world)
+where
+	mq_recv_message :: (!Int, !*String)
+	mq_recv_message = code {
+		.d 0 0
+			jsr mqueue_receive_message
+		.o 1 1 i
+	}
+	
 fork :: !(*World -> *World) !*World -> (!ThreadId, !*World)
 fork threadF world
 	# threadFStr = copy_to_string threadF
@@ -16,12 +49,24 @@ fork threadF world
 	# ptr = store_int s 8 ptr
 	# ptr = writeCharArray (ptr + 16) (packString threadFStr)
 	# ptr = ptr - 16
-	# (handle, _, world) = CreateThread 0 0 clean_new_thread_address ptr 0 world
-	= (handle, world)
+	# (handle, _, world) = CreateThread 0 0 clean_new_thread_address ptr CREATE_SUSPENDED world
+	# (id, world) = WinGetThreadId handle world
+	# world = forceI (mq_add_thread_id id) world
+	# (_, world) = ResumeThread handle world
+	= (id, world)
+where
+	// initialize message queue for the given thread
+	mq_add_thread_id :: !DWORD -> DWORD
+	mq_add_thread_id tid = code {
+		.d 0 1 i
+			jsr mqueue_add_thread_id
+		.o 0 1 i	
+	}	
 
 waitForThread :: !ThreadId !*World -> *World
 waitForThread tid world
-	# (_, world) = waitForSingleObject tid INFINITE world
+	# (handle, world) = WinOpenThread SYNCHRONIZE False tid world
+	# (_, world) = waitForSingleObject handle INFINITE world
 	= world
 
 threadFunc :: !LPVOID -> DWORD

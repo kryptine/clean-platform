@@ -86,6 +86,8 @@ FILE_ATTRIBUTE_NORMAL :== 128
 LOCKFILE_EXCLUSIVE_LOCK :== 0x00000002
 
 HEAP_ZERO_MEMORY :== 0x00000008
+CREATE_SUSPENDED :== 0x00000004
+SYNCHRONIZE :== 0x00100000
 
 /*
  * Windows API calls 
@@ -152,6 +154,7 @@ heapFree :: !HANDLE !DWORD !LPVOID !*World -> (!Bool, !*World)
 heapCreate :: !DWORD !SIZE_T !SIZE_T !*World -> (!HANDLE, !*World)
 
 CreateThread :: !LPSECURITY_ATTRIBUTES !SIZE_T !LPTHREAD_START_ROUTINE !LPVOID !DWORD !*World -> (!HANDLE,!DWORD,!*World)
+ResumeThread :: !HANDLE !*World -> (!DWORD, *World)
 
 initializeCriticalSection :: !LPCRITICAL_SECTION !*World -> *World
 initializeCriticalSectionAndSpinCount :: !LPCRITICAL_SECTION !DWORD !*World -> (!Bool, !*World)
@@ -160,3 +163,8 @@ leaveCriticalSection :: !LPCRITICAL_SECTION !*World -> *World
 
 createMutex :: !LPSECURITY_ATTRIBUTES !Bool !LPCTSTR !*World -> (!HANDLE, !*World)
 releaseMutex :: !HANDLE !*World -> (!Bool, !*World)
+
+WinGetThreadId :: !HANDLE !*World -> (!DWORD, !*World)
+WinGetCurrentThreadId :: !*World -> (!DWORD, !*World)
+WinOpenThread :: !DWORD !Bool !DWORD *World -> (!DWORD, !*World)
+

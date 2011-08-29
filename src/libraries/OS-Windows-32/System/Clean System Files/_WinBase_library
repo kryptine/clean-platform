@@ -22,9 +22,14 @@ RemoveDirectoryA@4
 SetCurrentDirectoryA@4
 SetEnvironmentVariableA@8
 WaitForSingleObject@8
+GetThreadId@4
+GetCurrentThreadId@0
+GetCurrentThread@0
 GetProcessHeap@0
 HeapAlloc@12
 HeapFree@12
+ResumeThread@4
+OpenThread@12
 InitializeCriticalSection@4
 InitializeCriticalSectionAndSpinCount@8
 EnterCriticalSection@4
