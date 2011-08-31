@@ -227,8 +227,8 @@ leaveCriticalSection lpCriticalSection world = code {
 	ccall EnterCriticalSection@4 "Pp:V:I"
 }
 
-createMutex :: !LPSECURITY_ATTRIBUTES !Bool !LPCTSTR !*World -> (!HANDLE, !*World)
-createMutex lpMutexAttributes bInitialOwner lpName world = code {
+createMutexA :: !LPSECURITY_ATTRIBUTES !Bool !LPCTSTR !*World -> (!HANDLE, !*World)
+createMutexA lpMutexAttributes bInitialOwner lpName world = code {
 	ccall CreateMutexA@12 "PpIp:I:I"
 }
 

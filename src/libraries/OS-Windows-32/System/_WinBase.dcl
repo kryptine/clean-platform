@@ -6,6 +6,8 @@ import _WinDef, StdInt
  * Record definitions, size and field offsets
  */
 
+INT_SIZE :== IF_INT_64_OR_32 8 4
+
 :: FILETIME :== {#Char}
 FILETIME_size_bytes :== 8
 FILETIME_size_int :== 2
@@ -52,6 +54,11 @@ PROCESS_INFORMATION_size_bytes :== 32
 PROCESS_INFORMATION_size_int :== 4
 PROCESS_INFORMATION_hProcess_int_offset :== 0
 PROCESS_INFORMATION_hThread_int_offset :== 1
+
+SECURITY_ATTRIBUTES_SIZE_BYTES							:== INT_SIZE * 3
+SECURITY_ATTRIBUTES_nLength_BYTES_OFFSET				:== 0
+SECURITY_ATTRIBUTES_lpSecurityDescriptor_BYTES_OFFSET	:== INT_SIZE
+SECURITY_ATTRIBUTES_bInheritHandle_BYTES_OFFSET			:== INT_SIZE * 2
 
 /*
  * Macros
@@ -161,7 +168,7 @@ initializeCriticalSectionAndSpinCount :: !LPCRITICAL_SECTION !DWORD !*World -> (
 enterCriticalSection :: !LPCRITICAL_SECTION !*World -> *World
 leaveCriticalSection :: !LPCRITICAL_SECTION !*World -> *World
 
-createMutex :: !LPSECURITY_ATTRIBUTES !Bool !LPCTSTR !*World -> (!HANDLE, !*World)
+createMutexA :: !LPSECURITY_ATTRIBUTES !Bool !LPCTSTR !*World -> (!HANDLE, !*World)
 releaseMutex :: !HANDLE !*World -> (!Bool, !*World)
 
 WinGetThreadId :: !HANDLE !*World -> (!DWORD, !*World)

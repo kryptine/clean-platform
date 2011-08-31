@@ -115,3 +115,5 @@ packString :: !String -> {#Char}
 * Unpacks a NULL-terminated C-string into a Clean-string.
 */
 unpackString :: !{#Char} -> String
+
+forceEval :: !a !*st -> *st

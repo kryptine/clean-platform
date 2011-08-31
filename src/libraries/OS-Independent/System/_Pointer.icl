@@ -473,3 +473,6 @@ where
 	unpack :: Int -> String
 	unpack off	| s.[off] == '\0' = s % (0, off - 1)
 				| otherwise       = unpack (off + 1)
+
+forceEval :: !a !*st -> *st
+forceEval _ st = st

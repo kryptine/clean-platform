@@ -3,17 +3,12 @@ implementation module SharedMemory
 import _WinBase, _Pointer, StdInt, StdTuple, StdString, StdArray, StdBool, StdFunc, FilePath, SharedDataSource, dynamic_string
 import StdMisc
 
-INT_SIZE :== IF_INT_64_OR_32 8 4
-SPIN_COUNT :== 4000
-
 sharedMemory :: !a !*World -> (!Shared a World, !*World)
 sharedMemory v world
 	# (heap, world)	= getProcessHeap world
 	# initStr		= copy_to_string v
 	# sStr			= size initStr
-	//# (csec, world)	= heapAlloc heap 0 CRITICAL_SECTION_SIZE_BYTES world
-	//# (ok, world)	= initializeCriticalSectionAndSpinCount csec SPIN_COUNT world
-	# (mutx, world)	= createMutex NULL False NULL world
+	# (mutx, world)	= createMutexA NULL False NULL world
 	// check ok
 	# (iptr, world)	= heapAlloc heap 0 (INT_SIZE * 2) world
 	# (vptr, world)	= heapAlloc heap 0 sStr world
@@ -46,10 +41,12 @@ where
 			# (ok, world)	= heapFree heap 0 vptr world
 			# sStr			= size b
 			# (vptr, world)	= heapAlloc heap 0 sStr world
+			| vptr == NULL = abort "writing to shared memory: error allocating memory"
 			# vptr			= writeCharArray vptr b
-			#! ptr			= writeInt ptr INT_SIZE vptr
-			= const world ptr // force eval of ptr
-			
+			# ptr			= writeInt ptr 0 sStr
+			# ptr			= writeInt ptr INT_SIZE vptr
+			= forceEval ptr world
+
 		getVersion world
 			= (0, world)
 			
