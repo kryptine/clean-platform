@@ -170,8 +170,11 @@ leaveCriticalSection :: !LPCRITICAL_SECTION !*World -> *World
 
 createMutexA :: !LPSECURITY_ATTRIBUTES !Bool !LPCTSTR !*World -> (!HANDLE, !*World)
 releaseMutex :: !HANDLE !*World -> (!Bool, !*World)
+createEventA :: !LPSECURITY_ATTRIBUTES !Bool !Bool !LPCTSTR !*World -> (!HANDLE, !*World)
+setEvent :: !HANDLE !*World -> (!Bool, !*World)
 
 WinGetThreadId :: !HANDLE !*World -> (!DWORD, !*World)
 WinGetCurrentThreadId :: !*World -> (!DWORD, !*World)
 WinOpenThread :: !DWORD !Bool !DWORD *World -> (!DWORD, !*World)
 
+sleep :: !DWORD !*World -> *World

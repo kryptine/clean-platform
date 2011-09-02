@@ -37,3 +37,5 @@ LeaveCriticalSection@4
 HeapCreate@12
 CreateMutexA@12
 ReleaseMutex@4
+CreateEventA
+SetEvent

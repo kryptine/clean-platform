@@ -29,6 +29,7 @@ where
 		, lockExcl		= lockExcl
 		, unlock		= unlock
 		, close			= close
+		, addWaiter		= addWaiter
 		}
 	where
 		read world
@@ -83,6 +84,12 @@ where
 			| not ok = abort "lock file error"
 			# (ok, world)	= heapFree heap 0 overlapped world
 			// check ok
+			= world
+			
+		addWaiter waiter world = world
+		
+		wait world
+			# world		= close (unlock world)
 			= world
 		
 		unlock world

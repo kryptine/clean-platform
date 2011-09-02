@@ -44,7 +44,7 @@ fork threadF world
 	# ptr					= writeCharArray (ptr + INT_SIZE * 4) threadFStr
 	# ptr					= ptr - INT_SIZE * 4
 	# (handle, id, world)	= CreateThread 0 0 clean_new_thread_address ptr CREATE_SUSPENDED world
-	# world					= forceEval (mq_add_thread_id id) world
+	//# world					= forceEval (mq_add_thread_id id) world
 	# (_, world)			= ResumeThread handle world
 	= (id, world)
 where

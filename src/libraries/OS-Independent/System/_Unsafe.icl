@@ -1,10 +1,10 @@
 implementation module _Unsafe
 
-appUnsafe :: (*World -> *World) a -> a
+appUnsafe :: !(*World -> *World) !.a -> .a
 appUnsafe f a
 	| world_to_true (f newWorld) = a
 	
-accUnsafe :: (*World -> (a, *World)) -> a
+accUnsafe :: !*(*World -> *(.a, !*World)) -> .a
 accUnsafe f
 	# (a, world) = f newWorld
 	| world_to_true world = a

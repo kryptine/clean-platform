@@ -2,7 +2,8 @@ definition module SharedDataSource
 
 import FilePath, Void
 
-from SharedDataSourceTypes import :: ReadWriteShared
+from _SharedDataSourceTypes			import :: ReadWriteShared
+from _SharedDataSourceOsDependent	import :: WAITER
 :: Shared a st :== ReadWriteShared a a st
 :: SharedVer :== Int
 
@@ -24,6 +25,7 @@ createBasicDataSource ::
 	, lockExcl		:: !st -> st
 	, unlock		:: !st -> st
 	, close			:: !st -> st
+	, addWaiter		:: !WAITER st -> st
 	}
 
 readShared	::		!(ReadWriteShared r w *st) !*st -> (!r, !SharedVer, !*st)

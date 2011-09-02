@@ -1,6 +1,6 @@
 implementation module SharedDataSource
 
-import SharedDataSourceTypes, StdTuple, FilePath, Void, Maybe, StdBool, StdMisc, StdList, StdFunc, StdString, StdOrdList, Tuple, Func
+import _SharedDataSourceTypes, _SharedDataSourceOsDependent, StdTuple, FilePath, Void, Maybe, StdBool, StdMisc, StdList, StdFunc, StdString, StdOrdList, Tuple, Func
 from Map import qualified :: Map, newMap, toList, getU, put
 
 createBasicDataSource ::
@@ -42,18 +42,19 @@ getVersion shared st
 
 updateShared :: !(r SharedVer -> (UpdRes w a)) !(ReadWriteShared r w *st) !*st -> (!a, !*st)
 updateShared f shared st
-	# (ops, st)		= lock True shared st
-	# (r, ver, st)	= readSharedData` ops st
-	# (a, st) = case f r ver of
+	# (ops, st)			= lock True shared st
+	# (r, ver, st)		= readSharedData` ops st
+	= case f r ver of
 		NoOp a
+			# st		= close ops st
 			= (a, st)
 		Update w a
-			# st	= writeSharedData` w ops st
+			# st		= writeSharedData` w ops st
+			# st		= close ops st
 			= (a, st)
 		Wait
-			= abort "not implemented"
-	# st			= close ops st
-	= (a, st)
+			# st		= wait ops st
+			= updateShared f shared st
 
 lock :: !Bool !(ReadWriteShared r w *st) !*st -> (SharedOps r w *st, !*st)
 lock exclusive shared st
@@ -71,10 +72,16 @@ where
 	lock` (ComposedSource {srcX, srcY, get, putback}) st
 		# (lockX, opsX, st)	= lock` srcX st
 		# (lockY, opsY, st)	= lock` srcY st
-		= (lockX ++ lockY, ComposedSourceOps {opsX = opsX, opsY = opsY, get = get, putback = putback}, st)
+		= (lockX ++ lockY, ComposedSourceOps {opsX = opsX, opsY = opsY, get = get, putback = putback, addWaiter = \waiter st -> addWaiter opsY waiter (addWaiter opsX waiter st)}, st)
 		
 	removeDup` [x:xs] = [x:removeDup` (filter (\y -> fst x <> fst y) xs)]
 	removeDup` _      = []
+	
+	addWaiter :: !(SharedOps r w *st) !WAITER !*st -> *st
+	addWaiter (BasicSourceOps _ putback {BasicSourceOps|addWaiter}) waiter st
+		= addWaiter waiter st
+	addWaiter (ComposedSourceOps {opsX, opsY}) waiter st
+		= addWaiter opsY waiter (addWaiter opsX waiter st)
 	
 readSharedData` :: !(SharedOps r w *st) !*st ->(!r, !SharedVer, !*st)	
 readSharedData` (BasicSourceOps get _ {BasicSourceOps|read}) st
@@ -105,14 +112,8 @@ getVersion` (ComposedSourceOps {opsX, opsY, get}) st
 	# (very, st)	= getVersion` opsY st
 	= (verx + very, st)
 
-close :: !(SharedOps r w *st) !*st -> *st
-close (BasicSourceOps _ _ {BasicSourceOps|unlock, close}) st
-	= close (unlock st)
-close (ComposedSourceOps {opsX, opsY}) st
-	# st	= close opsX st
-	# st	= close opsY st
-	= st
-
+wait :: !(SharedOps r w *st) !*st -> *st
+wait ops st = waitOsDependent ops st
 
 mapSharedRead :: !(r -> r`) !(ReadWriteShared r w *st) -> ReadWriteShared r` w *st
 mapSharedRead get` (BasicSource shared=:{BasicSource|get}) = BasicSource
@@ -260,3 +261,4 @@ transactionWrite w (ComposedSource {srcX, srcY, putback}) tr
 	# tr		= transactionWrite wx srcX tr
 	# tr		= transactionWrite wy srcY tr
 	= tr
+	

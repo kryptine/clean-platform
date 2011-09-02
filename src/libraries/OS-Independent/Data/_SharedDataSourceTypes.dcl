@@ -1,6 +1,7 @@
-definition module SharedDataSourceTypes
+definition module _SharedDataSourceTypes
 
-from SharedDataSource import :: BasicSourceOps
+from SharedDataSource				import :: BasicSourceOps
+from _SharedDataSourceOsDependent	import :: WAITER
 
 :: ReadWriteShared r w *st
 	= E.b:				BasicSource !(BasicSource b r w st)
@@ -31,4 +32,7 @@ from SharedDataSource import :: BasicSourceOps
 	, opsY		:: !SharedOps ry wy st
 	, get		:: !rx ry -> r
 	, putback	:: !w rx ry -> (!wx,!wy)
+	, addWaiter	:: !WAITER st -> st
 	}
+	
+close :: !(SharedOps r w *st) !*st -> *st

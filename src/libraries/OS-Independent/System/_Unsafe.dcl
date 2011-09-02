@@ -12,10 +12,10 @@ definition module _Unsafe
 /**
 * Execute a *World->*World function as side effect of evaluating a pure expression.
 */
-appUnsafe :: (*World -> *World) a -> a
+appUnsafe :: !(*World -> *World) !.a -> .a
 
 /**
 * Execute a function with side effect and use its result as a pure expression.
 */
-accUnsafe :: (*World -> (a, *World)) -> a
+accUnsafe :: !*(*World -> *(.a, !*World)) -> .a
 

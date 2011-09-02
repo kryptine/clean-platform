@@ -236,3 +236,18 @@ releaseMutex :: !HANDLE !*World -> (!Bool, !*World)
 releaseMutex hMutex world = code {
 	ccall ReleaseMutex@4 "PI:I:I"
 }
+
+createEventA :: !LPSECURITY_ATTRIBUTES !Bool !Bool !LPCTSTR !*World -> (!HANDLE, !*World)
+createEventA lpEventAttributes bManualReset bInitialState lpName world = code {
+	ccall CreateEventA "PpIIp:I:I"
+}
+
+setEvent :: !HANDLE !*World -> (!Bool, !*World)
+setEvent hEvent world = code {
+	ccall SetEvent "PI:I:I"
+}
+
+sleep :: !DWORD !*World -> *World
+sleep dwMilliseconds world = code {
+	ccall Sleep "PI:V:I"
+}
