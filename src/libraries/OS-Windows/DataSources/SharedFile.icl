@@ -3,8 +3,8 @@ implementation module SharedFile
 import _WinBase, _Pointer, StdInt, StdArray, StdBool, StdFunc, FilePath, SharedDataSource
 import StdMisc
 
-sharedFile :: !FilePath -> Shared String *World
-sharedFile path = createBasicDataSource "sharedFile" path mkOps id const
+sharedFile :: !FilePath !(String -> a) !(a -> String) -> Shared a *World | TC a
+sharedFile path str2b b2str = createBasicDataSource "sharedFile" path mkOps id const
 where
 	mkOps world
 		# (heap, world)	= getProcessHeap world
@@ -29,7 +29,7 @@ where
 		, lockExcl		= lockExcl
 		, unlock		= unlock
 		, close			= close
-		, addWaiter		= addWaiter
+		, addObserver	= addObserver
 		}
 	where
 		read world
@@ -39,17 +39,18 @@ where
 			// check NULL
 			# (ok, world)	= readFile handle pBuffer len (packInt 0) NULL world
 			| not ok = abort "read error"
-			#! b = derefCharArray pBuffer len
+			#! str = derefCharArray pBuffer len
 			# (ok, world)	= heapFree heap 0 pBuffer world
 			// check ok
 			# (ver, world) = getVersion world
-			= (b, ver, world)
+			= (str2b str, ver, world)
 			
 		write b world
-			# len	= size b
+			# str	= b2str b
+			# len	= size str
 			# (pBuffer, world)	= heapAlloc heap 0 len world
 			// check NULL
-			# pBuffer	= writeCharArray pBuffer b
+			# pBuffer	= writeCharArray pBuffer str
 			# (overlapped, world)	= heapAlloc heap HEAP_ZERO_MEMORY OVERLAPPED_SIZE_BYTES world
 			// check NULL
 			# (ok, world)	= writeFile handle pBuffer len (packInt 0) overlapped world
@@ -86,7 +87,7 @@ where
 			// check ok
 			= world
 			
-		addWaiter waiter world = world
+		addObserver obs world = world
 		
 		wait world
 			# world		= close (unlock world)

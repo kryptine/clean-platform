@@ -2,4 +2,4 @@ definition module SharedFile
 
 import FilePath, SharedDataSource
 
-sharedFile :: !FilePath -> Shared String *World
+sharedFile :: !FilePath !(String -> a) !(a -> String) -> Shared a *World | TC a

@@ -2,6 +2,6 @@ definition module _SharedDataSourceOsDependent
 
 import _SharedDataSourceTypes
 
-:: WAITER :== Int
+:: OBSERVER :== Int
 
 waitOsDependent :: !(SharedOps r w *st) !*st -> *st

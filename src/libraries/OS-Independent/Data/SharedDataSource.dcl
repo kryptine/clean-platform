@@ -1,11 +1,12 @@
 definition module SharedDataSource
 
-import FilePath, Void
+import FilePath, Void, Maybe
 
-from _SharedDataSourceTypes			import :: ReadWriteShared
-from _SharedDataSourceOsDependent	import :: WAITER
-:: Shared a st :== ReadWriteShared a a st
-:: SharedVer :== Int
+from _SharedDataSourceTypes			import :: RWShared
+from _SharedDataSourceOsDependent	import :: OBSERVER
+:: Shared a st		:== RWShared a a st
+:: ROShared a st	:== RWShared a Void st
+:: Version			:== Int
 
 createBasicDataSource ::
 	!String
@@ -14,28 +15,29 @@ createBasicDataSource ::
 	!(b -> r)
 	!(w b -> b)
 	->
-	ReadWriteShared r w *st
+	RWShared r w *st
 	| TC b
 	
 :: BasicSourceOps b *st =
-	{ read			:: !st -> *(!b, !SharedVer, !st)
+	{ read			:: !st -> *(!b, !Version, !st)
 	, write			:: !b st -> st
-	, getVersion	:: !st -> *(!SharedVer, !st)
+	, getVersion	:: !st -> *(!Version, !st)
 	, lock			:: !st -> st
 	, lockExcl		:: !st -> st
 	, unlock		:: !st -> st
 	, close			:: !st -> st
-	, addWaiter		:: !WAITER st -> st
+	, addObserver	:: !OBSERVER st -> st
 	}
 
-readShared	::		!(ReadWriteShared r w *st) !*st -> (!r, !SharedVer, !*st)
-writeShared	:: !w	!(ReadWriteShared r w *st) !*st -> *st
-getVersion	::		!(ReadWriteShared r w *st) !*st -> (!SharedVer, !*st)
+read		::		!(RWShared r w *st) !*st -> (!r, !Version, !*st)
+write		:: !w	!(RWShared r w *st) !*st -> *st
+getVersion	::		!(RWShared r w *st) !*st -> (!Version, !*st)
 
 // atomic update
-:: UpdRes w a = NoOp !a | Update !w !a | Wait
+:: RWRes w a = YieldResult !a | Write !w !a | Redo
 
-updateShared :: !(r SharedVer -> (UpdRes w a)) !(ReadWriteShared r w *st) !*st -> (!a, !*st)
+readWrite	:: !(r Version -> (RWRes w a))			!(RWShared r w *st) !*st -> (!a, !*st)
+unsafeRW	:: !(r Version *st -> (RWRes w a, *st))	!(RWShared r w *st)	!*st -> (!a, !*st)
 
 /**
 * Maps the read type, the write type or both of a shared reference to another one using a functional mapping.
@@ -46,19 +48,19 @@ updateShared :: !(r SharedVer -> (UpdRes w a)) !(ReadWriteShared r w *st) !*st -
 * @param A reference to shared data
 * @return A reference to shared data of another type
 */
-mapSharedRead	:: !(r -> r`)				!(ReadWriteShared r w *st) -> ReadWriteShared r` w *st
-mapSharedWrite	:: !(w` r -> w)				!(ReadWriteShared r w *st) -> ReadWriteShared r w` *st
-mapShared		:: !(!r -> r`,!w` r -> w)	!(ReadWriteShared r w *st) -> ReadWriteShared r` w` *st
+mapRead			:: !(r -> r`)					!(RWShared r w *st) -> RWShared r` w *st
+mapWrite		:: !(w` r -> Maybe w)			!(RWShared r w *st) -> RWShared r w` *st
+mapReadWrite	:: !(!r -> r`,!w` r -> Maybe w)	!(RWShared r w *st) -> RWShared r` w` *st
 
 // Composition of two shared references.
 // The read type is a tuple of both types.
 // The write type can either be a tuple of both write types, only one of them or it is written to none of them (result is a read-only shared).
-(>+<) infixl 6 :: !(ReadWriteShared rx wx *st) !(ReadWriteShared ry wy *st) -> ReadWriteShared (rx,ry) (wx,wy) *st
-(>+|) infixl 6 :: !(ReadWriteShared rx wx *st) !(ReadWriteShared ry wy *st) -> ReadWriteShared (rx,ry) wx *st
-(|+<) infixl 6 :: !(ReadWriteShared rx wx *st) !(ReadWriteShared ry wy *st) -> ReadWriteShared (rx,ry) wy *st
-(|+|) infixl 6 :: !(ReadWriteShared rx wx *st) !(ReadWriteShared ry wy *st) -> ReadWriteShared (rx,ry) Void *st
+(>+<) infixl 6 :: !(RWShared rx wx *st) !(RWShared ry wy *st) -> RWShared (rx,ry) (wx,wy) *st
+(>+|) infixl 6 :: !(RWShared rx wx *st) !(RWShared ry wy *st) -> RWShared (rx,ry) wx *st
+(|+<) infixl 6 :: !(RWShared rx wx *st) !(RWShared ry wy *st) -> RWShared (rx,ry) wy *st
+(|+|) infixl 6 :: !(RWShared rx wx *st) !(RWShared ry wy *st) -> RWShared (rx,ry) Void *st
 
-toReadOnlyShared :: !(ReadWriteShared r w *st) -> ReadWriteShared r Void *st
+toReadOnly :: !(RWShared r w *st) -> ROShared r *st
 
 /**
 * Puts a symmetric lens between two symmetric shared data sources.
@@ -68,16 +70,16 @@ toReadOnlyShared :: !(ReadWriteShared r w *st) -> ReadWriteShared r Void *st
 * @param putl: used to map changes of shared b to shared a
 * @param SymmetricShared a
 * @param SymmetricShared b
-* @param ReadWriteShared references of the same type with symmetric lens between them
+* @param RWShared references of the same type with symmetric lens between them
 */
 symmetricLens :: !(a b -> b) !(b a -> a) !(Shared a *st) !(Shared b *st) -> (!Shared a *st, !Shared b *st)
 
 // STM
-:: *Transaction *st
+:: *Trans *st
 
-:: TRes a = YieldResult !a | Retry
+:: TRes a = TYieldResult !a | Retry
 
-atomic :: !((*Transaction *st) -> (!TRes a, !*Transaction *st)) !*st -> (!a, !*st)
+atomic :: !((*Trans *st) -> (!TRes a, !*Trans *st)) !*st -> (!a, !*st)
 
-transactionRead		:: 		!(ReadWriteShared r w *st) !(Transaction *st) -> (!r, !(Transaction *st))
-transactionWrite	:: !w	!(ReadWriteShared r w *st) !(Transaction *st) -> (Transaction *st)
+transRead	:: 		!(RWShared r w *st) !(Trans *st) -> (!r, !(Trans *st))
+transWrite	:: !w	!(RWShared r w *st) !(Trans *st) -> (Trans *st)

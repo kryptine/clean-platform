@@ -1,7 +1,8 @@
 implementation module _SharedDataSourceTypes
 
-from SharedDataSource				import :: BasicSourceOps{..}, :: SharedVer
-from _SharedDataSourceOsDependent	import :: WAITER
+import Maybe
+from SharedDataSource				import :: BasicSourceOps{..}, :: Version
+from _SharedDataSourceOsDependent	import :: OBSERVER
 
 close :: !(SharedOps r w *st) !*st -> *st
 close (BasicSourceOps _ _ {BasicSourceOps|unlock, close}) st
