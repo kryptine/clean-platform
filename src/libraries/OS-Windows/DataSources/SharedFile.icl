@@ -3,7 +3,7 @@ implementation module SharedFile
 import _WinBase, _Pointer, StdInt, StdArray, StdBool, StdFunc, FilePath, SharedDataSource
 import StdMisc
 
-sharedFile :: !FilePath !(String -> a) !(a -> String) -> Shared a *World | TC a
+sharedFile :: !FilePath !(String -> a) !(a -> String) -> Shared a *World
 sharedFile path str2b b2str = createBasicDataSource "sharedFile" path mkOps id const
 where
 	mkOps world

@@ -11,7 +11,6 @@ createBasicDataSource ::
 	!(w b -> b)
 	->
 	RWShared r w *st
-	| TC b
 createBasicDataSource type id mkOps get putback = BasicSource
 	{ id = type +++ ":" +++ id
 	, mkOps = mkOps
@@ -126,8 +125,12 @@ getVersion` (ComposedSourceOps {opsX, opsY, get}) st
 	= (verx + very, st)
 
 wait :: !(SharedOps r w *st) !*st -> *st
-wait ops st = waitOsDependent ops st
-
+wait ops st = waitOsDependent [addObs] (close ops) st
+where
+	addObs = case ops of
+		BasicSourceOps _ _ {BasicSourceOps|addObserver}		= addObserver
+		ComposedSourceOps {ComposedSourceOps|addObserver}	= addObserver
+		
 mapRead :: !(r -> r`) !(RWShared r w *st) -> RWShared r` w *st
 mapRead get` (BasicSource shared=:{BasicSource|get}) = BasicSource
 	{ BasicSource
@@ -193,25 +196,28 @@ atomic trF st
 	# entries				= map snd ('Map'.toList log)
 	= case res of
 		Retry
-			# st			= seqSt (\(TLogEntry _ _ _ {close}) st -> close st) entries st
+			# st			= waitOsDependent [addObserver \\ (TLogEntry _ _ _ {BasicSourceOps|addObserver}) <- entries] (seqSt (\(TLogEntry _ _ _ {close}) st -> close st) entries) st
 			= atomic trF st
 		TYieldResult a
 			# st			= seqSt (\(TLogEntry _ _ _ {lockExcl}) st -> lockExcl st) entries st
-			# (retry, st) 	= seqSt commit entries (False, st)
-			| retry			= atomic trF st
-			| otherwise		= (a, st)
+			# (retry, st)	= checkConsistency entries st
+			| retry
+				# st		= seqSt (\(TLogEntry _ _ _ {unlock, close}) st -> close (unlock st)) entries st
+				= atomic trF st
+			| otherwise
+				# st		= seqSt commit entries st
+				# st		= seqSt (\(TLogEntry _ _ _ {unlock, close}) st -> close (unlock st)) entries st
+				= (a, st)
 where
-	commit (TLogEntry b lVer doWrite {getVersion, write, unlock, close}) (retry, st)
-		# (retry, st)		= if retry (True, st) (commit` st)
-		# st				= unlock st
-		# st				= close st
-		= (retry, st)
-	where
-		commit` st
-			# (cVer, st)	= getVersion st
-			# retry			= cVer <> lVer
-			# st			= if (not retry && doWrite) (write b st) st
-			= (retry, st)
+	checkConsistency [] st = (False, st)
+	checkConsistency [TLogEntry _ lVer _ {getVersion}:entries] st
+		# (cVer, st)		= getVersion st
+		| cVer == lVer		= checkConsistency entries st
+		| otherwise			= (True, st)
+
+	commit (TLogEntry b _ doWrite {write}) st
+		| doWrite			= write b st
+		| otherwise			= st
 
 transRead :: !(RWShared r w *st) !(Trans *st) -> (!r, !(Trans *st))	
 transRead (BasicSource {BasicSource|id, get, mkOps}) tr=:{log, st}
@@ -225,12 +231,8 @@ transRead (BasicSource {BasicSource|id, get, mkOps}) tr=:{log, st}
 			# log			= 'Map'.put id (TLogEntry b ver False ops) log
 			= (get b, {tr & log = log, st = st})
 		Just (TLogEntry b _ _ _)
-			= (getFromB b get, {tr & log = log})
-where
-	getFromB :: !bl !(b -> r) -> r | TC bl & TC b
-	getFromB b get = case dynamic b of
-		(b :: b^)	= get b
-		_ 			= abort "read data in transactions: invalid value in transaction log"
+			= (get (forceType b), {tr & log = log})
+
 transRead (ComposedSource {srcX, srcY, get}) tr
 	# (rx, tr)	= transRead srcX tr
 	# (ry, tr)	= transRead srcY tr
@@ -250,17 +252,13 @@ transWrite w (BasicSource {BasicSource|id, putback, mkOps}) tr=:{log, st}
 				Just b	= b
 			# log			= 'Map'.put id (TLogEntry b ver True ops) log
 			= {tr & log = log, st = st}
-		Just (TLogEntry b ver _ ops) = case (putbackToB w b putback) of
+		Just (TLogEntry b ver _ ops) = case putback w (forceType b) of
 			Nothing
 				= tr
 			Just b
-				# log = 'Map'.put id (TLogEntry b ver True ops) log
+				# log = 'Map'.put id (TLogEntry (forceType b) ver True ops) log
 				= {tr & log = log}
-where
-	putbackToB :: !w !bl !(w b -> Maybe b) -> Maybe bl | TC bl & TC b
-	putbackToB w b putback = case dynamic putback w of
-		(putb :: bl^ -> Maybe bl^)	= putb b
-		_							= abort "write data in transactions: invalid value in transaction log"
+
 transWrite w (ComposedSource {srcX, srcY, putback}) tr
 	# (rx, tr)	= transRead srcX tr
 	# (ry, tr)	= transRead srcY tr
@@ -271,4 +269,8 @@ transWrite w (ComposedSource {srcX, srcY, putback}) tr
 			# tr		= transWrite wx srcX tr
 			# tr		= transWrite wy srcY tr
 			= tr
-	
+
+import dynamic_string
+// very unsafe operation
+forceType :: !a -> b
+forceType a = fst (copy_from_string (copy_to_string a))

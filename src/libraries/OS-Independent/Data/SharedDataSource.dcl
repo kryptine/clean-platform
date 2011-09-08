@@ -16,7 +16,6 @@ createBasicDataSource ::
 	!(w b -> b)
 	->
 	RWShared r w *st
-	| TC b
 	
 :: BasicSourceOps b *st =
 	{ read			:: !st -> *(!b, !Version, !st)

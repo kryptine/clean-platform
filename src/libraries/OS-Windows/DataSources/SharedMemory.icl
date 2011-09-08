@@ -15,7 +15,7 @@ import StdMisc
 *        |----------------------|                 
 *        <-------- size -------->
 */
-sharedMemory :: !a !*World -> (!Shared a World, !*World) | TC a
+sharedMemory :: !a !*World -> (!Shared a World, !*World)
 sharedMemory v world
 	# (heap, world)	= getProcessHeap world
 	# initStr		= copy_to_string v

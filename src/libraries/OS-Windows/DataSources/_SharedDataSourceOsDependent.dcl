@@ -4,4 +4,4 @@ import _SharedDataSourceTypes
 
 :: OBSERVER :== Int
 
-waitOsDependent :: !(SharedOps r w *st) !*st -> *st
+waitOsDependent :: ![OBSERVER *st -> *st] !(*st -> *st) !*st -> *st
