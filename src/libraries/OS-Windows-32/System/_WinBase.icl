@@ -2,8 +2,6 @@ implementation module _WinBase
 
 import _WinDef
 
-import code from library "_WinBase_library";
-
 closeHandle :: !HANDLE !*World -> (!Bool,!*World)
 closeHandle handle world
 	= code {
@@ -183,7 +181,7 @@ heapCreate flOptions dwInitialSize dwMaximumSize world = code {
 	
 CreateThread :: !LPSECURITY_ATTRIBUTES !SIZE_T !LPTHREAD_START_ROUTINE !LPVOID !DWORD !*World -> (!HANDLE,!DWORD,!*World)
 CreateThread threadAttributes stackSize startAddress parameter creationFlags world = code {
-	ccall CreateThread "pIppI:II:I"
+	ccall CreateThread@16 "pIppI:II:I"
 }
 
 ResumeThread :: !HANDLE !*World -> (!DWORD, *World)
@@ -193,7 +191,9 @@ ResumeThread threadHandle world = code {
 
 initializeCriticalSection :: !LPCRITICAL_SECTION !*World -> *World
 initializeCriticalSection lpCriticalSection world = code {
-	ccall InitializeCriticalSection@4 "Pp:V:I"
+	fill_a 0 1
+	pop_a 1
+	ccall InitializeCriticalSection@4 "PI:V:A"
 }
 
 WinGetThreadId :: !HANDLE !*World -> (!DWORD, !*World);
@@ -219,12 +219,16 @@ initializeCriticalSectionAndSpinCount lpCriticalSection dwSpinCount world = code
 
 enterCriticalSection :: !LPCRITICAL_SECTION !*World -> *World
 enterCriticalSection lpCriticalSection world = code {
+	fill_a 0 1
+	pop_a 1
 	ccall EnterCriticalSection@4 "Pp:V:I"
 }
 	
 leaveCriticalSection :: !LPCRITICAL_SECTION !*World -> *World
 leaveCriticalSection lpCriticalSection world = code {
-	ccall EnterCriticalSection@4 "Pp:V:I"
+	fill_a 0 1
+	pop_a 1
+	ccall LeaveCriticalSection@4 "Pp:V:I"
 }
 
 createMutexA :: !LPSECURITY_ATTRIBUTES !Bool !LPCTSTR !*World -> (!HANDLE, !*World)
@@ -239,15 +243,17 @@ releaseMutex hMutex world = code {
 
 createEventA :: !LPSECURITY_ATTRIBUTES !Bool !Bool !LPCTSTR !*World -> (!HANDLE, !*World)
 createEventA lpEventAttributes bManualReset bInitialState lpName world = code {
-	ccall CreateEventA "PpIIp:I:I"
+	ccall CreateEventA@16 "PpIIp:I:I"
 }
 
 setEvent :: !HANDLE !*World -> (!Bool, !*World)
 setEvent hEvent world = code {
-	ccall SetEvent "PI:I:I"
+	ccall SetEvent@4 "PI:I:I"
 }
 
 sleep :: !DWORD !*World -> *World
 sleep dwMilliseconds world = code {
-	ccall Sleep "PI:V:I"
+	fill_a 0 1
+	pop_a 1
+	ccall Sleep@4 "PI:V:I"
 }
