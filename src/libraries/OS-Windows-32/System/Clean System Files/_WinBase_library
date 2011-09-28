@@ -39,3 +39,4 @@ CreateMutexA@12
 ReleaseMutex@4
 CreateEventA
 SetEvent
+Sleep
