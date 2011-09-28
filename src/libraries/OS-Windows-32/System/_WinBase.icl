@@ -1,6 +1,7 @@
 implementation module _WinBase
 
 import _WinDef
+import code from library "_WinBase_library"
 
 closeHandle :: !HANDLE !*World -> (!Bool,!*World)
 closeHandle handle world
@@ -181,7 +182,7 @@ heapCreate flOptions dwInitialSize dwMaximumSize world = code {
 	
 CreateThread :: !LPSECURITY_ATTRIBUTES !SIZE_T !LPTHREAD_START_ROUTINE !LPVOID !DWORD !*World -> (!HANDLE,!DWORD,!*World)
 CreateThread threadAttributes stackSize startAddress parameter creationFlags world = code {
-	ccall CreateThread@16 "pIppI:II:I"
+	ccall CreateThread "pIppI:II:I"
 }
 
 ResumeThread :: !HANDLE !*World -> (!DWORD, *World)

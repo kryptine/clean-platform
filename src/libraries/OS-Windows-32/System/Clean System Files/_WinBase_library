@@ -1,0 +1,5 @@
+kernel32.dll
+CreateMutexA@12
+ReleaseMutex@4
+ResumeThread@4
+OpenThread@12
