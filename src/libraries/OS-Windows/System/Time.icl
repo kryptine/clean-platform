@@ -22,7 +22,7 @@ where
 	where
 		toStringTmC :: !{#Int} -> Pointer
 		toStringTmC a0 = code {
-			ccall asctime@4 "PA:I"
+			ccall asctime@4 "A:I"
 		}
 instance toString Timestamp
 where
@@ -32,7 +32,7 @@ where
 	where	
 		toStringTimeC :: !{#Int} -> Pointer
 		toStringTimeC a0 = code {
-			ccall ctime@4 "PA:I"
+			ccall ctime@4 "A:I"
 		}
 instance toString Clock
 where
@@ -48,7 +48,7 @@ clock world
 	where
 	clockC :: !*World -> (!Int, !*World)
 	clockC world = code {
-		ccall clock@0 "P:I:I"
+		ccall clock@0 ":I:I"
 	}
 
 time :: !*World -> (!Timestamp, !*World)
@@ -58,7 +58,7 @@ time world
 	where
 	timeC :: !Int !*World -> (!Int,!*World)
 	timeC a0 world = code {
-		ccall time@4 "PI:I:I"
+		ccall time@4 "I:I:I"
 	}
 
 gmTime :: !*World -> (!Tm, !*World)
@@ -80,7 +80,7 @@ mkTime tm
 	where
 	mkTimeC :: !{#Int} -> Int
 	mkTimeC tm = code {
-		ccall mktime@4 "PA:I"
+		ccall mktime@4 "A:I"
 	}
 
 diffTime :: !Timestamp !Timestamp -> Int
@@ -94,7 +94,7 @@ strfTime format tm
 	where
 		strfTimeC :: !{#Char} !Int !{#Char} !{#Int} !{#Char} -> (!Int,!{#Char})
 		strfTimeC a0 a1 a2 a3 a4 = code {
-			ccall strftime@16 "PsIsA:I:A"
+			ccall strftime@16 "sIsA:I:A"
 		}
 		
 toLocalTime :: !Timestamp !*World -> (!Tm,!*World)
@@ -107,12 +107,12 @@ toGmTime (Timestamp t) = derefTm (gmTimeC (packInt t))
 
 gmTimeC :: !{#Int} -> Int
 gmTimeC tm = code {
-	ccall gmtime@4 "PA:I"
+	ccall gmtime@4 "A:I"
 }
 
 localTimeC :: !{#Int} !*World -> (!Int, !*World)
 localTimeC tm world = code {
-	ccall localtime@4 "PA:I:I"
+	ccall localtime@4 "A:I:I"
 }
 
 //Custom deref and pack for the Tm structure
