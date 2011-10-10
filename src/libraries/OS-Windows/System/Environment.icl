@@ -4,8 +4,6 @@ import StdOverloaded, StdInt, StdArray, StdChar, StdString
 import Maybe
 import _Pointer
 
-import code from library "kernel32.txt"
-
 MAXBUF :== 32767 //Maximum size for environment variables
 
 getEnvironmentVariable :: !String !*World -> (Maybe String, *World)

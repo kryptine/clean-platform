@@ -1,3 +1,0 @@
-kernel32.dll
-GetEnvironmentVariableA@12
-SetEnvironmentVariableA@8

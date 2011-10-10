@@ -12,11 +12,11 @@ where
 	//Global argc pointer
 	global_argc :: Pointer
 	global_argc = code {
-		pushLc global_argc
+		pushL global_argc
 	}
 
 	//Global argv pointer
 	global_argv :: Pointer
 	global_argv = code {
-		pushLc global_argv
+		pushL global_argv
 	}

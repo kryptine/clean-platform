@@ -3,3 +3,6 @@ CreateMutexA@12
 ReleaseMutex@4
 ResumeThread@4
 OpenThread@12
+SetEndOfFile@4
+LockFileEx@24
+UnlockFile@20

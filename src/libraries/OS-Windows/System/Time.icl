@@ -16,15 +16,13 @@ instance < Timestamp
 where
 	(<) (Timestamp t1) (Timestamp t2) = t1 < t2 
 
-
-
 instance toString Tm
 where
 	toString tm = derefString (toStringTmC (packTm tm))
 	where
 		toStringTmC :: !{#Int} -> Pointer
 		toStringTmC a0 = code {
-			ccall asctime@4 "A:I"
+			ccall asctime@4 "PA:I"
 		}
 instance toString Timestamp
 where
@@ -34,7 +32,7 @@ where
 	where	
 		toStringTimeC :: !{#Int} -> Pointer
 		toStringTimeC a0 = code {
-			ccall ctime@4 "A:I"
+			ccall ctime@4 "PA:I"
 		}
 instance toString Clock
 where
@@ -50,7 +48,7 @@ clock world
 	where
 	clockC :: !*World -> (!Int, !*World)
 	clockC world = code {
-		ccall clock@0 ":I:I"
+		ccall clock@0 "P:I:I"
 	}
 
 time :: !*World -> (!Timestamp, !*World)
@@ -60,7 +58,7 @@ time world
 	where
 	timeC :: !Int !*World -> (!Int,!*World)
 	timeC a0 world = code {
-		ccall time@4 "I:I:I"
+		ccall time@4 "PI:I:I"
 	}
 
 gmTime :: !*World -> (!Tm, !*World)
@@ -82,7 +80,7 @@ mkTime tm
 	where
 	mkTimeC :: !{#Int} -> Int
 	mkTimeC tm = code {
-		ccall mktime@4 "A:I"
+		ccall mktime@4 "PA:I"
 	}
 
 diffTime :: !Timestamp !Timestamp -> Int
@@ -96,7 +94,7 @@ strfTime format tm
 	where
 		strfTimeC :: !{#Char} !Int !{#Char} !{#Int} !{#Char} -> (!Int,!{#Char})
 		strfTimeC a0 a1 a2 a3 a4 = code {
-			ccall strftime@16 "sIsA:I:A"
+			ccall strftime@16 "PsIsA:I:A"
 		}
 		
 toLocalTime :: !Timestamp !*World -> (!Tm,!*World)
@@ -109,28 +107,40 @@ toGmTime (Timestamp t) = derefTm (gmTimeC (packInt t))
 
 gmTimeC :: !{#Int} -> Int
 gmTimeC tm = code {
-	ccall gmtime@4 "A:I"
+	ccall gmtime@4 "PA:I"
 }
 
 localTimeC :: !{#Int} !*World -> (!Int, !*World)
 localTimeC tm world = code {
-	ccall localtime@4 "A:I:I"
+	ccall localtime@4 "PA:I:I"
 }
 
 //Custom deref and pack for the Tm structure
 derefTm :: !Int -> Tm
-derefTm tm =	{ sec = readInt tm 0
-				, min = readInt tm 4
-				, hour = readInt tm 8 
-				, mday = readInt tm 12 
-				, mon = readInt tm 16
-				, year = readInt tm 20
-				, wday = readInt tm 24
-				, yday = readInt tm 28 
-				, isdst = readInt tm 32 <> 0
+derefTm tm =	{ sec	= readInt4S tm 0
+				, min	= readInt4S tm 4
+				, hour	= readInt4S tm 8 
+				, mday	= readInt4S tm 12 
+				, mon	= readInt4S tm 16
+				, year	= readInt4S tm 20
+				, wday	= readInt4S tm 24
+				, yday	= readInt4S tm 28 
+				, isdst	= readInt4S tm 32 <> 0
 				}
+
 packTm :: !Tm -> {#Int}
-packTm tm = 	{ tm.sec
+packTm tm = (IF_INT_64_OR_32 packTm64 packTm32) tm
+
+packTm64 :: !Tm -> {#Int}
+packTm64 tm = 	{ tm.sec  + tm.min  << 32
+				, tm.hour + tm.mday << 32
+				, tm.mon  + tm.year << 32
+				, tm.wday + tm.yday << 32
+				, if tm.isdst 1 0
+				}
+				
+packTm32 :: !Tm -> {#Int}
+packTm32 tm = 	{ tm.sec
 				, tm.min
 				, tm.hour
 				, tm.mday

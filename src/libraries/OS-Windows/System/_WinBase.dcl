@@ -9,25 +9,25 @@ import _WinDef, StdInt
 INT_SIZE :== IF_INT_64_OR_32 8 4
 
 :: FILETIME :== {#Char}
-FILETIME_size_bytes :== 8
+FILETIME_size_bytes :== 8//FILETIME_size_int * INT_SIZE
 FILETIME_size_int :== 2
 
 :: LPSYSTEMTIME :== {#Char}
-SYSTEMTIME_size_bytes :== 16
-SYSTEMTIME_wYear_offset :== 0
-SYSTEMTIME_wMonth_offset :== 2
-SYSTEMTIME_wDayOfWeek_offset :== 4
-SYSTEMTIME_wDay_offset :== 6
-SYSTEMTIME_wHour_offset :== 8
-SYSTEMTIME_wMinute_offset :== 10
-SYSTEMTIME_wSecond_offset :== 12
-SYSTEMTIME_wMilliseconds_offset :== 14
+SYSTEMTIME_size_bytes			:== 16//4 * INT_SIZE//16
+SYSTEMTIME_wYear_offset			:== 0
+SYSTEMTIME_wMonth_offset		:== 2
+SYSTEMTIME_wDayOfWeek_offset	:== 4
+SYSTEMTIME_wDay_offset			:== 6
+SYSTEMTIME_wHour_offset			:== 8
+SYSTEMTIME_wMinute_offset		:== 10
+SYSTEMTIME_wSecond_offset		:== 12
+SYSTEMTIME_wMilliseconds_offset	:== 14
 
 :: LPSECURITY_ATTRIBUTES :== Int
 :: LPTHREAD_START_ROUTINE :==Int
 :: LPOVERLAPPED :== Int
-OVERLAPPED_SIZE_BYTES :== IF_INT_64_OR_32 40 20
-CRITICAL_SECTION_SIZE_BYTES :== IF_INT_64_OR_32 48 24
+OVERLAPPED_SIZE_BYTES		:== IF_INT_64_OR_32 40 20
+CRITICAL_SECTION_SIZE_BYTES	:== IF_INT_64_OR_32 48 24
 :: LPCRITICAL_SECTION :== Int
 
 :: LPSTARTUPINFO :== {#Int}

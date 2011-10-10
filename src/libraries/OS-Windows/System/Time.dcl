@@ -78,3 +78,7 @@ toLocalTime	:: !Timestamp !*World -> (!Tm,!*World)
 * Convert a timestamp to a Tm record (GMT time)
 */
 toGmTime	:: !Timestamp -> Tm
+
+derefTm :: !Int -> Tm
+packTm :: !Tm -> {#Int}
+gmTimeC :: !{#Int} -> Int
