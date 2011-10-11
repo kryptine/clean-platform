@@ -13,10 +13,11 @@ where
 	global_argc :: Pointer
 	global_argc = IF_INT_64_OR_32 global_argc64 global_argc32
 	
+	global_argc32 :: Pointer
 	global_argc32 = code {
 		pushLc global_argc
 	}
-	
+	global_argc64 :: Pointer
 	global_argc64 = code {
 		pushL global_argc
 	}
@@ -25,10 +26,12 @@ where
 	global_argv :: Pointer
 	global_argv = IF_INT_64_OR_32 global_argv64 global_argv32
 	
+	global_argv32 :: Pointer
 	global_argv32 = code {
 		pushLc global_argv
 	}
 	
+	global_argv64 :: Pointer
 	global_argv64 = code {
 		pushL global_argv
 	}
