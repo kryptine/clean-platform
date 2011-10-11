@@ -34,7 +34,7 @@ class Text s
 	* Joins a list of strings using a separator string.
 	*
 	* @param The separator string.
-	* @param The string that is to be splitted.
+	* @param The string that is to be joined.
 	*/
 	join				:: !s ![s] -> s
 	
