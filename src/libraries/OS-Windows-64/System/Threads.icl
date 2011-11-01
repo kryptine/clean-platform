@@ -1,6 +1,6 @@
 implementation module Threads
 
-import _WinBase, _Pointer, StdArray, StdInt, StdClass, dynamic_string, _Unsafe
+import _WinBase, _Pointer, StdArray, StdInt, StdClass, dynamic_string, _Unsafe, StdMisc
 foreign export threadFunc
 
 getCurrentThreadId :: !*World -> (!ThreadId, !*World)
@@ -59,7 +59,8 @@ where
 waitForThread :: !ThreadId !*World -> *World
 waitForThread tid world
 	# (handle, world)	= WinOpenThread SYNCHRONIZE False tid world
-	# (_, world)		= waitForSingleObject handle INFINITE world
+	# (r, world)		= waitForSingleObject handle INFINITE world
+	| r <> WAIT_OBJECT_0 = abort "waitForThread error"
 	= world
 
 threadFunc :: !LPVOID -> DWORD

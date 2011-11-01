@@ -15,6 +15,9 @@ definition module _Pointer
 * Read an integer (32 or 64 bits)
 */
 readInt		:: !Pointer !Offset -> Int
+readIntP :: !Pointer !Offset -> (!Int,!Pointer)
+readIntElemOffset :: !Pointer !Offset -> Int
+readIntElemOffsetP :: !Pointer !Offset -> (!Int,!Pointer)
 /**
 * Read an integer (32 bits) zero extended
 */
@@ -55,31 +58,32 @@ readReal4	:: !Pointer !Offset -> Real
 /**
 * Write an integer (32 or 64 bits)
 */
-writeInt	:: !Pointer !Offset !Int -> Int
+writeInt	:: !Pointer !Offset !Int -> Pointer
+writeIntElemOffset :: !Pointer !Offset !Int -> Pointer
 /**
 * Write an integer (32 bits)
 */
-writeInt4	:: !Pointer !Offset !Int -> Int
+writeInt4	:: !Pointer !Offset !Int -> Pointer
 /**
 * Write a word (16 bits)
 */
-writeInt2	:: !Pointer !Offset !Int -> Int
+writeInt2	:: !Pointer !Offset !Int -> Pointer
 /**
 * Write a word (8 bits)
 */
-writeInt1	:: !Pointer !Offset !Int -> Int
+writeInt1	:: !Pointer !Offset !Int -> Pointer
 /**
 * Write a char 
 */
-writeChar	:: !Pointer !Offset !Char -> Int
+writeChar	:: !Pointer !Offset !Char -> Pointer
 /**
 * Write a real (8 bytes) 
 */
-writeReal8	:: !Pointer !Offset !Real -> Int
+writeReal8	:: !Pointer !Offset !Real -> Pointer
 /**
 * Write a real (4 bytes)
 */
-writeReal4	:: !Pointer !Offset !Real -> Int
+writeReal4	:: !Pointer !Offset !Real -> Pointer
 
 //Utility functions
 
@@ -99,7 +103,7 @@ derefCharArray :: !Pointer !Int -> {#Char}
 /**
 * Writes Clean char array to given pointer.
 */
-writeCharArray :: !Pointer !{#Char} -> Int
+writeCharArray :: !Pointer !{#Char} -> Pointer
 /**
 * Wraps an integer in an array to enable passing a pointer instead
 * of a value to a ccall.
@@ -116,4 +120,5 @@ packString :: !String -> {#Char}
 */
 unpackString :: !{#Char} -> String
 
-forceEval :: !a !*st -> *st
+forceEval			:: !a !*World -> *World
+forceEvalPointer	:: !Pointer !*World -> *World

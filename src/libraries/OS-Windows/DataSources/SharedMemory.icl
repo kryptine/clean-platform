@@ -25,10 +25,10 @@ sharedMemory v world
 	# (iptr, world)	= heapAlloc heap 0 (INT_SIZE * 4) world
 	# (vptr, world)	= heapAlloc heap 0 sStr world
 	# vptr			= writeCharArray vptr initStr
-	# iptr			= writeInt iptr 0 sStr				// init size of dynamic string
-	# iptr			= writeInt iptr INT_SIZE vptr		// init pointer to dynamic string
-	# iptr			= writeInt iptr (INT_SIZE * 2) 0	// init version number
-	# iptr			= writeInt iptr (INT_SIZE * 3) NULL	// init linked list of observers
+	# iptr			= writeIntElemOffset iptr 0 sStr	// init size of dynamic string
+	# iptr			= writeIntElemOffset iptr 1 vptr	// init pointer to dynamic string
+	# iptr			= writeIntElemOffset iptr 2 0		// init version number
+	# iptr			= writeIntElemOffset iptr 3 NULL	// init linked list of observers
 	= (createBasicDataSource "sharedMemory" (toString iptr) (mkOps heap mutx iptr) id const, world)
 where
 	get str = fst (copy_from_string {c \\ c <-: str})
@@ -46,62 +46,66 @@ where
 		}, world)
 	where
 		read world
-			# sStr		= readInt ptr 0
-			# vptr		= readInt ptr INT_SIZE
-			# ver		= readInt ptr (INT_SIZE * 2)
-			# str		= derefCharArray vptr sStr
+			# (sStr,ptr)	= readIntElemOffsetP ptr 0
+			# (vptr,ptr)	= readIntElemOffsetP ptr 1
+			# (ver,ptr)		= readIntElemOffsetP ptr 2
+			# str			= derefCharArray vptr sStr
+			# world			= forceEvalPointer ptr world
+			# world			= forceEval str world
 			= (fst (copy_from_string {c \\ c <-: str}), ver, world)
 			
 		write b world
 			# dstr			= copy_to_string b
-			# vptr			= readInt ptr INT_SIZE
+			# (vptr,ptr)	= readIntElemOffsetP ptr 1
 			# (ok, world)	= heapFree heap 0 vptr world
+			| not ok = abort "writing to shared memory: error freeing memory"
 			# sStr			= size dstr
 			# (vptr, world)	= heapAlloc heap 0 sStr world
 			| vptr == NULL = abort "writing to shared memory: error allocating memory"
 			# vptr			= writeCharArray vptr dstr
-			# ptr			= writeInt ptr 0 sStr
-			# ptr			= writeInt ptr INT_SIZE vptr
+			# ptr			= writeIntElemOffset ptr 0 sStr
+			# ptr			= writeIntElemOffset ptr 1 vptr
 			// increase version number
-			# ver			= readInt ptr (INT_SIZE * 2)
-			# ptr			= writeInt ptr (INT_SIZE * 2) (inc ver)
+			# ver			= readIntElemOffset ptr 2
+			# ptr			= writeIntElemOffset ptr 2 (inc ver)
 			// notify observers and empty list
-			# wptr			= readInt ptr (INT_SIZE * 3)
+			# (wptr,ptr)	= readIntElemOffsetP ptr 3
 			# world			= notifyObservers wptr world
-			# ptr			= writeInt ptr (INT_SIZE * 3) NULL
-			= forceEval ptr world
+			# ptr			= writeIntElemOffset ptr 3 NULL
+			= forceEvalPointer ptr world
 		where
+			notifyObservers :: !Pointer !*World -> *World
 			notifyObservers wptr world
 				| wptr == NULL = world
-				# obs 			= readInt wptr 0
+				# obs 			= readIntElemOffset wptr 0
 				# (_, world)	= setEvent obs world
-				# next 			= readInt wptr INT_SIZE
+				# next 			= readIntElemOffset wptr 1
 				# world			= notifyObservers next world
 				# (ok, world)	= heapFree heap 0 wptr world
 				| not ok = abort "notifyWaiters: error freeing heap"
 				= world
 
 		getVersion world
-			= (readInt ptr (INT_SIZE * 2), world)
+			= (readIntElemOffset ptr 2, world)
 		
 		addObserver observer world
 			# (nptr, world)	= heapAlloc heap 0 (INT_SIZE * 2) world
-			# optr			= readInt ptr (INT_SIZE * 3)
-			# nptr			= writeInt nptr 0 observer
-			# nptr			= writeInt nptr INT_SIZE optr
-			# ptr			= writeInt ptr (INT_SIZE * 3) nptr
-			= forceEval ptr world
+			# optr			= readIntElemOffset ptr 3
+			# nptr			= writeIntElemOffset nptr 0 observer
+			# nptr			= writeIntElemOffset nptr 1 optr
+			# ptr			= writeIntElemOffset ptr 3 nptr
+			= forceEvalPointer ptr world
 			
 		lock = lock`
 		lockExcl = lock`
 		lock` world
 			# (r, world) = waitForSingleObject mutx INFINITE world
-			// check r
+			| r <> WAIT_OBJECT_0 = abort "shared memory: error getting lock"
 			= world
 		
 		unlock world
 			# (ok, world) = releaseMutex mutx world
-			// check ok
+			| not ok = abort "shared memory: error releasing lock"
 			= world
 			
 		close world = world

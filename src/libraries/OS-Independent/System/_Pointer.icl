@@ -1,40 +1,6 @@
 implementation module _Pointer
 
 import StdOverloaded, StdClass, StdArray, StdInt, StdChar, StdString
-/*
-   0:   8b 04 18                mov    (%eax,%ebx,1),%eax
-   3:   0f b7 04 18             movzwl (%eax,%ebx,1),%eax
-   7:   0f b6 04 18             movzbl (%eax,%ebx,1),%eax
-   b:   0f bf 04 18             movswl (%eax,%ebx,1),%eax
-   f:   0f be 04 18             movsbl (%eax,%ebx,1),%eax
-  13:   dd 04 18                fldl   (%eax,%ebx,1)
-  16:   dd d9                   fstp   %st(1)
-  18:   d9 04 18                flds   (%eax,%ebx,1)
-  1b:   dd d9                   fstp   %st(1)
-  1d:   dd 14 18                fstl   (%eax,%ebx,1)
-  20:   d9 14 18                fsts   (%eax,%ebx,1)
-  23:   89 d8                   mov    %ebx,%eax
-  25:   59                      pop    %ecx
-  26:   89 0c 18                mov    %ecx,(%eax,%ebx,1)
-  29:   66 89 0c 18             mov    %cx,(%eax,%ebx,1)
-  2d:   88 0c 18                mov    %cl,(%eax,%ebx,1)
-  30:   8b 0c 24                mov    (%esp),%ecx
-*/
-
-/*
- 00: 48 63 04 03        movsxd      rax,dword ptr [rbx+rax]
- 04: F2 0F 10 04 03     movsd       xmm0,mmword ptr [rbx+rax]
- 09: F3 0F 10 04 03     movss       xmm0,dword ptr [rbx+rax]
- 0E: F3 0F 5A C0        cvtss2sd    xmm0,xmm0
- 12: F2 0F 5A C0        cvtsd2ss    xmm0,xmm0
- 16: F3 0F 5A 04 03     cvtss2sd    xmm0,dword ptr [rbx+rax]
- 1B: F2 0F 11 04 03     movsd       mmword ptr [rbx+rax],xmm0
- 20: F3 0F 11 04 03     movss       dword ptr [rbx+rax],xmm0
- 25: 4A 89 04 13        mov         qword ptr [rbx+r10],rax
- 29: 42 89 04 13        mov         dword ptr [rbx+r10],eax
- 2D: 66 42 89 04 13     mov         word ptr [rbx+r10],ax
- 32: 42 88 04 13        mov         byte ptr [rbx+r10],al
-*/
 
 readInt :: !Pointer !Offset -> Int
 readInt pointer offset = IF_INT_64_OR_32 (readInt_64 pointer offset) (readInt_32 pointer offset)
@@ -42,20 +8,110 @@ readInt pointer offset = IF_INT_64_OR_32 (readInt_64 pointer offset) (readInt_32
 readInt_64 :: !Pointer !Offset -> Int
 readInt_64 pointer offset = code {
 		pop_b 1
-|		mov    (%rax,%rbx,1),%rax
+|		mov    (%rbx,%rax,1),%rax
 		instruction 72
 	 	instruction 139
 	 	instruction 4
-	 	instruction 24
+	 	instruction 3
 }
 
 readInt_32 :: !Pointer !Offset -> Int
 readInt_32 pointer offset = code {
 		pop_b 1
-|		mov    (%eax,%ebx,1),%eax
+|		mov    (%ebx,%eax,1),%eax
 	 	instruction 139
 	 	instruction 4
-	 	instruction 24
+	 	instruction 3
+}
+
+readIntP :: !Pointer !Offset -> (!Int,!Pointer)
+readIntP pointer offset = IF_INT_64_OR_32 (readIntP_64 pointer offset) (readIntP_32 pointer offset)
+
+readIntP_64 :: !Pointer !Offset -> (!Int,!Pointer)
+readIntP_64 pointer offset = code {
+|		mov    (%rbx,%rax,1),%rcx
+		instruction 72
+	 	instruction 139
+	 	instruction 12
+	 	instruction 3
+|		mov    %rbx,%rax
+		instruction 72
+		instruction 139
+		instruction 195
+|		mov    %rcx,%rbx
+		instruction 72
+		instruction 139
+		instruction 217
+}
+
+readIntP_32 :: !Pointer !Offset -> (!Int,!Pointer)
+readIntP_32 pointer offset = code {
+|		mov    (%ebx,%eax,1),%ecx
+	 	instruction 139
+	 	instruction 12
+	 	instruction 3
+|		mov    %ebx,%eax
+		instruction 139
+		instruction 195
+|		mov    %ecx,%ebx
+		instruction 139
+		instruction 217
+}
+
+readIntElemOffset :: !Pointer !Offset -> Int
+readIntElemOffset pointer offset = IF_INT_64_OR_32 (readIntElemOffset_64 pointer offset) (readIntElemOffset_32 pointer offset)
+
+readIntElemOffset_64 :: !Pointer !Offset -> Int
+readIntElemOffset_64 pointer offset = code {
+		pop_b 1
+|		mov    (%rbx,%rax,8),%rax
+		instruction 72
+	 	instruction 139
+	 	instruction 4
+	 	instruction 195
+}
+
+readIntElemOffset_32 :: !Pointer !Offset -> Int
+readIntElemOffset_32 pointer offset = code {
+		pop_b 1
+|		mov    (%ebx,%eax,4),%eax
+	 	instruction 139
+	 	instruction 4
+	 	instruction 131
+}
+
+readIntElemOffsetP :: !Pointer !Offset -> (!Int,!Pointer)
+readIntElemOffsetP pointer offset = IF_INT_64_OR_32 (readIntElemOffsetP_64 pointer offset) (readIntElemOffsetP_32 pointer offset)
+
+readIntElemOffsetP_64 :: !Pointer !Offset -> (!Int,!Pointer)
+readIntElemOffsetP_64 pointer offset = code {
+|		mov    (%rbx,%rax,8),%rcx
+		instruction 72
+	 	instruction 139
+	 	instruction 12
+	 	instruction 195
+|		mov    %rbx,%rax
+		instruction 72
+		instruction 139
+		instruction 195
+|		mov    %rcx,%rbx
+		instruction 72
+		instruction 139
+		instruction 217
+}
+
+readIntElemOffsetP_32 :: !Pointer !Offset -> (!Int,!Pointer)
+readIntElemOffsetP_32 pointer offset = code {
+|		mov    (%ebx,%eax,4),%ecx
+	 	instruction 139
+	 	instruction 12
+	 	instruction 131
+|		mov    %ebx,%eax
+		instruction 139
+		instruction 195
+|		mov    %ecx,%ebx
+		instruction 139
+		instruction 217
 }
 
 readInt4Z :: !Pointer !Offset -> Int
@@ -233,10 +289,10 @@ readReal4_32 pointer offset = code {
 		instruction 217
 }
 
-writeInt :: !Pointer !Offset !Int -> Int
+writeInt :: !Pointer !Offset !Int -> Pointer
 writeInt pointer offset i = IF_INT_64_OR_32 (writeInt_64 pointer offset i) (writeInt_32 pointer offset i)
 
-writeInt_64 :: !Pointer !Offset !Int -> Int
+writeInt_64 :: !Pointer !Offset !Int -> Pointer
 writeInt_64 pointer offset i = code {
 		updatepop_b 0 2
 |		mov qword ptr [rbx+r10],rax
@@ -246,7 +302,7 @@ writeInt_64 pointer offset i = code {
 		instruction 19
 }
 
-writeInt_32 :: !Pointer !Offset !Int -> Int
+writeInt_32 :: !Pointer !Offset !Int -> Pointer
 writeInt_32 pointer offset i = code {
 		updatepop_b 0 2
 |		mov    (%esp),%ecx
@@ -259,10 +315,36 @@ writeInt_32 pointer offset i = code {
 		instruction 24
 }
 
-writeInt4 :: !Pointer !Offset !Int -> Int
+writeIntElemOffset :: !Pointer !Offset !Int -> Pointer
+writeIntElemOffset pointer offset i = IF_INT_64_OR_32 (writeIntElemOffset_64 pointer offset i) (writeIntElemOffset_32 pointer offset i)
+
+writeIntElemOffset_64 :: !Pointer !Offset !Int -> Pointer
+writeIntElemOffset_64 pointer offset i = code {
+		updatepop_b 0 2
+|		mov qword ptr [r10+rbx*8],rax
+		instruction 73
+		instruction 137
+		instruction 4
+		instruction 218
+}
+
+writeIntElemOffset_32 :: !Pointer !Offset !Int -> Pointer
+writeIntElemOffset_32 pointer offset i = code {
+		updatepop_b 0 2
+|		mov    (%esp),%ecx
+		instruction	139
+		instruction 12
+		instruction 36
+|		movl	%ecx,(%ebx,%eax,4)
+		instruction 137
+		instruction 12
+		instruction 131
+}
+
+writeInt4 :: !Pointer !Offset !Int -> Pointer
 writeInt4 pointer offset i = IF_INT_64_OR_32 (writeInt4_64 pointer offset i) (writeInt4_32 pointer offset i)
 
-writeInt4_64 :: !Pointer !Offset !Int -> Int
+writeInt4_64 :: !Pointer !Offset !Int -> Pointer
 writeInt4_64 pointer offset i = code {
 		updatepop_b 0 2
 |		mov dword ptr [rbx+r10],eax
@@ -272,7 +354,7 @@ writeInt4_64 pointer offset i = code {
 		instruction 19
 }
 
-writeInt4_32 :: !Pointer !Offset !Int -> Int
+writeInt4_32 :: !Pointer !Offset !Int -> Pointer
 writeInt4_32 pointer offset i = code {
 		updatepop_b 0 2
 |		mov    (%esp),%ecx
@@ -285,10 +367,10 @@ writeInt4_32 pointer offset i = code {
 		instruction 24
 }
 
-writeInt2 :: !Pointer !Offset !Int -> Int
+writeInt2 :: !Pointer !Offset !Int -> Pointer
 writeInt2 pointer offset i = IF_INT_64_OR_32 (writeInt2_64 pointer offset i) (writeInt2_32 pointer offset i)
 
-writeInt2_64 :: !Pointer !Offset !Int -> Int
+writeInt2_64 :: !Pointer !Offset !Int -> Pointer
 writeInt2_64 pointer offset i = code {
 		updatepop_b 0 2
 |		mov word ptr [rbx+r10],ax
@@ -299,7 +381,7 @@ writeInt2_64 pointer offset i = code {
 		instruction 19
 }
 
-writeInt2_32 :: !Pointer !Offset !Int -> Int
+writeInt2_32 :: !Pointer !Offset !Int -> Pointer
 writeInt2_32 pointer offset i = code {
 		updatepop_b 0 2
 |		mov    (%esp),%ecx
@@ -313,10 +395,10 @@ writeInt2_32 pointer offset i = code {
 		instruction 24
 }
 
-writeInt1 :: !Pointer !Offset !Int -> Int
+writeInt1 :: !Pointer !Offset !Int -> Pointer
 writeInt1 pointer offset i = IF_INT_64_OR_32 (writeInt1_64 pointer offset i) (writeInt1_32 pointer offset i)
 
-writeInt1_64 :: !Pointer !Offset !Int -> Int
+writeInt1_64 :: !Pointer !Offset !Int -> Pointer
 writeInt1_64 pointer offset i = code {
 		updatepop_b 0 2
 |		mov byte ptr [rbx+r10],al
@@ -326,7 +408,7 @@ writeInt1_64 pointer offset i = code {
 		instruction 19
 }
 
-writeInt1_32 :: !Pointer !Offset !Int -> Int
+writeInt1_32 :: !Pointer !Offset !Int -> Pointer
 writeInt1_32 pointer offset i = code {
 		updatepop_b 0 2
 |		mov    (%esp),%ecx
@@ -339,10 +421,10 @@ writeInt1_32 pointer offset i = code {
 		instruction 24
 }
 
-writeChar :: !Pointer !Offset !Char -> Int
+writeChar :: !Pointer !Offset !Char -> Pointer
 writeChar pointer offset i = IF_INT_64_OR_32 (writeChar_64 pointer offset i) (writeChar_32 pointer offset i)
 
-writeChar_64 :: !Pointer !Offset !Char -> Int
+writeChar_64 :: !Pointer !Offset !Char -> Pointer
 writeChar_64 pointer offset i = code {
 		updatepop_b 0 2
 |		mov byte ptr [rbx+r10],al
@@ -352,7 +434,7 @@ writeChar_64 pointer offset i = code {
 		instruction 19
 }
 
-writeChar_32 :: !Pointer !Offset !Char -> Int
+writeChar_32 :: !Pointer !Offset !Char -> Pointer
 writeChar_32 pointer offset i = code {
 		updatepop_b 0 2
 |		mov    (%esp),%ecx
@@ -365,10 +447,10 @@ writeChar_32 pointer offset i = code {
 		instruction 24
 }
 
-writeReal8 :: !Pointer !Offset !Real -> Int
+writeReal8 :: !Pointer !Offset !Real -> Pointer
 writeReal8 pointer offset double = IF_INT_64_OR_32 (writeReal8_64 pointer offset double) (writeReal8_32 pointer offset double)
 
-writeReal8_64 :: !Pointer !Offset !Real -> Int
+writeReal8_64 :: !Pointer !Offset !Real -> Pointer
 writeReal8_64 pointer offset double = code {
 		updatepop_b 0 2
 |		movsd mmword ptr [rbx+rax],xmm0
@@ -379,7 +461,7 @@ writeReal8_64 pointer offset double = code {
 		instruction 3
 }
 
-writeReal8_32 :: !Pointer !Offset !Real -> Int
+writeReal8_32 :: !Pointer !Offset !Real -> Pointer
 writeReal8_32 pointer offset double = code {
 		updatepop_b 0 3
 |		fstl  (%eax,%ebx,1)
@@ -388,10 +470,10 @@ writeReal8_32 pointer offset double = code {
 		instruction 24
 }
 
-writeReal4 :: !Pointer !Offset !Real -> Int
+writeReal4 :: !Pointer !Offset !Real -> Pointer
 writeReal4 pointer offset double = IF_INT_64_OR_32 (writeReal4_64 pointer offset double) (writeReal4_32 pointer offset double)
 
-writeReal4_64 :: !Pointer !Offset !Real -> Int
+writeReal4_64 :: !Pointer !Offset !Real -> Pointer
 writeReal4_64 pointer offset double = code {
 		updatepop_b 0 2
 |		cvtsd2ss xmm0,xmm0
@@ -407,7 +489,7 @@ writeReal4_64 pointer offset double = code {
 		instruction 3
 }
 
-writeReal4_32 :: !Pointer !Offset !Real -> Int
+writeReal4_32 :: !Pointer !Offset !Real -> Pointer
 writeReal4_32 pointer offset double = code {
 		updatepop_b 0 3
 |		fsts  (%eax,%ebx,1)
@@ -450,7 +532,7 @@ load_char ptr = code inline {
 		load_ui8 0
 	}
 	
-writeCharArray :: !Pointer !{#Char} -> Int
+writeCharArray :: !Pointer !{#Char} -> Pointer
 writeCharArray ptr array = copy ptr 0
 where
 	len = size array
@@ -474,5 +556,8 @@ where
 	unpack off	| s.[off] == '\0' = s % (0, off - 1)
 				| otherwise       = unpack (off + 1)
 
-forceEval :: !a !*st -> *st
-forceEval _ st = st
+forceEval :: !a !*World -> *World
+forceEval _ world = world
+
+forceEvalPointer :: !Pointer !*World -> *World
+forceEvalPointer _ world = world

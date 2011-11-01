@@ -209,13 +209,15 @@ atomic trF st
 				# st		= seqSt (\(TLogEntry _ _ _ {unlock, close}) st -> close (unlock st)) entries st
 				= (a, st)
 where
+	checkConsistency :: ![TLogEntry *env] !*env -> *(!Bool,!*env)
 	checkConsistency [] st = (False, st)
 	checkConsistency [TLogEntry _ lVer _ {getVersion}:entries] st
 		# (cVer, st)		= getVersion st
 		| cVer == lVer		= checkConsistency entries st
 		| otherwise			= (True, st)
-
-	commit (TLogEntry b _ doWrite {write}) st
+		
+	commit :: !(TLogEntry *env) !*env -> *env
+	commit (TLogEntry b _ doWrite {write,unlock}) st
 		| doWrite			= write b st
 		| otherwise			= st
 
