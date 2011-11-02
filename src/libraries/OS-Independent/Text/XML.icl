@@ -290,7 +290,7 @@ where
 pXMLDoc :: Parser Token XMLDoc
 pXMLDoc = begin1 pXMLDoc`
 where
-	pXMLDoc` = mkXMLDoc @> pDocDeclaration -&+ pElem
+	pXMLDoc` = mkXMLDoc @> (pDocDeclaration <|> yield [] )-&+ pElem
 	
 	mkXMLDoc (XMLElem name attributes elements) = XMLDoc mbURI namespaces (XMLElem name attrs elements)
 	where
