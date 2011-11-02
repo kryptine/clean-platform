@@ -17,7 +17,7 @@ import StdString, Maybe
 * This type provides an enumeration of all html tags.
 */
 :: HtmlTag	= Text				!String					//Text, in which special characters should be automatically escaped.
-			| RawText			!String					//Text, which should be used without any conversions.
+			| Html				!String					//Text, which should be used without any conversions.
 			| ATag				![HtmlAttr] ![HtmlTag]
 			| AbbrTag			![HtmlAttr] ![HtmlTag]
 			| AcronymTag		![HtmlAttr] ![HtmlTag]
@@ -241,3 +241,6 @@ instance html String
 instance html HtmlTag
 instance html [a] | html a
 instance html (Maybe a) | html a
+
+//BACKWARDS COMPATIBILITY
+RawText :== Html

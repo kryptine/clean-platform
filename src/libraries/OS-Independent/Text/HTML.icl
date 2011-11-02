@@ -15,7 +15,7 @@ where
 
 tagSize :: HtmlTag -> Int
 tagSize (Text t)			= escapedSize t
-tagSize (RawText t)			= size t
+tagSize (Html t)			= size t
 tagSize (ATag a t)			=  7 + (attrsSize a) + (tagsSize t) 
 tagSize (AbbrTag a t)		= 13 + (attrsSize a) + (tagsSize t) 
 tagSize (AcronymTag a t)	= 19 + (attrsSize a) + (tagsSize t) 
@@ -244,7 +244,7 @@ where
 
 serializeTag :: !HtmlTag !*{#Char} !Int -> (!*{#Char}, !Int)
 serializeTag (Text t) s i				= copyChars t 0 True s i
-serializeTag (RawText t) s i			= copyChars t 0 False s i
+serializeTag (Html t) s i				= copyChars t 0 False s i
 serializeTag (ATag a t) s i				= writeTag "a" a t s i
 serializeTag (AbbrTag a t) s i			= writeTag "abbr" a t s i
 serializeTag (AcronymTag a t) s i		= writeTag "acronym" a t s i
