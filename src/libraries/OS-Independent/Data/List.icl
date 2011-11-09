@@ -8,6 +8,17 @@ unzip3 [(x,y,z) : xyzs]	= ([x : xs],[y : ys],[z : zs])
 where
 	(xs,ys,zs) = unzip3 xyzs
 
+unzip4 :: ![(.a,.b,.c,.d)] -> ([.a],[.b],[.c],[.d])
+unzip4 []					= ([], [], [], [])
+unzip4 [(w,x,y,z) : wxyzs]	= ([w : ws],[x : xs],[y : ys],[z : zs])
+where
+	(ws,xs,ys,zs) = unzip4 wxyzs
+unzip5 :: ![(.a,.b,.c,.d,.e)] -> ([.a],[.b],[.c],[.d],[.e])
+unzip5 []						= ([], [], [], [], [])
+unzip5 [(v,w,x,y,z) : vwxyzs]	= ([v : vs],[w : ws],[x : xs],[y : ys],[z : zs])
+where
+	(vs,ws,xs,ys,zs) = unzip5 vwxyzs
+
 replaceInList :: !(a a -> Bool) !a ![a] -> [a]
 replaceInList cond new []         = [new]
 replaceInList cond new [x:xs]
