@@ -126,8 +126,8 @@ where
 
 instance SQLContext MySQLContext MySQLConnection
 where
-	openConnection	:: !String !String !String !String !*MySQLContext	-> (!(Maybe SQLError),!(Maybe *MySQLConnection),!*MySQLContext)
-	openConnection host username password database context
+	openConnection	:: !SQLDatabase !*MySQLContext	-> (!(Maybe SQLError),!(Maybe *MySQLConnection),!*MySQLContext)
+	openConnection {SQLDatabase|host,username,password,database} context
 		//Initialize a handle
 		# conn_ptr	= mysql_init 0
 		| conn_ptr == 0		= (Just (SQLInterfaceError 1 "Could not initialize a connection"), Nothing, context)

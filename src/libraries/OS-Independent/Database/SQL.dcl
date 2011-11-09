@@ -11,6 +11,13 @@ import StdString, Maybe
 // Basic types
 // *********************************************************************************************************************
 
+:: SQLDatabase =
+	{ host		:: !String
+	, username	:: !String
+	, password	:: !String
+	, database	:: !String
+	}
+
 // SQL Statements and queries are just strings
 :: SQLStatement		:== String
 
@@ -89,7 +96,7 @@ where
 
 class SQLContext ctx con
 where
-	openConnection	:: !String !String !String !String !*ctx	-> (!(Maybe SQLError), !(Maybe *con), !*ctx)	
+	openConnection	:: !SQLDatabase !*ctx						-> (!(Maybe SQLError), !(Maybe *con), !*ctx)	
 	closeConnection	:: !*con !*ctx								-> (!(Maybe SQLError), !*ctx)
 	
 class SQLConnection con cur
