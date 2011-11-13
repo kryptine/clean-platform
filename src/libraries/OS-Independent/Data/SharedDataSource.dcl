@@ -6,6 +6,7 @@ from _SharedDataSourceTypes			import :: RWShared
 from _SharedDataSourceOsDependent	import :: OBSERVER
 :: Shared a st		:== RWShared a a st
 :: ROShared a st	:== RWShared a Void st
+:: WOShared a st	:== RWShared Void a st
 :: Version			:== Int
 
 createBasicDataSource ::
@@ -82,3 +83,6 @@ atomic :: !((*Trans *st) -> (!TRes a, !*Trans *st)) !*st -> (!a, !*st)
 
 transRead	:: 		!(RWShared r w *st) !(Trans *st) -> (!r, !(Trans *st))
 transWrite	:: !w	!(RWShared r w *st) !(Trans *st) -> (Trans *st)
+
+// null share
+null :: WOShared a *env

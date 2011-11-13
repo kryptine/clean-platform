@@ -271,6 +271,20 @@ transWrite w (ComposedSource {srcX, srcY, putback}) tr
 			# tr		= transWrite wx srcX tr
 			# tr		= transWrite wy srcY tr
 			= tr
+			
+null :: WOShared a *env
+null = createBasicDataSource "Null" "" mkOps (const Void) (\_ b -> b)
+where
+	mkOps env = (ops, env)
+	ops =	{ read			= \env -> (Void, 0, env)
+			, write			= \_ env -> env
+			, getVersion	= \env -> (0, env)
+			, lock			= id
+			, unlock		= id
+			, lockExcl		= id
+			, close			= id
+			, addObserver	= \_ env -> env
+			}
 
 import dynamic_string
 // very unsafe operation
