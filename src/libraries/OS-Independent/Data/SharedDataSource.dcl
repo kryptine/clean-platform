@@ -85,4 +85,6 @@ transRead	:: 		!(RWShared r w *st) !(Trans *st) -> (!r, !(Trans *st))
 transWrite	:: !w	!(RWShared r w *st) !(Trans *st) -> (Trans *st)
 
 // null share
-null :: WOShared a *env
+null		:: WOShared a *env
+// constant share, value does never change
+constShare	:: !a -> ROShared a *env
