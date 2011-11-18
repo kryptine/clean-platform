@@ -14,9 +14,9 @@ where
 		toStringTmC a0 = code {
 			ccall asctime "A:p"
 		}
-instance toString Time
+instance toString Timestamp
 where
-	toString (Time t) = derefString (toStringTimeC (packInt t))
+	toString (Timestamp t) = derefString (toStringTimeC (packInt t))
 	where	
 		toStringTimeC :: !{#Int} -> Pointer
 		toStringTimeC a0 = code {
@@ -36,10 +36,10 @@ clock world
 		ccall clock ":I:p"
 	}
 
-time :: !*World -> (!Time, !*World)
+time :: !*World -> (!Timestamp, !*World)
 time world
 	# (t, world)	= timeC 0 world
-	= (Time t, world)
+	= (Timestamp t, world)
 	where
 	timeC :: !Int !*World -> (!Int,!*World)
 	timeC a0 world = code {
@@ -48,8 +48,8 @@ time world
 
 gmTime :: !*World -> (!Tm, !*World)
 gmTime world
-	# ((Time t),world)	= time world
-	# (tm, world)		= gmTimeC (packInt t) world
+	# ((Timestamp t),world)	= time world
+	# (tm, world)			= gmTimeC (packInt t) world
 	= (derefTm tm, world)
 	where
 	gmTimeC :: !{#Int} !*World -> (!Int, !*World)
@@ -59,8 +59,8 @@ gmTime world
 
 localTime :: !*World -> (!Tm, !*World)
 localTime world
-	# ((Time t),world)	= time world
-	# (tm,world)		= localTimeC (packInt t) world
+	# ((Timestamp t),world)	= time world
+	# (tm,world)			= localTimeC (packInt t) world
 	= (derefTm tm, world)
 	where
 	localTimeC :: !{#Int} !*World -> (!Int, !*World)
@@ -68,18 +68,18 @@ localTime world
     	ccall localtime "A:p:p"
 	}
 
-mkTime :: !Tm -> Time
+mkTime :: !Tm -> Timestamp
 mkTime tm 
 	# t = mkTimeC (packTm tm)
-	= Time t
+	= Timestamp t
 	where
 	mkTimeC :: !{#Int} -> Int
 	mkTimeC tm = code {
 		ccall mktime "A:I"
 	}
 
-diffTime :: !Time !Time -> Int
-diffTime (Time t1) (Time t2) = t1 - t2
+diffTime :: !Timestamp !Timestamp -> Int
+diffTime (Timestamp t1) (Timestamp t2) = t1 - t2
 
 strfTime :: !String !Tm -> String
 strfTime format tm 
