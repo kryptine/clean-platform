@@ -152,12 +152,12 @@ removeDirectoryA :: !String !*World -> (!Bool, !*World)
 
 setCurrentDirectoryA :: !String !*World -> (!Bool, !*World)
 
-waitForSingleObject :: !HANDLE !Int !*World -> (!Int,!*World);
+waitForSingleObject :: !HANDLE !Int !*env -> (!Int,!*env)
 
-getProcessHeap :: !*World -> (!HANDLE, !*World)
+getProcessHeap :: !*env -> (!HANDLE, !*env)
 
-heapAlloc :: !HANDLE !DWORD !SIZE_T !*World -> (!LPVOID, !*World)
-heapFree :: !HANDLE !DWORD !LPVOID !*World -> (!Bool, !*World)
+heapAlloc :: !HANDLE !DWORD !SIZE_T !*env -> (!LPVOID, !*env)
+heapFree :: !HANDLE !DWORD !LPVOID !*env -> (!Bool, !*env)
 heapCreate :: !DWORD !SIZE_T !SIZE_T !*World -> (!HANDLE, !*World)
 
 CreateThread :: !LPSECURITY_ATTRIBUTES !SIZE_T !LPTHREAD_START_ROUTINE !LPVOID !DWORD !*World -> (!HANDLE,!DWORD,!*World)
@@ -168,10 +168,10 @@ initializeCriticalSectionAndSpinCount :: !LPCRITICAL_SECTION !DWORD !*World -> (
 enterCriticalSection :: !LPCRITICAL_SECTION !*World -> *World
 leaveCriticalSection :: !LPCRITICAL_SECTION !*World -> *World
 
-createMutexA :: !LPSECURITY_ATTRIBUTES !Bool !LPCTSTR !*World -> (!HANDLE, !*World)
-releaseMutex :: !HANDLE !*World -> (!Bool, !*World)
+createMutexA :: !LPSECURITY_ATTRIBUTES !Bool !LPCTSTR !*env -> (!HANDLE, !*env)
+releaseMutex :: !HANDLE !*env -> (!Bool, !*env)
 createEventA :: !LPSECURITY_ATTRIBUTES !Bool !Bool !LPCTSTR !*World -> (!HANDLE, !*World)
-setEvent :: !HANDLE !*World -> (!Bool, !*World)
+setEvent :: !HANDLE !*env -> (!Bool, !*env)
 
 WinGetThreadId :: !HANDLE !*World -> (!DWORD, !*World)
 WinGetCurrentThreadId :: !*World -> (!DWORD, !*World)

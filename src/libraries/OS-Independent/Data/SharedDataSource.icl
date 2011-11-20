@@ -17,6 +17,13 @@ createBasicDataSource type id mkOps get putback = BasicSource
 	, get = get
 	, putback = \w b -> Just (putback w b)
 	}
+	
+createProxyDataSource :: !(*env -> *(!RWShared r` w` *env, !*env)) !(r` -> r) !(w r` -> w`) -> RWShared r w *env
+createProxyDataSource getSource get put = ProxySource
+	{ getSource	= getSource
+	, get		= get
+	, put		= \r w -> Just (put r w)
+	}
 		
 read :: !(RWShared r w *st) !*st ->(!r, !Version, !*st)
 read shared st
@@ -81,6 +88,9 @@ where
 					, addObserver = \obs st -> addObserver opsY obs (addObserver opsX obs st)
 					}
 		= (lockX ++ lockY, ComposedSourceOps cops, st)
+	lock` (ProxySource {getSource,get,put}) env
+		# (src, env) = getSource env
+		= lock` (mapReadWrite (get,put) src) env
 		
 	removeDup` [x:xs] = [x:removeDup` (filter (\y -> fst x <> fst y) xs)]
 	removeDup` _      = []
@@ -142,6 +152,11 @@ mapRead get` (ComposedSource shared=:{ComposedSource|get}) = ComposedSource
 	| shared
 	& get = \rx ry -> get` (get rx ry)
 	}
+mapRead get` (ProxySource share=:{ProxySource|get}) = ProxySource
+	{ ProxySource
+	| share
+	& get = get` o get
+	}
 
 mapWrite :: !(w` r -> Maybe w) !(RWShared r w *st) -> RWShared r w` *st
 mapWrite putback` (BasicSource shared=:{BasicSource|get, putback}) = BasicSource
@@ -153,6 +168,11 @@ mapWrite putback` (ComposedSource shared=:{ComposedSource|get, putback}) = Compo
 	{ ComposedSource
 	| shared
 	& putback = \w` rx ry -> maybe Nothing (\w -> putback w rx ry) (putback` w` (get rx ry))
+	}
+mapWrite put` (ProxySource share=:{ProxySource|put,get}) = ProxySource
+	{ ProxySource
+	| share
+	& put = \w` b -> maybe Nothing (\w -> put w b) (put` w` (get b))
 	}
 
 mapReadWrite :: !(!r -> r`,!w` r -> Maybe w) !(RWShared r w *st) -> RWShared r` w` *st
@@ -239,6 +259,10 @@ transRead (ComposedSource {srcX, srcY, get}) tr
 	# (rx, tr)	= transRead srcX tr
 	# (ry, tr)	= transRead srcY tr
 	= (get rx ry, tr)
+	
+transRead (ProxySource {getSource,get,put}) tr=:{st}
+		# (src, st) = getSource st
+		= transRead (mapReadWrite (get,put) src) {tr & st = st}
 	
 transWrite :: !w !(RWShared r w *st) !(Trans *st) -> (Trans *st)
 transWrite w (BasicSource {BasicSource|id, putback, mkOps}) tr=:{log, st}

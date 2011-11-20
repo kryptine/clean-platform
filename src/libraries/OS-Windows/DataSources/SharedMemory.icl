@@ -1,6 +1,6 @@
 implementation module SharedMemory
 
-import _WinBase, _Pointer, StdInt, StdTuple, StdString, StdArray, StdBool, StdFunc, FilePath, SharedDataSource, dynamic_string
+import _WinBase, _Pointer, _Unsafe, StdInt, StdTuple, StdString, StdArray, StdBool, StdFunc, FilePath, SharedDataSource, dynamic_string
 import StdMisc
 
 /**
@@ -15,7 +15,7 @@ import StdMisc
 *        |----------------------|                 
 *        <-------- size -------->
 */
-sharedMemory :: !a !*World -> (!Shared a World, !*World)
+sharedMemory :: !a !*envC -> (!Shared a *envS, !*envC) | MemoryEnv envC & MemoryEnv envS
 sharedMemory v world
 	# (heap, world)	= getProcessHeap world
 	# initStr		= copy_to_string v
@@ -33,8 +33,8 @@ sharedMemory v world
 where
 	get str = fst (copy_from_string {c \\ c <-: str})
 	putback v _ = copy_to_string v
-		
-	mkOps heap mutx ptr world =
+	
+	mkOps heap mutx ptr env =
 		({ read			= read
 		, write			= write
 		, getVersion	= getVersion
@@ -43,7 +43,7 @@ where
 		, unlock		= unlock
 		, close			= close
 		, addObserver	= addObserver
-		}, world)
+		}, env)
 	where
 		read world
 			# (sStr,ptr)	= readIntElemOffsetP ptr 0
@@ -74,7 +74,7 @@ where
 			# ptr			= writeIntElemOffset ptr 3 NULL
 			= forceEvalPointer ptr world
 		where
-			notifyObservers :: !Pointer !*World -> *World
+			notifyObservers :: !Pointer !*env -> *env
 			notifyObservers wptr world
 				| wptr == NULL = world
 				# obs 			= readIntElemOffset wptr 0
@@ -109,3 +109,9 @@ where
 			= world
 			
 		close world = world
+		
+instance MemoryEnv World
+where
+	accMemory accFunc env
+		# (a, mem) = accFunc 0
+		= (a,env)

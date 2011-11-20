@@ -151,25 +151,25 @@ setCurrentDirectoryA lpPathName world
 		ccall SetCurrentDirectoryA@4 "Ps:I:I"
 	}
 
-waitForSingleObject :: !HANDLE !Int !*World -> (!Int,!*World);
+waitForSingleObject :: !HANDLE !Int !*env -> (!Int,!*env)
 waitForSingleObject handle timeout world
 	= code {
 		ccall WaitForSingleObject@8 "PpI:I:I"
 	}
 
-getProcessHeap :: !*World -> (!HANDLE, !*World)
+getProcessHeap :: !*env -> (!HANDLE, !*env)
 getProcessHeap world
 	= code {
 		ccall GetProcessHeap@0 "P:I:I"
 	}
 	
-heapAlloc :: !HANDLE !DWORD !SIZE_T !*World -> (!LPVOID, !*World)
+heapAlloc :: !HANDLE !DWORD !SIZE_T !*env -> (!LPVOID, !*env)
 heapAlloc hHeap dwFlags dwBytes world
 	= code {
 		ccall HeapAlloc@12 "PIII:p:I"
 	}
 	
-heapFree :: !HANDLE !DWORD !LPVOID !*World -> (!Bool, !*World)
+heapFree :: !HANDLE !DWORD !LPVOID !*env -> (!Bool, !*env)
 heapFree hHeap dwFlags lpMem world
 	= code {
 		ccall HeapFree@12 "PIIp:I:I"
@@ -232,12 +232,12 @@ leaveCriticalSection lpCriticalSection world = code {
 	ccall LeaveCriticalSection@4 "Pp:V:I"
 }
 
-createMutexA :: !LPSECURITY_ATTRIBUTES !Bool !LPCTSTR !*World -> (!HANDLE, !*World)
+createMutexA :: !LPSECURITY_ATTRIBUTES !Bool !LPCTSTR !*env -> (!HANDLE, !*env)
 createMutexA lpMutexAttributes bInitialOwner lpName world = code {
 	ccall CreateMutexA@12 "PpIp:I:I"
 }
 
-releaseMutex :: !HANDLE !*World -> (!Bool, !*World)
+releaseMutex :: !HANDLE !*env -> (!Bool, !*env)
 releaseMutex hMutex world = code {
 	ccall ReleaseMutex@4 "PI:I:I"
 }
@@ -247,7 +247,7 @@ createEventA lpEventAttributes bManualReset bInitialState lpName world = code {
 	ccall CreateEventA@16 "PpIIp:I:I"
 }
 
-setEvent :: !HANDLE !*World -> (!Bool, !*World)
+setEvent :: !HANDLE !*env -> (!Bool, !*env)
 setEvent hEvent world = code {
 	ccall SetEvent@4 "PI:I:I"
 }

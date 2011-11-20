@@ -120,5 +120,5 @@ packString :: !String -> {#Char}
 */
 unpackString :: !{#Char} -> String
 
-forceEval			:: !a !*World -> *World
-forceEvalPointer	:: !Pointer !*World -> *World
+forceEval			:: !a !*env -> *env
+forceEvalPointer	:: !Pointer !*env -> *env

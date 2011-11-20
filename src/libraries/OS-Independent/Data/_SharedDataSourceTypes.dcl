@@ -5,14 +5,15 @@ from SharedDataSource				import :: BasicSourceOps
 from _SharedDataSourceOsDependent	import :: OBSERVER
 
 :: RWShared r w *st
-	= E.b:				BasicSource !(BasicSource b r w st)
-	| E.rx wx ry wy:	ComposedSource !(ComposedSource r w rx wx ry wy st)
+	= E.b:				BasicSource		!(BasicSource b r w st)
+	| E.rx wx ry wy:	ComposedSource	!(ComposedSource r w rx wx ry wy st)
+	| E.r` w`:			ProxySource		!(ProxySource r` w` r w st)
 
 :: BasicSource b r w *st =
-	{ id			:: !SharedId
-	, mkOps			:: !st -> *(!BasicSourceOps b st, !st)
-	, get			:: !b -> r
-	, putback		:: !w b -> Maybe b
+	{ id		:: !SharedId
+	, mkOps		:: !st -> *(!BasicSourceOps b st, !st)
+	, get		:: !b -> r
+	, putback	:: !w b -> Maybe b
 	}
 	
 :: ComposedSource r w rx wx ry wy *st =
@@ -20,6 +21,12 @@ from _SharedDataSourceOsDependent	import :: OBSERVER
 	, srcY		:: !RWShared ry wy st
 	, get		:: !rx ry -> r
 	, putback	:: !w rx ry -> Maybe (!wx, !wy)
+	}
+	
+:: ProxySource r` w` r w *env =
+	{ getSource	:: !env -> *(!RWShared r` w` env, !env)
+	, get		:: !r` -> r
+	, put		:: !w r` -> Maybe w`
 	}
 	
 :: SharedId :== String

@@ -28,6 +28,8 @@ createBasicDataSource ::
 	, close			:: !st -> st
 	, addObserver	:: !OBSERVER st -> st
 	}
+	
+createProxyDataSource :: !(*env -> *(!RWShared r` w` *env, !*env)) !(r` -> r) !(w r` -> w`) -> RWShared r w *env
 
 read		::		!(RWShared r w *st) !*st -> (!r, !Version, !*st)
 write		:: !w	!(RWShared r w *st) !*st -> *st

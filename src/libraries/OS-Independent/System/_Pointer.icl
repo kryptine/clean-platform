@@ -556,8 +556,8 @@ where
 	unpack off	| s.[off] == '\0' = s % (0, off - 1)
 				| otherwise       = unpack (off + 1)
 
-forceEval :: !a !*World -> *World
+forceEval :: !a !*env -> *env
 forceEval _ world = world
 
-forceEvalPointer :: !Pointer !*World -> *World
+forceEvalPointer :: !Pointer !*env -> *env
 forceEvalPointer _ world = world

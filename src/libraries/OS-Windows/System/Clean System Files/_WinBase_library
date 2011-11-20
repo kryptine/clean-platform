@@ -6,3 +6,6 @@ OpenThread@12
 SetEndOfFile@4
 LockFileEx@24
 UnlockFile@20
+GetProcessHeap@0
+HeapAlloc@12
+HeapFree@12
