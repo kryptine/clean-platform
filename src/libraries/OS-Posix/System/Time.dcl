@@ -5,6 +5,7 @@ definition module Time
 */
 
 from StdString import class toString
+import StdOverloaded
 
 /**
 * The resolution of the system clock ticks
@@ -15,7 +16,7 @@ CLK_PER_SEC	:== 100
 * The Tm record structure contains date and time information
 * in a broken down format.
 */
-:: Tm	= { sec		:: Int	// Seconds (0-60)
+:: Tm	= { sec		:: Int	// Seconds (0-61) (generally 0-59. Extra range to accommodate for leap seconds in certain systems.)
 		  , min		:: Int	// Minutes (0-59)
 		  ,	hour	:: Int	// Hour (0-23)
 		  , mday	:: Int	// Day of the month (1-31)
@@ -35,9 +36,12 @@ CLK_PER_SEC	:== 100
 */
 :: Clock		= Clock !Int
 
-instance toString Tm
-instance toString Timestamp
-instance toString Clock
+instance toString	Tm
+instance toString	Clock
+instance toString	Timestamp
+instance ==			Timestamp
+instance <			Timestamp
+instance toInt		Timestamp
 
 /**
 * Get the number of clock ticks since the process start
@@ -56,7 +60,7 @@ gmTime		:: !*World -> (!Tm, !*World)
 */
 localTime	:: !*World -> (!Tm, !*World)
 /**
-* Convert a Tm record (local time) to a Time value
+* Convert a Tm record (local time) to a Timestamp value
 */
 mkTime		:: !Tm -> Timestamp
 /**
@@ -67,3 +71,11 @@ diffTime	:: !Timestamp !Timestamp -> Int
 * Format the time structure using the format defined by C's time.h
 */
 strfTime	:: !String !Tm -> String
+/**
+* Convert a timestamp to a Tm record (local time)
+*/
+toLocalTime :: !Timestamp !*World -> (!Tm,!*World)
+/**
+* Convert a timestamp to a Tm record (GMT time)
+*/
+toGmTime    :: !Timestamp -> Tm

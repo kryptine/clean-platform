@@ -556,6 +556,38 @@ where
 	unpack off	| s.[off] == '\0' = s % (0, off - 1)
 				| otherwise       = unpack (off + 1)
 
+unpackInt2Z :: !{#Char} !Offset -> Int
+unpackInt2Z s off
+	= 		(toInt s.[off])
+	bitor	(toInt s.[off + 1] << 8)
+
+unpackInt2S :: !{#Char} !Offset -> Int
+unpackInt2S s off = IF_INT_64_OR_32 (((unpackInt2Z s off) << 48) >> 48) (((unpackInt2Z s off) << 16) >> 16)
+
+unpackInt4Z :: !{#Char} !Offset -> Int
+unpackInt4Z s off
+	= 		(toInt s.[off])
+	bitor	(toInt s.[off + 1] << 8)
+	bitor	(toInt s.[off + 2] << 16)
+	bitor	(toInt s.[off + 3] << 24)
+
+unpackInt4S :: !{#Char} !Offset -> Int
+unpackInt4S s off = IF_INT_64_OR_32  (((unpackInt4Z s off) << 32) >> 32) (unpackInt4S s off)
+
+unpackInt8 :: !{#Char} !Offset -> Int
+unpackInt8 s off
+	= 		(toInt s.[off])
+	bitor 	(toInt s.[off + 1] << 8)
+	bitor 	(toInt s.[off + 2] << 16)
+	bitor 	(toInt s.[off + 3] << 24)
+	bitor 	(toInt s.[off + 4] << 32)
+	bitor 	(toInt s.[off + 5] << 40)
+	bitor 	(toInt s.[off + 6] << 48)
+	bitor 	(toInt s.[off + 7] << 56)
+
+unpackBool :: !{#Char} !Offset -> Bool
+unpackBool s off = unpackInt4Z s off <> 0
+
 forceEval :: !a !*env -> *env
 forceEval _ world = world
 

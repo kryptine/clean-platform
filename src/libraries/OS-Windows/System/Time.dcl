@@ -39,7 +39,7 @@ instance toString 	Tm
 instance toString 	Clock
 instance toString 	Timestamp
 instance == 		Timestamp
-instance < 			Timestamp
+instance <			Timestamp
 instance toInt		Timestamp
 
 /**

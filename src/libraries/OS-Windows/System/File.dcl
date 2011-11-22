@@ -17,7 +17,7 @@ instance toString FileError
 * @param Path to the file to read
 * @return contents of the file
 */
-readFile :: !String !*env -> (!MaybeError FileError String , !*env) | FileSystem env
+readFile :: !String !*env -> (!MaybeError FileError String, !*env) | FileSystem env
 
 /**
 * Read all contents of a *File to a String. 
@@ -25,7 +25,7 @@ readFile :: !String !*env -> (!MaybeError FileError String , !*env) | FileSystem
 * @param Path to the file to read
 * @return contents of the file
 */
-readAll :: !*File -> (!MaybeError FileError String,! *File)
+readAll :: !*File -> (!MaybeError FileError String, !*File)
 
 /**
 * Writes a string to a file
@@ -73,7 +73,6 @@ deleteFile :: !String !*World -> (!MaybeOSError Void, !*World)
 * @return FileInfo structure
 */
 getFileInfo :: !String !*World -> (!MaybeOSError FileInfo, !*World)
-
 
 /**
 * Moves or renames a file

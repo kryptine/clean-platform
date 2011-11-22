@@ -1,7 +1,7 @@
 implementation module CommandLine
 
 import StdInt, StdList, StdEnum
-import _Pointer
+import _Pointer, OS
 
 getCommandLine :: *World -> ([String],*World)
 getCommandLine world 
@@ -9,29 +9,34 @@ getCommandLine world
 	# argv = derefInt global_argv
 	= ([derefString (readInt argv (i << (IF_INT_64_OR_32 3 2)) ) \\ i <- [0..argc - 1]], world)
 where
+	//The pushLc ABC instruction should work on all platforms / architectures
+	//Since it does not always work properly we use a fallback to pushL in some cases
+	//Fallback currently neccessary on:	
+	// - 64 bit windows
+
 	//Global argc pointer
 	global_argc :: Pointer
-	global_argc = IF_INT_64_OR_32 global_argc64 global_argc32
+	global_argc = IF_POSIX_OR_WINDOWS global_argclc (IF_INT_64_OR_32 global_argcl global_argclc)
 	
-	global_argc32 :: Pointer
-	global_argc32 = code {
+	global_argclc :: Pointer
+	global_argclc = code {
 		pushLc global_argc
 	}
-	global_argc64 :: Pointer
-	global_argc64 = code {
+	global_argcl :: Pointer
+	global_argcl = code {
 		pushL global_argc
 	}
 
 	//Global argv pointer
 	global_argv :: Pointer
-	global_argv = IF_INT_64_OR_32 global_argv64 global_argv32
+	global_argv = IF_POSIX_OR_WINDOWS global_argvlc (IF_INT_64_OR_32 global_argvl global_argvlc)
 	
-	global_argv32 :: Pointer
-	global_argv32 = code {
+	global_argvlc :: Pointer
+	global_argvlc = code {
 		pushLc global_argv
 	}
 	
-	global_argv64 :: Pointer
-	global_argv64 = code {
+	global_argvl :: Pointer
+	global_argvl = code {
 		pushL global_argv
 	}

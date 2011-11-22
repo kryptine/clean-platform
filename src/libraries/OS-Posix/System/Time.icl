@@ -6,6 +6,14 @@ import _Pointer
 //String buffer size
 MAXBUF :== 256
 
+instance == Timestamp
+where
+	(==) (Timestamp t1) (Timestamp t2) = t1 == t2
+
+instance < Timestamp
+where
+	(<) (Timestamp t1) (Timestamp t2) = t1 < t2
+
 instance toString Tm
 where
 	toString tm = derefString (toStringTmC (packTm tm))
@@ -25,6 +33,9 @@ where
 instance toString Clock
 where
 	toString (Clock c) = toString c
+instance toInt Timestamp
+where
+	toInt (Timestamp i) = i
 
 clock :: !*World -> (!Clock, !*World)
 clock world
@@ -92,32 +103,62 @@ strfTime format tm
 			ccall strftime "sIsA:I:A"
 		}
 
-//Custom deref and pack for the Tm structure
-derefTm :: !Int -> Tm
-derefTm tm =	{ sec = readInt4Z tm 0
-				, min = readInt4Z tm 4
-				, hour = readInt4Z tm 8
-				, mday = readInt4Z tm 12
-				, mon = readInt4Z tm 16
-				, year = readInt4Z tm 20 
-				, wday = readInt4Z tm 24
-				, yday = readInt4Z tm 28 
-				, isdst = readInt4Z tm 32 <> 0
-				}
+toLocalTime :: !Timestamp !*World -> (!Tm,!*World)
+toLocalTime (Timestamp t) world
+    # (tm,world) = localTimeC (packInt t) world
+    = (derefTm tm, world)
+
+toGmTime :: !Timestamp -> Tm
+toGmTime (Timestamp t) = derefTm (gmTimeC (packInt t))
+
+gmTimeC :: !{#Int} -> Pointer
+gmTimeC tm = code {
+    ccall gmtime "A:p"
+}
+
+localTimeC :: !{#Int} !*World -> (!Pointer, !*World)
+localTimeC tm world = code {
+    ccall localtime "A:p:p"
+}
+
+derefTm :: !Pointer-> Tm
+derefTm ptr = unpackTm (derefCharArray ptr sizeOfTm) 0
 
 packTm :: !Tm -> {#Int}
-packTm tm = IF_INT_64_OR_32
-	//64-bit
- 	{ ((tm.min << 32) bitor (tm.sec bitand 0xFFFFFFFF))
-	, ((tm.mday << 32) bitor (tm.hour bitand 0xFFFFFFFF))
-	, ((tm.year << 32) bitor (tm.mon bitand 0xFFFFFFFF))
-	, ((tm.yday << 32) bitor (tm.wday bitand 0xFFFFFFFF))
-	, (if tm.isdst 1 0) bitand 0xFFFFFFFF
+packTm tm = (IF_INT_64_OR_32 packTm64 packTm32) tm
+
+packTm64 :: !Tm -> {#Int}
+packTm64 tm =   { tm.sec  + tm.min  << 32
+                , tm.hour + tm.mday << 32
+                , tm.mon  + tm.year << 32
+                , tm.wday + tm.yday << 32
+                , if tm.isdst 1 0
+                }
+
+packTm32 :: !Tm -> {#Int}
+packTm32 tm =   { tm.sec
+                , tm.min
+                , tm.hour
+                , tm.mday
+                , tm.mon
+                , tm.year
+                , tm.wday
+                , tm.yday
+                , if tm.isdst 1 0
+                }
+
+unpackTm :: !{#Char} !Int -> Tm
+unpackTm buf off =
+	{ sec   = unpackInt4S buf (off + 0)
+    , min   = unpackInt4S buf (off + 4)
+	, hour  = unpackInt4S buf (off + 8)
+	, mday  = unpackInt4S buf (off + 12)
+	, mon   = unpackInt4S buf (off + 16)
+	, year  = unpackInt4S buf (off + 20)
+	, wday  = unpackInt4S buf (off + 24)
+	, yday  = unpackInt4S buf (off + 28)
+	, isdst = unpackBool buf (off + 32)
 	}
-	//32-bit
- 	{ tm.sec, tm.min
-	, tm.hour, tm.mday
-	, tm.mon, tm.year
-	, tm.wday, tm.yday
-	, if tm.isdst 1 0
-	}
+
+sizeOfTm :: Int
+sizeOfTm = 36 

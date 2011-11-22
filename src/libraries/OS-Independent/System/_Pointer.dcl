@@ -114,11 +114,34 @@ packInt :: !Int -> {#Int}
 * a pointer to a ccall using the C conventions.
 */
 packString :: !String -> {#Char}
-
 /**
 * Unpacks a NULL-terminated C-string into a Clean-string.
 */
 unpackString :: !{#Char} -> String
+/**
+* Unpacks a 16-bit integer from a byte array (zero extended on 32-bit and 64-bit)
+*/
+unpackInt2Z :: !{#Char} !Offset -> Int
+/*
+* Unpacks a 16-bit integer from a byte array (sign extended on 32-bit and 64-bit)
+*/
+unpackInt2S :: !{#Char} !Offset -> Int
+/**
+* Unpacks a 32-bit integer from a byte array (zero extended on 64-bit)
+*/
+unpackInt4Z :: !{#Char} !Offset -> Int
+/**
+* Unpacks a 32-bit integer from a byte array (sign extended on 64-bit)
+*/
+unpackInt4S :: !{#Char} !Offset -> Int
+/**
+* Unpacks a 64-bit integer from a byte array
+*/
+unpackInt8 :: !{#Char} !Offset -> Int
+/**
+* Unpacks a boolean from a byte array
+*/
+unpackBool :: !{#Char} !Offset -> Bool
 
 forceEval			:: !a !*env -> *env
 forceEvalPointer	:: !Pointer !*env -> *env
