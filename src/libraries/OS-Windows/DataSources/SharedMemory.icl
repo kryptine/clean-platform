@@ -52,16 +52,16 @@ where
 			# str			= derefCharArray vptr sStr
 			# world			= forceEvalPointer ptr world
 			# world			= forceEval str world
-			= (fst (copy_from_string {c \\ c <-: str}), ver, world)
+			= (Ok (fst (copy_from_string {c \\ c <-: str}), ver), world)
 			
 		write b world
 			# dstr			= copy_to_string b
 			# (vptr,ptr)	= readIntElemOffsetP ptr 1
 			# (ok, world)	= heapFree heap 0 vptr world
-			| not ok = abort "writing to shared memory: error freeing memory"
+			| not ok = (Error "writing to shared memory: error freeing memory", world)
 			# sStr			= size dstr
 			# (vptr, world)	= heapAlloc heap 0 sStr world
-			| vptr == NULL = abort "writing to shared memory: error allocating memory"
+			| vptr == NULL = (Error "writing to shared memory: error allocating memory", world)
 			# vptr			= writeCharArray vptr dstr
 			# ptr			= writeIntElemOffset ptr 0 sStr
 			# ptr			= writeIntElemOffset ptr 1 vptr
@@ -72,7 +72,7 @@ where
 			# (wptr,ptr)	= readIntElemOffsetP ptr 3
 			# world			= notifyObservers wptr world
 			# ptr			= writeIntElemOffset ptr 3 NULL
-			= forceEvalPointer ptr world
+			= (Ok Void, forceEvalPointer ptr world)
 		where
 			notifyObservers :: !Pointer !*env -> *env
 			notifyObservers wptr world
@@ -86,7 +86,7 @@ where
 				= world
 
 		getVersion world
-			= (readIntElemOffset ptr 2, world)
+			= (Ok (readIntElemOffset ptr 2), world)
 		
 		addObserver observer world
 			# (nptr, world)	= heapAlloc heap 0 (INT_SIZE * 2) world

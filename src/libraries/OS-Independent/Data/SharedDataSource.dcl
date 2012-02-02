@@ -1,45 +1,45 @@
 definition module SharedDataSource
 
-import FilePath, Void, Maybe
+import FilePath, Void, Maybe, Error
 
 from _SharedDataSourceTypes			import :: RWShared
 from _SharedDataSourceOsDependent	import :: OBSERVER
-:: Shared a st		:== RWShared a a st
-:: ROShared a st	:== RWShared a Void st
-:: WOShared a st	:== RWShared Void a st
+:: Shared a env		:== RWShared a a env
+:: ROShared a env	:== RWShared a Void env
+:: WOShared a env	:== RWShared Void a env
 :: Version			:== Int
 
 createBasicDataSource ::
 	!String
 	!String
-	!(*st -> *(!BasicSourceOps b *st, !*st))
+	!(*env -> *(!BasicSourceOps b *env, !*env))
 	!(b -> r)
 	!(w b -> b)
 	->
-	RWShared r w *st
+	RWShared r w *env
 	
-:: BasicSourceOps b *st =
-	{ read			:: !st -> *(!b, !Version, !st)
-	, write			:: !b st -> st
-	, getVersion	:: !st -> *(!Version, !st)
-	, lock			:: !st -> st
-	, lockExcl		:: !st -> st
-	, unlock		:: !st -> st
-	, close			:: !st -> st
-	, addObserver	:: !OBSERVER st -> st
+:: BasicSourceOps b *env =
+	{ read			:: 				!env -> *(!MaybeErrorString (!b, !Version), !env)
+	, write			:: !b			env -> *(!MaybeErrorString Void, !env)
+	, getVersion	:: 				!env -> *(!MaybeErrorString Version, !env)
+	, lock			:: 				!env -> env
+	, lockExcl		:: 				!env -> env
+	, unlock		:: 				!env -> env
+	, close			:: 				!env -> env
+	, addObserver	:: !OBSERVER	env -> env
 	}
 	
 createProxyDataSource :: !(*env -> *(!RWShared r` w` *env, !*env)) !(r` -> r) !(w r` -> w`) -> RWShared r w *env
 
-read		::		!(RWShared r w *st) !*st -> (!r, !Version, !*st)
-write		:: !w	!(RWShared r w *st) !*st -> *st
-getVersion	::		!(RWShared r w *st) !*st -> (!Version, !*st)
+read		::		!(RWShared r w *env) !*env -> (!MaybeErrorString (!r, !Version), !*env)
+write		:: !w	!(RWShared r w *env) !*env -> (!MaybeErrorString Void, !*env)
+getVersion	::		!(RWShared r w *env) !*env -> (!MaybeErrorString Version, !*env)
 
 // atomic update
 :: RWRes w a = YieldResult !a | Write !w !a | Redo
 
-readWrite	:: !(r Version -> (RWRes w a))			!(RWShared r w *st) !*st -> (!a, !*st)
-unsafeRW	:: !(r Version *st -> (RWRes w a, *st))	!(RWShared r w *st)	!*st -> (!a, !*st)
+readWrite	:: !(r Version -> (RWRes w a))				!(RWShared r w *env) !*env -> (!MaybeErrorString a, !*env)
+unsafeRW	:: !(r Version *env -> (RWRes w a, *env))	!(RWShared r w *env) !*env -> (!MaybeErrorString a, !*env)
 
 /**
 * Maps the read type, the write type or both of a shared reference to another one using a functional mapping.
@@ -50,19 +50,19 @@ unsafeRW	:: !(r Version *st -> (RWRes w a, *st))	!(RWShared r w *st)	!*st -> (!a
 * @param A reference to shared data
 * @return A reference to shared data of another type
 */
-mapRead			:: !(r -> r`)					!(RWShared r w *st) -> RWShared r` w *st
-mapWrite		:: !(w` r -> Maybe w)			!(RWShared r w *st) -> RWShared r w` *st
-mapReadWrite	:: !(!r -> r`,!w` r -> Maybe w)	!(RWShared r w *st) -> RWShared r` w` *st
+mapRead			:: !(r -> r`)					!(RWShared r w *env) -> RWShared r` w *env
+mapWrite		:: !(w` r -> Maybe w)			!(RWShared r w *env) -> RWShared r w` *env
+mapReadWrite	:: !(!r -> r`,!w` r -> Maybe w)	!(RWShared r w *env) -> RWShared r` w` *env
 
 // Composition of two shared references.
 // The read type is a tuple of both types.
 // The write type can either be a tuple of both write types, only one of them or it is written to none of them (result is a read-only shared).
-(>+<) infixl 6 :: !(RWShared rx wx *st) !(RWShared ry wy *st) -> RWShared (rx,ry) (wx,wy) *st
-(>+|) infixl 6 :: !(RWShared rx wx *st) !(RWShared ry wy *st) -> RWShared (rx,ry) wx *st
-(|+<) infixl 6 :: !(RWShared rx wx *st) !(RWShared ry wy *st) -> RWShared (rx,ry) wy *st
-(|+|) infixl 6 :: !(RWShared rx wx *st) !(RWShared ry wy *st) -> RWShared (rx,ry) Void *st
+(>+<) infixl 6 :: !(RWShared rx wx *env) !(RWShared ry wy *env) -> RWShared (rx,ry) (wx,wy) *env
+(>+|) infixl 6 :: !(RWShared rx wx *env) !(RWShared ry wy *env) -> RWShared (rx,ry) wx *env
+(|+<) infixl 6 :: !(RWShared rx wx *env) !(RWShared ry wy *env) -> RWShared (rx,ry) wy *env
+(|+|) infixl 6 :: !(RWShared rx wx *env) !(RWShared ry wy *env) -> RWShared (rx,ry) Void *env
 
-toReadOnly :: !(RWShared r w *st) -> ROShared r *st
+toReadOnly :: !(RWShared r w *env) -> ROShared r *env
 
 /**
 * Puts a symmetric lens between two symmetric shared data sources.
@@ -74,17 +74,17 @@ toReadOnly :: !(RWShared r w *st) -> ROShared r *st
 * @param SymmetricShared b
 * @param RWShared references of the same type with symmetric lens between them
 */
-symmetricLens :: !(a b -> b) !(b a -> a) !(Shared a *st) !(Shared b *st) -> (!Shared a *st, !Shared b *st)
+symmetricLens :: !(a b -> b) !(b a -> a) !(Shared a *env) !(Shared b *env) -> (!Shared a *env, !Shared b *env)
 
 // STM
-:: *Trans *st
+:: *Trans *env
 
 :: TRes a = TYieldResult !a | Retry
 
-atomic :: !((*Trans *st) -> (!TRes a, !*Trans *st)) !*st -> (!a, !*st)
+atomic :: !((*Trans *env) -> (!TRes a, !*Trans *env)) !*env -> (!MaybeErrorString a, !*env)
 
-transRead	:: 		!(RWShared r w *st) !(Trans *st) -> (!r, !(Trans *st))
-transWrite	:: !w	!(RWShared r w *st) !(Trans *st) -> (Trans *st)
+transRead	:: 		!(RWShared r w *env) !(Trans *env) -> (!r, !(Trans *env))
+transWrite	:: !w	!(RWShared r w *env) !(Trans *env) -> (Trans *env)
 
 // null share
 null		:: WOShared a *env

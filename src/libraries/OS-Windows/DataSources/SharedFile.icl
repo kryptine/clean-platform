@@ -38,12 +38,13 @@ where
 			# (pBuffer, world)	= heapAlloc heap 0 len world
 			// check NULL
 			# (ok, world)	= readFile handle pBuffer len (packInt 0) NULL world
-			| not ok = abort "read error"
+			| not ok = (Error "shared file: read error", world)
 			#! str = derefCharArray pBuffer len
 			# (ok, world)	= heapFree heap 0 pBuffer world
 			// check ok
 			# (ver, world) = getVersion world
-			= (str2b str, ver, world)
+			| isError ver = (liftError ver, world)
+			= (Ok (str2b str, fromOk ver), world)
 			
 		write b world
 			# str	= b2str b
@@ -54,19 +55,19 @@ where
 			# (overlapped, world)	= heapAlloc heap HEAP_ZERO_MEMORY OVERLAPPED_SIZE_BYTES world
 			// check NULL
 			# (ok, world)	= writeFile handle pBuffer len (packInt 0) overlapped world
-			| not ok = abort "write error"
+			| not ok = (Error "shared file: write error", world)
 			# (ok, world)	= heapFree heap 0 overlapped world
 			// check ok
 			# (ok, world)	= heapFree heap 0 pBuffer world
 			// check ok
 			# (ok, world)	= setEndOfFile handle world
-			| not ok = abort "set EOF error"
-			= world
+			| not ok = (Error "shared file: set EOF error", world)
+			= (Ok Void, world)
 			
 		getVersion world
 			# (len, world)		= getFileSize handle (packInt 0) world
 			// check INVALID_FILE_SIZE
-			= (len, world)
+			= (Ok len, world)
 			
 		lock = lock` 0
 		lockExcl = lock` LOCKFILE_EXCLUSIVE_LOCK
