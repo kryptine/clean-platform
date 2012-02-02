@@ -1,6 +1,6 @@
 implementation module _SharedDataSourceTypes
 
-import Maybe
+import Maybe, Error, Void
 from SharedDataSource				import :: BasicSourceOps{..}, :: Version
 from _SharedDataSourceOsDependent	import :: OBSERVER
 
