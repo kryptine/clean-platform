@@ -1,6 +1,6 @@
 definition module Error
 
-import Functor
+import Functor, Maybe
 
 :: MaybeError a b = Error a | Ok b 
 
@@ -32,3 +32,54 @@ fromError		:: !(MaybeError .a .b) -> .a
  * @precondition: isError x == True
  */
 liftError 		:: !(MaybeError .a .b) -> (MaybeError .a .c)
+
+/**
+ * Converts a Maybe value into a MaybeError value.
+ *
+ * @param The error used if the input is Nothing
+ * @param The Maybe value to be converted
+ * @return The resulting MaybeError value
+ */
+mb2error			:: !e !(Maybe a) -> MaybeError e a
+
+/**
+ * Sequences an operation on a MaybeError value.
+ * If the input is already an Error the operation is not performed.
+ *
+ * @param The operation on the value (performed if input is Ok)
+ * @param The input
+ * @return The error of the input or the result of the operation
+ */
+seqErrors :: (a -> MaybeError e b) !(MaybeError e a) -> MaybeError e b
+
+/**
+ * Combines two MaybeError values.
+ * If one of the input is an Error, this Error is given as result (If both are, the first is given).
+ *
+ * @param The first input
+ * @param The second input
+ * @param A combination function for the inputs if they are Ok
+ * @return The error of one of the inputs or the result of the combination
+ */
+combineErrors :: !(MaybeError e a) (MaybeError e b) (a b -> MaybeError e c) -> MaybeError e c
+
+/**
+ * Sequences two operations on a state, yielding MaybeError values.
+ * If the first operation already yields an error, the second is not performed.
+ *
+ * @param The first operation
+ * @param The second operation, getting the result of the first as input
+ * @return The Error of the first or the second operation
+ */
+seqErrorsSt :: !(.st -> (MaybeError e a,!.st)) (a .st -> u:(!MaybeError e b, !.st)) !.st -> v:(MaybeError e b, !.st), [u <= v]	
+
+/**
+ * Combines two MaybeError values, resulting from two operations on a state.
+ * If one of the operations yields an Error, this Error is given as result (If both are, the first is given).
+ *
+ * @param The first operation
+ * @param The second operation
+ * @param A combination function for the inputs if they are Ok
+ * @return The error of one of the operations or the result of the combination
+ */
+combineErrorsSt :: !(.st -> (!MaybeError e a, !.st)) (.st -> (!MaybeError e b, !.st)) (a b -> MaybeError e c) !.st -> (!MaybeError e c, !.st)
