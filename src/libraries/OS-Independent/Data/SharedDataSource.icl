@@ -14,16 +14,20 @@ createBasicDataSource ::
 createBasicDataSource type id mkOps get putback = BasicSource
 	{ id = type +++ ":" +++ id
 	, mkOps = mkOps
-	, get = get
-	, putback = \w b -> Just (putback w b)
+	, get = Ok o get
+	, putback = \w b -> Ok (Just (putback w b))
 	}
 	
 createProxyDataSource :: !(*env -> *(!RWShared r` w` *env, !*env)) !(r` -> r) !(w r` -> w`) -> RWShared r w *env
 createProxyDataSource getSource get put = ProxySource
 	{ getSource	= getSource
-	, get		= get
-	, put		= \r w -> Just (put r w)
+	, get		= Ok o get
+	, put		= \r w -> Ok (Just (put r w))
 	}
+
+getIds :: !(RWShared r w *env) -> [ShareId]
+getIds (BasicSource {id})			= [id]
+getIds (ComposedSource {srcX,srcY})	= getIds srcX ++ getIds srcY
 		
 read :: !(RWShared r w *env) !*env -> (!MaybeErrorString (!r, !Version), !*env)
 read shared env
@@ -76,7 +80,7 @@ lock exclusive shared env
 	# env				= seqSt (\(_,lock) env -> lock env) locks env
 	= (ops, env)
 where
-	lock` :: !(RWShared r w *env) !*env -> ([(SharedId, *env -> *env)], SharedOps r w *env, !*env)
+	lock` :: !(RWShared r w *env) !*env -> ([(ShareId, *env -> *env)], SharedOps r w *env, !*env)
 	lock` (BasicSource {BasicSource|id, mkOps, get, putback}) env
 		# (ops, env) = mkOps env
 		# lockF		= if exclusive ops.lockExcl ops.lock
@@ -93,7 +97,7 @@ where
 		= (lockX ++ lockY, ComposedSourceOps cops, env)
 	lock` (ProxySource {getSource,get,put}) env
 		# (src, env) = getSource env
-		= lock` (mapReadWrite (get,put) src) env
+		= lock` (mapReadWriteError (get,put) src) env
 		
 	removeDup` [x:xs] = [x:removeDup` (filter (\y -> fst x <> fst y) xs)]
 	removeDup` _      = []
@@ -106,48 +110,29 @@ where
 	
 readSharedData` :: !(SharedOps r w *env) !*env ->(!MaybeErrorString (!r, !Version), !*env)	
 readSharedData` (BasicSourceOps get _ {BasicSourceOps|read}) env
-	= appFst (fmap (\(r,v) -> (get r, v))) (read env)
+	= seqErrorsSt read (\(r,v) env -> (fmap (\r` -> (r`,v)) (get r), env)) env
 readSharedData` (ComposedSourceOps {opsX, opsY, get}) env
-	# (x, env)	= readSharedData` opsX env
-	| isError x = (liftError x, env)
-	# (y, env)	= readSharedData` opsY env
-	| isError y = (liftError y, env)
-	# (rx, verx) = fromOk x
-	# (ry, very) = fromOk y
-	= (Ok (get rx ry, verx + very), env)
+	= combineErrorsSt (readSharedData` opsX) (readSharedData` opsY) (\(rx,verx) (ry,very) -> fmap (\r -> (r,verx + very)) (get rx ry)) env
 	
 writeSharedData` :: !w !(SharedOps r w *env) !*env -> (!MaybeErrorString Void, !*env)	
 writeSharedData` w (BasicSourceOps _ putback {BasicSourceOps|read, write}) env
-	# (res, env)	= read env
-	| isError res = (liftError res, env)
-	# (b, _) 		= fromOk res
-	= case putback w b of
-		Nothing	= (Ok Void, env)
-		Just b	= write b env
+	# (mbB, env) = seqErrorsSt read (\(b,_) env -> (putback w b, env)) env
+	= case mbB of
+		Error e		= (Error e, env)
+		Ok Nothing	= (Ok Void, env)
+		Ok (Just b)	= write b env
 writeSharedData` w (ComposedSourceOps {opsX, opsY, get, putback}) env
-	# (x, env)		= readSharedData` opsX env
-	| isError x = (liftError x, env)
-	# (y, env)		= readSharedData` opsY env
-	| isError y = (liftError y, env)
-	# (rx, verx) 	= fromOk x
-	# (ry, very) 	= fromOk y
-	= case putback w rx ry of
-		Nothing
-			= (Ok Void, env)
-		Just (wx, wy)
-			# (x,env)	= writeSharedData` wx opsX env
-			| isError x = (liftError x, env)
-			= writeSharedData` wy opsY env
+	# (r, env)	= combineErrorsSt (readSharedData` opsX) (readSharedData` opsY) (\(rx,_) (ry,_) -> putback w rx ry) env
+	= case r of
+		Error e				= (Error e, env)
+		Ok Nothing			= (Ok Void, env)
+		Ok (Just (wx, wy))	= combineErrorsSt (writeSharedData` wx opsX) (writeSharedData` wy opsY) (\Void Void -> Ok Void) env
 
 getVersion` :: !(SharedOps r w *env) !*env -> (!MaybeErrorString Version, !*env)	
 getVersion` (BasicSourceOps get _ {BasicSourceOps|getVersion}) env
 	= getVersion env
 getVersion` (ComposedSourceOps {opsX, opsY, get}) env
-	# (verx, env)	= getVersion` opsX env
-	| isError verx = (liftError verx, env)
-	# (very, env)	= getVersion` opsY env
-	| isError very = (liftError very, env)
-	= (Ok (fromOk verx + fromOk very), env)
+	= combineErrorsSt (getVersion` opsX) (getVersion` opsY) (\x y -> Ok (x+y)) env
 
 wait :: !(SharedOps r w *env) !*env -> *env
 wait ops env = waitOsDependent [addObs] (close ops) env
@@ -157,41 +142,50 @@ where
 		ComposedSourceOps {ComposedSourceOps|addObserver}	= addObserver
 		
 mapRead :: !(r -> r`) !(RWShared r w *env) -> RWShared r` w *env
-mapRead get` (BasicSource shared=:{BasicSource|get}) = BasicSource
-	{ BasicSource
-	| shared
-	& get = get` o get
-	}
-mapRead get` (ComposedSource shared=:{ComposedSource|get}) = ComposedSource
-	{ ComposedSource
-	| shared
-	& get = \rx ry -> get` (get rx ry)
-	}
-mapRead get` (ProxySource share=:{ProxySource|get}) = ProxySource
-	{ ProxySource
-	| share
-	& get = get` o get
-	}
+mapRead get share = mapReadError (Ok o get) share
 
 mapWrite :: !(w` r -> Maybe w) !(RWShared r w *env) -> RWShared r w` *env
-mapWrite putback` (BasicSource shared=:{BasicSource|get, putback}) = BasicSource
-	{ BasicSource
-	| shared
-	& putback = \w` b -> maybe Nothing (\w -> putback w b) (putback` w` (get b))
-	}
-mapWrite putback` (ComposedSource shared=:{ComposedSource|get, putback}) = ComposedSource
-	{ ComposedSource
-	| shared
-	& putback = \w` rx ry -> maybe Nothing (\w -> putback w rx ry) (putback` w` (get rx ry))
-	}
-mapWrite put` (ProxySource share=:{ProxySource|put,get}) = ProxySource
-	{ ProxySource
-	| share
-	& put = \w` b -> maybe Nothing (\w -> put w b) (put` w` (get b))
-	}
+mapWrite put share = mapWriteError (\w` r -> Ok (put w` r)) share
 
 mapReadWrite :: !(!r -> r`,!w` r -> Maybe w) !(RWShared r w *env) -> RWShared r` w` *env
 mapReadWrite (readMap,writeMap) shared = mapRead readMap (mapWrite writeMap shared)
+
+mapReadError :: !(r -> MaybeErrorString r`) !(RWShared r w *env) -> RWShared r` w *env
+mapReadError get` (BasicSource shared=:{BasicSource|get}) = BasicSource
+	{ BasicSource
+	| shared
+	& get = \x -> seqErrors (get x) get`
+	}
+mapReadError get` (ComposedSource shared=:{ComposedSource|get}) = ComposedSource
+	{ ComposedSource
+	| shared
+	& get = \rx ry -> seqErrors (get rx ry) get`
+	}
+mapReadError get` (ProxySource share=:{ProxySource|get}) = ProxySource
+	{ ProxySource
+	| share
+	& get = \x -> seqErrors (get x) get`
+	}
+
+mapWriteError :: !(w` r -> MaybeErrorString (Maybe w)) !(RWShared r w *env) -> RWShared r w` *env
+mapWriteError putback` (BasicSource shared=:{BasicSource|get, putback}) = BasicSource
+	{ BasicSource
+	| shared
+	& putback = \w` b -> seqErrors (seqErrors (get b) (putback` w`)) (maybe (Ok Nothing) (\w -> putback w b))
+	}
+mapWriteError putback` (ComposedSource shared=:{ComposedSource|get, putback}) = ComposedSource
+	{ ComposedSource
+	| shared
+	& putback = \w` rx ry -> seqErrors (seqErrors (get rx ry) (putback` w`)) (maybe (Ok Nothing) (\w -> putback w rx ry))
+	}
+mapWriteError put` (ProxySource share=:{ProxySource|put,get}) = ProxySource
+	{ ProxySource
+	| share
+	& put = \w` b -> seqErrors (seqErrors (get b) (put` w`)) (maybe (Ok Nothing) (\w -> put w b)) 
+	}
+	
+mapReadWriteError :: !(!r -> MaybeErrorString r`,!w` r -> MaybeErrorString (Maybe w)) !(RWShared r w *env) -> RWShared r` w` *env
+mapReadWriteError (readMap,writeMap) shared = mapReadError readMap (mapWriteError writeMap shared)
 
 symmetricLens :: !(a b -> b) !(b a -> a) !(Shared a *env) !(Shared b *env) -> (!Shared a *env, !Shared b *env)
 symmetricLens putr putl sharedA sharedB = (newSharedA,newSharedB)
@@ -204,7 +198,7 @@ toReadOnly :: !(RWShared r w *env) -> ROShared r *env
 toReadOnly share = mapWrite (\_ _ -> Nothing) share
 
 (>+<) infixl 6 :: !(RWShared rx wx *env) !(RWShared ry wy *env) -> RWShared (rx,ry) (wx,wy) *env
-(>+<) srcX srcY = ComposedSource {srcX = srcX, srcY = srcY, get = tuple, putback = \w _ _ -> Just w}
+(>+<) srcX srcY = ComposedSource {srcX = srcX, srcY = srcY, get = \x y -> Ok (x,y), putback = \w _ _ -> Ok (Just w)}
 
 (>+|) infixl 6 :: !(RWShared rx wx *env) !(RWShared ry wy *env) -> RWShared (rx,ry) wx *env
 (>+|) srcX srcY = mapWrite (\wx _ -> Just (wx, Void)) (srcX >+< toReadOnly srcY)
@@ -217,7 +211,7 @@ toReadOnly share = mapWrite (\_ _ -> Nothing) share
 
 // STM
 :: *Trans *env =	{ env	:: !env
-				, log	:: !*'Map'.Map SharedId (TLogEntry env)
+				, log	:: !*'Map'.Map ShareId (TLogEntry env)
 				}
 :: TLogEntry *env = E.b: TLogEntry !b !Version !Bool !(BasicSourceOps b env)
 
@@ -268,22 +262,28 @@ transRead (BasicSource {BasicSource|id, get, mkOps}) tr=:{log, env}
 			# (ops, env)	= mkOps env
 			# env			= ops.lock env
 			# (res, env)	= ops.read env
-			| isError res = abort "error during transRead"
+			| isError res = abort "error during transRead: exceptions not implemented yet"
 			# (b, ver)		= fromOk res
 			# env			= ops.unlock env
 			# log			= 'Map'.put id (TLogEntry b ver False ops) log
-			= (get b, {tr & log = log, env = env})
+			# res = get b
+			| isError res = abort "error during transRead: exceptions not implemented yet"
+			= (fromOk res, {tr & log = log, env = env})
 		Just (TLogEntry b _ _ _)
-			= (get (forceType b), {tr & log = log})
+			# res = get (forceType b)
+			| isError res = abort "error during transRead: exceptions not implemented yet"
+			= (fromOk res, {tr & log = log})
 
 transRead (ComposedSource {srcX, srcY, get}) tr
 	# (rx, tr)	= transRead srcX tr
 	# (ry, tr)	= transRead srcY tr
-	= (get rx ry, tr)
+	# res		= get rx ry
+	| isError res = abort "error during transRead: exceptions not implemented yet"
+	= (fromOk res, tr)
 	
 transRead (ProxySource {getSource,get,put}) tr=:{env}
 		# (src, env) = getSource env
-		= transRead (mapReadWrite (get,put) src) {tr & env = env}
+		= transRead (mapReadWriteError (get,put) src) {tr & env = env}
 	
 transWrite :: !w !(RWShared r w *env) !(Trans *env) -> (Trans *env)
 transWrite w (BasicSource {BasicSource|id, putback, mkOps}) tr=:{log, env}
@@ -293,18 +293,20 @@ transWrite w (BasicSource {BasicSource|id, putback, mkOps}) tr=:{log, env}
 			# (ops, env)	= mkOps env
 			# env			= ops.lock env
 			# (res, env)	= ops.read env
-			| isError res = abort "error during transRead"
+			| isError res = abort "error during transWrite: exceptions not implemented yet"
 			# (b, ver)		= fromOk res
 			# env			= ops.unlock env
 			# b = case putback w b of
-				Nothing	= b
-				Just b	= b
+				Error e	= abort "error during transWrite: exceptions not implemented yet"
+				Ok Nothing	= b
+				Ok (Just b)	= b
 			# log			= 'Map'.put id (TLogEntry b ver True ops) log
 			= {tr & log = log, env = env}
 		Just (TLogEntry b ver _ ops) = case putback w (forceType b) of
-			Nothing
+			Error e = abort "error during transWrite: exceptions not implemented yet"
+			Ok Nothing
 				= tr
-			Just b
+			Ok (Just b)
 				# log = 'Map'.put id (TLogEntry (forceType b) ver True ops) log
 				= {tr & log = log}
 
@@ -312,9 +314,10 @@ transWrite w (ComposedSource {srcX, srcY, putback}) tr
 	# (rx, tr)	= transRead srcX tr
 	# (ry, tr)	= transRead srcY tr
 	= case putback w rx ry of
-		Nothing
+		Error e = abort "error during transWrite: exceptions not implemented yet" 
+		Ok Nothing
 			= tr
-		Just (wx, wy)
+		Ok (Just (wx, wy))
 			# tr		= transWrite wx srcX tr
 			# tr		= transWrite wy srcY tr
 			= tr
@@ -323,7 +326,7 @@ null :: WOShared a *env
 null = createBasicDataSource "Null" "" mkOps (const Void) (\_ b -> b)
 where
 	mkOps env = (ops, env)
-	ops =	{ read			= \env -> (Error "reading null share", env)
+	ops =	{ read			= \env -> (Ok (Void,0), env)
 			, write			= \_ env -> (Ok Void, env)
 			, getVersion	= \env -> (Ok 0, env)
 			, lock			= id

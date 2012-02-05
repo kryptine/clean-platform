@@ -46,11 +46,11 @@ mb2error			:: !e !(Maybe a) -> MaybeError e a
  * Sequences an operation on a MaybeError value.
  * If the input is already an Error the operation is not performed.
  *
- * @param The operation on the value (performed if input is Ok)
  * @param The input
+ * @param The operation on the value (performed if input is Ok)
  * @return The error of the input or the result of the operation
  */
-seqErrors :: (a -> MaybeError e b) !(MaybeError e a) -> MaybeError e b
+seqErrors :: !(MaybeError e a) (a -> MaybeError e b) -> MaybeError e b
 
 /**
  * Combines two MaybeError values.

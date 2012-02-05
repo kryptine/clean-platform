@@ -2,7 +2,7 @@ definition module SharedDataSource
 
 import FilePath, Void, Maybe, Error
 
-from _SharedDataSourceTypes			import :: RWShared
+from _SharedDataSourceTypes			import :: RWShared, :: ShareId
 from _SharedDataSourceOsDependent	import :: OBSERVER
 :: Shared a env		:== RWShared a a env
 :: ROShared a env	:== RWShared a Void env
@@ -31,6 +31,8 @@ createBasicDataSource ::
 	
 createProxyDataSource :: !(*env -> *(!RWShared r` w` *env, !*env)) !(r` -> r) !(w r` -> w`) -> RWShared r w *env
 
+getIds :: !(RWShared r w *env) -> [ShareId]
+
 read		::		!(RWShared r w *env) !*env -> (!MaybeErrorString (!r, !Version), !*env)
 write		:: !w	!(RWShared r w *env) !*env -> (!MaybeErrorString Void, !*env)
 getVersion	::		!(RWShared r w *env) !*env -> (!MaybeErrorString Version, !*env)
@@ -53,6 +55,10 @@ unsafeRW	:: !(r Version *env -> (RWRes w a, *env))	!(RWShared r w *env) !*env ->
 mapRead			:: !(r -> r`)					!(RWShared r w *env) -> RWShared r` w *env
 mapWrite		:: !(w` r -> Maybe w)			!(RWShared r w *env) -> RWShared r w` *env
 mapReadWrite	:: !(!r -> r`,!w` r -> Maybe w)	!(RWShared r w *env) -> RWShared r` w` *env
+
+mapReadError		:: !(r -> MaybeErrorString r`)										!(RWShared r w *env) -> RWShared r` w *env
+mapWriteError		:: !(w` r -> MaybeErrorString (Maybe w))							!(RWShared r w *env) -> RWShared r w` *env
+mapReadWriteError	:: !(!r -> MaybeErrorString r`,!w` r -> MaybeErrorString (Maybe w))	!(RWShared r w *env) -> RWShared r` w` *env
 
 // Composition of two shared references.
 // The read type is a tuple of both types.
