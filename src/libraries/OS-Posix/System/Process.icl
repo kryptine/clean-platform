@@ -15,27 +15,30 @@ import Void
 
 //System
 import FilePath
+import File
 import OSError
 import _Pointer
 import _Posix
 
 runProcess :: !FilePath ![String] !(Maybe String) !*World -> (MaybeOSError ProcessHandle, *World)
-runProcess path args mCurrentDirectory world
+runProcess path args mCurrentDirectory world //TODO: Use mCurrentDirectory argument
+	//Check if path exists 
+	# (ok,world)	= fileExists path world
+	| not ok
+		= (Error (1,"File " +++ path +++ " does not exist"),world)
 	//Fork
-	# (argv,args_memory)	= makeArgv [path:args]
 	# (pid, world)			= fork world
 	| pid == 0
 		//Exec
-		# (res,world)	= execvp path argv world
-		= exit 1 world
+		# (argv,args_memory)	= makeArgv [path:args]
+		# (res,world)			= execvp (path +++ "\0") argv world
+		= (exit 1 world)
 	| pid > 0
-		| free args_memory<0
-			= getLastOSError world
-		| otherwise
-			= (Ok {ProcessHandle| pid = pid}, world)
+		= (Ok {ProcessHandle| pid = pid}, world)
 	| otherwise
 		= getLastOSError world
 where
+	makeArgv :: [String] -> (!{#Pointer},!Pointer)
 	makeArgv argv_list
 		# args_size = argvLength argv_list 0
 		  args_string = createArgsString args_size argv_list
