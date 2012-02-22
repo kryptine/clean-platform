@@ -1,7 +1,7 @@
 implementation module SharedDataSource
 
 import _SharedDataSourceTypes, _SharedDataSourceOsDependent, StdTuple, FilePath, Void, Maybe, StdBool, StdMisc, StdList, StdFunc, StdString, StdOrdList, Tuple, Func, Error
-from Map import qualified :: Map, newMap, toList, getU, put
+from Map import qualified :: Map, newMap, toList, getU, put, get
 
 createBasicDataSource ::
 	!String
@@ -12,7 +12,8 @@ createBasicDataSource ::
 	->
 	RWShared r w *env
 createBasicDataSource type id mkOps get putback = BasicSource
-	{ id = type +++ ":" +++ id
+	{ BasicSource
+	| id = type +++ ":" +++ id
 	, mkOps = mkOps
 	, get = Ok o get
 	, putback = \w b -> Ok (Just (putback w b))
@@ -26,8 +27,8 @@ createProxyDataSource getSource get put = ProxySource
 	}
 
 getIds :: !(RWShared r w *env) -> [ShareId]
-getIds (BasicSource {id})			= [id]
-getIds (ComposedSource {srcX,srcY})	= getIds srcX ++ getIds srcY
+getIds (BasicSource {BasicSource|id})	= [id]
+getIds (ComposedSource {srcX,srcY})		= getIds srcX ++ getIds srcY
 		
 read :: !(RWShared r w *env) !*env -> (!MaybeErrorString (!r, !Version), !*env)
 read shared env
@@ -98,6 +99,8 @@ where
 	lock` (ProxySource {getSource,get,put}) env
 		# (src, env) = getSource env
 		= lock` (mapReadWriteError (get,put) src) env
+	lock` (KeyValueSource {KeyValueSource|id, mkOps, get, putback}) env
+		= lock` (BasicSource {BasicSource|id = id,mkOps = mkOps, get = get, putback = putback}) env
 		
 	removeDup` [x:xs] = [x:removeDup` (filter (\y -> fst x <> fst y) xs)]
 	removeDup` _      = []
@@ -166,6 +169,11 @@ mapReadError get` (ProxySource share=:{ProxySource|get}) = ProxySource
 	| share
 	& get = \x -> seqErrors (get x) get`
 	}
+mapReadError get` (KeyValueSource shared=:{KeyValueSource|get}) = KeyValueSource
+	{ KeyValueSource
+	| shared
+	& get = \x -> seqErrors (get x) get`
+	}
 
 mapWriteError :: !(w` r -> MaybeErrorString (Maybe w)) !(RWShared r w *env) -> RWShared r w` *env
 mapWriteError putback` (BasicSource shared=:{BasicSource|get, putback}) = BasicSource
@@ -183,9 +191,35 @@ mapWriteError put` (ProxySource share=:{ProxySource|put,get}) = ProxySource
 	| share
 	& put = \w` b -> seqErrors (seqErrors (get b) (put` w`)) (maybe (Ok Nothing) (\w -> put w b)) 
 	}
+mapWriteError putback` (KeyValueSource shared=:{KeyValueSource|get, putback}) = KeyValueSource
+	{ KeyValueSource
+	| shared
+	& putback = \w` b -> seqErrors (seqErrors (get b) (putback` w`)) (maybe (Ok Nothing) (\w -> putback w b))
+	}
 	
 mapReadWriteError :: !(!r -> MaybeErrorString r`,!w` r -> MaybeErrorString (Maybe w)) !(RWShared r w *env) -> RWShared r` w` *env
 mapReadWriteError (readMap,writeMap) shared = mapReadError readMap (mapWriteError writeMap shared)
+
+mapKey :: !k !(Shared ('Map'.Map k v) *env) -> Shared v *env | Eq, Ord, TC k & TC v & TC env
+mapKey k (KeyValueSource {keyProjection=kp :: k^ -> Shared v^ *env^}) = kp k
+mapKey k share = mapReadWriteError (\m -> maybe (Error "key not found") Ok ('Map'.get k m), \v m -> Ok (Just ('Map'.put k v m))) share
+
+createKeyValueSource ::
+	!String
+	!String
+	!(*env -> *(!BasicSourceOps ('Map'.Map k v) *env, !*env))
+	!(k -> Shared v *env)
+	->
+	(Shared ('Map'.Map k v) *env)
+	| TC k & TC v & TC env
+createKeyValueSource type ident mkOps keyProj = KeyValueSource
+	{ KeyValueSource
+	| id = type +++ ":" +++ ident
+	, mkOps = mkOps
+	, get = Ok o id
+	, putback = \w _ -> Ok (Just w)
+	, keyProjection = (dynamic keyProj :: k^ -> Shared v^ *env^)
+	}
 
 symmetricLens :: !(a b -> b) !(b a -> a) !(Shared a *env) !(Shared b *env) -> (!Shared a *env, !Shared b *env)
 symmetricLens putr putl sharedA sharedB = (newSharedA,newSharedB)
@@ -282,8 +316,11 @@ transRead (ComposedSource {srcX, srcY, get}) tr
 	= (fromOk res, tr)
 	
 transRead (ProxySource {getSource,get,put}) tr=:{env}
-		# (src, env) = getSource env
-		= transRead (mapReadWriteError (get,put) src) {tr & env = env}
+	# (src, env) = getSource env
+	= transRead (mapReadWriteError (get,put) src) {tr & env = env}
+		
+transRead (KeyValueSource {KeyValueSource|id, mkOps, get, putback}) tr
+	= transRead (BasicSource {BasicSource|id = id,mkOps = mkOps, get = get, putback = putback}) tr
 	
 transWrite :: !w !(RWShared r w *env) !(Trans *env) -> (Trans *env)
 transWrite w (BasicSource {BasicSource|id, putback, mkOps}) tr=:{log, env}
@@ -321,6 +358,13 @@ transWrite w (ComposedSource {srcX, srcY, putback}) tr
 			# tr		= transWrite wx srcX tr
 			# tr		= transWrite wy srcY tr
 			= tr
+			
+transWrite w (ProxySource {getSource,get,put}) tr=:{env}
+	# (src, env) = getSource env
+	= transWrite w (mapReadWriteError (get,put) src) {tr & env = env}
+		
+transWrite w (KeyValueSource {KeyValueSource|id, mkOps, get, putback}) tr
+	= transWrite w (BasicSource {BasicSource|id = id,mkOps = mkOps, get = get, putback = putback}) tr
 			
 null :: WOShared a *env
 null = createBasicDataSource "Null" "" mkOps (const Void) (\_ b -> b)

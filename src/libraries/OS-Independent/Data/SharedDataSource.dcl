@@ -4,6 +4,9 @@ import FilePath, Void, Maybe, Error
 
 from _SharedDataSourceTypes			import :: RWShared, :: ShareId
 from _SharedDataSourceOsDependent	import :: OBSERVER
+from Map							import :: Map
+from StdClass						import class Eq, class Ord, class <
+
 :: Shared a env		:== RWShared a a env
 :: ROShared a env	:== RWShared a Void env
 :: WOShared a env	:== RWShared Void a env
@@ -59,6 +62,17 @@ mapReadWrite	:: !(!r -> r`,!w` r -> Maybe w)	!(RWShared r w *env) -> RWShared r`
 mapReadError		:: !(r -> MaybeErrorString r`)										!(RWShared r w *env) -> RWShared r` w *env
 mapWriteError		:: !(w` r -> MaybeErrorString (Maybe w))							!(RWShared r w *env) -> RWShared r w` *env
 mapReadWriteError	:: !(!r -> MaybeErrorString r`,!w` r -> MaybeErrorString (Maybe w))	!(RWShared r w *env) -> RWShared r` w` *env
+
+mapKey :: !k !(Shared (Map k v) *env) -> Shared v *env | Eq, Ord, TC k & TC v & TC env
+
+createKeyValueSource ::
+	!String
+	!String
+	!(*env -> *(!BasicSourceOps (Map k v) *env, !*env))
+	!(k -> Shared v *env)
+	->
+	(Shared (Map k v) *env)
+	| TC k & TC v & TC env
 
 // Composition of two shared references.
 // The read type is a tuple of both types.

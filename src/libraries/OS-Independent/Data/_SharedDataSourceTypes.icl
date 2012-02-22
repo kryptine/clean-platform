@@ -4,7 +4,7 @@ import Maybe, Error, Void
 from SharedDataSource				import :: BasicSourceOps{..}, :: Version
 from _SharedDataSourceOsDependent	import :: OBSERVER
 
-close :: !(SharedOps r w *st) !*st -> *st
+close :: !(SharedOps r w *env) !*env -> *env
 close (BasicSourceOps _ _ {BasicSourceOps|unlock, close}) st
 	= close (unlock st)
 close (ComposedSourceOps {opsX, opsY}) st
