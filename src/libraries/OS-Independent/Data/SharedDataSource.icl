@@ -30,7 +30,7 @@ getIds :: !(RWShared r w *env) -> [ShareId]
 getIds (BasicSource {BasicSource|id})	= [id]
 getIds (ComposedSource {srcX,srcY})		= getIds srcX ++ getIds srcY
 		
-read :: !(RWShared r w *env) !*env -> (!MaybeErrorString (!r, !Version), !*env)
+read :: !(RWShared r w *env) !*env -> (!MaybeErrorString (!r, !Hash), !*env)
 read shared env
 	# (ops, env)	= lock False shared env
 	# (res, env)	= readSharedData` ops env
@@ -44,17 +44,15 @@ write w shared env
 	# env			= close ops env
 	= (res,env)
 
-getVersion :: !(RWShared r w *env) !*env -> (!MaybeErrorString Version, !*env)
-getVersion shared env
-	# (ops, env)		= lock False shared env
-	# (ver, env)		= getVersion` ops env
-	# env				= close ops env
-	= (ver, env)
+getHash :: !(RWShared r w *env) !*env -> (!MaybeErrorString Hash, !*env)
+getHash share env
+	# (res,env) = read share env
+	= (fmap snd res, env)
 
-readWrite :: !(r Version -> (RWRes w a)) !(RWShared r w *env) !*env -> (!MaybeErrorString a, !*env)
+readWrite :: !(r Hash -> (RWRes w a)) !(RWShared r w *env) !*env -> (!MaybeErrorString a, !*env)
 readWrite f shared env = unsafeRW (\r ver env -> (f r ver, env)) shared env
 			
-unsafeRW :: !(r Version *env -> (RWRes w a, *env))	!(RWShared r w *env)	!*env -> (!MaybeErrorString a, !*env)
+unsafeRW :: !(r Hash *env -> (RWRes w a, *env))	!(RWShared r w *env)	!*env -> (!MaybeErrorString a, !*env)
 unsafeRW f shared env
 	# (ops, env)		= lock True shared env
 	# (res, env)		= readSharedData` ops env
@@ -111,15 +109,15 @@ where
 	addObserver (ComposedSourceOps {opsX, opsY}) waiter env
 		= addObserver opsY waiter (addObserver opsX waiter env)
 	
-readSharedData` :: !(SharedOps r w *env) !*env ->(!MaybeErrorString (!r, !Version), !*env)	
+readSharedData` :: !(SharedOps r w *env) !*env ->(!MaybeErrorString (!r, !Hash), !*env)	
 readSharedData` (BasicSourceOps get _ {BasicSourceOps|read}) env
-	= seqErrorsSt read (\(r,v) env -> (fmap (\r` -> (r`,v)) (get r), env)) env
+	= seqErrorsSt read (\r env -> (fmap (\r` -> (r`,genHash r)) (get r), env)) env
 readSharedData` (ComposedSourceOps {opsX, opsY, get}) env
-	= combineErrorsSt (readSharedData` opsX) (readSharedData` opsY) (\(rx,verx) (ry,very) -> fmap (\r -> (r,verx + very)) (get rx ry)) env
+	= combineErrorsSt (readSharedData` opsX) (readSharedData` opsY) (\(rx,hx) (ry,hy) -> fmap (\r -> (r,hx +++ hy)) (get rx ry)) env
 	
 writeSharedData` :: !w !(SharedOps r w *env) !*env -> (!MaybeErrorString Void, !*env)	
 writeSharedData` w (BasicSourceOps _ putback {BasicSourceOps|read, write}) env
-	# (mbB, env) = seqErrorsSt read (\(b,_) env -> (putback w b, env)) env
+	# (mbB, env) = seqErrorsSt read (\b env -> (putback w b, env)) env
 	= case mbB of
 		Error e		= (Error e, env)
 		Ok Nothing	= (Ok Void, env)
@@ -130,12 +128,6 @@ writeSharedData` w (ComposedSourceOps {opsX, opsY, get, putback}) env
 		Error e				= (Error e, env)
 		Ok Nothing			= (Ok Void, env)
 		Ok (Just (wx, wy))	= combineErrorsSt (writeSharedData` wx opsX) (writeSharedData` wy opsY) (\Void Void -> Ok Void) env
-
-getVersion` :: !(SharedOps r w *env) !*env -> (!MaybeErrorString Version, !*env)	
-getVersion` (BasicSourceOps get _ {BasicSourceOps|getVersion}) env
-	= getVersion env
-getVersion` (ComposedSourceOps {opsX, opsY, get}) env
-	= combineErrorsSt (getVersion` opsX) (getVersion` opsY) (\x y -> Ok (x+y)) env
 
 wait :: !(SharedOps r w *env) !*env -> *env
 wait ops env = waitOsDependent [addObs] (close ops) env
@@ -247,7 +239,7 @@ toReadOnly share = mapWrite (\_ _ -> Nothing) share
 :: *Trans *env =	{ env	:: !env
 				, log	:: !*'Map'.Map ShareId (TLogEntry env)
 				}
-:: TLogEntry *env = E.b: TLogEntry !b !Version !Bool !(BasicSourceOps b env)
+:: TLogEntry *env = E.b: TLogEntry !b !Hash !Bool !(BasicSourceOps b env)
 
 atomic :: !((*Trans *env) -> (!TRes a, !*Trans *env)) !*env -> (!MaybeErrorString a, !*env)
 atomic trF env
@@ -276,11 +268,11 @@ atomic trF env
 where
 	checkConsistency :: ![TLogEntry *env] !*env -> *(!MaybeErrorString Bool,!*env)
 	checkConsistency [] env = (Ok False, env)
-	checkConsistency [TLogEntry _ lVer _ {getVersion}:entries] env
-		# (cVer, env)			= getVersion env
-		| isError cVer			= (liftError cVer, env)
-		| fromOk cVer == lVer	= checkConsistency entries env
-		| otherwise				= (Ok True, env)
+	checkConsistency [TLogEntry _ hash _ {read}:entries] env
+		# (res, env)					= read env
+		| isError res					= (liftError res, env)
+		| genHash (fromOk res) == hash	= checkConsistency entries env
+		| otherwise						= (Ok True, env)
 		
 	commit :: !(TLogEntry *env) !(!MaybeErrorString Void, !*env) -> (!MaybeErrorString Void, !*env)
 	commit (TLogEntry b _ doWrite {write,unlock}) (res,env)
@@ -297,9 +289,9 @@ transRead (BasicSource {BasicSource|id, get, mkOps}) tr=:{log, env}
 			# env			= ops.lock env
 			# (res, env)	= ops.read env
 			| isError res = abort "error during transRead: exceptions not implemented yet"
-			# (b, ver)		= fromOk res
+			# b				= fromOk res
 			# env			= ops.unlock env
-			# log			= 'Map'.put id (TLogEntry b ver False ops) log
+			# log			= 'Map'.put id (TLogEntry b (genHash b) False ops) log
 			# res = get b
 			| isError res = abort "error during transRead: exceptions not implemented yet"
 			= (fromOk res, {tr & log = log, env = env})
@@ -331,13 +323,13 @@ transWrite w (BasicSource {BasicSource|id, putback, mkOps}) tr=:{log, env}
 			# env			= ops.lock env
 			# (res, env)	= ops.read env
 			| isError res = abort "error during transWrite: exceptions not implemented yet"
-			# (b, ver)		= fromOk res
+			# b				= fromOk res
 			# env			= ops.unlock env
 			# b = case putback w b of
 				Error e	= abort "error during transWrite: exceptions not implemented yet"
 				Ok Nothing	= b
 				Ok (Just b)	= b
-			# log			= 'Map'.put id (TLogEntry b ver True ops) log
+			# log			= 'Map'.put id (TLogEntry b (genHash b) True ops) log
 			= {tr & log = log, env = env}
 		Just (TLogEntry b ver _ ops) = case putback w (forceType b) of
 			Error e = abort "error during transWrite: exceptions not implemented yet"
@@ -372,7 +364,6 @@ where
 	mkOps env = (ops, env)
 	ops =	{ read			= \env -> (Ok (Void,0), env)
 			, write			= \_ env -> (Ok Void, env)
-			, getVersion	= \env -> (Ok 0, env)
 			, lock			= id
 			, unlock		= id
 			, lockExcl		= id
@@ -381,12 +372,11 @@ where
 			}
 			
 constShare :: !a -> ROShared a *env
-constShare v = createBasicDataSource "constShare" "" mkOps id (\_ b -> b)
+constShare v = createBasicDataSource "constShare" (genHash v) mkOps id (\_ b -> b)
 where
 	mkOps env = (ops, env)
-	ops =	{ read			= \env -> (Ok (v, 0), env)
+	ops =	{ read			= \env -> (Ok v, env)
 			, write			= \_ env -> (Ok Void, env)
-			, getVersion	= \env -> (Ok 0, env)
 			, lock			= id
 			, unlock		= id
 			, lockExcl		= id
@@ -395,6 +385,10 @@ where
 			}
 
 import dynamic_string
+
+genHash :: !a -> Hash
+genHash x = copy_to_string x // fake hash implementation
+
 // very unsafe operation
 forceType :: !a -> b
 forceType a = fst (copy_from_string (copy_to_string a))

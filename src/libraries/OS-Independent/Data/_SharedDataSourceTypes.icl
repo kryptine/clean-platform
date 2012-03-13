@@ -1,7 +1,7 @@
 implementation module _SharedDataSourceTypes
 
 import Maybe, Error, Void
-from SharedDataSource				import :: BasicSourceOps{..}, :: Version
+from SharedDataSource				import :: BasicSourceOps{..}, :: Hash
 from _SharedDataSourceOsDependent	import :: OBSERVER
 
 close :: !(SharedOps r w *env) !*env -> *env

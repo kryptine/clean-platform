@@ -4,13 +4,10 @@ import FilePath, Void, Maybe, Error
 
 from _SharedDataSourceTypes			import :: RWShared, :: ShareId
 from _SharedDataSourceOsDependent	import :: OBSERVER
-from Map							import :: Map
-from StdClass						import class Eq, class Ord, class <
-
 :: Shared a env		:== RWShared a a env
 :: ROShared a env	:== RWShared a Void env
 :: WOShared a env	:== RWShared Void a env
-:: Version			:== Int
+:: Hash				:== String
 
 createBasicDataSource ::
 	!String
@@ -22,9 +19,8 @@ createBasicDataSource ::
 	RWShared r w *env
 	
 :: BasicSourceOps b *env =
-	{ read			:: 				!env -> *(!MaybeErrorString (!b, !Version), !env)
+	{ read			:: 				!env -> *(!MaybeErrorString b, !env)
 	, write			:: !b			env -> *(!MaybeErrorString Void, !env)
-	, getVersion	:: 				!env -> *(!MaybeErrorString Version, !env)
 	, lock			:: 				!env -> env
 	, lockExcl		:: 				!env -> env
 	, unlock		:: 				!env -> env
@@ -36,15 +32,15 @@ createProxyDataSource :: !(*env -> *(!RWShared r` w` *env, !*env)) !(r` -> r) !(
 
 getIds :: !(RWShared r w *env) -> [ShareId]
 
-read		::		!(RWShared r w *env) !*env -> (!MaybeErrorString (!r, !Version), !*env)
+read		::		!(RWShared r w *env) !*env -> (!MaybeErrorString (!r,!Hash), !*env)
 write		:: !w	!(RWShared r w *env) !*env -> (!MaybeErrorString Void, !*env)
-getVersion	::		!(RWShared r w *env) !*env -> (!MaybeErrorString Version, !*env)
+getHash		::		!(RWShared r w *env) !*env -> (!MaybeErrorString Hash, !*env)
 
 // atomic update
 :: RWRes w a = YieldResult !a | Write !w !a | Redo
 
-readWrite	:: !(r Version -> (RWRes w a))				!(RWShared r w *env) !*env -> (!MaybeErrorString a, !*env)
-unsafeRW	:: !(r Version *env -> (RWRes w a, *env))	!(RWShared r w *env) !*env -> (!MaybeErrorString a, !*env)
+readWrite	:: !(r Hash -> (RWRes w a))				!(RWShared r w *env) !*env -> (!MaybeErrorString a, !*env)
+unsafeRW	:: !(r Hash *env -> (RWRes w a, *env))	!(RWShared r w *env) !*env -> (!MaybeErrorString a, !*env)
 
 /**
 * Maps the read type, the write type or both of a shared reference to another one using a functional mapping.
@@ -62,17 +58,6 @@ mapReadWrite	:: !(!r -> r`,!w` r -> Maybe w)	!(RWShared r w *env) -> RWShared r`
 mapReadError		:: !(r -> MaybeErrorString r`)										!(RWShared r w *env) -> RWShared r` w *env
 mapWriteError		:: !(w` r -> MaybeErrorString (Maybe w))							!(RWShared r w *env) -> RWShared r w` *env
 mapReadWriteError	:: !(!r -> MaybeErrorString r`,!w` r -> MaybeErrorString (Maybe w))	!(RWShared r w *env) -> RWShared r` w` *env
-
-mapKey :: !k !(Shared (Map k v) *env) -> Shared v *env | Eq, Ord, TC k & TC v & TC env
-
-createKeyValueSource ::
-	!String
-	!String
-	!(*env -> *(!BasicSourceOps (Map k v) *env, !*env))
-	!(k -> Shared v *env)
-	->
-	(Shared (Map k v) *env)
-	| TC k & TC v & TC env
 
 // Composition of two shared references.
 // The read type is a tuple of both types.
