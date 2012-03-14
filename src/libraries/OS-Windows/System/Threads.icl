@@ -70,10 +70,12 @@ where
 
 clean_new_thread_address :: Int
 clean_new_thread_address = code {
-	pushL clean_new_thread
+	pushLc clean_new_thread
+|	pushL clean_new_thread
 }
 
 thread_func_address :: Int
 thread_func_address = code {
-	pushL threadFunc
+	pushLc threadFunc
+|	pushL threadFunc
 }
