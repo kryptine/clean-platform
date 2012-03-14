@@ -43,18 +43,8 @@ fork threadF world
 	# ptr					= writeInt ptr (INT_SIZE * 3) s
 	# ptr					= writeCharArray (ptr + INT_SIZE * 4) threadFStr
 	# ptr					= ptr - INT_SIZE * 4
-	# (handle, id, world)	= CreateThread 0 0 clean_new_thread_address ptr CREATE_SUSPENDED world
-	//# world					= forceEval (mq_add_thread_id id) world
-	# (_, world)			= ResumeThread handle world
-	= (id, world)
-where
-	// initialize message queue for the given thread
-	mq_add_thread_id :: !DWORD -> DWORD
-	mq_add_thread_id tid = code {
-		.d 0 1 i
-			jsr mqueue_add_thread_id
-		.o 0 1 i	
-	}	
+	# (handle, id, world)	= CreateThread 0 0 clean_new_thread_address ptr 0 world
+	= (id, world)	
 
 waitForThread :: !ThreadId !*World -> *World
 waitForThread tid world
