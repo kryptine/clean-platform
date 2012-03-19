@@ -572,7 +572,7 @@ unpackInt4Z s off
 	bitor	(toInt s.[off + 3] << 24)
 
 unpackInt4S :: !{#Char} !Offset -> Int
-unpackInt4S s off = IF_INT_64_OR_32  (((unpackInt4Z s off) << 32) >> 32) (unpackInt4S s off)
+unpackInt4S s off = IF_INT_64_OR_32  (((unpackInt4Z s off) << 32) >> 32) (unpackInt4Z s off)
 
 unpackInt8 :: !{#Char} !Offset -> Int
 unpackInt8 s off
