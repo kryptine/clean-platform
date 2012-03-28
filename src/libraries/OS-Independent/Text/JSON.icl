@@ -1,6 +1,7 @@
 implementation module JSON
 
-import StdGeneric, Maybe, StdList, StdOrdList, StdString, _SystemArray, StdTuple, StdBool, StdFunc, Text
+import StdGeneric, Maybe, StdList, StdOrdList, StdString, _SystemArray, StdTuple, StdBool, StdFunc, StdOverloadedList
+import Text
 
 //Token type which is the intermediary representation during JSON parsing
 :: Token	= TokenInt !Int
@@ -83,6 +84,7 @@ where
 copyNode start (JSONRaw x) buffer	= (start + size x, copyChars start 0 (size x) x buffer) 	
 copyNode start _ buffer				= (start,buffer)
 
+copyChars :: !Int !Int !Int !String !*String -> *String
 copyChars offset i num src dst
 	| i == num		= dst
 	| otherwise		= copyChars offset (inc i) num src {dst & [offset + i] = src.[i]}
@@ -116,27 +118,38 @@ where
 	lexAny :: String Int [(String Int -> Maybe (Int, Token))] -> (Int, Token) 
 	lexAny input offset [] = (size input, TokenFail)
 	lexAny input offset [f:fs] = case f input offset of
-		(Just result)	= result
-		(Nothing)		= lexAny input offset fs
-	
+		Just result	= result
+		Nothing		= lexAny input offset fs
+
 	//Lex token of fixed size
-	lexFixed chars token input offset
-		| input % (offset,offset + (size chars) - 1) == chars	= Just (offset + (size chars), token)
-																= Nothing
+	lexFixed :: !{#Char} !Int Token !{#Char} !Int -> Maybe (Int,Token)
+	lexFixed chars char_n token input offset
+		| char_n<size chars
+			| offset<size input && input.[offset]==chars.[char_n]
+				= lexFixed chars (char_n+1) token input (offset+1)
+				= Nothing
+			= Just (offset, token)
+
+	lexFixedChar char token input offset
+		| offset<size input && input.[offset]==char
+			#! offset = offset+1
+			= Just (offset, token)
+			= Nothing
+
 	//Single character lex functions													
-	
-	lexBracketOpen	= lexFixed "[" TokenBracketOpen
-	lexBracketClose	= lexFixed "]" TokenBracketClose
-	lexBraceOpen	= lexFixed "{" TokenBraceOpen
-	lexBraceClose	= lexFixed "}" TokenBraceClose
-	lexColon		= lexFixed ":" TokenColon
-	lexComma		= lexFixed "," TokenComma
+
+	lexBracketOpen	= lexFixedChar '[' TokenBracketOpen
+	lexBracketClose	= lexFixedChar ']' TokenBracketClose
+	lexBraceOpen	= lexFixedChar '{' TokenBraceOpen
+	lexBraceClose	= lexFixedChar '}' TokenBraceClose
+	lexColon		= lexFixedChar ':' TokenColon
+	lexComma		= lexFixedChar ',' TokenComma
 	
 	//Fixed width lex functions
 	
-	lexNull			= lexFixed "null" TokenNull
-	lexTrue			= lexFixed "true" (TokenBool True)
-	lexFalse		= lexFixed "false" (TokenBool False)
+	lexNull			= lexFixed "null" 0 TokenNull
+	lexTrue			= lexFixed "true" 0 (TokenBool True)
+	lexFalse		= lexFixed "false" 0 (TokenBool False)
 	
 	//Variable width lex functions
 	
@@ -242,63 +255,62 @@ where
 				= (tokens,nodes)
 parse tokens = (JSONError,tokens)
 
-
 //Escape a string
 jsonEscape :: !String -> String
-jsonEscape src = copyChars 0 0 reps src (createArray (size src + length reps) '\0')
+jsonEscape src
+	# reps = findChars 0 src
+	= case reps of
+		[!!] -> src
+		reps -> copyAndReplaceChars 0 0 reps src (createArray (size src + Length reps) '\0')
 where
-	reps	= findChars 0 src	
 	//Find the special characters
-	findChars :: Int String -> [(!Int,!Char)]
+	findChars :: Int String -> [!(Int,Char)!]
 	findChars i s
-		| i >= size s 	= []
-		| c == '\\' || c == '"' || c == '/' || c == '\b' || c == '\f' || c == '\n' || c == '\r' || c == '\t'
-			= [(i,c): findChars (i + 1) s] 
+		| i >= size s
+			= [!!]
+		# c = s.[i]
+		| c == '\\' || c == '"' || c == '/'
+			= [!(i,c): findChars (i + 1) s!]
+		| c == '\b'
+			= [!(i,'b'): findChars (i + 1) s!]
+		| c == '\f'
+			= [!(i,'f'): findChars (i + 1) s!]
+		| c == '\n'
+			= [!(i,'n'): findChars (i + 1) s!]
+		| c == '\r'
+			= [!(i,'r'): findChars (i + 1) s!]
+		| c == '\t'
+			= [!(i,'t'): findChars (i + 1) s!]
 			= findChars (i + 1) s
-		where 
-			c = s.[i]
+
 	//Build the escaped string from the original and the replacements		
-	copyChars :: Int Int [(!Int, !Char)] String *String -> *String
-	copyChars is id [] src dest
-		| is < size src		=	copyChars (is + 1) (id + 1) [] src {dest & [id] = src.[is]}
-							=	dest
-	copyChars is id reps=:[(ir,c):rs] src dest
-		| is == ir			=	copyChars (is + 1) (id + 2) rs src {dest & [id] = '\\', [id + 1] = rep c}
-							=	copyChars (is + 1) (id + 1) reps src {dest & [id] = src.[is]}
-		where
-			rep '\\'	= '\\'
-			rep '"'		= '"'
-			rep '/'		= '/'
-			rep '\b'	= 'b'
-			rep '\f'	= 'f'
-			rep '\n'	= 'n'
-			rep '\r'	= 'r'
-			rep '\t'	= 't'
+	copyAndReplaceChars :: !Int !Int ![!(Int,Char)!] !String !*String -> *String
+	copyAndReplaceChars is id reps=:[!(ir,c):rs!] src dest
+		# (is,id,src,dest) = copyCharsI is id ir src dest
+		= copyAndReplaceChars (is + 1) (id + 2) rs src {dest & [id] = '\\', [id + 1] = c}
+	copyAndReplaceChars is id [!!] src dest
+		= copyRemainingChars is id src dest
 	
 //Unescape a string
 jsonUnescape :: !String -> String
-jsonUnescape src = copyChars 0 0 reps src (createArray (size src - length reps) '\0')
+jsonUnescape src
+	# reps = findChars 0 src
+	= case reps of
+		[!!] -> src
+		reps -> copyAndReplaceChars 0 0 reps src (createArray (size src - length reps) '\0')
 where
-	reps	= findChars 0 src	
 	//Find the special characters
-	findChars :: Int String -> [(!Int,!Char)]
+	findChars :: Int String -> [!(Int,Char)!]
 	findChars i s
-		| i + 1 >= size s 	= []
+		| i+1>=size s
+			= [!!]
+		# c0 = s.[i]
 		| c0 == '\\'
-			= [(i,c1): findChars (i + 2) s] 
+			# c1 = s.[i+1]
+			#! rc = rep c1
+			= [!(i,rc): findChars (i + 2) s!]
 			= findChars (i + 1) s
-		where 
-			c0 = s.[i]
-			c1 = s.[i + 1]
-	//Build the escaped string from the original and the replacements		
-	copyChars :: Int Int [(!Int, !Char)] String *String -> *String
-	copyChars is id [] src dest
-		| is < size src		=	copyChars (is + 1) (id + 1) [] src {dest & [id] = src.[is]}
-							=	dest
-	copyChars is id reps=:[(ir,c):rs] src dest
-		| is == ir			=	copyChars (is + 2) (id + 1) rs src {dest & [id] = rep c}
-							=	copyChars (is + 1) (id + 1) reps src {dest & [id] = src.[is]}
-		where
+	where
 			rep '\\'	= '\\'
 			rep '"'		= '"'
 			rep '/'		= '/'
@@ -307,6 +319,25 @@ where
 			rep 'n'		= '\n'
 			rep 'r'		= '\r'
 			rep 't'		= '\t'
+			rep c		= c
+
+	//Build the escaped string from the original and the replacements		
+	copyAndReplaceChars :: Int Int [!(Int,Char)!] String *String -> *String
+	copyAndReplaceChars is id reps=:[!(ir,c):rs!] src dest
+		# (is,id,src,dest) = copyCharsI is id ir src dest
+		=	copyAndReplaceChars (is + 2) (id + 1) rs src {dest & [id] = c}
+	copyAndReplaceChars is id [!!] src dest
+		= copyRemainingChars is id src dest
+
+copyCharsI :: !Int !Int !Int !String !*String -> (!Int,!Int,!String,!*String)
+copyCharsI is id iend src dest
+	| is < iend		= copyCharsI (is + 1) (id + 1) iend src {dest & [id] = src.[is]}
+					= (is,id,src,dest)
+
+copyRemainingChars :: !Int !Int !String !*String -> *String
+copyRemainingChars is id src dest
+	| is < size src	= copyRemainingChars (is + 1) (id + 1) src {dest & [id] = src.[is]}
+					= dest
 
 //Intersperse an element on a list
 intersperse :: a [a] -> [a]
