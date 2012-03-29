@@ -13,10 +13,8 @@ import Text
 			| TokenBracketClose
 			| TokenBraceOpen
 			| TokenBraceClose
-			| TokenName	!String
 			| TokenColon
 			| TokenComma
-			| TokenWhitespace !String
 			| TokenFail	
 
 //Basic JSON serialization
@@ -92,133 +90,95 @@ copyChars offset i num src dst
 //Basic JSON deserialization (just structure)
 instance fromString JSONNode
 where
-	//Lex -> remove whitespace -> parse 
-	fromString s = fst (parse (removeWhitespace (snd (lex s 0 []))))
+	fromString s = fst (parse (lex 0 s))
 
-lex :: String Int [Token] -> (Int, [Token])
-lex input offset tokens
-	| offset >= size input	= (offset, reverse tokens) 				//Done
-							= lex input newOffset [token:tokens]	//Lex another token and do recursive call
+IsDigit c :== c >= '0' && c <= '9'
+
+lex :: !Int !String -> [Token]
+lex offset input
+	| offset<size input
+		# c = input.[offset]
+		| c=='['
+			= [TokenBracketOpen : lex (offset+1) input]
+		| c==']'
+			= [TokenBracketClose : lex (offset+1) input]
+		| c=='{'
+			= [TokenBraceOpen : lex (offset+1) input]
+		| c=='}'
+			= [TokenBraceClose : lex (offset+1) input]
+		| c==':'
+			= [TokenColon : lex (offset+1) input]
+		| c==','
+			= [TokenComma : lex (offset+1) input]
+		| c=='n' && offset+3<size input && input.[offset+1]=='u' && input.[offset+2]=='l' && input.[offset+3]=='l'
+			= [TokenNull : lex (offset+4) input]
+		| c=='t' && offset+3<size input && input.[offset+1]=='r' && input.[offset+2]=='u' && input.[offset+3]=='e'
+			= [TokenBool True : lex (offset+4) input]
+		| c=='f' && offset+4<size input && input.[offset+1]=='a' && input.[offset+2]=='l' && input.[offset+3]=='s' && input.[offset+4]=='e'
+			= [TokenBool False : lex (offset+5) input]
+		| c==' ' || c=='\t' || c=='\n' || c=='\r' || c=='\f' || c=='\v' // inlined isSpace c
+			= lex (offset+1) input
+		| c=='"'
+			# offset = offset+1;
+			= lexString offset offset input
+		| IsDigit c
+			= lexNumber (offset+1) offset input
+		| c=='-' && offset+1<size input && IsDigit input.[offset+1]
+			= lexNumber (offset+2) offset input
+			= [TokenFail]
+		= []
 where
-	(newOffset, token)		= lexAny input offset lexFunctions
-	lexFunctions			= [ lexBracketOpen
-							  , lexBracketClose
-							  , lexBraceOpen
-							  , lexBraceClose
-							  , lexColon
-							  , lexComma
-							  , lexNull
-							  , lexTrue
-							  , lexFalse
-							  , lexWhitespace
-							  , lexNumber
-							  , lexString
-							  ]
-	//Try any of the lexers in the list until one succeeds
-	lexAny :: String Int [(String Int -> Maybe (Int, Token))] -> (Int, Token) 
-	lexAny input offset [] = (size input, TokenFail)
-	lexAny input offset [f:fs] = case f input offset of
-		Just result	= result
-		Nothing		= lexAny input offset fs
+	lexString :: !Int !Int !{#Char} -> [Token]
+	lexString offset stringCharsOffset input
+		| offset>=size input
+			= [TokenFail] // missing '"'
+		| input.[offset] == '"'
+			#! string = input % (stringCharsOffset,offset-1)
+			= [TokenString string : lex (offset+1) input]
+		| input.[offset] == '\\'
+			= lexString (offset + 2) stringCharsOffset input // skip the escaped character
+			= lexString (offset + 1) stringCharsOffset input
 
-	//Lex token of fixed size
-	lexFixed :: !{#Char} !Int Token !{#Char} !Int -> Maybe (Int,Token)
-	lexFixed chars char_n token input offset
-		| char_n<size chars
-			| offset<size input && input.[offset]==chars.[char_n]
-				= lexFixed chars (char_n+1) token input (offset+1)
-				= Nothing
-			= Just (offset, token)
+	lexNumber :: !Int !Int !{#Char} -> [Token]
+	lexNumber offset numberOffset input
+		| offset>=size input
+			#! i = toInt (input % (numberOffset,offset-1))
+			= [TokenInt i]
+		# c = input.[offset]
+		| IsDigit c
+			= lexNumber (offset+1) numberOffset input
+		| c<>'.'
+			#! i = toInt (input % (numberOffset,offset-1))
+			= [TokenInt i : lex offset input]
+			= lexReal (offset+1) numberOffset input
 
-	lexFixedChar char token input offset
-		| offset<size input && input.[offset]==char
-			#! offset = offset+1
-			= Just (offset, token)
-			= Nothing
+	lexReal :: !Int !Int !{#Char} -> [Token]
+	lexReal offset numberOffset input
+		| offset>=size input
+			#! r = toReal (input % (numberOffset,offset-1))
+			= [TokenReal r]
+		# c = input.[offset]
+		| IsDigit c
+			= lexReal (offset+1) numberOffset input
+		| c<>'e' && c<>'E'
+			#! r = toReal (input % (numberOffset,offset-1))
+			= [TokenReal r : lex offset input]
+		| offset+1<size input && IsDigit input.[offset+1]
+			= lexRealWithExponent (offset+2) numberOffset input
+		| offset+2<size input && input.[offset+1]=='-' && IsDigit input.[offset+2]
+			= lexRealWithExponent (offset+3) numberOffset input
+			#! r = toReal (input % (numberOffset,offset-1))
+			= [TokenReal r : lex offset input]
 
-	//Single character lex functions													
-
-	lexBracketOpen	= lexFixedChar '[' TokenBracketOpen
-	lexBracketClose	= lexFixedChar ']' TokenBracketClose
-	lexBraceOpen	= lexFixedChar '{' TokenBraceOpen
-	lexBraceClose	= lexFixedChar '}' TokenBraceClose
-	lexColon		= lexFixedChar ':' TokenColon
-	lexComma		= lexFixedChar ',' TokenComma
-	
-	//Fixed width lex functions
-	
-	lexNull			= lexFixed "null" 0 TokenNull
-	lexTrue			= lexFixed "true" 0 (TokenBool True)
-	lexFalse		= lexFixed "false" 0 (TokenBool False)
-	
-	//Variable width lex functions
-	
-	//Whitespace
-	lexWhitespace input offset
-		| last == offset	= Nothing
-							= Just (last, TokenWhitespace (input % (offset,last - 1)))
-	where
-		last = findEnd isSpace input offset
-	//Numbers
-	lexNumber input offset
-		| intpart == offset	= Nothing
-		| otherwise
-			| fracpart == intpart	= Just (intpart, TokenInt (toInt (input % (offset,intpart - 1))))
-			| otherwise
-				| exppart == fracpart	= Just (fracpart, TokenReal (toReal (input % (offset, fracpart - 1))))
-				| otherwise				= Just (exppart, TokenReal (toReal (input % (offset, exppart - 1))))
-	where	
-		intpart		= findEnd isDigit input (optMin input offset)
-		fracpart	= optFrac input intpart
-		exppart		= optExp input fracpart
-
-	//If the current char is a -, advance the offset by one
-	optMin input offset
-		| offset >= size input			= offset
-		| input.[offset] == '-'			= offset + 1
-										= offset
-	//If the current char is a '.' advance the offset as long as we find digits
-	optFrac input offset
-		| offset >= size input			= offset
-		| input.[offset] == '.'			= findEnd isDigit input (offset + 1)
-										= offset
-	//If the current char is 'e' or 'E' advance the offset as long as we can
-	//after an optional '-'. If we can't advance after the 'e' stop.
-	optExp input offset
-		| offset >= size input			= offset
-		| input.[offset] == 'e' || input.[offset] == 'E'
-			| end == offset + 1			= offset
-			| otherwise					= end
-		| otherwise						= offset
-	where
-		end	= findEnd isDigit input (optMin input (offset + 1))
-		
-	//Find the first offset where the predicate no longer holds					
-	findEnd pred input offset
-			| offset >= size input		= offset
-			| pred input.[offset]		= findEnd pred input (offset + 1)
-										= offset
-	//String
-	lexString input offset
-		| offset >= size input			= Nothing
-		| input.[offset] <> '"'			= Nothing
-										= Just (end, TokenString (input % (offset + 1, end - 2)))
-	where
-		end = findStringEnd input (offset + 1)
-		
-		findStringEnd input offset
-			| offset >= size input		= offset
-			| input.[offset] == '"'		= offset + 1
-			| input.[offset] == '\\'	= findStringEnd input (offset + 2) //Skip the escaped character
-										= findStringEnd input (offset + 1)
-		
-//Whitespace removal
-removeWhitespace :: [Token] -> [Token]
-removeWhitespace l = filter (not o isWhitespaceToken) l
-
-isWhitespaceToken :: Token -> Bool
-isWhitespaceToken (TokenWhitespace _)	= True
-isWhitespaceToken _						= False
+	lexRealWithExponent :: !Int !Int !{#Char} -> [Token]
+	lexRealWithExponent offset numberOffset input
+		| offset>=size input
+			#! r = toReal (input % (numberOffset,offset-1))
+			= [TokenReal r]
+		| IsDigit input.[offset]
+			= lexRealWithExponent (offset+1) numberOffset input
+			#! r = toReal (input % (numberOffset,offset-1))
+			= [TokenReal r : lex offset input]
 
 //Simple recursive descent parser
 parse :: ![Token] -> (!JSONNode,![Token])
@@ -462,14 +422,14 @@ JSONDecode{|CONS of d|} fx l
 JSONDecode{|CONS|} fx l = (Nothing, l)
 
 JSONDecode{|FIELD of d|} fx l =: [JSONObject fields]
-	# field = maybe [] (\field -> [field]) (findField d.gfd_name fields)
+	# field = findField d.gfd_name fields
 	= case fx field of
 		(Just x, _)	= (Just (FIELD x), l)
 		_			= (Nothing, l)
 where
-	findField match [] 	= Nothing
+	findField match [] 	= []
 	findField match [(l,x):xs]
-		| l == match 	= Just x
+		| l == match 	= [x]
 						= findField match xs
 						
 JSONDecode{|FIELD|} fx l = (Nothing, l)
