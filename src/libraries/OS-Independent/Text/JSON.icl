@@ -36,8 +36,8 @@ sizeOf (JSONBool False)	= 5
 sizeOf (JSONInt x)		= size (toString x)
 sizeOf (JSONReal x)		= size (toString x)
 sizeOf (JSONString x)	= size x + 2
-sizeOf (JSONArray x)	= let len = length x in (if (len > 0) (sum (map sizeOf x) + len - 1) 0) + 2
-sizeOf (JSONObject x)	= let len = length x in (if (len > 0) (sum (map (\(l,o) -> size l + 2 + 1 + sizeOf o) x) + len - 1) 0) + 2
+sizeOf (JSONArray x)	= let len = length x in (if (len > 0) (foldl (\s x -> s + sizeOf x) (len - 1) x) 0) + 2
+sizeOf (JSONObject x)	= let len = length x in (if (len > 0) (foldl (\s (l,o) -> s + size l + 2 + 1 + sizeOf o) (len - 1) x) 0) + 2
 sizeOf (JSONRaw x)		= size x
 sizeOf (JSONError)		= 0
 
