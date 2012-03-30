@@ -327,18 +327,20 @@ JSONEncode{|PAIR|} fx fy (PAIR x y) = fx x ++ fy y
 JSONEncode{|EITHER|} fx fy (LEFT x) = fx x
 JSONEncode{|EITHER|} fx fy (RIGHT y) = fy y
 JSONEncode{|OBJECT|} fx (OBJECT x) = fx x
-JSONEncode{|CONS of d|} fx (CONS x)
+JSONEncode{|CONS of {gcd_fields=gcd_fields=:[_:_]}|} fx (CONS x)
 	//Record
-	| length d.gcd_fields <> 0	= [JSONObject [ (f.gfd_name, o)\\ o <- fx x & f <- d.gcd_fields | isNotNull o]]
-	//Constructor without parameters
-	| d.gcd_arity == 0			= [JSONString d.gcd_name]
-	//Constructor with parameters				
-	| otherwise					= [JSONArray [JSONString d.gcd_name : fx x]]
+	= [JSONObject [(f.gfd_name, o) \\ o <- fx x & f <- gcd_fields | isNotNull o]]
 where
 	isNotNull JSONNull = False
 	isNotNull _ = True
-	
-JSONEncode{|FIELD of d|} fx (FIELD x) = fx x							
+JSONEncode{|CONS of {gcd_arity=0,gcd_name}|} fx (CONS x)
+	//Constructor without parameters
+	= [JSONString gcd_name]
+JSONEncode{|CONS of {gcd_name}|} fx (CONS x)
+	//Constructor with parameters				
+	= [JSONArray [JSONString gcd_name : fx x]]
+
+JSONEncode{|FIELD|} fx (FIELD x) = fx x							
 JSONEncode{|[]|} fx x = [JSONArray (flatten [fx e \\ e <- x])]
 JSONEncode{|(,)|} fx fy (x,y) = [JSONArray (fx x ++ fy y)]
 JSONEncode{|(,,)|} fx fy fz (x,y,z) = [JSONArray (fx x ++ fy y ++ fz z)]
@@ -395,34 +397,27 @@ JSONDecode{|OBJECT|} fx l = case fx l of
 	(Just x, xs)	= (Just (OBJECT x),xs)
 	_				= (Nothing, l)
 
-JSONDecode{|CONS of d|} fx l
+JSONDecode{|CONS of {gcd_fields=[_:_]}|} fx l=:[JSONObject fields: xs]
 	//Records
-	| length d.gcd_fields <> 0	= case l of
-		[JSONObject fields: xs] = case fx [JSONObject fields] of
-			(Just x, _)						= (Just (CONS x),xs)
-			_								= (Nothing, l)
-		_									= (Nothing, l)
+	 = case fx [JSONObject fields] of
+		(Just x, _)					= (Just (CONS x),xs)
+		_							= (Nothing, l)
+JSONDecode{|CONS of {gcd_arity=0,gcd_name}|} fx l=:[JSONString name: xs]
 	//Constructor without parameters
-	| d.gcd_arity == 0			= case l of
-		[JSONString name: xs]
-			| name == d.gcd_name			= case fx xs of
-				(Just x, ys)				= (Just (CONS x),ys)
-				_							= (Nothing, l)
-			| otherwise						= (Nothing, l)
-		_									= (Nothing, l)
+	| name == gcd_name				= case fx xs of
+		(Just x, ys)				= (Just (CONS x),ys)
+		_							= (Nothing, l)
+	| otherwise						= (Nothing, l)
+JSONDecode{|CONS of {gcd_name}|} fx l=:[JSONArray [JSONString name:fields] :xs]
 	//Constructor with parameters
-	| otherwise					= case l of
-		[JSONArray [JSONString name:fields] :xs]
-			| name == d.gcd_name			= case fx fields of
-				(Just x, _)					= (Just (CONS x), xs)
-				_							= (Nothing, l)
-			| otherwise						= (Nothing, l)
-		_									= (Nothing, l)
-		
+	| name == gcd_name				= case fx fields of
+		(Just x, _)					= (Just (CONS x), xs)
+		_							= (Nothing, l)
+	| otherwise						= (Nothing, l)		
 JSONDecode{|CONS|} fx l = (Nothing, l)
 
-JSONDecode{|FIELD of d|} fx l =: [JSONObject fields]
-	# field = findField d.gfd_name fields
+JSONDecode{|FIELD of {gfd_name}|} fx l =: [JSONObject fields]
+	# field = findField gfd_name fields
 	= case fx field of
 		(Just x, _)	= (Just (FIELD x), l)
 		_			= (Nothing, l)
