@@ -36,22 +36,48 @@ instance Text String
 	indexOf needle haystack = indexOfAfter 0 needle haystack
 
     lastIndexOf :: !String !String -> Int
-	lastIndexOf "" haystack = -1
-	lastIndexOf needle haystack = `lastIndexOf needle haystack (size haystack - size needle)
+	lastIndexOf needle haystack
+		| size needle==0
+			= -1
+			= lastIndexOf` (size haystack - size needle) needle.[0] needle haystack
 		where
-		`lastIndexOf needle haystack n
-			| n < 0																	= -1		
-			| and [needle.[i] == haystack.[n + i] \\ i <- [0..((size needle) - 1)]]	= n
-																					= `lastIndexOf needle haystack (n - 1)
+		lastIndexOf` :: !Int !Char !{#Char} !{#Char} -> Int
+		lastIndexOf` offs needleChar0 needle haystack
+			| offs>=0
+				| haystack.[offs]<>needleChar0
+					= lastIndexOf` (offs - 1) needleChar0 needle haystack
+					= equalStringOrIndexOfPrevious 1 offs needle haystack
+				= -1		
+
+		equalStringOrIndexOfPrevious :: !Int !Int !{#Char} !{#Char} -> Int
+		equalStringOrIndexOfPrevious i offs needle haystack
+			| i<size needle
+				| needle.[i]==haystack.[i+offs]
+					= equalStringOrIndexOfPrevious (i+1) offs needle haystack
+					= lastIndexOf` (offs - 1) needle.[0] needle haystack
+				= offs
 																					
 	indexOfAfter :: !Int !String !String -> Int
-	indexOfAfter _ "" haystack = -1
-	indexOfAfter offs needle haystack = `indexOf needle haystack offs
+	indexOfAfter offs needle haystack
+		| size needle==0
+			= -1
+			= indexOf` offs needle.[0] (size haystack - size needle) needle haystack
 		where
-		`indexOf needle haystack n
-			| (n + size needle) > (size haystack)									= -1
-			| and [needle.[i] == haystack.[n + i] \\ i <- [0..((size needle) - 1)]]	= n
-																					= `indexOf needle haystack (n + 1)
+		indexOf` :: !Int !Char !Int !{#Char} !{#Char} -> Int
+		indexOf` offs needleChar0 max_offs needle haystack
+			| offs <= max_offs
+				| haystack.[offs]<>needleChar0
+					= indexOf` (offs + 1) needleChar0 max_offs needle haystack
+					= equalStringOrIndexOfNext 1 offs max_offs needle haystack
+				= -1
+
+		equalStringOrIndexOfNext :: !Int !Int !Int !{#Char} !{#Char} -> Int
+		equalStringOrIndexOfNext i offs max_offs needle haystack
+			| i<size needle
+				| needle.[i]==haystack.[i+offs]
+					= equalStringOrIndexOfNext (i+1) offs max_offs needle haystack
+					= indexOf` (offs + 1) needle.[0] max_offs needle haystack
+				= offs
 
     startsWith :: !String !String -> Bool
 	startsWith needle haystack = indexOf needle haystack == 0
