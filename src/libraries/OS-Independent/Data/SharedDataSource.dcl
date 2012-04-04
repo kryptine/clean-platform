@@ -2,45 +2,45 @@ definition module SharedDataSource
 
 import FilePath, Void, Maybe, Error
 
-from _SharedDataSourceTypes			import :: RWShared, :: ShareId
-from _SharedDataSourceOsDependent	import :: OBSERVER
+from _SharedDataSourceTypes import :: RWShared, :: ShareId, :: WriteShare(..)
+
 :: Shared a env		:== RWShared a a env
 :: ROShared a env	:== RWShared a Void env
 :: WOShared a env	:== RWShared Void a env
 :: Hash				:== String
 
-createBasicDataSource ::
+createBasicSDS ::
 	!String
 	!String
-	!(*env -> *(!BasicSourceOps b *env, !*env))
-	!(b -> r)
-	!(w b -> b)
+	!(*env -> *(!MaybeErrorString r, !*env))
+	!(w *env -> *(!MaybeErrorString Void, !*env))
 	->
 	RWShared r w *env
 	
-:: BasicSourceOps b *env =
-	{ read			:: 				!env -> *(!MaybeErrorString b, !env)
-	, write			:: !b			env -> *(!MaybeErrorString Void, !env)
-	, lock			:: 				!env -> env
-	, lockExcl		:: 				!env -> env
-	, unlock		:: 				!env -> env
-	, close			:: 				!env -> env
-	, addObserver	:: !OBSERVER	env -> env
-	}
+createReadOnlySDS ::
+	!String
+	!String
+	!(*env -> *(!r, !*env))
+	->
+	ROShared r *env
 	
-createProxyDataSource :: !(*env -> *(!RWShared r` w` *env, !*env)) !(r` -> r) !(w r` -> w`) -> RWShared r w *env
+createReadOnlySDSError ::
+	!String
+	!String
+	!(*env -> *(!MaybeErrorString r, !*env))
+	->
+	ROShared r *env
+	
 
-getIds :: !(RWShared r w *env) -> [ShareId]
-
-read		::		!(RWShared r w *env) !*env -> (!MaybeErrorString (!r,!Hash), !*env)
+read		::		!(RWShared r w *env) !*env -> (!MaybeErrorString r, !*env)
 write		:: !w	!(RWShared r w *env) !*env -> (!MaybeErrorString Void, !*env)
-getHash		::		!(RWShared r w *env) !*env -> (!MaybeErrorString Hash, !*env)
+//getHash		::		!(RWShared r w *env) !*env -> (!MaybeErrorString Hash, !*env)
 
-// atomic update
-:: RWRes w a = YieldResult !a | Write !w !a | Redo
-
-readWrite	:: !(r Hash -> (RWRes w a))				!(RWShared r w *env) !*env -> (!MaybeErrorString a, !*env)
-unsafeRW	:: !(r Hash *env -> (RWRes w a, *env))	!(RWShared r w *env) !*env -> (!MaybeErrorString a, !*env)
+/** core combinators **/
+// read combinator
+(>?>) infixl 6 :: !(RWShared rx wx *env) !(rx -> MaybeErrorString (RWShared ry wy *env)) -> RWShared ry wx *env
+// write combinator
+(>!>) infixl 6 :: !(RWShared r w` *env) !(!w -> MaybeErrorString (RWShared r` w`` *env), !w r` -> MaybeErrorString [WriteShare *env]) -> RWShared r w *env
 
 /**
 * Maps the read type, the write type or both of a shared reference to another one using a functional mapping.
@@ -80,16 +80,6 @@ toReadOnly :: !(RWShared r w *env) -> ROShared r *env
 * @param RWShared references of the same type with symmetric lens between them
 */
 symmetricLens :: !(a b -> b) !(b a -> a) !(Shared a *env) !(Shared b *env) -> (!Shared a *env, !Shared b *env)
-
-// STM
-:: *Trans *env
-
-:: TRes a = TYieldResult !a | Retry
-
-atomic :: !((*Trans *env) -> (!TRes a, !*Trans *env)) !*env -> (!MaybeErrorString a, !*env)
-
-transRead	:: 		!(RWShared r w *env) !(Trans *env) -> (!r, !(Trans *env))
-transWrite	:: !w	!(RWShared r w *env) !(Trans *env) -> (Trans *env)
 
 // null share
 null		:: WOShared a *env
