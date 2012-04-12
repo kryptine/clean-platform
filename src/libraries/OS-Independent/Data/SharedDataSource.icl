@@ -34,25 +34,43 @@ createReadOnlySDSError ::
 createReadOnlySDSError type ident read = createBasicSDS type ident read (\_ env -> (Ok Void, env))
 		
 read :: !(RWShared r w *env) !*env -> (!MaybeErrorString r, !*env)
-read (BasicSource {read}) env = read env
-read (ComposedRead share cont) env = seqErrorsSt (read share) (f cont) env
+read sds env = read` Nothing sds env
+
+readRegister :: !msg	!(RWShared r w *env) !*env -> (!MaybeErrorString r, !*env) | registerSDSMsg msg env
+readRegister msg sds env = read` (Just \id env -> registerSDSMsg id msg env) sds env
+
+read` :: !(Maybe (BasicShareId *env -> *env)) !(RWShared r w *env) !*env -> (!MaybeErrorString r, !*env)
+read` mbIdF (BasicSource {id,read}) env
+	# env = case mbIdF of
+		Just idF	= idF id env
+		Nothing		= env
+	= read env
+read` mbIdF (ComposedRead share cont) env = seqErrorsSt (read` mbIdF share) (f mbIdF cont) env
 where
-	f :: !(x -> MaybeErrorString (RWShared r w *env)) !x !*env -> (!MaybeErrorString r, !*env)
-	f cont x env = seqErrorsSt (\env -> (cont x, env)) read env
-read (ComposedWrite share _ _) env = read share env
+	f :: !(Maybe (BasicShareId *env -> *env))  !(x -> MaybeErrorString (RWShared r w *env)) !x !*env -> (!MaybeErrorString r, !*env)
+	f mbIdF cont x env = seqErrorsSt (\env -> (cont x, env)) (read` mbIdF) env
+read` mbIdF (ComposedWrite share _ _) env = read` mbIdF share env
 	
-write :: !w !(RWShared r w *env) !*env -> (!MaybeErrorString Void, !*env)
-write w (BasicSource {write}) env = write w env
-write w (ComposedRead share _) env = write w share env
-write w (ComposedWrite _ readCont writeOp) env
+write :: !w !(RWShared r w *env) !*env -> (!MaybeErrorString Void, !*env) | reportSDSChange env
+write w sds env = write` w reportSDSChange sds env
+	
+writeFilterMsg :: !w !(msg -> Bool) !(RWShared r w *env) !*env -> (!MaybeErrorString Void, !*env) | reportSDSChangeFilter msg env
+writeFilterMsg w filter sds env = write` w (\id env -> reportSDSChangeFilter id filter env) sds env
+	
+write` :: !w !(BasicShareId *env -> *env) !(RWShared r w *env) !*env -> (!MaybeErrorString Void, !*env)	
+write` w notify (BasicSource {id,write}) env
+	# (mbErr, env) = write w env
+	= (mbErr, notify id env)
+write` w notify (ComposedRead share _) env = write` w notify share env
+write` w notify (ComposedWrite _ readCont writeOp) env
 	# (er, env)	= seqErrorsSt (\env -> (readCont w, env)) read env
 	| isError er = (liftError er, env)
 	# ewrites	= writeOp w (fromOk er)
 	| isError ewrites = (liftError ewrites, env)
-	# (res,env)	= mapSt (\(Write w share) -> write w share) (fromOk ewrites) env
+	# (res,env)	= mapSt (\(Write w share) -> write` w notify share) (fromOk ewrites) env
 	// TODO: check for errors in res
 	= (Ok Void, env)
-	
+
 /*getHash :: !(RWShared r w *env) !*env -> (!MaybeErrorString Hash, !*env)
 getHash share env
 	# (res,env) = read share env

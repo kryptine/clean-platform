@@ -8,6 +8,11 @@ from _SharedDataSourceTypes import :: RWShared, :: ShareId, :: WriteShare(..)
 :: ROShared a env	:== RWShared a Void env
 :: WOShared a env	:== RWShared Void a env
 :: Hash				:== String
+:: BasicShareId		:== String
+
+class registerSDSMsg		msg	env	:: !BasicShareId msg			!*env -> *env
+class reportSDSChange			env :: !BasicShareId				!*env -> *env
+class reportSDSChangeFilter	msg	env :: !BasicShareId !(msg -> Bool)	!*env -> *env
 
 createBasicSDS ::
 	!String
@@ -32,8 +37,10 @@ createReadOnlySDSError ::
 	ROShared r *env
 	
 
-read		::		!(RWShared r w *env) !*env -> (!MaybeErrorString r, !*env)
-write		:: !w	!(RWShared r w *env) !*env -> (!MaybeErrorString Void, !*env)
+read			::						!(RWShared r w *env) !*env -> (!MaybeErrorString r, !*env)
+readRegister	:: !msg					!(RWShared r w *env) !*env -> (!MaybeErrorString r, !*env)		| registerSDSMsg msg env
+write			:: !w					!(RWShared r w *env) !*env -> (!MaybeErrorString Void, !*env)	| reportSDSChange env
+writeFilterMsg	:: !w !(msg -> Bool)	!(RWShared r w *env) !*env -> (!MaybeErrorString Void, !*env)	| reportSDSChangeFilter msg env
 //getHash		::		!(RWShared r w *env) !*env -> (!MaybeErrorString Hash, !*env)
 
 /** core combinators **/
