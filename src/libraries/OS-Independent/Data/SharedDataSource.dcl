@@ -1,20 +1,19 @@
 definition module SharedDataSource
 
-import FilePath, Void, Maybe, Error
+import FilePath, Void, Maybe, Error, Time
 
-from _SharedDataSourceTypes import :: RWShared, :: ShareId, :: WriteShare(..)
+from _SharedDataSourceTypes import :: RWShared, :: BasicShareId, :: WriteShare(..)
 
 :: Shared a env		:== RWShared a a env
 :: ROShared a env	:== RWShared a Void env
 :: WOShared a env	:== RWShared Void a env
 :: Hash				:== String
-:: BasicShareId		:== String
 
 class registerSDSMsg		msg	env	:: !BasicShareId msg			!*env -> *env
 class reportSDSChange			env :: !BasicShareId				!*env -> *env
 class reportSDSChangeFilter	msg	env :: !BasicShareId !(msg -> Bool)	!*env -> *env
 
-createBasicSDS ::
+createChangeOnWriteSDS ::
 	!String
 	!String
 	!(*env -> *(!MaybeErrorString r, !*env))
@@ -23,15 +22,11 @@ createBasicSDS ::
 	RWShared r w *env
 	
 createReadOnlySDS ::
-	!String
-	!String
 	!(*env -> *(!r, !*env))
 	->
 	ROShared r *env
 	
 createReadOnlySDSError ::
-	!String
-	!String
 	!(*env -> *(!MaybeErrorString r, !*env))
 	->
 	ROShared r *env

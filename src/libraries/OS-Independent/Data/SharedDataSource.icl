@@ -1,66 +1,84 @@
 implementation module SharedDataSource
 
-import _SharedDataSourceTypes, StdString, StdFunc, Error, StdTuple, Func, Tuple
+import _SharedDataSourceTypes, StdString, StdFunc, Error, StdTuple, Func, Tuple, StdMisc
 
-createBasicSDS ::
+createChangeOnWriteSDS ::
 	!String
 	!String
 	!(*env -> *(!MaybeErrorString r, !*env))
 	!(w *env -> *(!MaybeErrorString Void, !*env))
 	->
 	RWShared r w *env
-createBasicSDS type id read write = BasicSource
-	{ BasicSource
-	| id = type +++ ":" +++ id
-	, read = read
-	, write = write
-	}
+createChangeOnWriteSDS type id read write = createSDS (RegisterId (type +++ ":" +++ id)) read write
 
 createReadOnlySDS ::
-	!String
-	!String
+	//!(Maybe Timestamp)
 	!(*env -> *(!a, !*env))
 	->
 	ROShared a *env
-createReadOnlySDS type ident read
-	= createReadOnlySDSError type ident (appFst Ok o read)
+createReadOnlySDS read
+	= createReadOnlySDSError (appFst Ok o read)
 	
 createReadOnlySDSError ::
-	!String
-	!String
+	//!(Maybe Timestamp)
 	!(*env -> *(!MaybeErrorString a, !*env))
 	->
 	ROShared a *env
-createReadOnlySDSError type ident read = createBasicSDS type ident read (\_ env -> (Ok Void, env))
+createReadOnlySDSError read = createSDS None/*(maybe None Timer mbTime)*/ read (\_ env -> (Ok Void, env))
+
+createSDS ::
+	!ChangeNotification
+	!(*env -> *(!MaybeErrorString r, !*env))
+	!(w *env -> *(!MaybeErrorString Void, !*env))
+	->
+	RWShared r w *env
+createSDS notification read write = BasicSource
+	{ BasicSource
+	| notification = notification
+	, read = read
+	, write = write
+	}
 		
 read :: !(RWShared r w *env) !*env -> (!MaybeErrorString r, !*env)
 read sds env = read` Nothing sds env
 
-readRegister :: !msg	!(RWShared r w *env) !*env -> (!MaybeErrorString r, !*env) | registerSDSMsg msg env
-readRegister msg sds env = read` (Just \id env -> registerSDSMsg id msg env) sds env
-
-read` :: !(Maybe (BasicShareId *env -> *env)) !(RWShared r w *env) !*env -> (!MaybeErrorString r, !*env)
-read` mbIdF (BasicSource {id,read}) env
-	# env = case mbIdF of
-		Just idF	= idF id env
-		Nothing		= env
-	= read env
-read` mbIdF (ComposedRead share cont) env = seqErrorsSt (read` mbIdF share) (f mbIdF cont) env
+readRegister :: !msg !(RWShared r w *env) !*env -> (!MaybeErrorString r, !*env) | registerSDSMsg msg env
+readRegister msg sds env = read` (Just notify) sds env
 where
-	f :: !(Maybe (BasicShareId *env -> *env))  !(x -> MaybeErrorString (RWShared r w *env)) !x !*env -> (!MaybeErrorString r, !*env)
-	f mbIdF cont x env = seqErrorsSt (\env -> (cont x, env)) (read` mbIdF) env
-read` mbIdF (ComposedWrite share _ _) env = read` mbIdF share env
+	notify None				env = env
+	notify (RegisterId id)	env = registerSDSMsg id msg env
+	notify (Timer _)		env = abort "not implemented"
+
+read` :: !(Maybe (ChangeNotification *env -> *env)) !(RWShared r w *env) !*env -> (!MaybeErrorString r, !*env)
+read` mbNotificationF (BasicSource {notification,read}) env
+	# env = case mbNotificationF of
+		Just notificationF 	= notificationF notification env
+		Nothing				= env
+	= read env
+read` mbNotificationF (ComposedRead share cont) env = seqErrorsSt (read` mbNotificationF share) (f mbNotificationF cont) env
+where
+	f :: !(Maybe (ChangeNotification *env -> *env))  !(x -> MaybeErrorString (RWShared r w *env)) !x !*env -> (!MaybeErrorString r, !*env)
+	f mbNotificationF cont x env = seqErrorsSt (\env -> (cont x, env)) (read` mbNotificationF) env
+read` mbNotificationF (ComposedWrite share _ _) env = read` mbNotificationF share env
 	
 write :: !w !(RWShared r w *env) !*env -> (!MaybeErrorString Void, !*env) | reportSDSChange env
-write w sds env = write` w reportSDSChange sds env
+write w sds env = write` w changed sds env
+where
+	changed None			env = env
+	changed (RegisterId id)	env = reportSDSChange id env
+	changed (Timer _)		env = abort "not implemented"
 	
 writeFilterMsg :: !w !(msg -> Bool) !(RWShared r w *env) !*env -> (!MaybeErrorString Void, !*env) | reportSDSChangeFilter msg env
-writeFilterMsg w filter sds env = write` w (\id env -> reportSDSChangeFilter id filter env) sds env
+writeFilterMsg w filter sds env = write` w changed sds env
+where
+	changed None			env = env
+	changed (RegisterId id)	env = reportSDSChangeFilter id filter env
+	changed (Timer _)		env = abort "not implemented"
 	
-write` :: !w !(BasicShareId *env -> *env) !(RWShared r w *env) !*env -> (!MaybeErrorString Void, !*env)	
-write` w notify (BasicSource {id,write}) env
+write` :: !w !(ChangeNotification *env -> *env) !(RWShared r w *env) !*env -> (!MaybeErrorString Void, !*env)	
+write` w notify (BasicSource {notification,write}) env
 	# (mbErr, env) = write w env
-	= (mbErr, notify id env)
+	= (mbErr, notify notification env)
 write` w notify (ComposedRead share _) env = write` w notify share env
 write` w notify (ComposedWrite _ readCont writeOp) env
 	# (er, env)	= seqErrorsSt (\env -> (readCont w, env)) read env
@@ -123,10 +141,10 @@ toReadOnly share = mapWrite (\_ _ -> Nothing) share
 (|+|) srcX srcY = toReadOnly (srcX >+< srcY)
 
 null :: WOShared a *env
-null = createBasicSDS "null" "null" (\env -> (Ok Void, env)) (\_ env -> (Ok Void, env))
+null = createSDS None (\env -> (Ok Void, env)) (\_ env -> (Ok Void, env))
 			
 constShare :: !a -> ROShared a *env
-constShare v = createReadOnlySDS "constShare" "constId" (\env -> (v, env))
+constShare v = createReadOnlySDS (\env -> (v, env))
 
 import dynamic_string
 
