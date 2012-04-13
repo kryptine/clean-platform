@@ -123,10 +123,10 @@ toReadOnly share = mapWrite (\_ _ -> Nothing) share
 (|+|) srcX srcY = toReadOnly (srcX >+< srcY)
 
 null :: WOShared a *env
-null = createBasicSDS "Null" "" (\env -> (Ok Void, env)) (\_ env -> (Ok Void, env))
+null = createBasicSDS "null" "null" (\env -> (Ok Void, env)) (\_ env -> (Ok Void, env))
 			
 constShare :: !a -> ROShared a *env
-constShare v = createReadOnlySDS "constShare" (genHash v) (\env -> (v, env))
+constShare v = createReadOnlySDS "constShare" "constId" (\env -> (v, env))
 
 import dynamic_string
 
