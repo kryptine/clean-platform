@@ -80,10 +80,17 @@ instance Text String
 				= offs
 
     startsWith :: !String !String -> Bool
-	startsWith needle haystack = indexOf needle haystack == 0
+	startsWith needle haystack
+		= s_needle <= size haystack && needle == haystack%(0,s_needle-1)
+	where
+		s_needle	= size needle
 
     endsWith :: !String !String -> Bool
-	endsWith needle haystack = lastIndexOf needle haystack == (size haystack) - (size needle)
+	endsWith needle haystack
+		= s_needle <= s_haystack && needle == haystack%(s_haystack-s_needle,s_haystack-1)
+	where
+		s_needle	= size needle
+		s_haystack	= size haystack
 
     subString :: !Int !Int !String -> String
 	subString start len haystack = haystack % (start, start + len - 1)
@@ -127,4 +134,4 @@ instance Text String
 	
 	upperCaseFirst :: !String -> String
 	upperCaseFirst "" = ""
-	upperCaseFirst s = {if (i == 0) (toUpper c) c \\ c <-: s & i <- [0..]}
+	upperCaseFirst s = s:=(0,toUpper s.[0])
