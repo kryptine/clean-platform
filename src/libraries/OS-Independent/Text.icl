@@ -19,10 +19,13 @@ instance Text String
 		| otherwise		= copyChars offset (inc i) num src {dst & [offset + i] = src.[i]}
 
 	split :: !String !String -> [String]
-	split sep s
-		# index = indexOf sep s
-		| index == -1	= [s]
-						= [s % (0, index - 1): split sep (s % (index + (size sep), size s))]
+	split sep s = splitAfter 0 (size s-1) sep s
+	where
+		splitAfter :: !Int !Int !String !String -> [String]
+		splitAfter offs end sep s
+			# index = indexOfAfter offs sep s
+			| index == -1	= [s%(offs,end)]
+							= [s%(offs,index-1) : splitAfter (index+size sep) end sep s]
 
 	join :: !String ![String] -> String
 	join sep xs = concat (join` sep xs)
