@@ -106,20 +106,37 @@ instance Text String
 			index	= indexOf needle haystack
 			start	= subString 0 index haystack
 			end		= subString (index + size needle) (size haystack) haystack
+    
     trim :: !String -> String
 	trim s = ltrim (rtrim s)
 
 	ltrim :: !String -> String
-	ltrim ""			= ""
 	ltrim s
-		| isSpace s.[0] 	= if (size s == 1) "" (ltrim (s % (1, size s - 1)))
-							= s
+		| non_space_index == 0
+						= s
+						= s%(non_space_index,size_s-1)
+	where
+		size_s			= size s
+		non_space_index	= non_space_left 0
+		
+		non_space_left :: !Int -> Int
+		non_space_left i
+			| i < size_s && isSpace s.[i]	= non_space_left (i+1)
+											= i
 
 	rtrim :: !String -> String
-	rtrim ""					= ""
 	rtrim s
-		| isSpace s.[size s - 1]	= if (size s == 1) "" (rtrim (s % (0, size s - 2)))
-									= s
+		| non_space_index == size_s-1
+						= s
+						= s%(0,non_space_index)
+	where
+		size_s			= size s
+		non_space_index	= non_space_right (size_s-1)
+		
+		non_space_right :: !Int -> Int
+		non_space_right i
+			| i >= 0 && isSpace s.[i]	= non_space_right (i-1)
+										= i
 
 	lpad :: !String !Int !Char -> String
 	lpad s w  c
