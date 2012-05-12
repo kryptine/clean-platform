@@ -53,6 +53,24 @@ where
 readFile :: !String !*env -> (!MaybeError FileError String, !*env) | FileSystem env
 readFile filename env = withFile filename FReadData readAll env
 
+readFileLines :: !String !*env -> (!MaybeError FileError [String], !*env) | FileSystem env
+readFileLines filename env = withFile filename FReadData readAllLines env
+
+readAllLines :: !*File -> (!MaybeError FileError [String], !*File)
+readAllLines file
+# (result, file) = rec file []
+= case result of
+	Error e	   = (Error e, file)
+	Ok lines = (Ok lines, file)
+where	
+	rec :: *File [String] -> (!MaybeError FileError [String], *File)
+	rec file acc 
+		# (string, file) = freadline file
+		# (err,file)	 = ferror file
+		| err			 = (Error IOError,file)			
+		| string == ""   = (Ok acc, file)
+		| otherwise      = rec file [string:acc]
+		
 readAll :: !*File -> (!MaybeError FileError String, !*File)
 readAll file
 # (result, file) = readAcc file []

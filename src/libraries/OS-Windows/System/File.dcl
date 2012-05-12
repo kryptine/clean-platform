@@ -20,6 +20,21 @@ instance toString FileError
 readFile :: !String !*env -> (!MaybeError FileError String, !*env) | FileSystem env
 
 /**
+* Given a filename, reads the contents of the file by lines to a [String]
+* @param Path to the file to read
+* @return contents of the file
+*/
+readFileLines :: !String !*env -> (!MaybeError FileError [String], !*env) | FileSystem env
+
+/**
+* Read all contents of a *File by lines to a [String]. 
+* @precondition The file must be opened in read mode
+* @param Path to the file to read
+* @return contents of the file
+*/
+readAllLines :: !*File -> (!MaybeError FileError [String], !*File)
+
+/**
 * Read all contents of a *File to a String. 
 * @precondition The file must be opened in read mode
 * @param Path to the file to read
