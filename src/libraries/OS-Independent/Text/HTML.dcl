@@ -34,6 +34,7 @@ import StdString, Maybe
 			| BrTag				![HtmlAttr]
 			| ButtonTag			![HtmlAttr] ![HtmlTag]
 			| CaptionTag		![HtmlAttr] ![HtmlTag]
+			| CanvasTag 		![HtmlAttr] ![HtmlTag]
 			| CenterTag			![HtmlAttr] ![HtmlTag]
 			| CiteTag			![HtmlAttr] ![HtmlTag]
 			| CodeTag			![HtmlAttr] ![HtmlTag]
