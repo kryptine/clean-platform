@@ -8,9 +8,9 @@ import Maybe, Error, Void, Time
 	| E.r` w` w``:	ComposedWrite	!(RWShared r w` env) !(w -> MaybeErrorString (RWShared r` w`` env)) !(w r` -> MaybeErrorString [WriteShare env])
 
 :: BasicSource b r w *env =
-	{ notification	:: !ChangeNotification
-	, read			:: !env -> *(!MaybeErrorString r, !env)
+	{ read			:: !env -> *(!MaybeErrorString (!r,!ChangeNotification), !env)
 	, write			:: !w env -> *(!MaybeErrorString Void, !env)
+	, mbId			:: !Maybe BasicShareId
 	}
 	
 :: ChangeNotification = None | RegisterId !BasicShareId | Timer !Timestamp

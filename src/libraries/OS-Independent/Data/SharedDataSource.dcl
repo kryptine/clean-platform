@@ -9,9 +9,12 @@ from _SharedDataSourceTypes import :: RWShared, :: BasicShareId, :: WriteShare(.
 :: WOShared a env	:== RWShared Void a env
 :: Hash				:== String
 
-class registerSDSMsg		msg	env	:: !BasicShareId msg			!*env -> *env
-class reportSDSChange			env :: !BasicShareId				!*env -> *env
-class reportSDSChangeFilter	msg	env :: !BasicShareId !(msg -> Bool)	!*env -> *env
+class registerSDSMsg msg env
+where
+	registerDependency	:: !BasicShareId	msg !*env -> *env
+	registerTimedMsg	:: !Timestamp		msg !*env -> *env
+	
+class reportSDSChange	msg	env :: !BasicShareId !(msg -> Bool)	!*env -> *env
 
 createChangeOnWriteSDS ::
 	!String
@@ -20,7 +23,7 @@ createChangeOnWriteSDS ::
 	!(w *env -> *(!MaybeErrorString Void, !*env))
 	->
 	RWShared r w *env
-	
+
 createReadOnlySDS ::
 	!(*env -> *(!r, !*env))
 	->
@@ -31,11 +34,20 @@ createReadOnlySDSError ::
 	->
 	ROShared r *env
 	
+createReadOnlySDSPredictable ::
+	!(*env -> *(!(!r, !Timestamp), !*env))
+	->
+	ROShared r *env
+	
+createReadOnlySDSErrorPredictable ::
+	!(*env -> *(!MaybeErrorString (!r, !Timestamp), !*env))
+	->
+	ROShared r *env	
 
 read			::						!(RWShared r w *env) !*env -> (!MaybeErrorString r, !*env)
 readRegister	:: !msg					!(RWShared r w *env) !*env -> (!MaybeErrorString r, !*env)		| registerSDSMsg msg env
-write			:: !w					!(RWShared r w *env) !*env -> (!MaybeErrorString Void, !*env)	| reportSDSChange env
-writeFilterMsg	:: !w !(msg -> Bool)	!(RWShared r w *env) !*env -> (!MaybeErrorString Void, !*env)	| reportSDSChangeFilter msg env
+write			:: !w					!(RWShared r w *env) !*env -> (!MaybeErrorString Void, !*env)	| reportSDSChange Void env
+writeFilterMsg	:: !w !(msg -> Bool)	!(RWShared r w *env) !*env -> (!MaybeErrorString Void, !*env)	| reportSDSChange msg env
 //getHash		::		!(RWShared r w *env) !*env -> (!MaybeErrorString Hash, !*env)
 
 /** core combinators **/
