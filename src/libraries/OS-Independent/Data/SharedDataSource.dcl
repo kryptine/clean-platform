@@ -2,24 +2,34 @@ definition module SharedDataSource
 
 import FilePath, Void, Maybe, Error, Time
 
-from _SharedDataSourceTypes import :: RWShared, :: BasicShareId, :: WriteShare(..)
+from _SharedDataSourceTypes import :: RWShared, :: BasicShareId, :: WriteShare(..), :: CheckRes(..)
 
 :: Shared a env		:== RWShared a a env
 :: ROShared a env	:== RWShared a Void env
 :: WOShared a env	:== RWShared Void a env
 :: Hash				:== String
 
-class registerSDSMsg msg env
+class registerSDSDependency msg env :: !BasicShareId msg !*env -> *env
+
+class registerSDSChangeDetection env
 where
-	registerDependency	:: !BasicShareId	msg !*env -> *env
-	registerTimedMsg	:: !Timestamp		msg !*env -> *env
+	registerSDSPredictableChange	:: !Timestamp 										!BasicShareId !*env -> *env
+	registerSDSCheckForChange		:: !Timestamp !Hash !(*env -> (!CheckRes,!*env))	!BasicShareId !*env -> *env
 	
-class reportSDSChange	msg	env :: !BasicShareId !(msg -> Bool)	!*env -> *env
+class reportSDSChange msg env :: !BasicShareId !(msg -> Bool) !*env -> *env
 
 createChangeOnWriteSDS ::
 	!String
 	!String
 	!(*env -> *(!MaybeErrorString r, !*env))
+	!(w *env -> *(!MaybeErrorString Void, !*env))
+	->
+	RWShared r w *env
+	
+createPollingSDS ::
+	!String
+	!String
+	!(*env -> *(!MaybeErrorString (!r, !Timestamp, !(*env -> *(!CheckRes,!*env))), !*env))
 	!(w *env -> *(!MaybeErrorString Void, !*env))
 	->
 	RWShared r w *env
@@ -35,17 +45,21 @@ createReadOnlySDSError ::
 	ROShared r *env
 	
 createReadOnlySDSPredictable ::
+	!String
+	!String
 	!(*env -> *(!(!r, !Timestamp), !*env))
 	->
 	ROShared r *env
 	
 createReadOnlySDSErrorPredictable ::
+	!String
+	!String
 	!(*env -> *(!MaybeErrorString (!r, !Timestamp), !*env))
 	->
 	ROShared r *env	
 
 read			::						!(RWShared r w *env) !*env -> (!MaybeErrorString r, !*env)
-readRegister	:: !msg					!(RWShared r w *env) !*env -> (!MaybeErrorString r, !*env)		| registerSDSMsg msg env
+readRegister	:: !msg					!(RWShared r w *env) !*env -> (!MaybeErrorString r, !*env)		| registerSDSDependency msg env & registerSDSChangeDetection env
 write			:: !w					!(RWShared r w *env) !*env -> (!MaybeErrorString Void, !*env)	| reportSDSChange Void env
 writeFilterMsg	:: !w !(msg -> Bool)	!(RWShared r w *env) !*env -> (!MaybeErrorString Void, !*env)	| reportSDSChange msg env
 //getHash		::		!(RWShared r w *env) !*env -> (!MaybeErrorString Hash, !*env)

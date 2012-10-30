@@ -10,9 +10,25 @@ createChangeOnWriteSDS ::
 	->
 	RWShared r w *env
 createChangeOnWriteSDS type id read write
-	= createSDS (Just basicId) (\env -> appFst (fmap (\r -> (r,RegisterId basicId))) (read env)) write
+	= createSDS (Just basicId) (\env -> appFst (fmap (\r -> (r,OnWrite))) (read env)) write
 where
 	basicId = type +++ ":" +++ id
+	
+createPollingSDS ::
+	!String
+	!String
+	!(*env -> *(!MaybeErrorString (!r, !Timestamp, !(*env -> *(!CheckRes,!*env))), !*env))
+	!(w *env -> *(!MaybeErrorString Void, !*env))
+	->
+	RWShared r w *env
+createPollingSDS type id read write
+	= createSDS (Just basicId) read` write
+where
+	basicId = type +++ ":" +++ id
+	
+	read` env
+		# (r,env) = read env
+		= (fmap (\(r,ts,checkF) -> (r, Polling ts checkF)) r, env)
 	
 createReadOnlySDS ::
 	!(*env -> *(!r, !*env))
@@ -26,25 +42,29 @@ createReadOnlySDSError ::
 	->
 	ROShared r *env
 createReadOnlySDSError read
-	= createSDS Nothing (\env -> appFst (fmap (\r -> (r, None))) (read env)) (\_ env -> (Ok Void, env))
+	= createSDS Nothing (\env -> appFst (fmap (\r -> (r, OnWrite))) (read env)) (\_ env -> (Ok Void, env))
 
 createReadOnlySDSPredictable ::
+	!String
+	!String
 	!(*env -> *(!(!a, !Timestamp), !*env))
 	->
 	ROShared a *env
-createReadOnlySDSPredictable read
-	= createReadOnlySDSErrorPredictable (appFst Ok o read)
+createReadOnlySDSPredictable type id read
+	= createReadOnlySDSErrorPredictable type id (appFst Ok o read)
 	
 createReadOnlySDSErrorPredictable ::
+	!String
+	!String
 	!(*env -> *(!MaybeErrorString (!a, !Timestamp), !*env))
 	->
 	ROShared a *env
-createReadOnlySDSErrorPredictable read
-	= createSDS Nothing (\env -> appFst (fmap (appSnd Timer)) (read env)) (\_ env -> (Ok Void, env))
+createReadOnlySDSErrorPredictable type id read
+	= createSDS (Just (type +++ ":" +++ id)) (\env -> appFst (fmap (appSnd Predictable)) (read env)) (\_ env -> (Ok Void, env))
 
 createSDS ::
 	!(Maybe BasicShareId)
-	!(*env -> *(!MaybeErrorString (!r, !ChangeNotification), !*env))
+	!(*env -> *(!MaybeErrorString (!r, !ChangeNotification *env), !*env))
 	!(w *env -> *(!MaybeErrorString Void, !*env))
 	->
 	RWShared r w *env
@@ -58,25 +78,32 @@ createSDS id read write = BasicSource
 read :: !(RWShared r w *env) !*env -> (!MaybeErrorString r, !*env)
 read sds env = read` Nothing sds env
 
-readRegister :: !msg !(RWShared r w *env) !*env -> (!MaybeErrorString r, !*env) | registerSDSMsg msg env
+readRegister :: !msg !(RWShared r w *env) !*env -> (!MaybeErrorString r, !*env) | registerSDSDependency msg env & registerSDSChangeDetection env
 readRegister msg sds env = read` (Just notify) sds env
 where
-	notify None				env = env
-	notify (RegisterId id)	env = registerDependency id msg env
-	notify (Timer t)		env = registerTimedMsg t msg env
+	notify hash notification mbId env
+		# env = case mbId of
+			Just id	= registerSDSDependency id msg env
+			_		= env
+		= case notification of
+			OnWrite				= env
+			(Predictable ts)	= registerSDSPredictableChange ts id env
+			(Polling ts checkF)	= registerSDSCheckForChange ts hash checkF id env
+	where
+		id = fromMaybe (abort "registering change for SDS without ID") mbId
 
-read` :: !(Maybe (ChangeNotification *env -> *env)) !(RWShared r w *env) !*env -> (!MaybeErrorString r, !*env)
-read` mbNotificationF (BasicSource {read}) env = case read env of
+read` :: !(Maybe (Hash (ChangeNotification *env) (Maybe BasicShareId) *env -> *env)) !(RWShared r w *env) !*env -> (!MaybeErrorString r, !*env)
+read` mbNotificationF (BasicSource {read,mbId}) env = case read env of
 	(Ok (r, notification), env)
 		# env = case mbNotificationF of
-			Just notificationF 	= notificationF notification env
+			Just notificationF 	= notificationF (genHash r) notification mbId env
 			Nothing				= env
 		= (Ok r, env)
 	(err, env)
 		= (liftError err, env)
 read` mbNotificationF (ComposedRead share cont) env = seqErrorsSt (read` mbNotificationF share) (f mbNotificationF cont) env
 where
-	f :: !(Maybe (ChangeNotification *env -> *env))  !(x -> MaybeErrorString (RWShared r w *env)) !x !*env -> (!MaybeErrorString r, !*env)
+	f :: !(Maybe (Hash (ChangeNotification *env) (Maybe BasicShareId) *env -> *env))  !(x -> MaybeErrorString (RWShared r w *env)) !x !*env -> (!MaybeErrorString r, !*env)
 	f mbNotificationF cont x env = seqErrorsSt (\env -> (cont x, env)) (read` mbNotificationF) env
 read` mbNotificationF (ComposedWrite share _ _) env = read` mbNotificationF share env
 	
@@ -105,11 +132,6 @@ write` w (ComposedWrite _ readCont writeOp) filter env
 	# (res,env)	= mapSt (\(Write w share) -> write` w share filter) (fromOk ewrites) env
 	// TODO: check for errors in res
 	= (Ok Void, env)
-
-/*getHash :: !(RWShared r w *env) !*env -> (!MaybeErrorString Hash, !*env)
-getHash share env
-	# (res,env) = read share env
-	= (fmap snd res, env)*/
 	
 (>?>) infixl 6 :: !(RWShared rx wx *env) !(rx -> MaybeErrorString (RWShared ry wy *env)) -> RWShared ry wx *env
 (>?>) sharex cont = ComposedRead sharex cont
@@ -158,7 +180,7 @@ toReadOnly share = mapWrite (\_ _ -> Nothing) share
 (|+|) srcX srcY = toReadOnly (srcX >+< srcY)
 
 null :: WOShared a *env
-null = createSDS Nothing (\env -> (Ok (Void, None), env)) (\_ env -> (Ok Void, env))
+null = createSDS Nothing (\env -> (Ok (Void, OnWrite), env)) (\_ env -> (Ok Void, env))
 			
 constShare :: !a -> ROShared a *env
 constShare v = createReadOnlySDS (\env -> (v, env))
