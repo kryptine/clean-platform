@@ -43,6 +43,14 @@ liftError 		:: !(MaybeError .a .b) -> (MaybeError .a .c)
 mb2error			:: !e !(Maybe a) -> MaybeError e a
 
 /**
+* Converts a MaybeError value into a Maybe value.
+* 
+* @param The MaybeError value
+* @return The converted value. Ok maps to Just and Error maps to Nothing.
+*/
+error2mb   			:: !(MaybeError e a) -> Maybe a
+
+/**
  * Sequences an operation on a MaybeError value.
  * If the input is already an Error the operation is not performed.
  *
