@@ -155,3 +155,7 @@ instance Text String
 	upperCaseFirst :: !String -> String
 	upperCaseFirst "" = ""
 	upperCaseFirst s = s:=(0,toUpper s.[0])
+
+instance + String
+where
+	(+) s1 s2 = s1 +++ s2

@@ -4,6 +4,7 @@ definition module Text
 * It also gives an implementation for the String type which
 * is assumed to be an ASCII string
 */
+from StdOverloaded import class +
 
 /**
 * This class defines the basic operations for manipulating pieces of text.
@@ -140,3 +141,5 @@ class Text s
 * Instances of the text operations for plain ASCII strings.
 */
 instance Text String
+instance + String
+
