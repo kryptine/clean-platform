@@ -112,7 +112,7 @@ formatMessageA dwFlags lpSource dwMessageId dwLanguageId lpBuffer nSize args
 getCurrentDirectoryA :: !DWORD !{#Char} !*World -> (!DWORD, *World)
 getCurrentDirectoryA nBufferLength lpBuffer world
 	= code {
-		ccall GetCurrentDirectoryA@8 "PIA:I:I"
+		ccall GetCurrentDirectoryA@8 "PIs:I:I"
 	}
 
 getExitCodeProcess :: !HANDLE !*World -> (!Bool,!Int,!*World);
