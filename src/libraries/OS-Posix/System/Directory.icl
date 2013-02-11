@@ -27,7 +27,7 @@ removeDirectory path world
 
 readDirectory :: !FilePath !*World -> (!MaybeOSError [FilePath], !*World)
 readDirectory path world
-	# (dirptr,world)	= opendir path world
+	# (dirptr,world)	= opendir (packString path) world
 	| dirptr == 0
 		= getLastOSError world
 	# (entries,world)	= readEntries dirptr world
