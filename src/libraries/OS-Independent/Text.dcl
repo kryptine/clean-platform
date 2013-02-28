@@ -132,10 +132,16 @@ class Text s
 	* Converts all characters in a string to upper case.
 	*/
 	toUpperCase			:: !s -> s
+	
 	/**
 	* Convert the first character in a string to upper case.
 	*/
 	upperCaseFirst		:: !s -> s
+	
+	/**
+	* Drop given number of chars from the beginning of the string
+	*/
+	dropChars			:: !Int !s -> s
 
 /**
 * Instances of the text operations for plain ASCII strings.

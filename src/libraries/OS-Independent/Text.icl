@@ -155,6 +155,9 @@ instance Text String
 	upperCaseFirst :: !String -> String
 	upperCaseFirst "" = ""
 	upperCaseFirst s = s:=(0,toUpper s.[0])
+	
+	dropChars :: !Int !String -> String	
+	dropChars n s = s % (n, n + size s - n - 1)
 
 instance + String
 where
