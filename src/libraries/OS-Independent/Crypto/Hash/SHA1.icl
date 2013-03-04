@@ -84,7 +84,7 @@ where
 	//Post-processing:
 	//Convert the 5-integer representation of the digest to a 20 byte array
 	toBytes :: {#Int} -> {#Char}
-	toBytes h = foldr (+++) "" [{toChar (h.[i] >> (j * 8)) \\ j <- [3,2,1,0]} \\ i <- [0..4]]
+	toBytes h = join "" [{toChar (h.[i] >> (j * 8)) \\ j <- [3,2,1,0]} \\ i <- [0..4]]
 
 //The file digest is computed very dumb. Reading the full file and then hashing
 //This can be optimized in the future because the digest can also be computed streaming
@@ -94,9 +94,7 @@ sha1FileDigest path env
 
 instance toString SHA1Digest
 where
-	toString (SHA1Digest d)	= join "" [charToHex c \\ c <-:d]
-	where
-		charToHex c = {hex.[((char >> 4) bitand 15)],hex.[char bitand 15]}
-		where
-			char = toInt c
-			hex = "0123456789abcdef"
+	toString (SHA1Digest d)	= join "" [char c \\ c <-:d]
+    where
+        char c = {hex.[((toInt c >> 4) bitand 15)],hex.[(toInt c) bitand 15]}
+        hex = "0123456789abcdef"
