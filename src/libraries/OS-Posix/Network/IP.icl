@@ -4,7 +4,6 @@ implementation module IP
 */
 import StdString, StdInt
 import Maybe, Text, _Pointer
-import StdDebug
 
 /**
 * Type which represents an IP (v4) address
