@@ -21,11 +21,11 @@ where
 	
 	global_argclc :: Pointer
 	global_argclc = code {
-		pushLc _global_argc
+		pushLc global_argc
 	}
 	global_argcl :: Pointer
 	global_argcl = code {
-		pushL _global_argc
+		pushL global_argc
 	}
 	global_argclc_ :: Pointer
 	global_argclc_ = code {
@@ -38,12 +38,12 @@ where
 	
 	global_argvlc :: Pointer
 	global_argvlc = code {
-		pushLc _global_argv
+		pushLc global_argv
 	}
 	
 	global_argvl :: Pointer
 	global_argvl = code {
-		pushL _global_argv
+		pushL global_argv
 	}
 	global_argvlc_ :: Pointer
 	global_argvlc_ = code {
