@@ -56,6 +56,16 @@ zipWith3        :: (.a -> .(.b -> .(.c -> .h))) ![.a] [.b] [.c] -> [.h]
 zipWith4        :: (.a -> .(.b -> .(.c -> .(.d -> .h)))) ![.a] [.b] [.c] [.d] -> [.h]
 zipWith5        :: (.a -> .(.b -> .(.c -> .(.d -> .(.e -> .h)))))
                    ![.a] [.b] [.c] [.d] [.e] -> [.h]
+nub             :: .[a] -> .[a] | == a
+nubBy           :: (a -> .(a -> .Bool)) .[a] -> .[a]
+elem_by         :: (a -> .(.b -> .Bool)) a [.b] -> .Bool
+delete          :: u:(a -> v:(w:[a] -> x:[a])) | == a, [v <= u,w <= x]
+deleteBy        :: (a -> .(b -> .Bool)) a u:[b] -> v:[b], [u <= v]
+difference      :: u:(v:[a] -> w:(.[a] -> x:[a])) | == a, [w <= u,w v <= x]
+intersect       :: u:(.[a] -> v:(.[a] -> .[a])) | == a, [v <= u]
+intersectBy     :: (a -> b -> .Bool) .[a] .[b] -> .[a]
+union :: u:(.[a] -> v:(.[a] -> .[a])) | == a, [v <= u]
+unionBy :: (a -> .(a -> .Bool)) .[a] .[a] -> .[a]
 
 
 instance Functor []

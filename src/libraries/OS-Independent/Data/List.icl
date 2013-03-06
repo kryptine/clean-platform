@@ -251,3 +251,50 @@ zipWith5 z [a:as] [b:bs] [c:cs] [d:ds] [e:es]
                    = [ z a b c d e : zipWith5 z as bs cs ds es]
 zipWith5 _ _ _ _ _ _ = []
 
+nub :: .[a] -> .[a] | == a
+nub l                   = nub` l []
+  where
+    nub` [] _           = []
+    nub` [x:xs] ls
+        | elem x  ls    = nub` xs ls
+        | otherwise     = [x : nub` xs [x:ls]]
+
+nubBy :: (a -> .(a -> .Bool)) .[a] -> .[a]
+nubBy eq l              = nubBy` l []
+  where
+    nubBy` [] _         = []
+    nubBy` [y:ys] xs
+       | elem_by eq y xs = nubBy` ys xs
+       | otherwise       = [y : nubBy` ys [y:xs]]
+
+elem_by :: (a -> .(.b -> .Bool)) a [.b] -> .Bool
+elem_by _  _ []         =  False
+elem_by eq y [x:xs]     =  eq y x || elem_by eq y xs
+
+delete :: u:(a -> v:(w:[a] -> x:[a])) | == a, [v <= u,w <= x]
+delete                  =  deleteBy (==)
+
+deleteBy :: (a -> .(b -> .Bool)) a u:[b] -> v:[b], [u <= v]
+deleteBy _  _ []        = []
+deleteBy eq x [y:ys]    = if (eq x y) ys [y : deleteBy eq x ys]
+
+deleteFirstsBy :: (a -> .(b -> .Bool)) -> u:(v:[b] -> w:(.[a] -> x:[b])), [w <= u,w v <= x]
+deleteFirstsBy eq       =  foldl (flip (deleteBy eq))
+
+difference :: u:(v:[a] -> w:(.[a] -> x:[a])) | == a, [w <= u,w v <= x]
+difference                    =  foldl (flip delete)
+
+intersect :: u:(.[a] -> v:(.[a] -> .[a])) | == a, [v <= u]
+intersect               =  intersectBy (==)
+
+intersectBy :: (a -> b -> .Bool) .[a] .[b] -> .[a]
+intersectBy _  [] _     =  []
+intersectBy _  _  []    =  []
+intersectBy eq xs ys    =  [x \\ x <- xs | any (eq x) ys]
+
+union :: u:(.[a] -> v:(.[a] -> .[a])) | == a, [v <= u]
+union                   = unionBy (==)
+
+unionBy :: (a -> .(a -> .Bool)) .[a] .[a] -> .[a]
+unionBy eq xs ys        =  xs ++ foldl (flip (deleteBy eq)) (nubBy eq ys) xs
+
