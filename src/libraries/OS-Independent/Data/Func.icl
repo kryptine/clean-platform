@@ -1,5 +1,8 @@
 implementation module Func
 
+($) infixr 0 :: !(.a -> .b) !.a -> .b
+($) f x = f x
+
 app :: !(.a -> .b) !.a -> .b
 app f x = f x
 
