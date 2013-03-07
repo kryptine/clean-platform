@@ -99,3 +99,20 @@ replicateM n x    = sequence (replicate n x)
 (<=<) infixr 1 :: u:((a -> b c) -> v:(w:(.d -> b a) -> x:(.d -> b c))) | Monad b, [v <= u,x <= w]
 (<=<)       = flip (>=>)
 
+liftM :: (a b) (a c) -> a b | Monad a
+liftM f m1               = m1 >>= \x1 -> return f x1
+
+liftM2 :: (a -> b c) (b d) (b a) -> b c | Monad b
+liftM2 f m1 m2           = m1 >>= \x1 -> m2 >>= \x2 -> return f x1 x2
+
+liftM3 :: (a -> .(b -> c d)) (c e) (c a) (c b) -> c d | Monad c
+liftM3 f m1 m2 m3        = m1 >>= \x1 -> m2 >>= \x2 -> m3 >>= \x3 -> return f x1 x2 x3
+
+liftM4 :: (a -> .(b -> .(c -> d e))) (d f) (d a) (d b) (d c) -> d e | Monad d
+liftM4 f m1 m2 m3 m4     = m1 >>= \x1 -> m2 >>= \x2 -> m3 >>= \x3 -> m4 >>= \x4 -> return f x1 x2 x3 x4
+
+liftM5 :: (a -> .(b -> .(c -> .(d -> e f)))) (e g) (e a) (e b) (e c) (e d) -> e f | Monad e
+liftM5 f m1 m2 m3 m4 m5  = m1 >>= \x1 -> m2 >>= \x2 -> m3 >>= \x3 -> m4 >>= \x4 -> m5 >>= \x5 -> return f x1 x2 x3 x4 x5
+
+ap :: u:((a b) -> v:((a (a c)) -> a c)) | Monad a, [v <= u]
+ap                =  liftM2 id
