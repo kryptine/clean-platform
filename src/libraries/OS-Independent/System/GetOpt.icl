@@ -10,7 +10,7 @@ import StdEnv, HsCompat, Text, Maybe, Either
    | OptErr    String           //    something went wrong...
 
 usageInfo :: String [OptDescr a] -> String   
-usageInfo header optDescr = unlines [header:table]
+usageInfo header optDescr = join "\n" [header:table]
    where (ss,ls,ds)     = (unzip3 o concatMap fmtOpt) optDescr
          table          = zipWith3 paste (sameLen ss) (sameLen ls) ds
          paste x y z    = "  " +++ x +++ "  " +++ y +++ "  " +++ z
@@ -19,7 +19,7 @@ usageInfo header optDescr = unlines [header:table]
 
 fmtOpt :: (OptDescr a) -> [(String,String,String)]
 fmtOpt (Option sos los ad descr) =
-   case lines descr of
+   case split "\n" descr of
      []     -> [(sosFmt,losFmt,"")]
      [d:ds] -> [(sosFmt,losFmt,d) : [("","",d`) \\ d` <- ds]]
    where sosFmt = join ", " (map (fmtShort ad) sos)

@@ -23,12 +23,6 @@ import StdEnv, Maybe
 // creates a list from a list generating function by application of this function on all elements in a list passed as the second argument
 concatMap :: (a -> [b]) [a] -> [b]
 
-// creates a string from an array of strings, it inserts new line characters between original strings
-unlines :: [String] -> String
-
-// creates an array of string from the original one, new line characters serving as separators 
-lines :: String -> [String]
-
 // returns the maximum value from the list 
 maximum :: [a] -> a | Ord a
 
