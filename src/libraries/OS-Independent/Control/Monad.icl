@@ -13,7 +13,7 @@ from StdInt  import class +, instance + Int
 :: IO a = IO (World -> (a, World))
 
 class Monad m where
-    return :: a -> .(m a)
+    return :: a -> m a
     (>>=) infixl 1 :: (m a) (a -> m b) -> (m b)
 
 instance Monad IO where
