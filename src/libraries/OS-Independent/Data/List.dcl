@@ -1,6 +1,9 @@
 definition module List
 
-import Functor, Maybe, GenEq, StdOrdList
+from Functor import class Functor
+from Maybe import :: Maybe
+from GenEq import generic gEq
+import StdList
 
 head            :: ![.a] -> .a
 tail            :: !u:[.a] -> u:[.a]
@@ -61,11 +64,12 @@ nubBy           :: (a -> .(a -> .Bool)) .[a] -> .[a]
 elem_by         :: (a -> .(.b -> .Bool)) a [.b] -> .Bool
 delete          :: u:(a -> v:(w:[a] -> x:[a])) | == a, [v <= u,w <= x]
 deleteBy        :: (a -> .(b -> .Bool)) a u:[b] -> v:[b], [u <= v]
+deleteFirstsBy  :: (a -> .(b -> .Bool)) -> u:(v:[b] -> w:(.[a] -> x:[b])), [w <= u,w v <= x]
 difference      :: u:(v:[a] -> w:(.[a] -> x:[a])) | == a, [w <= u,w v <= x]
 intersect       :: u:(.[a] -> v:(.[a] -> .[a])) | == a, [v <= u]
 intersectBy     :: (a -> b -> .Bool) .[a] .[b] -> .[a]
-union :: u:(.[a] -> v:(.[a] -> .[a])) | == a, [v <= u]
-unionBy :: (a -> .(a -> .Bool)) .[a] .[a] -> .[a]
+union           :: u:(.[a] -> v:(.[a] -> .[a])) | == a, [v <= u]
+unionBy         :: (a -> .(a -> .Bool)) .[a] .[a] -> .[a]
 
 
 instance Functor []
