@@ -13,9 +13,6 @@ tail xs = tl xs
 null :: ![.a] -> Bool
 null xs = isEmpty xs
 
-concat :: ![[.a]] -> [.a]
-concat xs = flatten xs
-
 product :: !.[a] -> a | * , one  a
 product xs = prod xs
 
@@ -59,7 +56,7 @@ intersperse i [x]     = [x]
 intersperse i [x:xs]  = [x,i:intersperse i xs]
 
 intercalate :: .[a] [.[a]] -> .[a]
-intercalate xs xss = concat (intersperse xs xss)
+intercalate xs xss = flatten (intersperse xs xss)
 
 transpose :: ![[a]] -> [.[a]]
 transpose []  = []
