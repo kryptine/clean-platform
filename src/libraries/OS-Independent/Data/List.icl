@@ -1,6 +1,6 @@
 implementation module List
 
-import Maybe, StdTuple, StdBool, StdEnum, StdFunc, StdList, StdOrdList, Functor, GenEq, StdListExtensions
+import Maybe, StdTuple, StdBool, StdEnum, StdFunc, StdList, StdOrdList, Functor
 
 // Haskell Data.List compat
 
@@ -96,10 +96,6 @@ minimum xs =  foldl1 min xs
 
 getItems :: ![a] ![Int] -> [a]
 getItems list indexes = [x \\ x <- list & idx <- [0..] | isMember idx indexes]
-
-isMemberGen :: !a !.[a] -> Bool | gEq{|*|} a
-isMemberGen x [hd:tl]  = hd === x || isMemberGen x tl
-isMemberGen x []    = False
 
 instance Functor []
 where

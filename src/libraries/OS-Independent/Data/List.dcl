@@ -2,7 +2,6 @@ definition module List
 
 from Functor import class Functor
 from Maybe import :: Maybe
-from GenEq import generic gEq
 import StdList
 
 head            :: ![.a] -> .a
@@ -24,7 +23,6 @@ concatMap       :: (.a -> [.b]) [.a] -> [.b]
 maximum         :: .[a] -> a | < a
 minimum         :: .[a] -> a | Ord a
 getItems        :: ![a] ![Int] -> [a]
-isMemberGen     :: !a !.[a] -> Bool | gEq{|*|} a
 scanl           :: (a -> .(.b -> a)) a [.b] -> .[a]
 scanl1          :: (a -> .(a -> a)) .[a] -> .[a]
 foldr1          :: (.a -> .(.a -> .a)) [.a] -> .a

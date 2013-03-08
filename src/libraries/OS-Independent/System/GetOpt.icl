@@ -1,6 +1,7 @@
 implementation module GetOpt
 
-import StdEnv, HsCompat, Text, Maybe, Either
+import StdEnv, Text, Maybe, Either
+from List import maximum, null, find, concatMap, unzip3, zipWith3
 
 :: OptKind a                    // kind of cmd line arg (internal use only):
    = Opt       a                //    an option
