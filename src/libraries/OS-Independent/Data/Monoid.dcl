@@ -1,7 +1,7 @@
 definition module Monoid
 
 from Maybe import :: Maybe
-from Monad import :: U1
+from Void import :: Void
 
 class Monoid a where
   mempty :: a
@@ -12,7 +12,7 @@ mconcat        :: .[a] -> a | Monoid a
 
 instance Monoid [a]
 instance Monoid (a -> b) | Monoid b
-instance Monoid U1
+instance Monoid Void
 instance Monoid (a, b) | Monoid a & Monoid b
 instance Monoid (a, b, c) | Monoid a & Monoid b & Monoid c
 instance Monoid (a, b, c, d) | Monoid a & Monoid b & Monoid c & Monoid d

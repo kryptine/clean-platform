@@ -1,6 +1,7 @@
 definition module State
 
-from Monad import class Monad, :: U1
+from Void import :: Void
+from Monad import class Monad
 from Identity import :: Identity
 
 :: StateT s m a = StateT (s -> m (a, s))
@@ -8,8 +9,8 @@ from Identity import :: Identity
 :: State s a :== StateT s Identity a
 
 state       :: (a -> .(b,a)) -> .(StateT a c b) | Monad c
-put         :: a -> .(StateT a b U1) | Monad b
-modify      :: (a -> a) -> .(StateT a b U1) | Monad b
+put         :: a -> .(StateT a b Void) | Monad b
+modify      :: (a -> a) -> .(StateT a b Void) | Monad b
 gets        :: (a -> b) -> .(StateT a c b) | Monad c
 runStateT   :: .(StateT a u:b c) -> a -> u:(b (c,a))
 runState    :: .(StateT a .Identity b) -> .(a -> (b,a))

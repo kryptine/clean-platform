@@ -1,8 +1,7 @@
 definition module Monad
 
 from Maybe   import :: Maybe
-
-:: U1 = U1 // TODO: Move to other module?
+from Void import :: Void
 
 :: IO a = IO (World -> (a, World))
 
@@ -29,11 +28,11 @@ instance MonadPlus Maybe
 (>>) infixr 1     :: (a b) (a c) -> a c | Monad a
 (=<<) infixr 1    :: (a -> b c) (b a) -> b c | Monad b
 sequence          :: .[a b] -> a [b] | Monad a
-sequence_         :: .[a b] -> a U1 | Monad a
+sequence_         :: .[a b] -> a Void | Monad a
 mapM              :: (.a -> b c) [.a] -> b [c] | Monad b
-mapM_             :: (.a -> b c) [.a] -> b U1 | Monad b
+mapM_             :: (.a -> b c) [.a] -> b Void | Monad b
 forM              :: u:([v:a] -> w:((v:a -> b c) -> b [c])) | Monad b, [w <= u,w <= v]
-forM_             :: u:([v:a] -> w:((v:a -> b c) -> b U1)) | Monad b, [w <= u,w <= v]
+forM_             :: u:([v:a] -> w:((v:a -> b c) -> b Void)) | Monad b, [w <= u,w <= v]
 forever           :: (a b) -> a c | Monad a
 join              :: (a (a b)) -> a b | Monad a
 zipWithM          :: (.a -> .(.b -> c d)) [.a] [.b] -> c [d] | Monad c

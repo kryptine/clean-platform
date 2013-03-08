@@ -4,6 +4,7 @@ from Func import $
 import Monad
 import Identity
 import Trans
+from Void import :: Void(..)
 from StdFunc import o
 from StdTuple import fst, snd
 from StdMisc import abort
@@ -25,11 +26,11 @@ state f = StateT (return o f)
 get :: .(StateT a b a) | Monad b
 get = state $ \s -> (s, s)
 
-put :: a -> .(StateT a b U1) | Monad b
-put s = state $ \_ -> (U1, s)
+put :: a -> .(StateT a b Void) | Monad b
+put s = state $ \_ -> (Void, s)
 
-modify :: (a -> a) -> .(StateT a b U1) | Monad b
-modify f = state $ \s -> (U1, f s)
+modify :: (a -> a) -> .(StateT a b Void) | Monad b
+modify f = state $ \s -> (Void, f s)
 
 gets :: (a -> b) -> .(StateT a c b) | Monad c
 gets f = state $ \s -> (f s, s)

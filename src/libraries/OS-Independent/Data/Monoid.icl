@@ -1,7 +1,7 @@
 implementation module Monoid
 
 from Maybe import :: Maybe(..)
-from Monad import :: U1(..)
+from Void import :: Void(..)
 from StdList import ++, foldr
 
 class Monoid a where
@@ -22,9 +22,9 @@ instance Monoid (a -> b) | Monoid b where
   mempty      = \_ -> mempty
   mappend f g = \x -> mappend (f x) (g x)
 
-instance Monoid U1 where
-  mempty       = U1
-  mappend _ _  = U1
+instance Monoid Void where
+  mempty       = Void
+  mappend _ _  = Void
 
 instance Monoid (a, b) | Monoid a & Monoid b where
   mempty                     = (mempty, mempty)

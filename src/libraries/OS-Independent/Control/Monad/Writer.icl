@@ -42,8 +42,8 @@ execWriterT m = runWriterT m >>= \(_, w) -> return w
 mapWriterT :: .(u:(a (b,c)) -> v:(d (e,f))) (WriterT c u:a b) -> WriterT f v:d e
 mapWriterT f m = WriterT $ f (runWriterT m)
 
-tell :: a -> .(WriterT a b U1) | Monad b
-tell w = WriterT $ return (U1, w)
+tell :: a -> .(WriterT a b Void) | Monad b
+tell w = WriterT $ return (Void, w)
 
 listen :: .(WriterT a b c) -> .(WriterT a b (c,a)) | Monad b
 listen m = WriterT $ runWriterT m >>= \(a, w) ->
