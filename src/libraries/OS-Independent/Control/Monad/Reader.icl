@@ -47,5 +47,5 @@ ask = ReaderT return
 local :: u:((.a -> .b) -> v:(.(ReaderT .b .c .d) -> .(ReaderT .a .c .d))), [v <= u]
 local = withReaderT
 
-asks :: .(ReaderT a b c) -> ReaderT a b c | Monad b
+asks :: (a -> b) -> ReaderT a c b | Monad c
 asks f = liftM f ask

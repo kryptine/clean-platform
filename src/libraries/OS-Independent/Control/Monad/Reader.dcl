@@ -16,9 +16,7 @@ mapReader    :: (u:a -> .b) -> .(.(ReaderT .c v:Identity u:a) -> .(ReaderT .c .I
 withReaderT  :: (.a -> .b) .(ReaderT .b .c .d) -> .(ReaderT .a .c .d)
 withReader   :: u:((.a -> .b) -> v:(.(ReaderT .b .c .d) -> .(ReaderT .a .c .d))), [v <= u]
 liftReaderT  :: (a .b) -> .(ReaderT .c a .b)
-ask          :: .(ReaderT a b a) | Monad b
 local        :: u:((.a -> .b) -> v:(.(ReaderT .b .c .d) -> .(ReaderT .a .c .d))), [v <= u]
-asks         :: .(ReaderT a b c) -> ReaderT a b c | Monad b
 
 instance Monad (ReaderT r m) | Monad m
 

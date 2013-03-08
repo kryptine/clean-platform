@@ -40,10 +40,10 @@ foldM             :: (a -> .(b -> c a)) a [b] -> c a | Monad c
 replicateM        :: .Int (a b) -> a [b] | Monad a
 (>=>) infixr 1    :: u:(.a -> b c) (c -> b d) -> v:(.a -> b d) | Monad b, [v <= u]
 (<=<) infixr 1    :: u:((a -> b c) -> v:(w:(.d -> b a) -> x:(.d -> b c))) | Monad b, [v <= u,x <= w]
-liftM             :: (a b) (a c) -> a b | Monad a
-liftM2            :: (a -> b c) (b d) (b a) -> b c | Monad b
-liftM3            :: (a -> .(b -> c d)) (c e) (c a) (c b) -> c d | Monad c
-liftM4            :: (a -> .(b -> .(c -> d e))) (d f) (d a) (d b) (d c) -> d e | Monad d
-liftM5            :: (a -> .(b -> .(c -> .(d -> e f)))) (e g) (e a) (e b) (e c) (e d) -> e f | Monad e
-ap                :: u:((a b) -> v:((a (a c)) -> a c)) | Monad a, [v <= u]
+liftM             :: (a -> b) (c a) -> c b | Monad c
+liftM2            :: (a -> .(b -> c)) (d a) (d b) -> d c | Monad d
+liftM3            :: (a -> .(b -> .(c -> d))) (e a) (e b) (e c) -> e d | Monad e
+liftM4            :: (a -> .(b -> .(c -> .(d -> e)))) (f a) (f b) (f c) (f d) -> f e | Monad f
+liftM5            :: (a -> .(b -> .(c -> .(d -> .(e -> f))))) (g a) (g b) (g c) (g d) (g e) -> g f | Monad g
+ap                :: u:((a (b -> c)) -> v:((a b) -> a c)) | Monad a, [v <= u]
 
