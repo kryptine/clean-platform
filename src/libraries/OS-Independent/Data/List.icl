@@ -47,6 +47,16 @@ splitWith f [x:xs]
   | f x  = let (y,n) = splitWith f xs in ([x:y],n)
       = let (y,n)  = splitWith f xs in (y,[x:n])
 
+splitAt :: .Int .[a] -> ([a],[a])
+splitAt n ls
+  | n < 0      = ([], ls)
+  | otherwise  = splitAt` n ls
+  where  splitAt` :: Int [a] -> ([a], [a])
+         splitAt` 0 xs       = ([], xs)
+         splitAt` _  xs=:[]  = (xs, xs)
+         splitAt` m [x:xs]   = ([x:xs`], xs``)
+           where (xs`, xs``) = splitAt` (m - 1) xs
+
 sortByIndex :: ![(!Int,!a)] -> [a]
 sortByIndex l = map snd (sortBy (\(a,_) (b,_) -> a < b) l)
 
