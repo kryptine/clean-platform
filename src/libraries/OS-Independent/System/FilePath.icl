@@ -63,3 +63,15 @@ dropDirectory path =
 		-1	-> path
 		i	-> (subString (i+1) (size path - i - 1) path)
 
+
+takeFileName :: !FilePath -> FilePath
+takeFileName path = snd (splitFileName path) 
+
+replaceFileName :: !FilePath !String -> FilePath
+replaceFileName path fn = takeDirectory path </> fn
+
+dropFileName :: !FilePath -> FilePath
+dropFileName path = takeDirectory path
+
+
+

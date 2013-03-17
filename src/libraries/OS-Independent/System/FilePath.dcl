@@ -60,3 +60,24 @@ takeDirectory :: !FilePath -> FilePath
 * Drop the directory part of a FilePath. Keep only the filename.
 */
 dropDirectory :: !FilePath -> String
+
+/**
+* Split a filename into directory and file.
+*/
+splitFileName :: !FilePath -> (String, String)
+
+/**
+* Get the file name.
+*/
+takeFileName :: !FilePath -> FilePath
+
+/**
+* Set the filename.
+*/
+replaceFileName :: !FilePath !String -> FilePath
+
+/**
+* Drop the filename.
+*/
+dropFileName :: !FilePath -> FilePath
+
