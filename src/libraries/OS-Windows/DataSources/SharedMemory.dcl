@@ -1,4 +1,4 @@
-definition module SharedMemory
+definition module DataSources.SharedMemory
 
 import SharedDataSource
 

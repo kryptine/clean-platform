@@ -1,4 +1,4 @@
-definition module _WinBase
+definition module System._WinBase
 
 import _WinDef, StdInt
 

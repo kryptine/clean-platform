@@ -1,4 +1,4 @@
-definition module Process
+definition module System.Process
 
 import Void, Maybe, Either
 import OSError

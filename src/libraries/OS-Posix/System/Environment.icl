@@ -1,4 +1,4 @@
-implementation module Environment
+implementation module System.Environment
 /**
 * Module for accessing environment variables
 */

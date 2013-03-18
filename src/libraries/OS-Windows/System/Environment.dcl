@@ -1,4 +1,4 @@
-definition module Environment
+definition module System.Environment
 /**
 * Module for accessing environment variables
 */

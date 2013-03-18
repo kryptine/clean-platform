@@ -1,4 +1,4 @@
-implementation module SharedFile
+implementation module DataSources.SharedFile
 
 import _WinBase, _Pointer, StdInt, StdArray, StdBool, StdFunc, FilePath, SharedDataSource
 import StdMisc

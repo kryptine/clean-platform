@@ -1,4 +1,4 @@
-definition module OSError
+definition module System.OSError
 
 import Error
 

@@ -1,4 +1,4 @@
-definition module MySQL
+definition module Database.SQL.MySQL
 //This module defines implements the interface for relatational databases
 //of SQL.dcl for the MySQL database engine
 

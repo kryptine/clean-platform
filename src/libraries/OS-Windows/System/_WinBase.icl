@@ -1,4 +1,4 @@
-implementation module _WinBase
+implementation module System._WinBase
 
 import _WinDef
 import code from library "_WinBase_library"

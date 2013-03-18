@@ -1,4 +1,4 @@
-definition module OS
+definition module System.OS
 
 OS_NAME :== "Windows (64-bit)"
 OS_PATH_SEPARATOR :== '\\'

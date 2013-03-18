@@ -1,4 +1,4 @@
-implementation module _Posix
+implementation module System._Posix
 
 import _Pointer, Time
 import StdInt

@@ -1,4 +1,4 @@
-implementation module IP
+implementation module Network.IP
 /**
 * Small module which provides basic IP functionality
 */

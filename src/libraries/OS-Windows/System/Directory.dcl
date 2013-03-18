@@ -1,4 +1,4 @@
-definition module Directory
+definition module System.Directory
 
 from Void import :: Void
 from FilePath import :: FilePath

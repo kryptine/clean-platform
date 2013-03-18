@@ -1,4 +1,4 @@
-implementation module OSError
+implementation module System.OSError
 
 import Error, _Pointer
 from _Posix import qualified errno, strerr

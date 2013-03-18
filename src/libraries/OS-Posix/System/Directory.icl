@@ -1,4 +1,4 @@
-implementation module Directory
+implementation module System.Directory
 
 import StdArray, StdBool, StdClass, StdInt, StdChar, StdString
 

@@ -1,4 +1,4 @@
-definition module Time
+definition module System.Time
 /**
 * This module provides an interface to the time definition of the
 * C standard library.

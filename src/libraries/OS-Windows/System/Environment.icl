@@ -1,4 +1,4 @@
-implementation module Environment
+implementation module System.Environment
 
 import StdOverloaded, StdInt, StdArray, StdChar, StdString
 import Maybe

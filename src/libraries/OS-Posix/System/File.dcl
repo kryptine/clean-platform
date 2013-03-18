@@ -1,4 +1,4 @@
-definition module File
+definition module System.File
 
 from StdFile import class FileSystem
 from StdClass import class toString

@@ -1,4 +1,4 @@
-implementation module MySQL
+implementation module Database.SQL.MySQL
 //MySQL implementation of the Clean SQL database API
 // 
 import SQL

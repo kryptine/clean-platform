@@ -1,4 +1,4 @@
-definition module Threads
+definition module System.Threads
 
 import StdDynamic
 

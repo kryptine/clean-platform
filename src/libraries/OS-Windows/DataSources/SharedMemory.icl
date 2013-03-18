@@ -1,4 +1,4 @@
-implementation module SharedMemory
+implementation module DataSources.SharedMemory
 
 import _WinBase, _Pointer, _Unsafe, StdInt, StdTuple, StdString, StdArray, StdBool, StdFunc, FilePath, SharedDataSource, dynamic_string
 import StdMisc

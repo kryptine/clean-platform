@@ -1,4 +1,4 @@
-definition module _Posix
+definition module System._Posix
 
 from _Pointer import :: Pointer
 from Time import :: Tm

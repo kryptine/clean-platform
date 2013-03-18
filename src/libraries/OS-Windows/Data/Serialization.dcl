@@ -1,4 +1,4 @@
-definition module Serialization
+definition module Data.Serialization
 
 // FIXME: remove this when the compiler no longer translates
 // :: Dynamic to :: DynamicTemp

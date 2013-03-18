@@ -1,4 +1,4 @@
-implementation module Process
+implementation module System.Process
 
 //StdEnv
 import StdArray

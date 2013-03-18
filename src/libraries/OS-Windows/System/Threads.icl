@@ -1,4 +1,4 @@
-implementation module Threads
+implementation module System.Threads
 
 import _WinBase, _Pointer, StdArray, StdInt, StdClass, dynamic_string, _Unsafe, StdMisc
 foreign export threadFunc

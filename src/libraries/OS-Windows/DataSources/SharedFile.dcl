@@ -1,4 +1,4 @@
-definition module SharedFile
+definition module DataSources.SharedFile
 
 import FilePath, SharedDataSource
 
