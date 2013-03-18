@@ -1,4 +1,4 @@
-implementation module LaTeX
+implementation module Text.LaTeX
 
 import StdFunc
 import StdList

@@ -1,4 +1,4 @@
-implementation module PPrint
+implementation module Text.PPrint
 
 import StdEnv
 import Maybe

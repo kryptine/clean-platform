@@ -1,4 +1,4 @@
-definition module Identity
+definition module Data.Functor.Identity
 
 from Functor import class Functor
 from Monad import class Monad

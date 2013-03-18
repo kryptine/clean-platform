@@ -1,4 +1,4 @@
-implementation module CSV
+implementation module Text.CSV
 
 import StdEnv
 import Maybe

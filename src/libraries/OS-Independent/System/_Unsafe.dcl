@@ -1,4 +1,4 @@
-definition module _Unsafe
+definition module System._Unsafe
 
 /**
 * Execute impure functions as side effect of evaluating pure expressions.

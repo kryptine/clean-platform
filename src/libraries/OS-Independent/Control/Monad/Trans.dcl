@@ -1,4 +1,4 @@
-definition module Trans
+definition module Control.Monad.Trans
 
 from Monad import class Monad
 

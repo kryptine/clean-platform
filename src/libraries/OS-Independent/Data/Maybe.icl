@@ -1,4 +1,4 @@
-implementation module Maybe 
+implementation module Data.Maybe 
 
 import StdBool
 import StdFunc

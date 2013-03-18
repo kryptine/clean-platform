@@ -1,4 +1,4 @@
-definition module Random
+definition module Math.Random
 /**
 * This module provides a pseudo random generator based
 * on the Mersenne Twister algorithm

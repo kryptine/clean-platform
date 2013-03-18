@@ -1,4 +1,4 @@
-definition module Graph
+definition module Data.Graph
 
 from Maybe import ::Maybe
 

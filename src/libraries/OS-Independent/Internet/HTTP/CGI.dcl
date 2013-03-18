@@ -1,4 +1,4 @@
-definition module CGI
+definition module Internet.HTTP.CGI
 
 import HTTP
 

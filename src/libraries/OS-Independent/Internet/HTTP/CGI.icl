@@ -1,4 +1,4 @@
-implementation module CGI
+implementation module Internet.HTTP.CGI
 
 import StdFile, StdInt, StdBool, StdArray
 import Maybe, HTTP, Text, Environment, Map

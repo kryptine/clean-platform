@@ -1,4 +1,4 @@
-implementation module Monad
+implementation module Control.Monad
 
 from List    import map, zipWith, replicate
 from Maybe   import :: Maybe, Nothing, Just

@@ -1,4 +1,4 @@
-definition module Func
+definition module Data.Func
 
 ($) infixr 0        :: !(.a -> .b) !.a -> .b
 app					:: !(.a -> .b) !.a -> .b

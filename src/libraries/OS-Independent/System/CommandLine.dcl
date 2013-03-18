@@ -1,4 +1,4 @@
-definition module CommandLine
+definition module System.CommandLine
 /**
 * This module provides access to the commandline arguments of
 * the program.

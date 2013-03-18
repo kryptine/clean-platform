@@ -1,4 +1,4 @@
-definition module Either
+definition module Data.Either
 /**
 * This module defines the "Either" type to represent binary choice.
 * Clean's generics define a similar type EITHER, but this should only be

@@ -1,4 +1,4 @@
-definition module MD5
+definition module Crypto.Hash.MD5
 /**
 * Pure Clean MD5 implementation.
 */

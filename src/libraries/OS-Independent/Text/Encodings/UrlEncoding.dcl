@@ -1,4 +1,4 @@
-definition module UrlEncoding
+definition module Text.Encodings.UrlEncoding
 /**
 * This module provides encode and decode functions for encoding strings for embedding in urls.
 *

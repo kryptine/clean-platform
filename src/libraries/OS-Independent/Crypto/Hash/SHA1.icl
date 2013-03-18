@@ -1,4 +1,4 @@
-implementation module SHA1
+implementation module Crypto.Hash.SHA1
 import StdEnv, Tuple, Text, FilePath, File, Error, Functor
 /**
 * Simple pure Clean SHA1 implementation.

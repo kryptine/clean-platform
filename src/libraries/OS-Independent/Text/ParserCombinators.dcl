@@ -1,4 +1,4 @@
-definition module ParserCombinators
+definition module Text.ParserCombinators
 
 // ****************************************************************************************
 //	Concurrent Clean Standard Library Module

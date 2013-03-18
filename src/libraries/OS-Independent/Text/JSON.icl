@@ -1,4 +1,4 @@
-implementation module JSON
+implementation module Text.JSON
 
 import StdGeneric, Maybe, StdList, StdOrdList, StdString, _SystemArray, StdTuple, StdBool, StdFunc, StdOverloadedList
 import Text

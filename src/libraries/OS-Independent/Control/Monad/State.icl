@@ -1,4 +1,4 @@
-implementation module State
+implementation module Control.Monad.State
 
 from Func import $
 import Monad

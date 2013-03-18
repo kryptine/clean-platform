@@ -1,4 +1,4 @@
-implementation module HTML
+implementation module Text.HTML
 
 import StdString, StdArray, StdList, StdTuple, StdBool, Maybe
 

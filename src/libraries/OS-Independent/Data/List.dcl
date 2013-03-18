@@ -1,4 +1,4 @@
-definition module List
+definition module Data.List
 
 from Functor import class Functor
 from Maybe import :: Maybe

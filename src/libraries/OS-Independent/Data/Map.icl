@@ -1,4 +1,4 @@
-implementation module Map
+implementation module Data.Map
 
 import StdEnv
 import Maybe

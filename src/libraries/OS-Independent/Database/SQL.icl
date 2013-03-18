@@ -1,4 +1,4 @@
-implementation module SQL
+implementation module Database.SQL
 
 import StdString, StdList, StdBool, Maybe, Text
 

@@ -1,4 +1,4 @@
-definition module StringAppender
+definition module Text.StringAppender
 
 /**
 * This module provides an iterface for a "string output stream" like

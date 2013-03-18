@@ -1,4 +1,4 @@
-definition module Functor
+definition module Data.Functor
 
 class Functor f
 where

@@ -1,4 +1,4 @@
-definition module RelationalMapping
+definition module Database.SQL.RelationalMapping
 /**
 * This module provides type-generic functions that map Clean values to a relational database.
 * It provides mapping functions for the basic C(reate)R(ead)U(pdate)D(elete) operations.

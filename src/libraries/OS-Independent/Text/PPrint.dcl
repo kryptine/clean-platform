@@ -1,4 +1,4 @@
-definition module PPrint
+definition module Text.PPrint
 
 /*
  * PPrint

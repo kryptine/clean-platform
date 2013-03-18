@@ -1,4 +1,4 @@
-definition module HsCompat
+definition module Data.HsCompat
 
 /* 
  * Haskell compatibility library to be easier to port Haskell libraries to Clean.

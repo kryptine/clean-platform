@@ -1,4 +1,4 @@
-definition module Reader
+definition module Control.Monad.Reader
 
 from Monad import class Monad
 import Identity

@@ -1,4 +1,4 @@
-implementation module Graph
+implementation module Data.Graph
 
 import StdBool
 import StdFunc

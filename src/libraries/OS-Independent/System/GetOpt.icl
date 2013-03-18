@@ -1,4 +1,4 @@
-implementation module GetOpt
+implementation module System.GetOpt
 
 import StdEnv, Text, Maybe, Either
 from List import maximum, null, find, concatMap, unzip3, zipWith3

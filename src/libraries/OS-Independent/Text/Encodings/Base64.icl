@@ -1,4 +1,4 @@
-implementation module Base64
+implementation module Text.Encodings.Base64
 
 import StdChar, StdString, StdList, StdArray, StdMisc, StdBool
 

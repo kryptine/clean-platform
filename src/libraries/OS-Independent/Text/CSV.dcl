@@ -1,4 +1,4 @@
-definition module CSV
+definition module Text.CSV
 /**
 * This module provides functions for reading and writing comma separated vector (CSV) files.
 */

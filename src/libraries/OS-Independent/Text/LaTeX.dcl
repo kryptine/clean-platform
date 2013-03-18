@@ -1,4 +1,4 @@
-definition module LaTeX
+definition module Text.LaTeX
 
 /**
 * This module provides data types for construction of very simple LaTeX documents.

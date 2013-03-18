@@ -1,4 +1,4 @@
-implementation module HsCompat
+implementation module Data.HsCompat
 
 import StdEnv
 

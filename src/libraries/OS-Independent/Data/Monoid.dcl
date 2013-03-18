@@ -1,4 +1,4 @@
-definition module Monoid
+definition module Data.Monoid
 
 from Maybe import :: Maybe
 from Void import :: Void

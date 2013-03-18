@@ -1,4 +1,4 @@
-implementation module XML
+implementation module Text.XML
 
 import StdArray, StdBool, StdInt, StdList, StdTuple, StdGeneric, StdFunc
 import Error, Void, Either, Maybe, Text, ParserCombinators, GenEq

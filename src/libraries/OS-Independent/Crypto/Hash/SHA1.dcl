@@ -1,4 +1,4 @@
-definition module SHA1
+definition module Crypto.Hash.SHA1
 /**
 * Simple pure Clean SHA1 implementation.
 * Probably not the fastest, but without any dependencies

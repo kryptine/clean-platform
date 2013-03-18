@@ -1,4 +1,4 @@
-definition module XML
+definition module Text.XML
 
 /**
 * This module provides data types for easy construction of XML documents and

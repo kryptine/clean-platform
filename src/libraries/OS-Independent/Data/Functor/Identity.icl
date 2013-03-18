@@ -1,4 +1,4 @@
-implementation module Identity
+implementation module Data.Functor.Identity
 
 from Functor import class Functor
 from Monad import class Monad

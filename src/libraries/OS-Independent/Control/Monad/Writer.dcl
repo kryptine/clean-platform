@@ -1,4 +1,4 @@
-definition module Writer
+definition module Control.Monad.Writer
 
 import Monad
 import Monoid

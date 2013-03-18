@@ -1,4 +1,4 @@
-implementation module Monoid
+implementation module Data.Monoid
 
 from Maybe import :: Maybe(..)
 from Void import :: Void(..)

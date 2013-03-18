@@ -1,4 +1,4 @@
-definition module Maybe 
+definition module Data.Maybe 
 
 from StdOverloaded import class ==(..)
 import Functor

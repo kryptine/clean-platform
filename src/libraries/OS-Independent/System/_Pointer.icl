@@ -1,4 +1,4 @@
-implementation module _Pointer
+implementation module System._Pointer
 
 import StdOverloaded, StdClass, StdArray, StdInt, StdChar, StdString
 

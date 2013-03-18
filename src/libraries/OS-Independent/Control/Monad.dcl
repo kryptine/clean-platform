@@ -1,4 +1,4 @@
-definition module Monad
+definition module Control.Monad
 
 from Maybe   import :: Maybe
 from Void import :: Void

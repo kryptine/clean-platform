@@ -1,4 +1,4 @@
-implementation module Tuple
+implementation module Data.Tuple
 
 tuple :: !a !b -> (!a,!b)
 tuple a b = (a,b)

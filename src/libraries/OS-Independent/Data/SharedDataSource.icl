@@ -1,4 +1,4 @@
-implementation module SharedDataSource
+implementation module Data.SharedDataSource
 
 import _SharedDataSourceTypes, StdString, StdFunc, Error, StdTuple, Func, Tuple, StdMisc
 

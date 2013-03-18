@@ -1,4 +1,4 @@
-implementation module MD5
+implementation module Crypto.Hash.MD5
 /**
 * Pure Clean MD5 implementation.
 * Ported from the MD5 implemenation used by the Clean Dynamics system

@@ -1,4 +1,4 @@
-definition module State
+definition module Control.Monad.State
 
 from Void import :: Void
 from Monad import class Monad

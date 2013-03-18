@@ -1,4 +1,4 @@
-definition module SQL
+definition module Database.SQL
 
 // *********************************************************************************************************************
 // Clean Relational Database (SQL) API. v 0.2

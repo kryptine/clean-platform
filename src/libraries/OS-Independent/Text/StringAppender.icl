@@ -1,4 +1,4 @@
-implementation module StringAppender
+implementation module Text.StringAppender
 
 import StdString, StdArray, StdInt
 

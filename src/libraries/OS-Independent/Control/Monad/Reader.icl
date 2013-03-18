@@ -1,4 +1,4 @@
-implementation module Reader
+implementation module Control.Monad.Reader
 
 from Func import $
 import Identity

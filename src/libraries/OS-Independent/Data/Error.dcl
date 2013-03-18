@@ -1,4 +1,4 @@
-definition module Error
+definition module Data.Error
 
 import Functor, Maybe
 

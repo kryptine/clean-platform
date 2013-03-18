@@ -1,4 +1,4 @@
-implementation module FilePath
+implementation module System.FilePath
 
 import StdArray
 import StdList

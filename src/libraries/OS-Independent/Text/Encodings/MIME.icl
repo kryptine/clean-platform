@@ -1,4 +1,4 @@
-implementation module MIME
+implementation module Text.Encodings.MIME
 
 import StdOverloaded, StdString, StdList, StdArray
 import Maybe, Text

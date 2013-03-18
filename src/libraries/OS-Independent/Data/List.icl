@@ -1,4 +1,4 @@
-implementation module List
+implementation module Data.List
 
 import Maybe, StdTuple, StdBool, StdEnum, StdFunc, StdList, StdOrdList, Functor
 

@@ -1,4 +1,4 @@
-definition module SharedDataSource
+definition module Data.SharedDataSource
 
 import FilePath, Void, Maybe, Error, Time
 

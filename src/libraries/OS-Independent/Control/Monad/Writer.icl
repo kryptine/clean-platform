@@ -1,4 +1,4 @@
-implementation module Writer
+implementation module Control.Monad.Writer
 
 from Func import $
 import Identity

@@ -1,4 +1,4 @@
-implementation module HTTP
+implementation module Internet.HTTP
 
 import StdOverloaded, StdString, StdList, StdArray, StdFile, StdBool
 import Maybe, Map, Text, UrlEncoding, MIME

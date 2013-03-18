@@ -1,4 +1,4 @@
-implementation module RelationalMapping
+implementation module Database.SQL.RelationalMapping
 
 import StdEnv, StdGeneric
 import Maybe, SQL, Text

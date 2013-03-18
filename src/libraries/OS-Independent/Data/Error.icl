@@ -1,4 +1,4 @@
-implementation module Error
+implementation module Data.Error
 
 import StdMisc
 import Functor, Maybe

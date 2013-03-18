@@ -1,4 +1,4 @@
-definition module _SharedDataSourceTypes
+definition module Data._SharedDataSourceTypes
 
 import Maybe, Error, Void, Time
 

@@ -1,4 +1,4 @@
-implementation module CommandLine
+implementation module System.CommandLine
 
 import StdInt, StdList, StdEnum
 import _Pointer, OS

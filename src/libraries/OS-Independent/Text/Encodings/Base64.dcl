@@ -1,4 +1,4 @@
-definition module Base64
+definition module Text.Encodings.Base64
 
 /*
  *	Base64 and Base64URL encoding/decoding according to RFC4648. More info:  

@@ -1,4 +1,4 @@
-definition module Tuple
+definition module Data.Tuple
 
 tuple	:: !a !b	-> (!a,!b)
 tuple3	:: !a !b !c	-> (!a,!b,!c)

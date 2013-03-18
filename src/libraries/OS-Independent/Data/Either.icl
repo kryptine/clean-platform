@@ -1,1 +1,1 @@
-implementation module Either
+implementation module Data.Either

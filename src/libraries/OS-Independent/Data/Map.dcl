@@ -1,4 +1,4 @@
-definition module Map
+definition module Data.Map
 /**
 * This module provides a dynamic Map type for creating mappings from keys to values
 * Internally it uses an AVL tree to organize the key-value pairs stored in the mapping

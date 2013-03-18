@@ -1,4 +1,4 @@
-definition module FilePath
+definition module System.FilePath
 /**
 	Module for manipulation of file and directory paths
 */
