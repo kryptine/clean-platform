@@ -1,9 +1,9 @@
 definition module System.Directory
 
-from Void import :: Void
-from FilePath import :: FilePath
-from Error import :: MaybeError
-from OSError import :: MaybeOSError, :: OSError, :: OSErrorMessage, :: OSErrorCode
+from Data.Void import :: Void
+from System.FilePath import :: FilePath
+from Data.Error import :: MaybeError
+from System.OSError import :: MaybeOSError, :: OSError, :: OSErrorMessage, :: OSErrorCode
 
 createDirectory :: !FilePath !*World -> (!MaybeOSError Void, !*World)
 
