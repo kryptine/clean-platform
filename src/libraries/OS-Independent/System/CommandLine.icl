@@ -1,7 +1,7 @@
 implementation module System.CommandLine
 
 import StdInt, StdList, StdEnum
-import _Pointer, OS
+import System._Pointer, System.OS
 
 getCommandLine :: *World -> ([String],*World)
 getCommandLine world 

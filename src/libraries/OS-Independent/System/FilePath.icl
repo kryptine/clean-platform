@@ -4,10 +4,9 @@ import StdArray
 import StdList
 import StdTuple
 import StdString
-import FilePath
 
 import Text
-import OS
+import System.OS
 
 pathSeparator :: Char
 pathSeparator = OS_PATH_SEPARATOR

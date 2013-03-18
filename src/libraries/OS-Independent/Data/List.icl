@@ -1,6 +1,6 @@
 implementation module Data.List
 
-import Maybe, StdTuple, StdBool, StdEnum, StdFunc, StdList, StdOrdList, Functor
+import Data.Maybe, StdTuple, StdBool, StdEnum, StdFunc, StdList, StdOrdList, Data.Functor
 
 // Haskell Data.List compat
 

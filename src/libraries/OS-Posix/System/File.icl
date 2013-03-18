@@ -6,13 +6,12 @@ import StdFile
 import StdList
 import StdString
 
-import Time
-import Error
-import Void
-import OSError
-import _Pointer
-from _Posix import qualified stat, unlink, rename, sizeOfStat, unpackStat, S_IFDIR, S_IFMT
-from _Posix import :: Stat(..)
+import System.Time
+import Data.Error
+import Data.Void
+import System.OSError
+import System._Pointer
+import System._Posix
 
 CHUNK_SIZE :== 1024
 
@@ -76,27 +75,27 @@ withFile filename filemode operation env
 
 fileExists ::  !String !*World -> (!Bool, !*World)
 fileExists path world 
-	# buf			= createArray '_Posix'.sizeOfStat '\0'
-	# (ok,world)	= '_Posix'.stat (packString path) buf world
+	# buf			= createArray sizeOfStat '\0'
+	# (ok,world)	= stat (packString path) buf world
 	| ok == 0		= (True, world)
 					= (False, world)
 	
 deleteFile :: !String !*World -> (!MaybeOSError Void, !*World)
 deleteFile path world
-	# (ok,world)	= '_Posix'.unlink (packString path) world
+	# (ok,world)	= unlink (packString path) world
 	| ok <> 0		= getLastOSError world
 					= (Ok Void, world)
 
 getFileInfo :: !String !*World -> (!MaybeOSError FileInfo, !*World)
 getFileInfo path world 
- 	# buf           = createArray '_Posix'.sizeOfStat '\0'
-    # (ok,world)    = '_Posix'.stat (packString path) buf world
+ 	# buf           = createArray sizeOfStat '\0'
+    # (ok,world)    = stat (packString path) buf world
 	| ok <> 0		= getLastOSError world
-	# stat			= '_Posix'.unpackStat buf
+	# stat			= unpackStat buf
 	# (ctime,world)	= toLocalTime (Timestamp stat.st_ctimespec) world //NOT RELIABLE ctime is actually inode change time
 	# (mtime,world) = toLocalTime (Timestamp stat.st_mtimespec) world
 	# (atime,world) = toLocalTime (Timestamp stat.st_atimespec) world
-	= (Ok { directory = (stat.st_mode bitand '_Posix'.S_IFMT) == '_Posix'.S_IFDIR
+	= (Ok { directory = (stat.st_mode bitand S_IFMT) == S_IFDIR
 		  , creationTime = ctime 
 		  , lastModifiedTime = mtime 
 		  , lastAccessedTime = atime 
@@ -106,7 +105,7 @@ getFileInfo path world
 
 moveFile :: !String !String !*World -> (!MaybeOSError Void, !*World)
 moveFile oldpath newpath world
-	# (ret,world)	= '_Posix'.rename (packString oldpath) (packString newpath) world
+	# (ret,world)	= rename (packString oldpath) (packString newpath) world
 	| ret == 0
 		= (Ok Void, world)
 	| otherwise

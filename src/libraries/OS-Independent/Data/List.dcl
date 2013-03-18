@@ -1,7 +1,7 @@
 definition module Data.List
 
-from Functor import class Functor
-from Maybe import :: Maybe
+from Data.Functor import class Functor
+from Data.Maybe import :: Maybe
 import StdList
 
 head            :: ![.a] -> .a

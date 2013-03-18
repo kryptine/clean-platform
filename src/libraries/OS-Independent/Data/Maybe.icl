@@ -1,9 +1,9 @@
-implementation module Data.Maybe 
+implementation module Data.Maybe
 
 import StdBool
 import StdFunc
 import StdMisc
-import Functor
+import Data.Functor
 
 :: Maybe a = Nothing | Just a
 

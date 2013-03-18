@@ -3,10 +3,10 @@ definition module System.File
 from StdFile import class FileSystem
 from StdClass import class toString
 
-from Time import ::Tm
-from Error import ::MaybeError
-from Void import ::Void
-from OSError import ::MaybeOSError, ::OSError, ::OSErrorCode, ::OSErrorMessage
+from System.Time import ::Tm
+from Data.Error import ::MaybeError
+from Data.Void import ::Void
+from System.OSError import ::MaybeOSError, ::OSError, ::OSErrorCode, ::OSErrorMessage
 
 :: FileError = CannotOpen | CannotClose | IOError
 

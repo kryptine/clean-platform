@@ -1,6 +1,6 @@
 definition module Data.Error
 
-import Functor, Maybe
+import Data.Functor, Data.Maybe
 
 :: MaybeError a b = Error a | Ok b 
 

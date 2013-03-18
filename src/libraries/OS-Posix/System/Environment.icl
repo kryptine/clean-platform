@@ -3,7 +3,7 @@ implementation module System.Environment
 * Module for accessing environment variables
 */
 import StdOverloaded, StdInt
-import Maybe, _Pointer
+import Data.Maybe, System._Pointer
 
 getEnvironmentVariable :: !String !*World -> (Maybe String, *World)
 getEnvironmentVariable name world

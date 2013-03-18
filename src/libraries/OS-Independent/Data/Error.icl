@@ -1,7 +1,7 @@
 implementation module Data.Error
 
 import StdMisc
-import Functor, Maybe
+import Data.Functor, Data.Maybe
 	
 instance Functor (MaybeError a)
 where

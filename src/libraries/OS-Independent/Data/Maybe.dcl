@@ -1,7 +1,7 @@
-definition module Data.Maybe 
+definition module Data.Maybe
 
 from StdOverloaded import class ==(..)
-import Functor
+import Data.Functor
 
 /**
  * The Maybe type represents an optional value by providing a constructor 
