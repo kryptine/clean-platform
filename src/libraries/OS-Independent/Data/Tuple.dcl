@@ -10,7 +10,4 @@ appFst3 :: (.a -> .d) !(.a,.b,.c) -> (.d,.b,.c)
 appSnd3 :: (.b -> .d) !(.a,.b,.c) -> (.a,.d,.c)
 appThd3 :: (.c -> .d) !(.a,.b,.c) -> (.a,.b,.d)
 
-curry   :: ((a, b) -> c) a b -> c
-uncurry :: (a b -> c) -> ((a, b) -> c)
-
 swap    :: (a, b) -> (b, a)

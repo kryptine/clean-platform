@@ -21,11 +21,5 @@ appSnd3 f (a,b,c) = (a,f b,c)
 appThd3 :: (.c -> .d) !(.a,.b,.c) -> (.a,.b,.d)
 appThd3 f (a,b,c) = (a,b,f c)
 
-curry :: ((a, b) -> c) a b -> c
-curry f x y =  f (x, y)
-
-uncurry :: (a b -> c) -> ((a, b) -> c)
-uncurry f p =  f (fst p) (snd p)
-
 swap :: (a, b) -> (b, a)
 swap (a,b) = (b,a)
