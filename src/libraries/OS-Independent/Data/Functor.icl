@@ -1,4 +1,4 @@
 implementation module Data.Functor
 
-(<$>) infixl 4 :: u:((.a -> .b) -> v:(w:(c .a) -> w:(c .b))) | Functor c, [v <= u]
-(<$>) = fmap
+(<$>) infixl 4 :: (a -> b) (f a) -> (f b) | Functor f
+(<$>) f fa = fmap f fa
