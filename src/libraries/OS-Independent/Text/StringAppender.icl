@@ -11,8 +11,9 @@ newAppender = {full_length = 0, elements = []}
 		   
 append :: StringAppender a -> StringAppender | toString a
 append appender a 
-	# str = toString a
-	= {full_length = appender.full_length + (size str), elements = [str:appender.elements]} 
+	#! str = toString a
+	#! new_length = appender.full_length + (size str)
+	= {full_length = new_length, elements = [str:appender.elements]} 
 	
 concat_rev :: ![String] !Int -> String
 concat_rev xs full_length = concat` xs (createArray full_length '\0') 0
