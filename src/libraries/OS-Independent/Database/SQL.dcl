@@ -55,6 +55,7 @@ import StdString, Maybe
 // A row is just a list of values
 :: SQLRow			:== [SQLValue]
 
+
 // *********************************************************************************************************************
 // Errors
 // *********************************************************************************************************************
@@ -84,6 +85,41 @@ import StdString, Maybe
 			| SQLProgrammingError 	!Int !String
 			| SQLNotSupportedError
 
+// *********************************************************************************************************************
+// Database Schema Definitions
+// *********************************************************************************************************************
+:: SQLSchema :== [SQLTable]
+:: SQLTable =
+	{ name			:: SQLTableName
+	, columns		:: [SQLColumn]
+	, primaryKey	:: [SQLColumnName]
+	, foreignKeys	:: [([SQLColumnName],SQLTableName,[SQLColumnName])]
+	}
+
+:: SQLTableName		:== String
+:: SQLColumnName	:== String
+
+:: SQLColumn =
+	{ name			:: SQLColumnName
+	, type			:: SQLColumnType
+	, null			:: Bool
+	, autoIncrement	:: Bool 
+	}
+
+::	SQLColumnType	=	SQLTChar !Int
+					|	SQLTVarchar !Int
+					|	SQLTText
+					|	SQLTInteger	
+					|	SQLTReal
+					|	SQLTFloat
+					|	SQLTDouble
+					|	SQLTDate
+					|	SQLTTime
+					|	SQLTTimestamp
+					|	SQLTDatetime
+					|	SQLTEnum ![String]
+					|	SQLTBlob
+					|	SQLTUnknown
 
 // *********************************************************************************************************************
 // Database Interaction API
