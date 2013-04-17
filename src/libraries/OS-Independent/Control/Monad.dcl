@@ -1,13 +1,13 @@
 definition module Control.Monad
 
-from Maybe   import :: Maybe
-from Void import :: Void
+from Data.Maybe   import :: Maybe
+from Data.Void import :: Void
 
 :: IO a = IO (World -> (a, World))
 
 class Monad m where
-    return :: a -> m a
-    (>>=) infixl 1 :: (m a) (a -> m b) -> (m b)
+  return :: a -> m a
+  (>>=) infixl 1 :: (m a) (a -> m b) -> (m b)
 
 instance Monad IO
 

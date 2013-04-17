@@ -1,18 +1,11 @@
 implementation module Control.Monad
 
-from List    import map, zipWith, replicate
-from Maybe   import :: Maybe, Nothing, Just
-from Void    import :: Void(..)
+from Data.List    import map, zipWith, replicate
+from Data.Maybe   import :: Maybe, Nothing, Just
+from Data.Void    import :: Void(..)
 from StdList import foldr, ++
 from StdFunc import flip, id, o, const
-from StdMisc import undef
 from StdInt  import class +, instance + Int
-
-:: IO a = IO (World -> (a, World))
-
-class Monad m where
-    return :: a -> m a
-    (>>=) infixl 1 :: (m a) (a -> m b) -> (m b)
 
 instance Monad IO where
   return x         = IO (\s -> (x, s))
@@ -34,10 +27,6 @@ instance Monad Maybe where
   return x          = Just x
   (>>=) (Just x) k  = k x
   (>>=) Nothing  _  = Nothing
-
-class MonadPlus m | Monad m where
-   mzero :: m a
-   mplus :: (m a) (m a) -> m a
 
 instance MonadPlus [] where
    mzero        = []
