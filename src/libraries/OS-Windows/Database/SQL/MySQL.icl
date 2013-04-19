@@ -182,7 +182,7 @@ where
 			# errno 	= mysql_errno conn_ptr
 			# errmsg	= derefString (mysql_error conn_ptr)
 			| errno <> errno || errmsg <> errmsg	= undef //Force execution
-			= (Just (SQLDatabaseError errno errmsg),cursor)
+			= (Just (SQLDatabaseError errno errmsg),{MySQLCursor|cursor & result_ptr = 0})
 		# result_ptr				= mysql_store_result conn_ptr
 		| result_ptr == 0
 			= (Nothing, {MySQLCursor|cursor & result_ptr = 0})
