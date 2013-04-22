@@ -1,7 +1,7 @@
 definition module Data.Functor.Identity
 
-from Functor import class Functor
-from Monad import class Monad
+from Data.Functor import class Functor
+from Control.Monad import class Monad
 
 :: Identity a = Identity a
 

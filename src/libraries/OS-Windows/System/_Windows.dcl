@@ -1,4 +1,4 @@
 definition module System._Windows
 
-import _WinDef
-import _WinBase
+import System._WinDef
+import System._WinBase

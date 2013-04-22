@@ -1,8 +1,8 @@
 definition module Control.Monad.State
 
-from Void import :: Void
-from Monad import class Monad
-from Identity import :: Identity
+from Data.Void import :: Void
+from Control.Monad import class Monad
+from Data.Functor.Identity import :: Identity
 
 :: StateT s m a = StateT (s -> m (a, s))
 

@@ -1,10 +1,11 @@
 implementation module Control.Monad.State
 
-from Func import $
-import Monad
-import Identity
-import Trans
-from Void import :: Void(..)
+from Data.Func import $
+import Control.Monad
+import Data.Functor.Identity
+import Control.Monad.Trans
+from Data.Void import :: Void(..)
+
 from StdFunc import o
 from StdTuple import fst, snd
 from StdMisc import abort
