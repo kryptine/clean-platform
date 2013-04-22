@@ -5,7 +5,7 @@ definition module Data.Map
 * such that lookup, insert and delete operations can be performed in O(log n).
 */
 
-from Maybe			import :: Maybe
+from Data.Maybe		import :: Maybe
 from StdClass		import class Eq, class Ord
 from StdOverloaded	import class ==, class <
 

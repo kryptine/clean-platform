@@ -1,7 +1,7 @@
 implementation module Data.Map
 
 import StdEnv
-import Maybe
+import Data.Maybe
 
 //Create function
 newMap :: w:(Map k u:v), [ w <= u]
