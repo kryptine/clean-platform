@@ -1,6 +1,6 @@
 implementation module Database.SQL
 
-import StdString, StdList, StdBool, Maybe, Text
+import StdString, StdList, StdBool, Data.Maybe, Text
 
 //Utility functions
 instance toString SQLValue					
