@@ -1,9 +1,8 @@
-implementation module Maybe
+implementation module Maybe 
 
 import StdBool
 import StdFunc
 import StdMisc
-import StdOverloaded
 import Functor
 
 :: Maybe a = Nothing | Just a

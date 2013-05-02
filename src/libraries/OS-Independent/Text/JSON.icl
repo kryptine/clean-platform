@@ -326,20 +326,6 @@ JSONEncode{|UNIT|} (UNIT) = []
 JSONEncode{|PAIR|} fx fy (PAIR x y) = fx x ++ fy y
 JSONEncode{|EITHER|} fx fy (LEFT x) = fx x
 JSONEncode{|EITHER|} fx fy (RIGHT y) = fy y
-
-JSONEncode{|RECORD of {grd_fields=grd_fields=:[_:_]}|} fx (RECORD x)
-	= [JSONObject [(f.gfd_name, o) \\ o <- fx x & f <- grd_fields | isNotNull o]]
-  where
-  	isNotNull JSONNull = False
-  	isNotNull _ = True
-JSONEncode{|RECORD of {grd_arity=0,grd_name}|} fx (RECORD x)
-	//Constructor without parameters
-	= [JSONString grd_name]
-JSONEncode{|RECORD of {grd_name}|} fx (RECORD x)
-	//Constructor with parameters				
-	= [JSONArray [JSONString grd_name : fx x]]
-JSONEncode{|RECORD|} fx (RECORD x)
-
 JSONEncode{|OBJECT|} fx (OBJECT x) = fx x
 JSONEncode{|CONS of {gcd_fields=gcd_fields=:[_:_]}|} fx (CONS x)
 	//Record

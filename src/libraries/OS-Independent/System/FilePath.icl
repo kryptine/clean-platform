@@ -4,7 +4,6 @@ import StdArray
 import StdList
 import StdTuple
 import StdString
-import StdOverloaded, StdInt, StdChar
 import FilePath
 
 import Text

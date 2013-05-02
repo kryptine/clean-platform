@@ -5,7 +5,7 @@ implementation module ParserCombinators
 //	Copyright 1998, 1999, 2002 HILT bv & University of Nijmegen, The Netherlands
 // ****************************************************************************************
 
-import StdInt, StdBool, StdOverloaded, StdList, StdFunc, StdString, StdChar
+import StdInt, StdBool, StdOverloaded, StdList, StdFunc, StdString
 
 :: Parser s r :== [s] -> ParsResult s r
 :: ParsResult s r :== [([s],r)]

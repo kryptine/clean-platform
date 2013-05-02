@@ -1,6 +1,6 @@
 implementation module UrlEncoding
 
-import StdChar, StdString, StdList, StdOverloaded, StdInt, StdClass
+import StdChar, StdString, StdList
 import Text
 
 urlEncode :: !String -> String

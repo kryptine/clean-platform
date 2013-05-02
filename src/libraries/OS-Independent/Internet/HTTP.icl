@@ -1,6 +1,6 @@
 implementation module HTTP
 
-import StdOverloaded, StdString, StdList, StdArray, StdFile, StdBool, StdClass, StdInt, StdChar
+import StdOverloaded, StdString, StdList, StdArray, StdFile, StdBool
 import Maybe, Map, Text, UrlEncoding, MIME
 
 newHTTPRequest :: HTTPRequest

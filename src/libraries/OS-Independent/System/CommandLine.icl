@@ -1,6 +1,6 @@
 implementation module CommandLine
 
-import StdInt, StdList, StdEnum, StdClass, StdInt
+import StdInt, StdList, StdEnum
 import _Pointer, OS
 
 getCommandLine :: *World -> ([String],*World)
