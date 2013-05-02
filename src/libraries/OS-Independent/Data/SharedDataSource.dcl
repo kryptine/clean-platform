@@ -1,8 +1,8 @@
 definition module Data.SharedDataSource
 
-import FilePath, Void, Maybe, Error, Time
+import System.FilePath, Data.Void, Data.Maybe, Data.Error, System.Time
 
-from _SharedDataSourceTypes import :: RWShared, :: BasicShareId, :: WriteShare(..), :: CheckRes(..)
+from Data._SharedDataSourceTypes import :: RWShared, :: BasicShareId, :: WriteShare(..), :: CheckRes(..)
 
 :: Shared a env		:== RWShared a a env
 :: ROShared a env	:== RWShared a Void env

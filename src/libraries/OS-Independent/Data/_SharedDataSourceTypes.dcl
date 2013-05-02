@@ -1,6 +1,6 @@
 definition module Data._SharedDataSourceTypes
 
-import Maybe, Error, Void, Time
+import Data.Maybe, Data.Error, Data.Void, System.Time
 
 :: RWShared r w *env
 	= E.b:			BasicSource		!(BasicSource b r w env)
