@@ -8,7 +8,8 @@ definition module Text.JSON
 * For more info about JSON see: http://www.json.org/
 */
 
-import StdGeneric, Maybe, StdString
+import StdGeneric, StdString
+import Data.Maybe
 
 :: JSONNode	= JSONNull
 			| JSONBool !Bool

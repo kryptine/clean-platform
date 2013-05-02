@@ -11,7 +11,7 @@ definition module Text.HTML
 *  http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd
 */
 
-import StdString, Maybe
+import StdString, Data.Maybe
 
 /**
 * This type provides an enumeration of all html tags.
