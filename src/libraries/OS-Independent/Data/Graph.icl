@@ -6,8 +6,9 @@ import StdList
 import StdOrdList
 import StdTuple
 
-import Map
-import Maybe
+import Data.Map
+import Data.Maybe
+import Data.Functor
 
 :: Graph n e = 
 	{ nodes		:: !Map NodeIndex (Node n)

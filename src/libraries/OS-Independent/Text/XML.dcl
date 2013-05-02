@@ -5,9 +5,9 @@ definition module Text.XML
 * a generic printer/parser.
 */
 
-import StdOverloaded, StdGeneric, Void, Either
-from Maybe	import :: Maybe
-from Error	import :: MaybeErrorString, :: MaybeError
+import StdOverloaded, StdGeneric, Data.Void, Data.Either
+from Data.Maybe	import :: Maybe
+from Data.Error	import :: MaybeErrorString, :: MaybeError
 
 :: XMLDoc = XMLDoc !(Maybe XMLURI) ![(!XMLNamespacePrefix,!XMLURI)] !XMLNode
 

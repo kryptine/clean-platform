@@ -1,7 +1,7 @@
 implementation module Text.XML
 
 import StdArray, StdBool, StdInt, StdList, StdTuple, StdGeneric, StdFunc
-import Error, Void, Either, Maybe, Text, ParserCombinators, GenEq
+import Data.Error, Data.Void, Data.Either, Data.Maybe, Text, Text.ParserCombinators, GenEq
 
 uname :: !String -> XMLQName
 uname name = XMLQName Nothing name

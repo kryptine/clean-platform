@@ -1,6 +1,6 @@
 definition module Data.Graph
 
-from Maybe import ::Maybe
+from Data.Maybe import ::Maybe
 
 :: Graph n e
 
