@@ -1,6 +1,6 @@
 implementation module Random
 
-import StdArray, StdBool, StdEnum, StdInt, StdList, StdMisc, StdReal, StdString
+import StdArray, StdBool, StdEnum, StdInt, StdList, StdMisc, StdReal, StdString, StdClass
 
 n :== 624
 m :== 397

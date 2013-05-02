@@ -5,6 +5,7 @@ import StdArray
 import StdFile
 import StdList
 import StdString
+import StdBool, StdInt, StdClass
 
 import Time
 import Error

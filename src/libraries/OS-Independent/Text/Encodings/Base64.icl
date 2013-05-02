@@ -1,6 +1,6 @@
 implementation module Base64
 
-import StdChar, StdString, StdList, StdArray, StdMisc, StdBool
+import StdChar, StdString, StdList, StdArray, StdMisc, StdBool, StdOverloaded, StdClass, StdInt
 
 //65th character is padding-character
 stdAlphabet :== "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/="

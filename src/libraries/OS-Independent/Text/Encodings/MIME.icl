@@ -1,6 +1,6 @@
 implementation module MIME
 
-import StdOverloaded, StdString, StdList, StdArray
+import StdOverloaded, StdString, StdList, StdArray, StdInt
 import Maybe, Text
 
 encodeMimeMultipart :: !MIMEBoundary ![MIMEPart] -> String
