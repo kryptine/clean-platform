@@ -1,7 +1,7 @@
 implementation module Text.PPrint
 
 import StdEnv
-import Maybe
+import Data.Maybe
 
 /*
  * PPrint
