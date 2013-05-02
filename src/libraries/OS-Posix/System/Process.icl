@@ -10,15 +10,15 @@ import StdString
 import StdMisc
 
 //Data
-import Maybe
-import Void
+import Data.Maybe
+import Data.Void
 
 //System
-import FilePath
-import File
-import OSError
-import _Pointer
-import _Posix
+import System.FilePath
+import System.File
+import System.OSError
+import System._Pointer
+import System._Posix
 
 runProcess :: !FilePath ![String] !(Maybe String) !*World -> (MaybeOSError ProcessHandle, *World)
 runProcess path args mCurrentDirectory world //TODO: Use mCurrentDirectory argument

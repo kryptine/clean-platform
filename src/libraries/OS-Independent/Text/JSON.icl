@@ -1,6 +1,7 @@
 implementation module Text.JSON
 
-import StdGeneric, Maybe, StdList, StdOrdList, StdString, _SystemArray, StdTuple, StdBool, StdFunc, StdOverloadedList
+import StdGeneric, StdList, StdOrdList, StdString, _SystemArray, StdTuple, StdBool, StdFunc, StdOverloadedList
+import Data.Maybe
 import Text
 
 //Token type which is the intermediary representation during JSON parsing

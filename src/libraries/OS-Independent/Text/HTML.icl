@@ -1,6 +1,7 @@
 implementation module Text.HTML
 
-import StdString, StdArray, StdList, StdTuple, StdBool, Maybe
+import StdString, StdArray, StdList, StdTuple, StdBool
+import Data.Maybe
 
 instance toString HtmlTag
 where

@@ -1,8 +1,7 @@
 definition module System.Process
 
-import Void, Maybe, Either
-import OSError
-import FilePath
+import Data.Void, Data.Maybe, Data.Either
+import System.OSError, System.FilePath
 
 /*
 Not yet implemented:

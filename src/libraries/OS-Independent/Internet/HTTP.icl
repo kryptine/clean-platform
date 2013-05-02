@@ -1,7 +1,7 @@
 implementation module Internet.HTTP
 
 import StdOverloaded, StdString, StdList, StdArray, StdFile, StdBool
-import Maybe, Map, Text, UrlEncoding, MIME
+import Data.Maybe, Data.Map, Text, Text.Encodings.UrlEncoding, Text.Encodings.MIME
 
 newHTTPRequest :: HTTPRequest
 newHTTPRequest		= {	req_method		= ""
