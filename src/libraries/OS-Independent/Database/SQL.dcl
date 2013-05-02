@@ -5,7 +5,7 @@ definition module Database.SQL
 // This module defines a common API for working with relational databases.
 // *********************************************************************************************************************
 
-import StdString, Maybe
+import StdString, Data.Maybe
 
 // *********************************************************************************************************************
 // Basic types
