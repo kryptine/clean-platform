@@ -1,13 +1,14 @@
 definition module System._Posix
 
 from _Pointer import :: Pointer
+from StdInt import :: IF_INT_64_OR_32
 from Time import :: Tm
 
 WNOHANG		:==	0x00000001  
 WUNTRACED	:== 0x00000002
 MAXPATHLEN	:== 1024
 
-DIRENT_D_NAME_OFFSET	:== 8
+DIRENT_D_NAME_OFFSET	:== IF_INT_64_OR_32 19 8
 
 S_IFMT		:== 0170000
 S_IFIFO		:== 0010000
