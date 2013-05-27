@@ -1,6 +1,6 @@
 implementation module System._Posix
 
-import _Pointer, Time
+import System._Pointer, System.Time
 import StdInt
 
 errno :: !*World -> (!Int,!*World)
