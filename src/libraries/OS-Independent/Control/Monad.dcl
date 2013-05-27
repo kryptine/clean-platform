@@ -1,11 +1,13 @@
 definition module Control.Monad
 
+from Control.Applicative import class Applicative
+from Data.Functor import class Functor
 from Data.Maybe   import :: Maybe
 from Data.Void import :: Void
 
-:: IO a = IO (World -> (a, World))
+:: IO a = IO (*World -> *(a, *World))
 
-class Monad m where
+class Monad m | Applicative m where
   return :: a -> m a
   (>>=) infixl 1 :: (m a) (a -> m b) -> (m b)
 
