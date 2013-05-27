@@ -1,7 +1,7 @@
 definition module System._Posix
 
 from System._Pointer import :: Pointer
-from StdInt import :: IF_INT_64_OR_32
+from StdInt import IF_INT_64_OR_32
 from System.Time import :: Tm
 
 WNOHANG		:==	0x00000001  
