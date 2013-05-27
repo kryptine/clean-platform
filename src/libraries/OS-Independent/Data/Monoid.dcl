@@ -1,7 +1,7 @@
 definition module Data.Monoid
 
-from Maybe import :: Maybe
-from Void import :: Void
+from Data.Maybe import :: Maybe
+from Data.Void import :: Void
 
 class Monoid a where
   mempty :: a
