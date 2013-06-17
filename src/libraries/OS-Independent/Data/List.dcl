@@ -2,11 +2,11 @@ definition module Data.List
 
 from Data.Functor import class Functor
 from Data.Maybe import :: Maybe
-import StdList
+import StdList, GenEq
 
 head            :: ![.a] -> .a
 tail            :: !u:[.a] -> u:[.a]
-null            :: ![.a] -> Bool
+isnull          :: ![.a] -> Bool
 unzip3          :: ![(.a,.b,.c)] -> ([.a],[.b],[.c])
 unzip4          :: ![(.a,.b,.c,.d)] -> ([.a],[.b],[.c],[.d])
 unzip5          :: ![(.a,.b,.c,.d,.e)] -> ([.a],[.b],[.c],[.d],[.e])
@@ -67,5 +67,6 @@ intersectBy     :: (a -> b -> .Bool) .[a] .[b] -> .[a]
 union           :: u:(.[a] -> v:(.[a] -> .[a])) | == a, [v <= u]
 unionBy         :: (a -> .(a -> .Bool)) .[a] .[a] -> .[a]
 
+isMemberGen :: !a !.[a] -> Bool | gEq{|*|} a
 
 instance Functor []

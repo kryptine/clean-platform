@@ -1,6 +1,6 @@
 implementation module Data.List
 
-import Data.Maybe, StdTuple, StdBool, StdEnum, StdFunc, StdList, StdOrdList, Data.Functor
+import Data.Maybe, StdTuple, StdBool, StdEnum, StdFunc, StdList, StdOrdList, Data.Functor, GenEq
 
 // Haskell Data.List compat
 
@@ -10,8 +10,8 @@ head xs = hd xs
 tail :: !u:[.a] -> u:[.a]
 tail xs = tl xs
 
-null :: ![.a] -> Bool
-null xs = isEmpty xs
+isnull :: ![.a] -> Bool
+isnull xs = isEmpty xs
 
 product :: !.[a] -> a | * , one  a
 product xs = prod xs
@@ -291,3 +291,6 @@ union                   = unionBy (==)
 unionBy :: (a -> .(a -> .Bool)) .[a] .[a] -> .[a]
 unionBy eq xs ys        =  xs ++ foldl (flip (deleteBy eq)) (nubBy eq ys) xs
 
+isMemberGen :: !a !.[a] -> Bool | gEq{|*|} a
+isMemberGen x [hd:tl]	= hd === x || isMemberGen x tl
+isMemberGen x []		= False
