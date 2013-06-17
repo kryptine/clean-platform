@@ -4,7 +4,7 @@ definition module Data.Serialization
 // :: Dynamic to :: DynamicTemp
 from _SystemDynamic import :: DynamicTemp
 
-from Error import ::MaybeError, ::MaybeErrorString
+from Data.Error import ::MaybeError, ::MaybeErrorString
 
 /**
 * pack a value into a dynamic and serialize it as a SYSDYN string

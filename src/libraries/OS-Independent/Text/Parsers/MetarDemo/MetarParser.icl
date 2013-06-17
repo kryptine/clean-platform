@@ -1,5 +1,5 @@
-implementation module MetarParser
-import StdEnv, Parsers
+implementation module Text.Parsers.MetarDemo.MetarParser
+import StdEnv, Text.Parsers
 from StdIO import :: Maybe (..)
 
 wordify :: ![a] -> [[a]]	| space a	

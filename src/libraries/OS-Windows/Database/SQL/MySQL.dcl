@@ -2,8 +2,8 @@ definition module Database.SQL.MySQL
 //This module defines implements the interface for relatational databases
 //of SQL.dcl for the MySQL database engine
 
-import SQL
-import Maybe, StdString
+import Database.SQL
+import Data.Maybe, StdString
 
 :: MySQLContext
 :: MySQLConnection

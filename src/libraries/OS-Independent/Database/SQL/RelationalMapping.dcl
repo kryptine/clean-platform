@@ -10,8 +10,8 @@ definition module Database.SQL.RelationalMapping
 * http://www.baslijnse.nl/projects/between-types-and-tables/
 */
 
-import StdGeneric, Maybe
-import SQL 
+import StdGeneric, Data.Maybe
+import Database.SQL 
 
 // Wrapper functions which provide the basic mapping
 mapRead		:: !ref !*cur -> (!(Maybe MappingError), !(Maybe val), !*cur)	| relMap{|*|} ref & relMap{|*|} val & SQLCursor cur & bimap{|*|} cur

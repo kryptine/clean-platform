@@ -1,6 +1,6 @@
 definition module DataSources.SharedMemory
 
-import SharedDataSource
+import Data.SharedDataSource
 
 :: Memory :== Int
 

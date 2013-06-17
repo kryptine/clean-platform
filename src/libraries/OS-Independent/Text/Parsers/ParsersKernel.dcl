@@ -3,6 +3,7 @@ from StdEnv import class Eq, class toString, class ==
 from StdMaybe import :: Maybe(..)
 
 from Control.Applicative import class Applicative, class Alternative
+from Control.Monad import class Monad
 from Data.Functor import class Functor
 
 // abstract type for use in getParsable and setParsable only
@@ -24,6 +25,44 @@ instance Functor (Parser s t)
 instance Applicative (Parser s t)
 
 instance Alternative (Parser s t)
+
+class Splittable f where
+  getNonPure :: (f a) -> Maybe (f a)
+  getPure :: (f a) -> Maybe a
+
+instance Splittable (Parser s t)
+
+instance Monad (Parser s t)
+
+:: Gram f a = Gram [PAlt f a] (Maybe a)
+
+:: PAlt f a
+  =  E.b: Seq (f (b -> a)) (Gram f b)
+  |  E.b: Bind (f b) (b -> Gram f a)
+
+mkG :: (f a) -> Gram f a | Splittable f & Functor f
+
+instance Functor (Gram f) | Functor f
+
+instance Functor (PAlt f) | Functor f
+
+(<<||>) infixl 4 :: (Gram f (b -> a)) (Gram f b) -> Gram f a | Functor f
+
+(<||>) infixl 4 :: (Gram f (b -> a)) (Gram f b) -> Gram f a | Functor f
+
+instance Applicative (Gram f) | Functor f
+
+instance Alternative (Gram f) | Functor f
+
+instance Monad (Gram f) | Functor f
+
+mkP :: (Gram f a) -> f a | Monad f & Applicative f & Alternative f
+
+sepBy :: (Gram f a) (f b) -> f a | Monad f & Applicative f & Alternative f
+
+insertSep :: (f b) (Gram f a) -> Gram f a | Monad f & Applicative f & Alternative f
+
+gmList :: (Gram f a) -> Gram f [a] | Functor f
 
 // PARSER CONSTRUCTORS:
 
@@ -107,7 +146,7 @@ first				:: (Parser s t r) -> Parser s t r
 
 // resulting parser applies the check to the recognized item and fails if the check fails
 // the string is an error message carried over to the resulting parser. NOT TESTED YET
-(checkExplain) infix 7 :: (Parser s t r) (r -> Maybe String) -> Parser s t r
+//(checkExplain) infix 7 :: (Parser s t r) (r -> Maybe String) -> Parser s t r
 
 // resulting parser rewinds the input to where it started
 rewind				:: (Parser s t r) -> Parser s t r

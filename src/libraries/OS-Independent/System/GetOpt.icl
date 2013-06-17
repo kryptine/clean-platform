@@ -1,7 +1,7 @@
 implementation module System.GetOpt
 
-import StdEnv, Text, Maybe, Either
-from List import maximum, null, find, concatMap, unzip3, zipWith3
+import StdEnv, Text, Data.Maybe, Data.Either
+from Data.List import maximum, null, find, concatMap, unzip3, zipWith3
 
 :: OptKind a                    // kind of cmd line arg (internal use only):
    = Opt       a                //    an option

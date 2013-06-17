@@ -3,7 +3,7 @@ implementation module Network.IP
 * Small module which provides basic IP functionality
 */
 import StdString, StdInt, StdArray
-import Maybe, Text, _Pointer
+import Data.Maybe, Text, System._Pointer
 import code from library "wsock32.txt"
 
 /**

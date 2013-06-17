@@ -1,10 +1,10 @@
 definition module Control.Monad.Writer
 
-import Monad
-import Monoid
-import Trans
-import Identity
-from Void import :: Void
+import Control.Monad
+import Data.Monoid
+import Control.Monad.Trans
+import Data.Functor.Identity
+from Data.Void import :: Void
 
 :: WriterT w m a = WriterT (m (a, w))
 

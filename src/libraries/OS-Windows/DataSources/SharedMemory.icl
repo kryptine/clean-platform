@@ -1,6 +1,6 @@
 implementation module DataSources.SharedMemory
 
-import _WinBase, _Pointer, _Unsafe, StdInt, StdTuple, StdString, StdArray, StdBool, StdFunc, FilePath, SharedDataSource, dynamic_string
+import System._WinBase, System._Pointer, System._Unsafe, StdInt, StdTuple, StdString, StdArray, StdBool, StdFunc, System.FilePath, Data.SharedDataSource, dynamic_string
 import StdMisc
 
 /**

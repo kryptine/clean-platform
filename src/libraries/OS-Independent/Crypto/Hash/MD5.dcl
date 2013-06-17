@@ -5,9 +5,9 @@ definition module Crypto.Hash.MD5
 
 from StdString import class toString
 from StdFile import class FileSystem
-from FilePath import :: FilePath
-from Error import :: MaybeError
-from File import :: FileError
+from System.FilePath import :: FilePath
+from Data.Error import :: MaybeError
+from System.File import :: FileError
 
 :: MD5Digest = MD5Digest {#Char} // 128 bit (16byte) message digest
 

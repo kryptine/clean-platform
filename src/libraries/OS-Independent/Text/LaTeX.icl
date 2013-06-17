@@ -3,7 +3,7 @@ implementation module Text.LaTeX
 import StdFunc
 import StdList
 
-import PPrint
+import Text.PPrint
 import Text
 
 printLaTeX :: ![LaTeX] -> String

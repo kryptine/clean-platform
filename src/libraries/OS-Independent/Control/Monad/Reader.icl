@@ -1,10 +1,10 @@
 implementation module Control.Monad.Reader
 
-from Func import $
-import Identity
-import Monad
+from Data.Func import $
+import Data.Functor.Identity
+import Control.Monad
 from StdFunc import o, const
-import Trans
+import Control.Monad.Trans
 
 :: ReaderT r m a = ReaderT (r -> m a)
 

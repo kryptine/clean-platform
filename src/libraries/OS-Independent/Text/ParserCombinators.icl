@@ -5,69 +5,76 @@ implementation module Text.ParserCombinators
 //	Copyright 1998, 1999, 2002 HILT bv & University of Nijmegen, The Netherlands
 // ****************************************************************************************
 
-import StdInt, StdBool, StdOverloaded, StdList, StdFunc, StdString
+import StdInt, StdBool, StdOverloaded, StdList, StdFunc, StdString, StdMisc
+import Control.Applicative, Data.Maybe, Data.Functor
 
 :: Parser s r :== [s] -> ParsResult s r
 :: ParsResult s r :== [([s],r)]
 
-:: CParser s r t :== (SucCont s r t) (XorCont s t) (AltCont s t) -> Parser s t
+:: CParser s r t  = CParser ((SucCont s r t) (XorCont s t) (AltCont s t) -> Parser s t)
 :: SucCont s r t :== r (XorCont s t) (AltCont s t) -> Parser s t
 :: XorCont s t   :== (AltCont s t) -> ParsResult s t
 :: AltCont s t   :== ParsResult s t
 
+//instance Applicative (CParser s r) where
+  //pure x = yield x
+  //(<*>) fab fa = undef //(flip (<&>)) fab fa
+
 fail :: CParser s r t
-fail = \ sc xc ac ss -> xc ac
+fail = CParser (\_ xc ac _ -> xc ac)
 
 yield :: r -> CParser s r t
-yield x = \sc -> sc x
+yield x = CParser (\sc -> sc x)
 
 cut :: (CParser s r t) -> CParser s r t
-cut p = \sc xc ac -> p sc (\ac -> ac) ac
+cut (CParser p) = CParser (\sc _ ac -> p sc id ac)
 
 symbol :: s -> CParser s s t | == s
-symbol s = psymbol
+symbol s = CParser psymbol
 where
 	psymbol sc xc ac [x:ss] | x==s = sc s xc ac ss
-	psymbol sc xc ac _             = xc ac
+	psymbol _  xc ac _             = xc ac
 
 token :: [s] -> CParser s [s] t | ==s
-token t = p
+token t = CParser p
 where p sc xc ac ss
 		| t == head = sc t xc ac tail
 		| otherwise = xc ac
 		where (head,tail) = splitAt (length t) ss
 
 satisfy :: (s->Bool) -> CParser s s t
-satisfy f = p
+satisfy f = CParser p
 where
 	p sc xc ac [s:ss] | f s = sc s xc ac ss
 	p sc xc ac _            = xc ac
 
 eof :: CParser s Int t
-eof = p
+eof = CParser p
 where p sc xc ac [] = sc 42 xc ac []
       p sc xc ac _  = xc ac
 
+unCP (CParser cp) = cp
+
 begin :: !(CParser s t t) -> Parser s t
-begin p = p (\x xc ac ss -> [(ss,x):xc ac]) (\ac -> ac) []
+begin (CParser p) = p (\x xc ac ss -> [(ss,x):xc ac]) id []
 
 begin1 :: !(CParser s t t) -> Parser s t
-begin1 p = p (\x xc ac ss -> [(ss,x)]) (\ac -> ac) []
+begin1 (CParser p) = p (\x _ _ ss -> [(ss,x)]) id []
 
 (<|>) infixr 4 :: (CParser s r t) (CParser s r t) -> CParser s r t
-(<|>) p1 p2 = \sc xc ac ss -> p1 sc (\ac2 -> ac2) (p2 sc xc ac ss) ss
+(<|>) (CParser p1) (CParser p2) = CParser (\sc xc ac ss -> p1 sc id (p2 sc xc ac ss) ss)
 
 (<!>) infixr 4 :: (CParser s r t) (CParser s r t) -> CParser s r t
-(<!>) p1 p2 = \sc xc ac ss -> p1 (\x xc2 -> sc x xc) (\ac3 -> p2 sc xc ac3 ss) ac ss
+(<!>) (CParser p1) (CParser p2) = CParser (\sc xc ac ss -> p1 (\x xc2 -> sc x xc) (\ac3 -> p2 sc xc ac3 ss) ac ss)
 
 (<&>) infixr 6 :: (CParser s u t) (u -> CParser s v t) -> CParser s v t
-(<&>) p1 p2 = \sc -> p1 (\t -> p2 t sc)
+(<&>) (CParser p1) f2p2 = CParser (\sc -> p1 (\t -> unCP (f2p2 t) sc))
 
 (<&) infixr 6 :: (CParser s u t) (CParser s v t) -> CParser s u t
-(<&) p1 p2 = p1 <&> \u -> p2 <@ \_ -> u
+(<&) p1 p2 = p1 <&> \u -> p2 <@ const u
 
 (&>) infixr 6 :: (CParser s u t) (CParser s v t) -> CParser s v t
-(&>) p1 p2 = p1 <&> \_ -> p2
+(&>) p1 p2 = p1 <&> const p2
 
 (<:&>) infixr 6 :: (CParser s u t) (CParser s [u] t) -> CParser s [u] t
 (<:&>) p1 p2 = p1 <&> \h -> p2 <@ \t -> [h:t]
@@ -76,16 +83,15 @@ begin1 p = p (\x xc ac ss -> [(ss,x)]) (\ac -> ac) []
 (<++>) p1 p2 = p1 <&> \l -> p2 <@ \m -> l++m
 
 (<!&>) infixr 6 :: (CParser s u t) (u -> CParser s v t) -> CParser s v t
-(<!&>) p1 p2 = \sc -> p1 (\t ac2 -> p2 t sc (\ac -> ac))
+(<!&>) (CParser p1) f2p2 = CParser (\sc -> p1 (\t ac2 -> unCP (f2p2 t) sc id))
 // Cut inside <!>, if p1 succeeds, next alt is removed
 
 (<@) infixl 5 :: (CParser s r t) (r->u) -> CParser s u t
-(<@) p f = \sc -> p (sc o f)
+(<@) (CParser p) f = CParser (\sc -> p (sc o f))
 
 <*?> :: (CParser s r t) -> CParser s [r] t
-<*?> p = (     p       <&> \r  -> 
-                <*?> p <@  \rs -> [r:rs])
-           <|> yield []
+<*?> p = (p <&> \r -> <*?> p <@ \rs -> [r:rs])
+     <|> yield []
 
 <*> :: (CParser s r t) -> CParser s [r] t
 //<*> p = (     p        <!&> \r  -> 
@@ -95,18 +101,16 @@ begin1 p = p (\x xc ac ss -> [(ss,x)]) (\ac -> ac) []
 <*> p = ClistP p []
 
 ClistP :: (CParser s r t) [r] -> CParser s [r] t
-ClistP p l
+ClistP (CParser p) l
 // =			(p <!&> \r -> ClistP p [r:l])
 //	<!>	yield (reverse l)
 // code below is semantically equivalent to combinator expression above 
- = clp l
+ = CParser (clp l)
 where
-	clp l sc xc ac ss
-		=	p
-			(\r ac2 -> clp [r:l] (\x xc2 -> sc x xc) (\ac -> ac))
-			(\ac3 -> sc (reverse l) xc ac3 ss)
-			ac
-			ss
+	clp l sc xc ac ss = p
+              (\r _ -> clp [r:l] (\x _ -> sc x xc) id)
+              (\ac3 -> sc (reverse l) xc ac3 ss)
+              ac ss
 
 <+> :: (CParser s r t) -> CParser s [r] t
 //<+> p = p <&> \r -> <*> p <@ \rs -> [r:rs]
@@ -129,19 +133,19 @@ where
 <??@> p f u = (p <@ \r -> f r) <|> yield u
 
 (>?<) infix 9 :: (CParser s r t) (r -> Bool) -> (CParser s r t) // condition on parsed item
-(>?<) p f = \sc -> p (\r xc2 ac2 ss2 -> if (f r) (sc r xc2 ac2 ss2) (xc2 ac2))
+(>?<) (CParser p) f = CParser (\sc -> p (\r xc2 ac2 ss2 -> if (f r) (sc r xc2 ac2 ss2) (xc2 ac2)))
 
 (@>) infix 7 :: (r->u) (CParser s r t) -> CParser s u t
-(@>) f p = \sc -> p (sc o f)
+(@>) f (CParser p) = CParser (\sc -> p (sc o f))
 
 (+&+) infixl 6 :: (CParser s (u->v) t) (CParser s u t) -> CParser s v t
-(+&+) p1 p2 = \sc -> p1 (\f -> p2 (sc o f))
+(+&+) (CParser p1) (CParser p2) = CParser (\sc -> p1 (\f -> p2 (sc o f)))
 
 (-&+) infixl 8 :: (CParser s v t) (CParser s u t) -> CParser s u t
-(-&+) p1 p2 = \sc -> p1 (\_ -> p2 sc) 
+(-&+) (CParser p1) (CParser p2) = CParser (\sc -> p1 (\_ -> p2 sc))
 
 (+&-) infixl 6 :: (CParser s v t) (CParser s u t) -> CParser s v t
-(+&-) p1 p2 = \sc -> p1 (\v -> p2 (\_ -> sc v)) 
+(+&-) (CParser p1) (CParser p2) = CParser (\sc -> p1 (\v -> p2 (\_ -> sc v)))
 
 digit :: CParser Char Int x
 digit = satisfy isDigit <@ digitToInt
@@ -160,7 +164,7 @@ class isWhite s :: !s -> Bool
 instance isWhite Char where isWhite c = isSpace c
 
 sp :: (CParser s r t) -> CParser s r t | isWhite s
-sp p = \sc xc ac ss -> p sc xc ac (dropWhile isWhite ss)
+sp (CParser p) = CParser (\sc xc ac ss -> p sc xc ac (dropWhile isWhite ss))
 
 spsymbol :: s -> CParser s s t | ==, isWhite s
 spsymbol s = sp (symbol s)

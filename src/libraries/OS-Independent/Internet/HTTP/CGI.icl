@@ -1,7 +1,7 @@
 implementation module Internet.HTTP.CGI
 
 import StdFile, StdInt, StdBool, StdArray
-import Maybe, HTTP, Text, Environment, Map
+import Data.Maybe, Internet.HTTP, Text, System.Environment, Data.Map
 
 //Http headers which should be polled in the environment
 CGI_HEADERS :== [ ("Content-Type","CONTENT_TYPE")

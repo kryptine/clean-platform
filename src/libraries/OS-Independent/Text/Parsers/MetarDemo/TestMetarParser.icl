@@ -8,7 +8,7 @@ module TestMetarParser
 //	
 //	**************************************************************************************************
 
-import StdEnv, StdIO, MetarParser
+import StdEnv, StdIO, Text.Parsers.MetarDemo.MetarParser
 
 Start :: *World -> *World
 Start world

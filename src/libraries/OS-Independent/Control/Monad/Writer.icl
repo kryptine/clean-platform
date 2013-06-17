@@ -1,10 +1,10 @@
 implementation module Control.Monad.Writer
 
-from Func import $
-import Identity
-import Monad
-import Monoid
-import Trans
+from Data.Func import $
+import Data.Functor.Identity
+import Control.Monad
+import Data.Monoid
+import Control.Monad.Trans
 from StdFunc import o
 from StdTuple import fst, snd
 

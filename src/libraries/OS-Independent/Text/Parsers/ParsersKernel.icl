@@ -9,13 +9,16 @@ implementation module Text.Parsers.ParsersKernel
 import StdEnv
 
 import Data.Maybe
+from Data.Monoid import class Monoid
+from Data.Func import $
+from Data.Void import :: Void (..)
 
 from Text.Parsers.ParsersDerived import <&
 from Text.Parsers.ParsersAccessories import class toString (..), instance toString SymbolType
 from Text.Parsers.ParserLanguage import endOf
 from Text.Parsers.ParsersDerived import <&, @>, yield, <++>
 
-from Control.Monad import class Monad
+from Control.Monad import class Monad(>>=)
 import Control.Applicative, Data.Functor, Data.Tuple
 
 :: Parsable s       :== ([Int],Int,[s],SymbolTypes)
@@ -106,46 +109,113 @@ instance Monad (Parser s t) where
   return x       = yield x
   (>>=) ma a2mb  = ma <&> a2mb
 
-class Splittable f where
-  getNonPure :: (f a) -> Maybe (f a)
-  getPure :: (f a) -> Maybe a
-
-:: PAlt f a
-  =  Seq (A.c: f (c -> a)) (A.c: Gram f c)
-  |  Bind (A.c: f c) (A.c: c -> Gram f a)
-
 :: Gram f a = Gram [PAlt f a] (Maybe a)
 
-instance Functor (Gram f) | Functor f where
-  fmap b2a (Gram lb mb) = Gram (map (\x -> b2a <$> x) lb) (b2a <$> mb)
+:: PAlt f a
+  =  E.b: Seq (f (b -> a)) (Gram f b)
+  |  E.b: Bind (f b) (b -> Gram f a)
 
-// TODO: Fix
+instance Splittable (Parser s t) where
+  getNonPure x = Just x
+  getPure (Parser pc) = Nothing // TODO Just (Parser (\hy sc ac xc sg (is,i,[s:ss],symTypes) -> ))
+
+//:: Parsable s       :== ([Int],Int,[s],SymbolTypes)
+//:: ParseResult s r  :== (Suggestions,[(Parsable s,r)])
+//:: BareParser s r   :== (Parsable s) -> ParseResult s r
+//:: Alt s t          :== (Xor s t) Suggestions -> ParseResult s t
+//:: Succ s r t       :== r (Alt s t) (Xor s t) Suggestions -> BareParser s t
+//:: Parser s t r     = Parser (PCont s r t)
+//:: PCont s r t      :== Hypothesis (Succ s r t) (Alt s t) (Xor s t) Suggestions (Parsable s) -> (Suggestions, [(Parsable s, r)])
+//:: Xor s t          :== Suggestions -> ParseResult s t
+
+//instance Monoid (Gram f (r -> r)) | Functor f where
+  //mappend p q  = (\f g -> f o g) <$> p <||> q
+  //mempty       = empty
+
+mkG :: (f a) -> Gram f a | Splittable f & Functor f
+mkG p = Gram  (maybe [] (\p -> [Seq (const <$> p) (pure Void)]) (getNonPure p))
+              (getPure p)
+
+instance Functor (Gram f) | Functor f where
+  fmap f (Gram alts e) = Gram (map (\x -> f <$> x) alts) (f <$> e)
+
 instance Functor (PAlt f) | Functor f where
-  fmap _ _ = undef
-  //fmap b2a (Seq fc2b gc)   = Seq ((\f -> b2a o f) <$> fc2b) gc
-  //fmap b2a (Bind fc c2gb)  = Bind fc (fmap b2a o c2gb)
+  fmap a2c (Seq fb2a gb)   = Seq ((\f -> a2c o f) <$> fb2a) gb
+  fmap a2c (Bind fb b2ga)  = Bind fb (\b -> fmap a2c (b2ga b))
+
+(<<||>) infixl 4 :: (Gram f (b -> a)) (Gram f b) -> Gram f a | Functor f
+(<<||>) gb2a=:(Gram lb2a eb2a) gb =
+  let  (Gram _ eb) = gb
+  in   Gram (map (\x -> fwdby1 x gb) lb2a) (eb2a <*> eb)
+
+fwdby1 (Seq fc2b2a gc)   gb = Seq (uncurry <$> fc2b2a) ((\x y -> (x, y)) <$> gc <||> gb)
+fwdby1 (Bind fc c2gb2a)  gb = Bind fc (l c2gb2a gb)
+  where  // l :: (a -> Gram b (c -> d)) (Gram b c) a -> Gram b d | Functor b
+         l :: .(.a -> .(Gram b (c -> d))) .(Gram b c) .a -> Gram b d | Functor b
+         l c2gb2a gb c = c2gb2a c <||> gb
+
+(<||>) infixl 4 :: (Gram f (b -> a)) (Gram f b) -> Gram f a | Functor f
+(<||>) fb2a fb = fb2a <<||> fb <|> flip ($) <$> fb <<||> fb2a
 
 instance Applicative (Gram f) | Functor f where
    pure a = Gram [] (Just a)
    (<*>) (Gram lb2a mb2a) gb =
      let (Gram lb mb) = gb
-     in  Gram (map (\x -> fwdby x gb) lb2a ++ [b2a <$> fb \\ Just b2a <- [mb2a] & fb <- lb]) (mb2a <*> mb)
+     in  Gram (map (\x -> fwdby2 x gb) lb2a ++ [b2a <$> fb \\ Just b2a <- [mb2a] & fb <- lb]) (mb2a <*> mb)
 
-// TODO: Fix
-fwdby :: (PAlt f (b -> a)) (Gram f b) -> PAlt f a | Functor f
-fwdby _ _ = undef
-//fwdby (Seq fc2b2a gc)   gb = undef //Seq (uncurry <$> fc2b2a) ((\x y -> (x, y)) <$> (gc <*> gb))
-//fwdby (Bind fc c2gb2a)  gb = undef //Bind fc (\c -> app (c2gb2a c) gb)
+fwdby2 (Seq fc2b2a gc)   gb = Seq (uncurry <$> fc2b2a) ((\x y -> (x, y)) <$> gc <*> gb)
+fwdby2 (Bind fc c2gb2a)  gb = Bind fc (l c2gb2a gb)
+  where  // l :: (a -> Gram b (c -> d)) (Gram b c) a -> Gram b d | Functor b
+         l :: .(.a -> .(Gram b (c -> d))) .(Gram b c) .a -> Gram b d | Functor b
+         l c2gb2a gb c = c2gb2a c <||> gb
 
 instance Alternative (Gram f) | Functor f where
   empty = Gram [] Nothing
   (<|>) (Gram ps pe) (Gram qs qe) = Gram (ps ++ qs) (pe <|> qe)
+
+instance Monad (Gram f) | Functor f where
+  return a = Gram [] (Just a)
+  (>>=) (Gram lb mb) b2g_a =
+    let bindto :: (PAlt f b) (b -> Gram f a) -> PAlt f a | Functor f
+        bindto (Seq f_c2b g_c) b2g_a = Bind f_c2b (\c2b -> c2b <$> g_c >>= b2g_a)
+        bindto (Bind f_c c2g_b) b2g_a = Bind f_c (\c -> c2g_b c >>= b2g_a)
+        la = map (\x -> bindto x b2g_a) lb
+    in  case mb of
+          Nothing   -> Gram la Nothing
+          (Just b)  -> let (Gram lra ma) = b2g_a b
+                       in  Gram (la ++ lra) ma
+
+mkP :: (Gram f a) -> f a | Monad f & Applicative f & Alternative f
+mkP (Gram l_a m_a) = foldr (<|>) (maybe empty pure m_a)
+                                 (map mkP_Alt l_a)
+  where  mkP_Alt (Seq f_b2a g_b)   = f_b2a <*> mkP g_b
+         mkP_Alt (Bind f_b b2g_a)  = f_b >>= (mkP o b2g_a)
+
+sepBy :: (Gram f a) (f b) -> f a | Monad f & Applicative f & Alternative f
+sepBy g sep = mkP (insertSep sep g)
+
+insertSep :: (f b) (Gram f a) -> Gram f a | Monad f & Applicative f & Alternative f
+insertSep sep (Gram na ea) = Gram (map insertSepInAlt na) ea
+   where insertSepInAlt (Seq fb2a gb)   = Seq fb2a (prefixSepInGram sep gb)
+         insertSepInAlt (Bind fc c2ga)  = Bind fc (insertSep sep o c2ga)
+
+prefixSepInGram :: (f b) (Gram f a) -> Gram f a | Monad f & Applicative f & Alternative f
+prefixSepInGram sep (Gram na ne)   = Gram (map (prefixSepInAlt sep) na) ne
+
+prefixSepInAlt :: (f a) (PAlt f b) -> PAlt f b | Monad f & Applicative f & Alternative f
+prefixSepInAlt sep (Seq fb2a gb)   = Seq (sep *> fb2a) (prefixSepInGram sep gb)
+
+gmList :: (Gram f a) -> Gram f [a] | Functor f
+gmList p = let pm = ((\x xs -> [x:xs]) <$> p <<||> pm) <|> pure [] in pm
 
 fail :: Parser s t r
 fail = Parser (\hy sc ac xc sg ss -> ac xc sg)
 
 yield :: r -> Parser s t r
 yield x = Parser (\hy sc ac xc -> sc x ac empty_xc)
+
+opt :: (Parser s t r) r -> Parser s t r
+opt p a = p <|> pure a
 
 anySymbol :: Parser s t s
 anySymbol = Parser p
@@ -268,16 +338,16 @@ The following is slightly compromising the idea in error reporting that the hypo
 just cumulate the actual alternatives on a certain position. The compromise is that
 the test may now only name an alternative if (a part of) a test is violated.
 */
-(checkExplain) infix 7 :: (Parser s t r) (r -> Maybe String) -> Parser s t r
-(checkExplain) p test = p <&> checkExplain` test
+//(checkExplain) infix 7 :: (Parser s t r) (r -> Maybe String) -> Parser s t r
+//(checkExplain) p test = p <&> checkExplain` test
 
-checkExplain` :: (r -> Maybe String) r -> Parser s t r
-checkExplain` test r = Parser (wp r)
-where	wp r hy sc ac xc sg ss=:(is,i,_,symTypes)
-			= case test r of
-				Nothing		= sc r ac empty_xc sg ss
+//checkExplain` :: (r -> Maybe String) r -> Parser s t r
+//checkExplain` test r = Parser (wp r)
+//where	wp r hy sc ac xc sg ss=:(is,i,_,symTypes)
+			//= case test r of
+				//Nothing		= sc r ac empty_xc sg ss
 //The following sneaks in the extra error message produced by the test
-				(Just hyl)	= ac xc (sg + (symTypes,[[(hyl,is++[i-halfPosLength])]:[hy]])@(is++[i-halfPosLength]))
+				//(Just hyl)	= ac xc (sg + (symTypes,[[(hyl,is++[i-halfPosLength])]:[hy]])@(is++[i-halfPosLength]))
 
 rewind :: (Parser s t r) -> Parser s t r
 rewind p = getParsable <&> \pp -> p <& setParsable pp
