@@ -1,6 +1,6 @@
 definition module PPrint
 
-import Maybe
+from Maybe import :: Maybe
 
 /*
  * PPrint

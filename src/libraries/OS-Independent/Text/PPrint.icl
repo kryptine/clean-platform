@@ -263,7 +263,7 @@ instance Pretty (a,b,c) | Pretty a & Pretty b & Pretty c where
   pretty (x,y,z)= tupled [pretty x, pretty y, pretty z]
 
 instance Pretty (Maybe a) | Pretty a where
-  pretty :: !(Maybe a) -> Doc | Pretty a
+  pretty :: (Maybe a) -> Doc | Pretty a
   pretty Nothing        = empty
   pretty (Just x)       = pretty x
 
