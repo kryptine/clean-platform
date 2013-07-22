@@ -1,5 +1,7 @@
 definition module PPrint
 
+import Maybe
+
 /*
  * PPrint
  * Pretty print module based on Philip Wadlers "prettier printer"
