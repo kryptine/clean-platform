@@ -1,17 +1,19 @@
 definition module Text.PPrint
 
+from Data.Maybe import :: Maybe
+
 /*
  * PPrint
  * Pretty print module based on Philip Wadlers "prettier printer"
  *       "A prettier printer"
- *       Draft paper, April 1997, revised March 1998. 
+ *       Draft paper, April 1997, revised March 1998.
  *       http://cm.bell-labs.com/cm/cs/who/wadler/papers/prettier/prettier.ps
  *
  * Haskell implementation by Daan Leijen
- * 
+ *
  * Copyright (c) 2000, Daan Leijen, http://www.cs.uu.nl/~daan
  * All rights reserved.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  * * Redistributions of source code must retain the above copyright
@@ -19,7 +21,7 @@ definition module Text.PPrint
  * * Redistributions in binary form must reproduce the above copyright
  *   notice, this list of conditions and the following disclaimer in the
  *   documentation and/or other materials provided with the distribution.
- * 
+ *
  * This software is provided by the copyright holders and contributors "as is" and
  * any express or implied warranties, including, but not limited to, the implied
  * warranties of merchantability and fitness for a particular purpose are
@@ -29,18 +31,36 @@ definition module Text.PPrint
  * loss of use, data, or profits; or business interruption) however caused and
  * on any theory of liability, whether in contract, strict liability, or tort
  * (including negligence or otherwise) arising in any way out of the use of this
- * software, even if advised of the possibility of such damage. 
+ * software, even if advised of the possibility of such damage.
  */
 
 class Pretty a where
-  pretty        :: a -> Doc 
-  
+  pretty        :: a -> Doc
+
+instance Pretty [a] | Pretty a
+
+instance Pretty Doc
+
+instance Pretty Bool
+
+instance Pretty Char
+
+instance Pretty Int
+
+instance Pretty Real
+
+instance Pretty (a,b) | Pretty a & Pretty b
+
+instance Pretty (a,b,c) | Pretty a & Pretty b & Pretty c
+
+instance Pretty (Maybe a) | Pretty a
+
 list :: ([Doc] -> Doc)
 tupled :: ([Doc] -> Doc)
 semiBraces :: ([Doc] -> Doc)
 encloseSep :: Doc Doc Doc [Doc] -> Doc
 punctuate :: Doc [Doc] -> [Doc]
-                   
+
 sep :: ([Doc] -> Doc)
 fillSep :: ([Doc] -> Doc)
 hsep :: ([Doc] -> Doc)
@@ -86,18 +106,18 @@ equals :: Doc
 /* -----------------------------------------------------------
  * Combinators for prelude types
  * ----------------------------------------------------------- */
-                 
+
 string :: String -> Doc
 bool :: Bool -> Doc
-int :: Int -> Doc                  
+int :: Int -> Doc
 real :: Real -> Doc
 
 /* -----------------------------------------------------------
- * semi primitive: fill and fillBreak 
+ * semi primitive: fill and fillBreak
  * ----------------------------------------------------------- */
 fillBreak :: Int Doc -> Doc
 fill :: Int Doc -> Doc
-width :: Doc (Int -> Doc) -> Doc        
+width :: Doc (Int -> Doc) -> Doc
 
 /* -----------------------------------------------------------
  * semi primitive: Alignment and indentation
@@ -112,7 +132,7 @@ align :: Doc -> Doc
 :: Doc
 ::  SimpleDoc
 
-empty :: Doc                
+empty :: Doc
 char :: Char -> Doc
 text :: String -> Doc
 line :: Doc
