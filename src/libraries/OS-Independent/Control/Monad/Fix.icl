@@ -9,8 +9,8 @@ instance MonadFix Maybe where
     where unJust (Just x) = x
           unJust Nothing  = error "mfix Maybe: Nothing"
 
-//instance MonadFix [] where
-  //mfix f = case fix (f o head) of
-             //[]    -> []
-             //[x:_] -> [x : mfix (tail o f)]
+instance MonadFix [] where
+  mfix f = case fix (f o head) of
+             []    -> []
+             [x:_] -> [x : mfix (tail o f)]
 
