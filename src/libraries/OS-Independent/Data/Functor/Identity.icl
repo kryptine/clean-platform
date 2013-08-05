@@ -11,6 +11,10 @@ runIdentity (Identity a) = a
 instance Functor Identity where
   fmap f (Identity m) = Identity (f m)
 
+instance Applicative Identity where
+  pure x = Identity x
+  (<*>) (Identity f) (Identity x) = Identity (f x)
+
 instance Monad Identity where
     return a   = Identity a
     (>>=) (Identity m) k  = k m

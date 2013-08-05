@@ -4,6 +4,7 @@ from Data.Functor import class Functor
 from Data.Maybe import :: Maybe
 
 instance Applicative Maybe
+instance Applicative []
 instance Alternative Maybe
 instance Alternative []
 

@@ -11,6 +11,8 @@ runIdentity :: (Identity a) -> a
 
 instance Functor Identity
 
+instance Applicative Identity
+
 instance Monad Identity
 
 instance MonadFix Identity

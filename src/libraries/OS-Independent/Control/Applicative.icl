@@ -9,6 +9,10 @@ instance Applicative Maybe where
   (<*>) Nothing _ = Nothing
   (<*>) (Just f) ma = fmap f ma
 
+instance Applicative [] where
+  pure x     = [x]
+  (<*>) xs x = ap xs x
+
 instance Alternative Maybe where
   empty             = Nothing
   (<|>) Nothing  r  = r
