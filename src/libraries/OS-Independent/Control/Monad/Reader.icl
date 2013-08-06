@@ -11,11 +11,11 @@ import Control.Monad.Trans
 :: Reader r a :== ReaderT r Identity a
 
 instance Monad (ReaderT r m) | Monad m where
-  return x = (lift o return) x
+  return x = (liftT o return) x
   (>>=) m k = ReaderT (\r -> runReaderT m r >>= \a -> runReaderT (k a) r)
 
 instance MonadTrans (ReaderT r) where
-  lift r = liftReaderT r
+  liftT r = liftReaderT r
 
 runReaderT :: .(ReaderT .a u:b .c) -> .a -> u:(b .c)
 runReaderT (ReaderT f) = f

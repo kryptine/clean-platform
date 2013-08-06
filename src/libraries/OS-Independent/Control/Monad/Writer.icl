@@ -19,7 +19,7 @@ instance Monad (WriterT w m) | Monad m & Monoid w where
               return (b, mappend w w`)
 
 instance MonadTrans (WriterT w) | Monoid w where
-  lift m = WriterT $ m >>= \a -> return (a, mempty)
+  liftT m = WriterT $ m >>= \a -> return (a, mempty)
 
 runWriterT :: (WriterT a u:b c) -> u:(b (c,a))
 runWriterT (WriterT w) = w

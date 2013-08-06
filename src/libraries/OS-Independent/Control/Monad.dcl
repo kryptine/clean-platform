@@ -1,14 +1,12 @@
 definition module Control.Monad
 
-from Control.Applicative import class Applicative
-from Data.Functor import class Functor
-from Data.Maybe   import :: Maybe
-from Data.Void import :: Void
-
-:: IO a = IO (*World -> *(a, *World))
+from Control.Applicative  import class Applicative
+from Data.Functor         import class Functor
+from Data.IO              import :: IO
+from Data.Maybe           import :: Maybe
+from Data.Void            import :: Void
 
 class Monad m | Applicative m where
-  return :: a -> m a
   (>>=) infixl 1 :: (m a) (a -> m b) -> (m b)
 
 instance Monad IO
@@ -20,14 +18,15 @@ instance Monad []
 instance Monad Maybe
 
 class MonadPlus m | Monad m where
-   mzero :: m a
-   mplus :: (m a) (m a) -> m a
+  mzero :: m a
+  mplus :: (m a) (m a) -> m a
 
 instance MonadPlus []
 
 instance MonadPlus Maybe
 
-(>>) infixr 1     :: (a b) (a c) -> a c | Monad a
+return            :: a -> m a | Monad m
+(>>|) infixr 1    :: (a b) (a c) -> a c | Monad a
 (=<<) infixr 1    :: (a -> b c) (b a) -> b c | Monad b
 sequence          :: .[a b] -> a [b] | Monad a
 sequence_         :: .[a b] -> a Void | Monad a

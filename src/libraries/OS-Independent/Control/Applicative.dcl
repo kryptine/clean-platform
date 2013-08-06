@@ -1,20 +1,23 @@
 definition module Control.Applicative
 
-from Data.Functor import class Functor
-from Data.Maybe import :: Maybe
+from Data.Functor  import class Functor
+from Data.IO       import :: IO
+from Data.Maybe    import :: Maybe
 
+instance Applicative IO
+instance Applicative ((->) r)
 instance Applicative Maybe
 instance Applicative []
 instance Alternative Maybe
 instance Alternative []
 
 class Applicative f | Functor f where
-  pure :: a -> f a
-  (<*>) infixl 4 :: (f (a -> b)) (f a) -> f b
+  pure            :: a -> f a
+  (<*>) infixl 4  :: (f (a -> b)) (f a) -> f b
 
 class Alternative f | Applicative f where
-  empty :: f a
-  (<|>) infixl 3 :: (f a) (f a) -> f a
+  empty           :: f a
+  (<|>) infixl 3  :: (f a) (f a) -> f a
 
 some :: (f a) -> f [a] | Alternative f
 
@@ -25,6 +28,8 @@ many :: (f a) -> f [a] | Alternative f
 (<*) infixl 4 :: (f a) (f b) -> f a | Applicative f
 
 (<**>) infixl 4 :: (f a) (f (a -> b)) -> f b | Applicative f
+
+lift :: a -> f a | Applicative f
 
 liftA :: (a -> b) (f a) -> f b | Applicative f
 

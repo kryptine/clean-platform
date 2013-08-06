@@ -19,7 +19,7 @@ instance Monad (StateT s m) | Monad m where
     (>>=) m k  = StateT $ \s -> (runStateT m s >>= \(a, s`) -> runStateT (k a) s`)
 
 instance MonadTrans (StateT s) where
-  lift m = StateT $ \s -> m >>= \a -> return (a, s)
+  liftT m = StateT $ \s -> m >>= \a -> return (a, s)
 
 state :: (a -> .(b,a)) -> .(StateT a c b) | Monad c
 state f = StateT (return o f)

@@ -1,8 +1,19 @@
 definition module Data.Graph
 
 from Data.Maybe import ::Maybe
+from Data.Map import :: Map
+//:: Graph n e
+:: Graph n e = 
+	{ nodes		:: !Map NodeIndex (Node n)
+	, edges		:: !Map EdgeIndex e
+	, lastId	:: !Int
+	}
 
-:: Graph n e
+:: Node n =
+	{ data			:: n
+	, predecessors	:: ![NodeIndex]
+	, successors 	:: ![NodeIndex]
+	}
 
 :: NodeIndex :== Int
 :: EdgeIndex :== (!NodeIndex,!NodeIndex)
