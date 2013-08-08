@@ -5,11 +5,12 @@ import StdFunc
 import StdList
 import StdOrdList
 import StdTuple
+import StdClass, StdInt
 
 import Map
 import Maybe
 
-:: Graph n e = 
+:: Graph n e =
 	{ nodes		:: !Map NodeIndex (Node n)
 	, edges		:: !Map EdgeIndex e
 	, lastId	:: !Int
@@ -44,28 +45,28 @@ addNode n graph
 			, lastId = newId
 			}
 		)
-		
+
 addEdge :: e !EdgeIndex !(Graph n e) -> (Graph n e)
 addEdge e (fromIndex,toIndex) graph
-	| edgeExists (fromIndex,toIndex) graph = graph
-	# mFromNode = get fromIndex graph.nodes
-	| isNothing mFromNode = graph
-	# fromNode = fromJust mFromNode
-	# fromNode =	{ Node
-					| fromNode
-					& successors = [toIndex:fromNode.successors]
-					}
-	# mToNode = get toIndex graph.nodes
-	| isNothing mToNode = graph
-	# toNode = fromJust mToNode
-	# toNode = 		{ Node
-					| toNode
-					& predecessors = [fromIndex:toNode.predecessors]
-					}
-	=	{ Graph
-		| graph
-		& nodes = put toIndex toNode (put fromIndex fromNode graph.nodes)
-		, edges = put (fromIndex,toIndex) e graph.edges
+	|	edgeExists (fromIndex,toIndex) graph = graph
+	#	mFromNode			=	get fromIndex graph.nodes
+	|	isNothing mFromNode	=	graph
+	#	fromNode			=	fromJust mFromNode
+	#	fromNode			=	{	Node
+								|	fromNode
+								&	successors = [toIndex:fromNode.successors]
+								}
+	#	mToNode				=	get toIndex graph.nodes
+	|	isNothing mToNode	=	graph
+	#	toNode				=	fromJust mToNode
+	#	toNode				=	{	Node
+								|	toNode
+								&	predecessors = [fromIndex:toNode.predecessors]
+								}
+	=	{	Graph
+		|	graph
+		&	nodes = put toIndex toNode (put fromIndex fromNode graph.nodes)
+		,	edges = put (fromIndex,toIndex) e graph.edges
 		}
 
 removeNode :: !NodeIndex !(Graph n e) -> Graph n e
@@ -88,8 +89,8 @@ removeEdge (fromNodeIndex,toNodeIndex) graph
 	# fromNode = fromJust mFromNode
 	  toNode = fromJust mToNode
 	# fromNode = { Node | fromNode & successors = filter ((<>) toNodeIndex) fromNode.successors }
-      toNode   = { Node | toNode   & predecessors = filter ((<>) fromNodeIndex) toNode.predecessors }
-    =	{ Graph
+	  toNode	 = { Node | toNode	 & predecessors = filter ((<>) fromNodeIndex) toNode.predecessors }
+	=	{ Graph
 		| graph
 		& nodes = put toNodeIndex toNode (put fromNodeIndex fromNode graph.nodes)
 		, edges = del (fromNodeIndex,toNodeIndex) graph.edges
@@ -100,10 +101,10 @@ setNodeData nodeIndex data graph
 	# mNode = getNode nodeIndex graph
 	| isNothing mNode = graph
 	# node = {Node | fromJust mNode & data = data}
-	= { Graph
-	  | graph
-	  & nodes = put nodeIndex node graph.nodes
-	  }
+	=	{ Graph
+		| graph
+		& nodes = put nodeIndex node graph.nodes
+		}
 
 trivialGraph :: n -> (NodeIndex, Graph n e)
 trivialGraph node = addNode node emptyGraph
@@ -112,10 +113,11 @@ isEmptyGraph :: !(Graph n e) -> Bool
 isEmptyGraph graph = isEmpty (toList graph.nodes)
 
 isTrivialGraph :: !(Graph n e) -> Bool
-isTrivialGraph graph = case toList graph.nodes of
-	[] = False
-	[_] = isEmpty (toList graph.edges)
-	_ = False
+isTrivialGraph graph =
+	case toList graph.nodes of
+		[]	-> False
+		[_]	-> isEmpty (toList graph.edges)
+		_	-> False
 
 nodeIndices :: !(Graph n e) -> [NodeIndex]
 nodeIndices graph = (map fst (toList graph.nodes))
@@ -139,16 +141,10 @@ edgeCount :: !(Graph n e) -> Int
 edgeCount graph = length (toList graph.edges)
 
 directPredecessors :: !NodeIndex !(Graph n e) -> [NodeIndex]
-directPredecessors nodeIndex graph = 
-	case get nodeIndex graph.nodes of
-		Nothing = []
-		Just n = n.predecessors
-		
+directPredecessors nodeIndex graph = maybe [] (\n -> n.predecessors) (get nodeIndex graph.nodes)
+
 directSuccessors :: !NodeIndex !(Graph n e) -> [NodeIndex]
-directSuccessors nodeIndex graph = 
-	case get nodeIndex graph.nodes of
-		Nothing = []
-		Just n = n.successors
+directSuccessors nodeIndex graph = maybe [] (\n -> n.successors) (get nodeIndex graph.nodes)
 
 predecessorEdges :: !EdgeIndex !(Graph n e) -> [EdgeIndex]
 predecessorEdges startEdge graph = tl (predecessors` [startEdge] [])
@@ -169,15 +165,9 @@ where
 		| isMember edge visited = successors` edges visited
 		| not (nodeExists toNode graph) = successors` edges visited
 		= successors` (edges ++ [(toNode,i) \\ i <- directSuccessors toNode graph]) [edge:visited]
-		
-		
-		
-		
+
 getNodeData :: !NodeIndex !(Graph n e) -> Maybe n
-getNodeData nodeIndex graph = 
-	case get nodeIndex graph.nodes of
-		Nothing = Nothing
-		Just n = Just n.Node.data
+getNodeData nodeIndex graph = fmap (\n -> n.Node.data) (get nodeIndex graph.nodes)
 
 getEdgeData :: !EdgeIndex !(Graph n e) -> Maybe e
 getEdgeData edgeIndex graph = get edgeIndex graph.edges
@@ -187,12 +177,11 @@ filterNodes pred graph = [ i \\ (i,n) <- toList graph.nodes | pred n.predecessor
 
 mapNodes :: !(a -> b) !(Graph a e) -> (Graph b e)
 mapNodes f graph = { Graph | graph & nodes = mapMap (fmap f) graph.nodes }
-		
+
 mapEdges :: !(a -> b) !(Graph n a) -> (Graph n b)
 mapEdges f graph = { Graph | graph & edges = mapMap f graph.edges }
 
-instance Functor Node
-where
+instance Functor Node where
 	fmap f node = { Node | node & data = f node.Node.data }
 
 mapMap :: (a -> b) (Map k a) -> (Map k b) | Eq k & Ord k
@@ -206,7 +195,7 @@ mapIndices updates { nodes, edges }
 	, edges = fromList [ ((fromJust (get k updMap),fromJust (get l updMap)),v) \\ ((k,l),v) <- toList edges ]
 	, lastId = maxList (map snd (toList updMap))
 	}
-	where	
+	where
 	updateNode :: (Map NodeIndex NodeIndex) (Node n) -> Node n
 	updateNode updMap { data, predecessors, successors } =
 		{ Node
@@ -214,7 +203,7 @@ mapIndices updates { nodes, edges }
 		, predecessors = [ fromJust (get k updMap) \\ k <- predecessors ]
 		, successors   = [ fromJust (get k updMap) \\ k <- successors   ]
 		}
-	
+
 //--------------------------------------------------------------------------------
 //Connectivity
 components :: !(Graph n e) -> [Graph n e]
@@ -227,7 +216,7 @@ where
 		# comp = nodeListToSubgraph comp graph
 		# (comps,graph`) = components` graph`
 		= ([comp:comps],graph`)
-		
+
 	findComponentNodes :: [Int] [Int] (Graph n e) -> ([Int], Graph n e)
 	findComponentNodes [] acc graph = (acc, graph)
 	findComponentNodes [n:ns] acc graph =
@@ -252,19 +241,25 @@ where
 								}
 
 isConnected :: !(Graph n e) -> Bool
-isConnected graph = case components graph of 
-	[]     = True
-	[c]    = True
-	_	   = False
+isConnected graph =
+	case components graph of
+		[]	-> True
+		[c]	-> True
+		_	-> False
+
+//--------------------------------------------------------------------------------
+// Get all nodes without successors
+leafNodes :: !(Graph n e) -> [NodeIndex]
+leafNodes graph = filterNodes (\_ successors _ -> isEmpty successors) graph
 
 //--------------------------------------------------------------------------------
 // For Two-terminal graphs
 sourceNode :: !(Graph n e) -> Maybe NodeIndex
 sourceNode graph = case filterNodes (\predecessors _ _ -> isEmpty predecessors) graph of
-	[n] = Just n
-	_   = Nothing
+	[n]	-> Just n
+	_	-> Nothing
 
 sinkNode :: !(Graph n e) -> Maybe NodeIndex
 sinkNode graph = case filterNodes (\_ successors _ -> isEmpty successors) graph of
-	[n] = Just n
-	_   = Nothing
+	[n]	-> Just n
+	_	-> Nothing
