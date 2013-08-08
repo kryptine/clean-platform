@@ -57,6 +57,9 @@ mapIndices :: ![(!NodeIndex,!NodeIndex)] !(Graph n e) -> Graph n e
 components :: !(Graph n e) -> [Graph n e]
 isConnected :: !(Graph n e) -> Bool
 
+//Leafs
+leafNodes :: !(Graph n e) -> [NodeIndex]
+
 //Two-terminal graphs
 sourceNode :: !(Graph n e) -> Maybe NodeIndex
 sinkNode :: !(Graph n e) -> Maybe NodeIndex

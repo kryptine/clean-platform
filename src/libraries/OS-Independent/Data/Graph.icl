@@ -259,6 +259,11 @@ isConnected graph = case components graph of
 	_	   = False
 
 //--------------------------------------------------------------------------------
+// Get all nodes without successors
+leafNodes :: !(Graph n e) -> [NodeIndex]
+leafNodes graph = filterNodes (\_ successors _ -> isEmpty successors) graph
+
+//--------------------------------------------------------------------------------
 // For Two-terminal graphs
 sourceNode :: !(Graph n e) -> Maybe NodeIndex
 sourceNode graph = case filterNodes (\predecessors _ _ -> isEmpty predecessors) graph of
