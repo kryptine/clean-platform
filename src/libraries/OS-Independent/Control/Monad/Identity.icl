@@ -17,7 +17,7 @@ instance Applicative Identity where
   (<*>) idf idx = Identity (runIdentity idf (runIdentity idx))
 
 instance Monad Identity where
-  return a = Identity a
+  //return a = Identity a
   (>>=) m k = k (runIdentity m)
 
 instance MonadFix Identity where
