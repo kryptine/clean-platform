@@ -16,8 +16,8 @@ from StdOverloaded	import class ==, class <
 * stored in the mapping. For example "Map Int String" is a mapping
 * "from" integers "to" strings.
 */
-:: Map k v	= MNode !(Map k v) !k !Int v !(Map k v)
-			| MLeaf
+:: Map k v	= MLeaf
+            | MNode !(Map k v) !k !Int v !(Map k v)
 
 //Basic functions
 
