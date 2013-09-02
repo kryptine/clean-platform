@@ -106,7 +106,6 @@ instance Alternative (Parser s t) where
   (<|>) fa fa`  = alternative fa fa`
 
 instance Monad (Parser s t) where
-  return x       = yield x
   (>>=) ma a2mb  = ma <&> a2mb
 
 :: Gram f a = Gram [PAlt f a] (Maybe a)
@@ -174,7 +173,6 @@ instance Alternative (Gram f) | Functor f where
   (<|>) (Gram ps pe) (Gram qs qe) = Gram (ps ++ qs) (pe <|> qe)
 
 instance Monad (Gram f) | Functor f where
-  return a = Gram [] (Just a)
   (>>=) (Gram lb mb) b2g_a =
     let bindto :: (PAlt f b) (b -> Gram f a) -> PAlt f a | Functor f
         bindto (Seq f_c2b g_c) b2g_a = Bind f_c2b (\c2b -> c2b <$> g_c >>= b2g_a)
