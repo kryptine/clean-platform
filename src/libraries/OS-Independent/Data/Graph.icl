@@ -9,6 +9,7 @@ import StdTuple
 import Data.Map
 import Data.Maybe
 import Data.Functor
+import Text.JSON
 
 :: Graph n e = 
 	{ nodes		:: !Map NodeIndex (Node n)
@@ -21,6 +22,9 @@ import Data.Functor
 	, predecessors	:: ![NodeIndex]
 	, successors 	:: ![NodeIndex]
 	}
+
+derive JSONEncode Node
+derive JSONDecode Node
 
 emptyGraph :: Graph n e
 emptyGraph = 
@@ -274,3 +278,15 @@ sinkNode :: !(Graph n e) -> Maybe NodeIndex
 sinkNode graph = case filterNodes (\_ successors _ -> isEmpty successors) graph of
 	[n] = Just n
 	_   = Nothing
+
+//--------------------------------------------------------------------------------
+// Exporting graphs
+graphToJSON :: !(Graph n e) -> JSONNode | JSONEncode{|*|} n & JSONEncode{|*|} e
+graphToJSON g = JSONObject [
+		  ("nodes", nodesToJSON g.nodes)
+		, ("edges", edgesToJSON g.edges)
+		, ("lastId", JSONInt g.lastId)
+	]
+	where
+		nodesToJSON ns = JSONObject (foldrWithKey (\k v acc -> [(toString k, toJSON v) : acc]) [] ns)
+		edgesToJSON es = JSONArray (foldrWithKey (\k v acc -> [JSONArray [toJSON k, toJSON v] : acc]) [] es)

@@ -2,6 +2,8 @@ definition module Data.Graph
 
 from Data.Maybe import ::Maybe
 from Data.Map import :: Map
+from Text.JSON import generic JSONEncode, generic JSONDecode, :: JSONNode
+
 //:: Graph n e
 :: Graph n e = 
 	{ nodes		:: !Map NodeIndex (Node n)
@@ -10,13 +12,16 @@ from Data.Map import :: Map
 	}
 
 :: Node n =
-	{ data			:: n
-	, predecessors	:: ![NodeIndex]
-	, successors 	:: ![NodeIndex]
+	{ data         :: n
+	, predecessors :: ![NodeIndex]
+	, successors   :: ![NodeIndex]
 	}
 
 :: NodeIndex :== Int
-:: EdgeIndex :== (!NodeIndex,!NodeIndex)
+:: EdgeIndex :== (!NodeIndex, !NodeIndex)
+
+derive JSONEncode Node
+derive JSONDecode Node
 
 //Initialization
 emptyGraph :: Graph n e
@@ -63,3 +68,7 @@ leafNodes :: !(Graph n e) -> [NodeIndex]
 //Two-terminal graphs
 sourceNode :: !(Graph n e) -> Maybe NodeIndex
 sinkNode :: !(Graph n e) -> Maybe NodeIndex
+
+// Exporting graphs
+graphToJSON :: !(Graph n e) -> JSONNode | JSONEncode{|*|} n & JSONEncode{|*|} e
+
