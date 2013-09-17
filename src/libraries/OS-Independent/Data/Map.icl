@@ -105,6 +105,12 @@ where
 		# h					= (max hleft hright) + 1
 		= (h, left, right)
 
+foldrWithKey :: (k v b -> b) b (Map k v) -> b | Eq k & Ord k
+foldrWithKey f z m = go z m
+  where
+    go z` MLeaf             = z`
+    go z` (MNode l k _ v r) = go (f k v (go z` r)) l
+
 //Conversion functions
 toList :: !w:(Map k u:v)	-> x:[y:(!k,u:v)] , [w y <= u, x <= y, w <= x]
 toList m = toList` m []

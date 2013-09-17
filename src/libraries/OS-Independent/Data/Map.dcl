@@ -75,6 +75,8 @@ del			:: !k !w:(Map k v) -> x:(Map k v) | Eq k & Ord k, [ w <= x]
 */
 delU		:: !k !w:(Map k u:v) -> x:(Maybe u:v, !y:(Map k u:v)) | Eq k & Ord k, [ w y <= u, x <= y, w <= y]
 
+foldrWithKey :: (k v b -> b) b (Map k v) -> b | Eq k & Ord k
+
 //Conversion functions
 
 /**
