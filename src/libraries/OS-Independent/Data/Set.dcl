@@ -55,7 +55,7 @@ isSubsetOf :: (Set a) (Set a) -> Bool | < a & == a
 isProperSubsetOf :: (Set a) (Set a) -> Bool | < a & == a
 
 // The empty set.
-empty     :: Set a
+newSet :: Set a
 // Create a singleton set.
 singleton :: a -> Set a
 // Insert an element in a set.

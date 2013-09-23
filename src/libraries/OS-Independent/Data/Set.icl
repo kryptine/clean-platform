@@ -13,9 +13,7 @@ compare x y = if (x<y) LT (if (x>y) GT EQ)
  * A set of values @a@.
  */
 :: Set a = Tip 
-         | Bin !Size a !(Set a) !(Set a) 
-
-:: Size :== Int
+         | Bin !Int a !(Set a) !(Set a) 
 
 /*--------------------------------------------------------------------
  * Query
@@ -55,9 +53,12 @@ notMember x t = not (member x t)
  *--------------------------------------------------------------------*/
  
 // | /O(1)/. The empty set.
-empty  :: Set a
+empty :: Set a
 empty
   = Tip
+
+newSet :: Set a
+newSet = empty
 
 // | /O(1)/. Create a singleton set.
 singleton :: a -> Set a
