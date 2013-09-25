@@ -1,6 +1,7 @@
 implementation module Data.Functor.Identity
 
 from Data.Functor import class Functor
+from Control.Applicative import class Applicative
 from Control.Monad import class Monad
 
 :: Identity a = Identity a
@@ -16,6 +17,5 @@ instance Applicative Identity where
   (<*>) (Identity f) (Identity x) = Identity (f x)
 
 instance Monad Identity where
-    return a   = Identity a
     (>>=) (Identity m) k  = k m
 
