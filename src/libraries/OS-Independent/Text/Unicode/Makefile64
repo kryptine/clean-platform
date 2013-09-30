@@ -1,0 +1,18 @@
+GCC=gcc -m64
+
+all: clean unicode install
+
+unicode: bsearch.o WCsubst.o
+
+install:
+	cp bsearch.o "Clean System Files"
+	cp WCsubst.o "Clean System Files"
+
+clean: 
+	rm -f *.o
+
+bsearch.o:
+	$(GCC) -c bsearch.c
+
+WCsubst.o:
+	$(GCC) -c WCsubst.c
