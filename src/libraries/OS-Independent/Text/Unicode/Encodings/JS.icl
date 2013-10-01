@@ -9,6 +9,9 @@ import qualified Text.Unicode.UChar
 
 :: JSLit = JSLit !String
 
+toJSLiteral :: !UString -> String
+toJSLiteral ustr = encodeString ustr
+
 instance fromUnicode JSLit
 where
 	fromUnicode :: UString -> JSLit
