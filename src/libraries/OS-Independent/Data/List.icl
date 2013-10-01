@@ -11,11 +11,6 @@ head xs = hd xs
 tail :: !u:[.a] -> u:[.a]
 tail xs = tl xs
 
-lastEl :: ![.a] -> .a
-lastEl []     = abort "lastEl on empty list"
-lastEl [x]    = x
-lastEl [_:xs] = lastEl xs
-
 isnull :: ![.a] -> Bool
 isnull xs = isEmpty xs
 
