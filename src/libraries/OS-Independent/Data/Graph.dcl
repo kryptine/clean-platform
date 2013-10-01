@@ -24,7 +24,7 @@ derive JSONEncode Node
 derive JSONDecode Node
 
 //Initialization
-emptyGraph :: Graph n e
+emptyGraph :: .(Graph n e)
 trivialGraph :: n -> (NodeIndex, Graph n e)
 
 //Query

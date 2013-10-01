@@ -26,7 +26,7 @@ import Text.JSON
 derive JSONEncode Node
 derive JSONDecode Node
 
-emptyGraph :: Graph n e
+emptyGraph :: .(Graph n e)
 emptyGraph = 
 	{ Graph
 	| nodes = newMap
