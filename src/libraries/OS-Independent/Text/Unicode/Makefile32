@@ -1,4 +1,4 @@
-GCC=gcc -m64
+GCC=gcc -m32
 
 all: clean unicode install
 
