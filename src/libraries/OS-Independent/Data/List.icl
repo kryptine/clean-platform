@@ -1,6 +1,7 @@
 implementation module Data.List
 
 import Data.Maybe, StdTuple, StdBool, StdEnum, StdFunc, StdList, StdOrdList, Data.Functor, GenEq
+from StdMisc import abort
 
 // Haskell Data.List compat
 
@@ -9,6 +10,11 @@ head xs = hd xs
 
 tail :: !u:[.a] -> u:[.a]
 tail xs = tl xs
+
+lastEl :: ![.a] -> .a
+lastEl []     = abort "lastEl on empty list"
+lastEl [x]    = x
+lastEl [_:xs] = lastEl xs
 
 isnull :: ![.a] -> Bool
 isnull xs = isEmpty xs
@@ -226,6 +232,13 @@ zipWith :: (.a -> .(.b -> .h)) ![.a] [.b] -> [.h]
 zipWith z [a:as] [b:bs]
                    = [ z a b : zipWith z as bs]
 zipWith _ _ _ = []
+
+zipWithSt :: (.a -> .(.b -> (.st -> .(.h, .st)))) ![.a] [.b] .st -> .([.h], .st)
+zipWithSt z [a:as] [b:bs] st
+  # (x, st)  = z a b st
+  # (xs, st) = zipWithSt z as bs st
+  = ([x : xs], st)
+zipWithSt _ _ _ st = ([], st)
 
 zipWith3 :: (.a -> .(.b -> .(.c -> .h))) ![.a] [.b] [.c] -> [.h]
 zipWith3 z [a:as] [b:bs] [c:cs]

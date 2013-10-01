@@ -6,6 +6,7 @@ import StdList, GenEq
 
 head            :: ![.a] -> .a
 tail            :: !u:[.a] -> u:[.a]
+lastEl          :: ![.a] -> .a
 isnull          :: ![.a] -> Bool
 unzip3          :: ![(.a,.b,.c)] -> ([.a],[.b],[.c])
 unzip4          :: ![(.a,.b,.c,.d)] -> ([.a],[.b],[.c],[.d])
@@ -51,6 +52,7 @@ zip3            :: ![.a] [.b] [.c] -> [(.a,.b,.c)]
 zip4            :: ![.a] [.b] [.c] [.d] -> [(.a,.b,.c,.d)]
 zip5            :: ![.a] [.b] [.c] [.d] [.e] -> [(.a,.b,.c,.d,.e)]
 zipWith         :: (.a -> .(.b -> .h)) ![.a] [.b] -> [.h]
+zipWithSt       :: (.a -> .(.b -> (.st -> .(.h, .st)))) ![.a] [.b] .st -> .([.h], .st)
 zipWith3        :: (.a -> .(.b -> .(.c -> .h))) ![.a] [.b] [.c] -> [.h]
 zipWith4        :: (.a -> .(.b -> .(.c -> .(.d -> .h)))) ![.a] [.b] [.c] [.d] -> [.h]
 zipWith5        :: (.a -> .(.b -> .(.c -> .(.d -> .(.e -> .h)))))
