@@ -1,12 +1,12 @@
 implementation module Text.Unicode.UChar
 
-import StdEnum, StdClass, StdBool
+import StdEnum, StdClass, StdBool, StdFunc
+import Text.Unicode.UCharImpl
 
 import code from "bsearch."
 import code from "WCsubst."
 
-// Sysnonym type is not quite good here... causes every kind of problems with toInt, fromInt ...
-:: UChar = UChar !Int
+:: UChar :== Int
 
 :: GeneralCategory
         = UppercaseLetter       // ^ Lu: Letter, Uppercase
@@ -195,7 +195,7 @@ isSeparator c = case generalCategory c of
 // title-case letters, plus letters of caseless scripts and modifiers letters).
 // This function is equivalent to 'Data.Char.isLetter'.
 isAlpha :: UChar -> Bool
-isAlpha (UChar c) = not (iswalpha c == 0)
+isAlpha c = not (iswalpha c == 0)
 
 // | Selects alphabetic or numeric digit Unicode characters.
 //
@@ -203,27 +203,27 @@ isAlpha (UChar c) = not (iswalpha c == 0)
 // function but not by 'isDigit'.  Such digits may be part of identifiers
 // but are not used by the printer and reader to represent numbers.
 isAlphaNum  :: UChar -> Bool
-isAlphaNum (UChar c) = not (iswalnum c == 0)
+isAlphaNum c = not (iswalnum c == 0)
 
 // | Selects the first 128 characters of the Unicode character set,
 // corresponding to the ASCII character set.
 isAscii :: UChar -> Bool
-isAscii (UChar c) = c < 0x80
+isAscii c = c < 0x80
 
 // | Selects the first 256 characters of the Unicode character set,
 // corresponding to the ISO 8859-1 (Latin-1) character set.
 isLatin1 :: UChar -> Bool
-isLatin1 (UChar c) = c <= 0xff
+isLatin1 c = c <= 0xff
 
 // | Selects ASCII lower-case letters,
 // i.e. characters satisfying both 'isAscii' and 'isLower'.
 isAsciiLower :: UChar -> Bool
-isAsciiLower (UChar c) =  c >= fromChar 'a' && c <= fromChar 'z'
+isAsciiLower c =  c >= fromChar 'a' && c <= fromChar 'z'
 
 // | Selects ASCII upper-case letters,
 // i.e. characters satisfying both 'isAscii' and 'isUpper'.
 isAsciiUpper :: UChar -> Bool
-isAsciiUpper (UChar c) = c >= fromChar 'A' && c <= fromChar 'Z'
+isAsciiUpper c = c >= fromChar 'A' && c <= fromChar 'Z'
 
 // | Returns 'True' for any Unicode space character, and the control
 // characters @\\t@, @\\n@, @\\r@, @\\f@, @\\v@.
@@ -231,7 +231,7 @@ isAsciiUpper (UChar c) = c >= fromChar 'A' && c <= fromChar 'Z'
 // Done with explicit equalities both for efficiency, and to avoid a tiresome
 // recursion with GHC.List elem
 isSpace :: UChar -> Bool
-isSpace (UChar c)
+isSpace c
 		  = c == fromChar ' '     ||
             c == fromChar '\t'    ||
             c == fromChar '\n'    ||
@@ -244,76 +244,80 @@ isSpace (UChar c)
 // | Selects control characters, which are the non-printing characters of
 // the Latin-1 subset of Unicode.
 isControl :: UChar -> Bool                 
-isControl (UChar c) = not (iswcntrl c == 0)
+isControl c = not (iswcntrl c == 0)
 
 // | Selects printable Unicode characters
 // (letters, numbers, marks, punctuation, symbols and spaces).
 isPrint :: UChar -> Bool
-isPrint (UChar c) = not (iswprint c == 0)
+isPrint c = not (iswprint c == 0)
 
 // | Selects upper-case or title-case alphabetic Unicode characters (letters).
 // Title case is used by a small number of letter ligatures like the
 // single-character form of /Lj/.
 isUpper :: UChar -> Bool
-isUpper (UChar c) = not (iswupper c == 0)
+isUpper c = not (iswupper c == 0)
 
 // | Selects lower-case alphabetic Unicode characters (letters).
 isLower :: UChar -> Bool
-isLower (UChar c) = not (iswlower c == 0)
+isLower c = not (iswlower c == 0)
 
 // | Selects ASCII digits, i.e. @\'0\'@..@\'9\'@.
 isDigit :: UChar -> Bool
-isDigit (UChar c) = c >= fromChar '0' && c <= fromChar '9'
+isDigit c = c >= fromChar '0' && c <= fromChar '9'
 
 // | Selects ASCII octal digits, i.e. @\'0\'@..@\'7\'@.
 isOctDigit :: UChar -> Bool
-isOctDigit (UChar c) =  c >= fromChar '0' && c <= fromChar '7'
+isOctDigit c =  c >= fromChar '0' && c <= fromChar '7'
 
 // | Selects ASCII hexadecimal digits,
 // i.e. @\'0\'@..@\'9\'@, @\'a\'@..@\'f\'@, @\'A\'@..@\'F\'@.
 isHexDigit :: UChar -> Bool
-isHexDigit o=:(UChar c) =  
-		isDigit o || c >= fromChar 'A' && c <= fromChar 'F' ||
+isHexDigit c =  
+		isDigit c || c >= fromChar 'A' && c <= fromChar 'F' ||
                      c >= fromChar 'a' && c <= fromChar 'f'
 
 // | Convert a letter to the corresponding lower-case letter, if any.
 // Any other character is returned unchanged.
 toLower :: UChar -> UChar
-toLower (UChar c) = fromInt (towlower c)
+toLower c = towlower c
 
 // | Convert a letter to the corresponding upper-case letter, if any.
 // Any other character is returned unchanged.
 toUpper :: UChar -> UChar
-toUpper (UChar c) = fromInt (towupper c)
+toUpper c = towupper c
 
 // | Convert a letter to the corresponding title-case or upper-case
 // letter, if any.  (Title case differs from upper case only for a small
 // number of ligature letters.)
 // Any other character is returned unchanged.
 toTitle :: UChar -> UChar
-toTitle (UChar c) = fromInt (towtitle c)
+toTitle c =  towtitle c
 
 instance ==	UChar
 where
-	(==) (UChar x) (UChar y) = x == y
+	(==) a b :== eq_int a b
 
 instance < UChar
 where
-	(<) (UChar x) (UChar y) = x < y // TODO: correct?
+	(<) x y :== lt_int x y // TODO: correct?
 
 instance fromInt UChar
 where 
-	fromInt i = UChar  i
-		
+	fromInt i :== i
+
 instance fromChar UChar
 where
-	fromChar c = UChar (toInt c)
+	fromChar c :== to_int_from_char c
 
 instance toChar UChar
 where
-	toChar (UChar c) = fromInt c
+	toChar i :== to_char_from_int i
 
 instance toInt UChar
 where
-	toInt (UChar c) = c
-
+	toInt i :== i
+	
+	
+	
+	
+	
