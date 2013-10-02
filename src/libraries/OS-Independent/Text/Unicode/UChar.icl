@@ -1,7 +1,6 @@
 implementation module Text.Unicode.UChar
 
 import StdEnum, StdClass, StdBool, StdFunc
-import Text.Unicode.UCharImpl
 
 import code from "bsearch."
 import code from "WCsubst."
@@ -295,11 +294,15 @@ toTitle c =  towtitle c
 
 instance ==	UChar
 where
-	(==) a b :== eq_int a b
+	(==) a b = code inline {
+			eqI
+	}
 
-instance < UChar
+instance < UChar // TODO: correct?
 where
-	(<) x y :== lt_int x y // TODO: correct?
+	(<) x y = code inline { 
+			ltI
+	} 
 
 instance fromInt UChar
 where 
@@ -307,17 +310,17 @@ where
 
 instance fromChar UChar
 where
-	fromChar c :== to_int_from_char c
-
+	fromChar c = code inline {
+			CtoI
+	}
+	
 instance toChar UChar
 where
-	toChar i :== to_char_from_int i
+	toChar i = code inline {
+			ItoC
+	}
 
 instance toInt UChar
 where
 	toInt i :== i
-	
-	
-	
-	
 	
