@@ -283,7 +283,10 @@ deleteFirstsBy :: (a -> .(b -> .Bool)) -> u:(v:[b] -> w:(.[a] -> x:[b])), [w <= 
 deleteFirstsBy eq       =  foldl (flip (deleteBy eq))
 
 difference :: u:(v:[a] -> w:(.[a] -> x:[a])) | == a, [w <= u,w v <= x]
-difference                    =  foldl (flip delete)
+difference                    =  differenceBy (==)
+
+differenceBy :: (a -> a -> .Bool) u:[a] .[a] -> v:[a], [u <= v]
+differenceBy eq as bs             =  foldl (flip (deleteBy eq)) as bs
 
 intersect :: u:(.[a] -> v:(.[a] -> .[a])) | == a, [v <= u]
 intersect               =  intersectBy (==)
