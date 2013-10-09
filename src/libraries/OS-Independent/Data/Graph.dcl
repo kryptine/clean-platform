@@ -68,7 +68,3 @@ leafNodes :: !.(Graph n e) -> [NodeIndex]
 //Two-terminal graphs
 sourceNode :: !.(Graph n e) -> Maybe NodeIndex
 sinkNode :: !.(Graph n e) -> Maybe NodeIndex
-
-// Exporting graphs
-graphToJSON :: !.(Graph n e) -> JSONNode | JSONEncode{|*|} n & JSONEncode{|*|} e
-
