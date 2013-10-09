@@ -1,7 +1,8 @@
 implementation module Data.Map
 
 import StdEnv
-import Data.Maybe
+from GenEq import generic gEq
+import Data.Maybe, Text.JSON
 
 //Create function
 newMap :: w:(Map k u:v), [ w <= u]
@@ -199,3 +200,7 @@ where
 		# ph		= (max rh xh) + 1
 		= MNode (MNode a rk rh rv b) pk ph pv (MNode c xk xh xv d)
 	rightrightRotate node = node
+
+derive JSONEncode Map
+derive JSONDecode Map
+derive gEq Map

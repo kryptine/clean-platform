@@ -8,6 +8,8 @@ definition module Data.Map
 from Data.Maybe		import :: Maybe
 from StdClass		import class Eq, class Ord
 from StdOverloaded	import class ==, class <
+from Text.JSON      import generic JSONEncode, generic JSONDecode, :: JSONNode
+from GenEq import generic gEq
 
 /**
 * The abstract Map type provides the mapping.
@@ -114,3 +116,7 @@ putList		:: !w:[x:(!k,u:v)] !w:(Map k u:v) -> y:(Map k u:v) | Eq k & Ord k, [x y
 * @return The modified mapping with the values/keys removed
 */
 delList 	:: ![k] !w:(Map k u:v) -> y:(Map k u:v) | Eq k & Ord k, [w y <= u, w <= y]
+
+derive JSONEncode Map
+derive JSONDecode Map
+derive gEq Map
