@@ -106,7 +106,7 @@ where
 		# h					= (max hleft hright) + 1
 		= (h, left, right)
 
-foldrWithKey :: (k v b -> b) b (Map k v) -> b | Eq k & Ord k
+foldrWithKey :: (k v u:b -> u:b) u:b (Map k v) -> u:b | Eq k & Ord k
 foldrWithKey f z m = go z m
   where
     go z` MLeaf             = z`
