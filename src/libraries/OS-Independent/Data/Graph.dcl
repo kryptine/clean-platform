@@ -2,7 +2,7 @@ definition module Data.Graph
 
 from Data.Maybe import ::Maybe
 from Data.Map import :: Map
-from Text.JSON import generic JSONEncode, generic JSONDecode, :: JSONNode
+from Text.JSON import :: JSONNode
 
 //:: Graph n e
 :: Graph n e = 
@@ -19,9 +19,6 @@ from Text.JSON import generic JSONEncode, generic JSONDecode, :: JSONNode
 
 :: NodeIndex :== Int
 :: EdgeIndex :== (!NodeIndex, !NodeIndex)
-
-derive JSONEncode Graph, Node
-derive JSONDecode Graph, Node
 
 //Initialization
 emptyGraph :: .(Graph n e)
@@ -68,3 +65,6 @@ leafNodes :: !.(Graph n e) -> [NodeIndex]
 //Two-terminal graphs
 sourceNode :: !.(Graph n e) -> Maybe NodeIndex
 sinkNode :: !.(Graph n e) -> Maybe NodeIndex
+
+// Serialization to JSON
+graphToJSON :: !.(Graph n e) -> JSONNode

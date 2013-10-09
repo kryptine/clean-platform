@@ -278,3 +278,8 @@ sinkNode :: !.(Graph n e) -> Maybe NodeIndex
 sinkNode graph = case filterNodes (\_ successors _ -> isEmpty successors) graph of
 	[n] = Just n
 	_   = Nothing
+
+//--------------------------------------------------------------------------------
+// For Two-terminal graphs
+graphToJSON :: !.(Graph n e) -> JSONNode
+graphToJSON g = toJSON g
