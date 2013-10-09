@@ -20,8 +20,8 @@ from Text.JSON import generic JSONEncode, generic JSONDecode, :: JSONNode
 :: NodeIndex :== Int
 :: EdgeIndex :== (!NodeIndex, !NodeIndex)
 
-derive JSONEncode Node
-derive JSONDecode Node
+derive JSONEncode Graph, Node
+derive JSONDecode Graph, Node
 
 //Initialization
 emptyGraph :: .(Graph n e)

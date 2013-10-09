@@ -23,8 +23,8 @@ import Text.JSON
 	, successors 	:: ![NodeIndex]
 	}
 
-derive JSONEncode Node
-derive JSONDecode Node
+derive JSONEncode Graph, Node
+derive JSONDecode Graph, Node
 
 emptyGraph :: .(Graph n e)
 emptyGraph = 
