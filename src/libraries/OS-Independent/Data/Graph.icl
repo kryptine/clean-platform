@@ -281,5 +281,5 @@ sinkNode graph = case filterNodes (\_ successors _ -> isEmpty successors) graph 
 
 //--------------------------------------------------------------------------------
 // For Two-terminal graphs
-graphToJSON :: !.(Graph n e) -> JSONNode
+graphToJSON :: !.(Graph n e) -> JSONNode | JSONEncode{|*|} n & JSONEncode{|*|} e
 graphToJSON g = toJSON g

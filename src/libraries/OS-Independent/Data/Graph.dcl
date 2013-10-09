@@ -2,7 +2,7 @@ definition module Data.Graph
 
 from Data.Maybe import ::Maybe
 from Data.Map import :: Map
-from Text.JSON import :: JSONNode
+from Text.JSON import :: JSONNode, generic JSONEncode, generic JSONDecode
 
 //:: Graph n e
 :: Graph n e = 
@@ -67,4 +67,4 @@ sourceNode :: !.(Graph n e) -> Maybe NodeIndex
 sinkNode :: !.(Graph n e) -> Maybe NodeIndex
 
 // Serialization to JSON
-graphToJSON :: !.(Graph n e) -> JSONNode
+graphToJSON :: !.(Graph n e) -> JSONNode | JSONEncode{|*|} n & JSONEncode{|*|} e
