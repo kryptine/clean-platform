@@ -55,6 +55,10 @@ mapNodes :: !(a -> b) !.(Graph a e) -> .(Graph b e)
 mapEdges :: !(a -> b) !.(Graph n a) -> .(Graph n b)
 mapIndices :: ![(!NodeIndex,!NodeIndex)] !.(Graph n e) -> .(Graph n e)
 
+//Folding
+foldrNodes :: (NodeIndex (Node n) .a -> .a) .a .(Graph n e) -> .a
+foldrEdges :: (EdgeIndex e .a -> .a) .a .(Graph n e) -> .a
+
 //Connectivity
 components :: !.(Graph n e) -> .[.(Graph n e)]
 isConnected :: !.(Graph n e) -> Bool

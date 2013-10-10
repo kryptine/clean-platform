@@ -221,6 +221,14 @@ mapIndices updates { nodes, edges }
 		}
 	
 //--------------------------------------------------------------------------------
+//Folding
+foldrNodes :: (NodeIndex (Node n) .a -> .a) .a .(Graph n e) -> .a
+foldrNodes f b g = foldrWithKey f b g.nodes
+
+foldrEdges :: (EdgeIndex e .a -> .a) .a .(Graph n e) -> .a
+foldrEdges f b g = foldrWithKey f b g.edges
+
+//--------------------------------------------------------------------------------
 //Connectivity
 components :: !.(Graph n e) -> .[.Graph n e]
 components graph = fst (components` graph)
