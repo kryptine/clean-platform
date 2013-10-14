@@ -4,8 +4,11 @@ import StdBool
 import StdFunc
 import StdMisc
 import Data.Functor
+from GenEq import generic gEq
 
 :: Maybe a = Nothing | Just a
+
+derive gEq Maybe
 
 instance == (Maybe x) | == x where
 	(==) Nothing  maybe	= case maybe of

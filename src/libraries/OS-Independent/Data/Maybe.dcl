@@ -2,12 +2,15 @@ definition module Data.Maybe
 
 from StdOverloaded import class ==(..)
 from Data.Functor import class Functor
+from GenEq import generic gEq
 
 /**
  * The Maybe type represents an optional value by providing a constructor 
  * for no value (Nothing) and a constructor for just a value (Just).
  */
 :: Maybe a = Nothing | Just a
+
+derive gEq Maybe
 
 /** 
  * Equality on Maybes:

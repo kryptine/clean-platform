@@ -3,6 +3,7 @@ definition module Data.Graph
 from Data.Maybe import ::Maybe
 from Data.Map import :: Map
 from Text.JSON import :: JSONNode, generic JSONEncode, generic JSONDecode
+from GenEq import generic gEq
 
 //:: Graph n e
 :: Graph n e = 
@@ -19,6 +20,10 @@ from Text.JSON import :: JSONNode, generic JSONEncode, generic JSONDecode
 
 :: NodeIndex :== Int
 :: EdgeIndex :== (!NodeIndex, !NodeIndex)
+
+derive JSONEncode Graph, Node
+derive JSONDecode Graph, Node
+derive gEq Graph, Node
 
 //Initialization
 emptyGraph :: .(Graph n e)
@@ -69,6 +74,3 @@ leafNodes :: !.(Graph n e) -> [NodeIndex]
 //Two-terminal graphs
 sourceNode :: !.(Graph n e) -> Maybe NodeIndex
 sinkNode :: !.(Graph n e) -> Maybe NodeIndex
-
-// Serialization to JSON
-graphToJSON :: !.(Graph n e) -> JSONNode | JSONEncode{|*|} n & JSONEncode{|*|} e

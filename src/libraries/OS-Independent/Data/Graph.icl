@@ -10,6 +10,7 @@ import Data.Map
 import Data.Maybe
 import Data.Functor
 import Text.JSON
+from GenEq import generic gEq
 
 :: Graph n e = 
 	{ nodes		:: !Map NodeIndex (Node n)
@@ -25,6 +26,7 @@ import Text.JSON
 
 derive JSONEncode Graph, Node
 derive JSONDecode Graph, Node
+derive gEq Graph, Node
 
 emptyGraph :: .(Graph n e)
 emptyGraph = 
@@ -286,8 +288,3 @@ sinkNode :: !.(Graph n e) -> Maybe NodeIndex
 sinkNode graph = case filterNodes (\_ successors _ -> isEmpty successors) graph of
 	[n] = Just n
 	_   = Nothing
-
-//--------------------------------------------------------------------------------
-// For Two-terminal graphs
-graphToJSON :: !.(Graph n e) -> JSONNode | JSONEncode{|*|} n & JSONEncode{|*|} e
-graphToJSON g = toJSON g
