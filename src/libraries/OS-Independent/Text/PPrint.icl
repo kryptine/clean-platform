@@ -223,19 +223,14 @@ real r         = text (toString r)
  * ----------------------------------------------------------- */
 class Pretty a where
   pretty        :: a -> Doc
-  prettyList    :: [a] -> Doc
-  prettyList    xs = list (map pretty xs)
 
 instance Pretty [a] | Pretty a where
   pretty :: [a] -> Doc | Pretty a
-  pretty        xs = prettyList xs
+  pretty        xs = list (map pretty xs)
 
 instance Pretty Doc where
   pretty :: Doc -> Doc
   pretty        doc = doc
-
-//	instance Pretty () where
-//	  pretty ()     = text "()"
 
 instance Pretty Bool where
   pretty :: Bool -> Doc
@@ -244,7 +239,6 @@ instance Pretty Bool where
 instance Pretty Char where
   pretty :: Char -> Doc
   pretty c      = char c
-//  prettyList s  = string s
 
 instance Pretty Int where
   pretty :: Int -> Doc
