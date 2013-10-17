@@ -106,11 +106,14 @@ where
 		# h					= (max hleft hright) + 1
 		= (h, left, right)
 
-foldrWithKey :: (k v u:b -> u:b) u:b (Map k v) -> u:b | Eq k & Ord k
+foldrWithKey :: (k v u:b -> u:b) u:b (Map k v) -> u:b
 foldrWithKey f z m = go z m
   where
     go z` MLeaf             = z`
     go z` (MNode l k _ v r) = go (f k v (go z` r)) l
+
+keys :: (Map k a) -> [k]
+keys m = foldrWithKey (\k _ ks -> [k : ks]) [] m
 
 //Conversion functions
 toList :: !w:(Map k u:v)	-> x:[y:(!k,u:v)] , [w y <= u, x <= y, w <= x]
