@@ -6,6 +6,7 @@ definition module Text.StringAppender
 */
 
 import StdString
+import Data.Error, System.File
 
 :: StringAppender
 
@@ -31,6 +32,14 @@ append :: StringAppender a -> StringAppender | toString a
 * @return A StringAppender instance
 */
 joinList :: !String [a] StringAppender -> StringAppender | toString a
+
+/**
+* Write StringAppender into a file
+* @param A StringAppender instance
+* @param The File
+* @return (Error if any, the File)
+*/
+intoFile :: !StringAppender !*File -> (!MaybeError FileError Void, !*File)
 
 /**
 * Combinator to easily append values of different type to the stream.
