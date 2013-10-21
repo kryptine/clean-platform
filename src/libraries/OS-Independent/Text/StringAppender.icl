@@ -1,6 +1,7 @@
 implementation module StringAppender
 
-import StdString, StdArray, StdInt
+import StdString, StdArray, StdInt, StdFile, StdList
+import Error, File, Void
 
 :: StringAppender = { elements 		:: [String]
 		 		    , full_length 	:: Int
@@ -29,7 +30,17 @@ joinList :: !String [a] StringAppender -> StringAppender | toString a
 joinList sep [t] a = append a t
 joinList sep [t:ts] a = joinList sep ts (append (append a t) sep)
 joinList sep [] a = a	
-	
+
+intoFile :: !StringAppender !*File -> (!MaybeError FileError Void, !*File)
+intoFile {elements} file = foldl wrt (Ok Void, file) (reverse elements)
+where
+	wrt (Ok Void, file) str 
+		# file = fwrites str file
+		# (error, file) = ferror file
+		| error
+			= (Error IOError, file)
+			= (Ok Void, file)  
+		
 instance toString StringAppender			   
 where
 	toString appender = concat_rev appender.elements appender.full_length
