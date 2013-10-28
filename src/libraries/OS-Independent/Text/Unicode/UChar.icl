@@ -306,7 +306,7 @@ where
 
 instance fromInt UChar
 where 
-	fromInt i :== i
+	fromInt i = i
 
 instance fromChar UChar
 where
@@ -322,5 +322,5 @@ where
 
 instance toInt UChar
 where
-	toInt i :== i
+	toInt i = i
 	
