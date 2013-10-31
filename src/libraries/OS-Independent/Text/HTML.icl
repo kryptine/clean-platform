@@ -516,8 +516,7 @@ writeEmptyTag name attrs dest dest_i
 
 writeRootTag :: [HtmlAttr] [HtmlTag] !*{#Char} !Int -> (!*{#Char},!Int)
 writeRootTag attrs tags dest dest_i
-	# (dest,dest_i) = copyChars "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">" 0 False dest dest_i
-	# (dest,dest_i) = copyChars "<html xmlns=\"http://www.w3.org/1999/xhtml\"" 0 False dest dest_i
+	# (dest,dest_i) = copyChars "<html" 0 False dest dest_i
 	# (dest, dest_i) = serializeAttrs attrs dest dest_i
 	# dest = {dest & [dest_i] = '>'}
 	# dest_i = dest_i + 1
