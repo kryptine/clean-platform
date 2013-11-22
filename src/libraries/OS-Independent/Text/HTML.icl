@@ -11,7 +11,7 @@ where
 		# tagstring = fst (serializeTag tag tagstring 0)	//Serialize the html tree
 		= tagstring
 
-//Calculate the size (in chars) that the take will be when
+//Calculate the size (in chars) that the tag will be when
 //serialize to a string.
 
 tagSize :: HtmlTag -> Int
@@ -50,6 +50,7 @@ tagSize (EmTag a t)			=  9 + (attrsSize a) + (tagsSize t)
 tagSize (FieldsetTag a t)	= 21 + (attrsSize a) + (tagsSize t) 
 tagSize (FontTag a t)		= 13 + (attrsSize a) + (tagsSize t) 
 tagSize (FormTag a t)		= 13 + (attrsSize a) + (tagsSize t) 
+tagSize (GTag a t)			=  7 + (attrsSize a) + (tagsSize t) 
 tagSize (H1Tag a t)			=  9 + (attrsSize a) + (tagsSize t) 
 tagSize (H2Tag a t)			=  9 + (attrsSize a) + (tagsSize t) 
 tagSize (H3Tag a t)			=  9 + (attrsSize a) + (tagsSize t) 
@@ -282,6 +283,7 @@ serializeTag (EmTag a t) s i			= writeTag "em" a t s i
 serializeTag (FieldsetTag a t) s i		= writeTag "fieldset" a t s i
 serializeTag (FontTag a t) s i			= writeTag "font" a t s i
 serializeTag (FormTag a t) s i			= writeTag "form" a t s i
+serializeTag (GTag a t) s i				= writeTag "g" a t s i
 serializeTag (H1Tag a t) s i			= writeTag "h1" a t s i
 serializeTag (H2Tag a t) s i			= writeTag "h2" a t s i
 serializeTag (H3Tag a t) s i			= writeTag "h3" a t s i
