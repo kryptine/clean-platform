@@ -51,6 +51,7 @@ import StdString, Data.Maybe
 			| FieldsetTag		![HtmlAttr] ![HtmlTag]
 			| FontTag			![HtmlAttr] ![HtmlTag]
 			| FormTag			![HtmlAttr] ![HtmlTag]
+			| GTag				![HtmlAttr] ![HtmlTag]
 			| H1Tag				![HtmlAttr] ![HtmlTag]
 			| H2Tag				![HtmlAttr] ![HtmlTag]
 			| H3Tag				![HtmlAttr] ![HtmlTag]
@@ -95,6 +96,7 @@ import StdString, Data.Maybe
 			| StyleTag			![HtmlAttr] ![HtmlTag]
 			| SubTag			![HtmlAttr] ![HtmlTag]
 			| SupTag			![HtmlAttr] ![HtmlTag]
+			| SvgTag			![HtmlAttr] ![HtmlTag]
 			| TableTag			![HtmlAttr] ![HtmlTag]
 			| TbodyTag			![HtmlAttr] ![HtmlTag]
 			| TdTag				![HtmlAttr] ![HtmlTag]
@@ -218,6 +220,7 @@ import StdString, Data.Maybe
 			| TargetAttr		!String
 			| TextAttr			!String
 			| TitleAttr			!String
+			| TransformAttr		!String
 			| TypeAttr			!String
 			| UsemapAttr		!String
 			| ValignAttr		!String
