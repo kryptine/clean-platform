@@ -62,6 +62,3 @@ liftA3 f a b c = f <$> a <*> b <*> c
 
 optional :: (f a) -> f (Maybe a) | Alternative f
 optional v = (Just <$> v) <|> (lift Nothing)
-
-app :: (f (a -> b)) (f a) -> f b | Applicative f
-app fab fa = fab <*> fa

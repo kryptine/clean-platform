@@ -38,5 +38,3 @@ liftA2 :: (a b -> c) (f a) (f b) -> f c | Applicative f
 liftA3 :: (a b c -> d) (f a) (f b) (f c) -> f d | Applicative f
 
 optional :: (f a) -> f (Maybe a) | Alternative f
-
-app :: (f (a -> b)) (f a) -> f b | Applicative f
