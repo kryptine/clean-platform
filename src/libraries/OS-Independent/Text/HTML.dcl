@@ -36,6 +36,8 @@ import StdString, Data.Maybe
 			| CaptionTag		![HtmlAttr] ![HtmlTag]
 			| CanvasTag 		![HtmlAttr] ![HtmlTag]
 			| CenterTag			![HtmlAttr] ![HtmlTag]
+			| CircleTag			![HtmlAttr]
+			| CenterTag			![HtmlAttr] ![HtmlTag]
 			| CiteTag			![HtmlAttr] ![HtmlTag]
 			| CodeTag			![HtmlAttr] ![HtmlTag]
 			| ColTag			![HtmlAttr] ![HtmlTag]
@@ -47,6 +49,7 @@ import StdString, Data.Maybe
 			| DivTag			![HtmlAttr] ![HtmlTag]
 			| DlTag				![HtmlAttr] ![HtmlTag]
 			| DtTag				![HtmlAttr] ![HtmlTag]
+			| EllipseTag		![HtmlAttr]
 			| EmTag				![HtmlAttr] ![HtmlTag]
 			| FieldsetTag		![HtmlAttr] ![HtmlTag]
 			| FontTag			![HtmlAttr] ![HtmlTag]
@@ -85,6 +88,7 @@ import StdString, Data.Maybe
 			| ParamTag			![HtmlAttr] ![HtmlTag]
 			| PreTag			![HtmlAttr] ![HtmlTag]
 			| QTag				![HtmlAttr] ![HtmlTag]
+			| RectTag			![HtmlAttr]
 			| STag				![HtmlAttr] ![HtmlTag]
 			| SampTag			![HtmlAttr] ![HtmlTag]
 			| ScriptTag			![HtmlAttr] ![HtmlTag]
@@ -100,13 +104,15 @@ import StdString, Data.Maybe
 			| TableTag			![HtmlAttr] ![HtmlTag]
 			| TbodyTag			![HtmlAttr] ![HtmlTag]
 			| TdTag				![HtmlAttr] ![HtmlTag]
+			| Text				![HtmlAttr] ![HtmlTag]
 			| TextareaTag		![HtmlAttr] ![HtmlTag]
 			| TfootTag			![HtmlAttr] ![HtmlTag]
 			| ThTag				![HtmlAttr] ![HtmlTag]
 			| TheadTag			![HtmlAttr] ![HtmlTag]
 			| TitleTag			![HtmlAttr] ![HtmlTag]
-			| TtTag				![HtmlAttr] ![HtmlTag]
 			| TrTag				![HtmlAttr] ![HtmlTag]
+			| TspanTag			![HtmlAttr] ![HtmlTag]
+			| TtTag				![HtmlAttr] ![HtmlTag]
 			| UTag				![HtmlAttr] ![HtmlTag]
 			| UlTag	 			![HtmlAttr] ![HtmlTag]
 			| VarTag			![HtmlAttr] ![HtmlTag]
@@ -219,6 +225,7 @@ import StdString, Data.Maybe
 			| TabindexAttr		!String
 			| TargetAttr		!String
 			| TextAttr			!String
+			| TextAnchorAttr	!String
 			| TitleAttr			!String
 			| TransformAttr		!String
 			| TypeAttr			!String
@@ -229,8 +236,14 @@ import StdString, Data.Maybe
 			| VlinkAttr			!String
 			| VspaceAttr		!String
 			| WidthAttr			!String
+			| XAttr				!String
+			| X1Attr			!String
+			| X2Attr			!String
 			| XmllangAttr		!String
 			| XmlspaceAttr		!String
+			| YAttr				!String
+			| Y1Attr			!String
+			| Y2Attr			!String
 
 instance toString HtmlTag
 
