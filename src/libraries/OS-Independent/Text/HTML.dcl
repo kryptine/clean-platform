@@ -37,7 +37,6 @@ import StdString, Data.Maybe
 			| CanvasTag 		![HtmlAttr] ![HtmlTag]
 			| CenterTag			![HtmlAttr] ![HtmlTag]
 			| CircleTag			![HtmlAttr]
-			| CenterTag			![HtmlAttr] ![HtmlTag]
 			| CiteTag			![HtmlAttr] ![HtmlTag]
 			| CodeTag			![HtmlAttr] ![HtmlTag]
 			| ColTag			![HtmlAttr] ![HtmlTag]
@@ -104,7 +103,7 @@ import StdString, Data.Maybe
 			| TableTag			![HtmlAttr] ![HtmlTag]
 			| TbodyTag			![HtmlAttr] ![HtmlTag]
 			| TdTag				![HtmlAttr] ![HtmlTag]
-			| Text				![HtmlAttr] ![HtmlTag]
+			| TextTag			![HtmlAttr] ![HtmlTag]
 			| TextareaTag		![HtmlAttr] ![HtmlTag]
 			| TfootTag			![HtmlAttr] ![HtmlTag]
 			| ThTag				![HtmlAttr] ![HtmlTag]
@@ -150,6 +149,8 @@ import StdString, Data.Maybe
 			| ContentAttr		!String
 			| CompactAttr
 			| CoordsAttr		!String
+			| CYAttr 		!String
+			| CXAttr 		!String
 			| DataAttr			!String
 			| DatetimeAttr		!String
 			| DeclareAttr
@@ -210,6 +211,8 @@ import StdString, Data.Maybe
 			| RowsAttr			!String
 			| RowspanAttr		!String
 			| RulesAttr			!String
+			| RYAttr 		!String
+			| RXAttr 		!String
 			| SchemeAttr		!String
 			| ScopeAttr			!String
 			| ScrollingAttr		!String
