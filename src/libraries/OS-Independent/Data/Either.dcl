@@ -7,3 +7,6 @@ definition module Data.Either
 */
 
 :: Either a b = Left a | Right b
+
+either :: (a -> c) (b -> c) (Either a b) -> c
+

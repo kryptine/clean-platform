@@ -21,6 +21,10 @@ from StdEnv import class Eq, class ==, const
 // to append something to the result. useful with the <++> combinator
 (<:&:>) infixr 6	:: (Parser s t r) (Parser s t ([r]->[r])) -> Parser s t ([r]->[r])
 
+// count n p parses n occurrences of p. If n is smaller or equal to zero, the parser equals to return []. 
+// Returns a list of n values returned by p. 
+count :: !Int (Parser s t r) -> (Parser s t [r])
+
 // PARSER TRANSFORMERS:
 
 // takes any number of elements non-deterministically 

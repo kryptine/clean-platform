@@ -2,8 +2,9 @@ implementation module Text.Parsers.ParsersDerived
 import Text.Parsers.ParsersKernel
 from StdEnv import o, abort, id
 from StdEnv import const, instance == Char
+import StdClass, StdInt
 
-import Control.Applicative
+import Control.Monad, Control.Applicative
 
 // PARSER COMBINATORS:
 
@@ -21,6 +22,10 @@ import Control.Applicative
 
 (<:&:>) infixr 6	:: (Parser s t r) (Parser s t ([r]->[r])) -> Parser s t ([r]->[r])
 (<:&:>) p1 p2 = p1 <&> \r1 -> p2 <@ \r2 -> \rest -> [r1:r2 rest]
+
+count :: !Int (Parser s t r) -> (Parser s t [r])
+count n p | n <= 0 = return []
+count n p = sequence [p \\ i<-[1..n]]
 
 // PARSER TRANSFORMERS:
 

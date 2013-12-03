@@ -7,7 +7,12 @@ from StdMaybe import :: Maybe (..)
 number :: Parser  Char a Int //wants at least one digit and takes all it can get
 number` :: Parser  Char a Int //takes any number of digits non-deterministically
 
-digit :: Parser Char a Char
+digit    :: Parser Char a Char
+hexDigit :: Parser Char a Char
+letter   :: Parser Char a Char
+alphaNum :: Parser Char a Char
+
+oneOf :: [Char] -> Parser Char a Char
 
 choice :: [Parser s t r] -> Parser s t r
 

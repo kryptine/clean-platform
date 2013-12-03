@@ -2,7 +2,7 @@ implementation module Text.Parsers.ParsersAccessories
 
 import Text.Parsers.ParsersKernel, Text.Parsers.ParsersDerived, Text.Parsers.ParserLanguage, StdEnv
 from StdMaybe import :: Maybe (..)
-from StdChar import isAlpha, isAlphanum
+from StdChar import isAlpha, isAlphanum, isHexDigit
 
 number :: Parser  Char a Int
 number = (<!+> digit) <@ foldl (\n d -> 10*n + digitToInt d) 0
@@ -12,6 +12,18 @@ number` = (<.*> digit) <@ foldl (\n d -> 10*n + digitToInt d) 0
 
 digit :: Parser Char a Char
 digit = satisfy (\c -> isMember c ['0'..'9']) 
+
+hexDigit :: Parser Char a Char
+hexDigit = satisfy isHexDigit
+
+letter :: Parser Char a Char
+letter = satisfy isAlpha 
+
+alphaNum :: Parser Char a Char
+alphaNum = satisfy isAlphanum 
+
+oneOf :: [Char] -> Parser Char a Char
+oneOf cs = satisfy (\c -> isMember c cs)  
 
 choice :: [Parser s t r] -> Parser s t r
 choice l = foldl (<!>) fail l
