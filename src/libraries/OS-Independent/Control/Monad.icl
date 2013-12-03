@@ -44,7 +44,7 @@ instance MonadPlus Maybe where
 return :: a -> m a | Monad m
 return x = pure x
 
-(>>|) infixr 1 :: (a b) (a c) -> a c | Monad a
+(>>|) infixl 1 :: (a b) (a c) -> a c | Monad a
 (>>|) ma mb = ma >>= \_ -> mb
 
 (=<<) infixr 1 :: (a -> b c) (b a) -> b c | Monad b

@@ -26,7 +26,7 @@ instance MonadPlus []
 instance MonadPlus Maybe
 
 return            :: a -> m a | Monad m
-(>>|) infixr 1    :: (a b) (a c) -> a c | Monad a
+(>>|) infixl 1    :: (a b) (a c) -> a c | Monad a
 (=<<) infixr 1    :: (a -> b c) (b a) -> b c | Monad b
 sequence          :: .[a b] -> a [b] | Monad a
 sequence_         :: .[a b] -> a Void | Monad a
