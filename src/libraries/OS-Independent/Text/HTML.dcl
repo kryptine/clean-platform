@@ -150,14 +150,16 @@ import StdString, Data.Maybe
 			| ContentAttr		!String
 			| CompactAttr
 			| CoordsAttr		!String
-			| CYAttr 		!String
-			| CXAttr 		!String
+			| CYAttr 			!String
+			| CXAttr 			!String
 			| DataAttr			!String
 			| DatetimeAttr		!String
 			| DeclareAttr
 			| DeferAttr			!String
 			| DirAttr			!String
 			| DisabledAttr
+			| DXAttr			!String
+			| DYAttr			!String
 			| EnctypeAttr		!String
 			| FaceAttr			!String
 			| ForAttr			!String
@@ -213,8 +215,8 @@ import StdString, Data.Maybe
 			| RowsAttr			!String
 			| RowspanAttr		!String
 			| RulesAttr			!String
-			| RYAttr 		!String
-			| RXAttr 		!String
+			| RYAttr 			!String
+			| RXAttr 			!String
 			| SchemeAttr		!String
 			| ScopeAttr			!String
 			| ScrollingAttr		!String
@@ -225,6 +227,7 @@ import StdString, Data.Maybe
 			| SrcAttr			!String
 			| StandbyAttr		!String
 			| StartAttr			!String
+			| StrokeDashArrayAttr	!String
 			| StyleAttr			!String
 			| SummaryAttr		!String
 			| TabindexAttr		!String
