@@ -73,6 +73,7 @@ import StdString, Data.Maybe
 			| LabelTag			![HtmlAttr] ![HtmlTag]
 			| LegendTag			![HtmlAttr] ![HtmlTag]
 			| LiTag				![HtmlAttr] ![HtmlTag]
+			| LineTag			![HtmlAttr]
 			| LinkTag			![HtmlAttr] ![HtmlTag]
 			| MapTag			![HtmlAttr] ![HtmlTag]
 			| MenuTag			![HtmlAttr] ![HtmlTag]
