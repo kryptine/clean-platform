@@ -215,8 +215,9 @@ import StdString, Data.Maybe
 			| RowsAttr			!String
 			| RowspanAttr		!String
 			| RulesAttr			!String
-			| RYAttr 			!String
+			| RAttr 			!String
 			| RXAttr 			!String
+			| RYAttr 			!String
 			| SchemeAttr		!String
 			| ScopeAttr			!String
 			| ScrollingAttr		!String
