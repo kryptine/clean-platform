@@ -85,6 +85,7 @@ import StdString, Data.Maybe
 			| OptionTag			![HtmlAttr] ![HtmlTag]
 			| PTag				![HtmlAttr] ![HtmlTag]
 			| ParamTag			![HtmlAttr] ![HtmlTag]
+			| PolygonTag		![HtmlAttr]
 			| PreTag			![HtmlAttr] ![HtmlTag]
 			| QTag				![HtmlAttr] ![HtmlTag]
 			| RectTag			![HtmlAttr]
@@ -236,6 +237,7 @@ import StdString, Data.Maybe
 			| ValignAttr		!String
 			| ValueAttr			!String
 			| ValuetypeAttr		!String
+			| ViewBoxAttr		!String
 			| VlinkAttr			!String
 			| VspaceAttr		!String
 			| WidthAttr			!String
