@@ -1,10 +1,10 @@
 implementation module Internet.HTTP
 
 import StdOverloaded, StdString, StdList, StdArray, StdFile, StdBool
-import Data.Maybe, Data.Map, Text, Text.Encodings.UrlEncoding, Text.Encodings.MIME
+import Data.Maybe, Data.Map, Data.List, Text, Text.Encodings.UrlEncoding, Text.Encodings.MIME
 
 newHTTPRequest :: HTTPRequest
-newHTTPRequest		= {	req_method		= ""
+newHTTPRequest		= {	req_method		= HTTP_GET
 					,	req_path		= ""
 					,	req_query		= ""
 					,	req_version		= ""
@@ -32,6 +32,36 @@ newHTTPUpload		= {	upl_name		= ""
 					,	upl_content		= ""
 					}
 
+instance toString HTTPMethod
+where
+	toString HTTP_GET = "GET"
+	toString HTTP_HEAD = "HEAD"
+	toString HTTP_PUT = "PUT"
+	toString HTTP_DELETE = "DELETE"
+	toString HTTP_POST = "POST"
+	toString HTTP_OPTIONS = "OPTIONS"
+	toString HTTP_TRACE = "TRACE"
+	toString HTTP_CONNECT = "CONNECT"
+	toString (HTTP_CUSTOM str) = str
+
+instance fromString HTTPMethod
+where
+	fromString str 
+		= case lookup ustr pairs of
+			(Just method) = method
+						  = HTTP_CUSTOM ustr
+	where
+		ustr = toUpperCase str
+
+		pairs = [("GET", HTTP_GET), 
+				 ("HEAD", HTTP_HEAD),
+				 ("PUT", HTTP_PUT),
+				 ("DELETE", HTTP_DELETE),
+				 ("POST", HTTP_POST),
+				 ("OPTIONS", HTTP_OPTIONS),
+				 ("TRACE", HTTP_TRACE),
+				 ("CONNECT", HTTP_TRACE)]
+			 
 instance toString HTTPRequest
 where
 	toString {	req_method
@@ -49,7 +79,7 @@ where
 			 ,	server_port
 			 ,	client_name
 			 }
-			 = "Method: " +++ req_method +++ "\n" +++
+			 = "Method: " +++ toString req_method +++ "\n" +++
 			   "Path: " +++ req_path +++ "\n" +++
 			   "Query: " +++ req_query +++ "\n" +++
 			   "Version: " +++ req_version +++ "\n" +++

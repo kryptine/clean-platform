@@ -5,7 +5,20 @@ import StdString
 import Data.Maybe
 from Data.Map import :: Map
 
-:: HTTPRequest	= {	req_method		:: 	String					// The HTTP request method (eg. GET, POST, HEAD)
+:: HTTPMethod = HTTP_GET 
+			  | HTTP_HEAD 
+			  | HTTP_PUT 
+			  | HTTP_DELETE 
+			  | HTTP_POST 
+			  | HTTP_OPTIONS
+			  | HTTP_TRACE
+			  | HTTP_CONNECT
+			  | HTTP_CUSTOM !String
+
+instance toString   HTTPMethod
+instance fromString HTTPMethod
+
+:: HTTPRequest	= {	req_method		:: 	HTTPMethod				// The HTTP request method (eg. GET, POST, HEAD)
 				,	req_path		::	String					// The requested location (eg. /foo)
 				,	req_query		::	String					// The query part of a location (eg. ?foo=bar&baz=42)
 				,	req_version		::	String					// The http version (eg. HTTP/1.0 or HTTP/1.1)
