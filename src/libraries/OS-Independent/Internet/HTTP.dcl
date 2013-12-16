@@ -36,7 +36,9 @@ instance fromString HTTPMethod
 
 :: HTTPProtocol	= HTTPProtoHTTP | HTTPProtoHTTPS				// The protocol used for a request
 
-:: HTTPResponse	= {	rsp_headers		::	Map String String		// Extra return headers that should be sent (eg. ("Content-Type","text/plain"))
+:: HTTPResponse	= {	rsp_code		::  Int
+				,	rsp_reason		::  String
+				,	rsp_headers		::	Map String String		// Extra return headers that should be sent (eg. ("Content-Type","text/plain"))
 				,	rsp_data		::	String					// The body of the response. (eg. html code or file data)
 				}
 			
@@ -48,8 +50,8 @@ instance fromString HTTPMethod
 
 //Construction functions 
 newHTTPRequest	:: HTTPRequest
-newHTTPResponse	:: HTTPResponse
 newHTTPUpload	:: HTTPUpload
+newHTTPResponse :: !Int !String -> HTTPResponse
 
 //String instances
 instance toString HTTPRequest
@@ -60,13 +62,18 @@ parseRequestLine	:: !String																							-> Maybe (!String, !String, !S
 parseHeader			:: !String																							-> Maybe (!String, !String)
 
 //Request utilities
-parseRequest 		::	!HTTPRequest																					-> HTTPRequest
+parseRequest 		:: !HTTPRequest																					-> HTTPRequest
 
 //Generating responses
+okResponse			:: HTTPResponse
+notfoundResponse	:: HTTPResponse
+forbiddenResponse	:: HTTPResponse
+
+errorResponse 		:: !String -> HTTPResponse
+badRequestResponse 	:: !String -> HTTPResponse
+
 staticResponse		:: !HTTPRequest !*World																				-> (!HTTPResponse, !*World)
-notfoundResponse	:: !HTTPRequest !*World 																			-> (!HTTPResponse, !*World)
-forbiddenResponse	:: !HTTPRequest !*World 																			-> (!HTTPResponse, !*World)
 customResponse		:: ![((String -> Bool),(HTTPRequest *World -> (HTTPResponse, *World)))] !Bool !HTTPRequest !*World	-> (!HTTPResponse, !*World)
 
-//Response utilities
-encodeResponse		:: !Bool !HTTPResponse !*World																		-> (!String,!*World)
+
+

@@ -4,27 +4,44 @@ import StdOverloaded, StdString, StdList, StdArray, StdFile, StdBool
 import Data.Maybe, Data.Map, Data.List, Text, Text.Encodings.UrlEncoding, Text.Encodings.MIME
 
 newHTTPRequest :: HTTPRequest
-newHTTPRequest		= {	req_method		= HTTP_GET
-					,	req_path		= ""
-					,	req_query		= ""
-					,	req_version		= ""
-					,	req_protocol	= HTTPProtoHTTP
-					,	req_headers		= newMap
-					,	req_data		= ""
-					,	arg_get			= newMap
-					,	arg_post		= newMap
-					,	arg_cookies		= newMap
-					,	arg_uploads		= newMap
-					,	server_name		= ""
-					,	server_port		= 0
-					,	client_name		= ""
-					}
-					
-newHTTPResponse :: HTTPResponse					
-newHTTPResponse		= {	rsp_headers		= newMap
-					,	rsp_data		= ""
-					}
+newHTTPRequest 
+			= {	req_method		= HTTP_GET
+			  ,	req_path		= ""
+			  ,	req_query		= ""
+			  ,	req_version		= ""
+			  ,	req_protocol	= HTTPProtoHTTP
+			  ,	req_headers		= newMap
+			  ,	req_data		= ""
+			  ,	arg_get			= newMap
+			  ,	arg_post		= newMap
+			  ,	arg_cookies		= newMap
+			  ,	arg_uploads		= newMap
+			  ,	server_name		= ""
+			  ,	server_port		= 0
+			  ,	client_name		= ""
+			  }
+		
+newHTTPResponse :: !Int !String -> HTTPResponse
+newHTTPResponse rspcode reason 
+	= {HTTPResponse | rsp_code = rspcode, rsp_reason = reason, rsp_headers = newMap, rsp_data = toString rspcode +++ " - " +++ reason}
+		
+okResponse :: HTTPResponse
+okResponse = newHTTPResponse 200 "OK" 
 
+notfoundResponse :: HTTPResponse
+notfoundResponse = newHTTPResponse 404 "Not Found"
+
+forbiddenResponse :: HTTPResponse
+forbiddenResponse = newHTTPResponse 403 "Forbidden"
+
+errorResponse :: !String -> HTTPResponse
+errorResponse msg 
+	= {newHTTPResponse 500 "Internal Server Error" & rsp_data = msg}	
+
+badRequestResponse :: !String -> HTTPResponse
+badRequestResponse msg 
+	= {newHTTPResponse 400 "Bad Request" & rsp_data = msg}	
+	
 newHTTPUpload :: HTTPUpload
 newHTTPUpload		= {	upl_name		= ""
 					,	upl_filename	= ""
@@ -90,19 +107,19 @@ where
 			   "---Begin data---\n" +++
 			   req_data +++
 			   "--- End data---\n"
-			   
+
 instance toString HTTPResponse
 where
-	toString {	rsp_headers
-			 ,	rsp_data
+	toString { rsp_code
+			 , rsp_reason	
+			 , rsp_headers
+			 , rsp_data
 			 }
-			 = "---Begin headers---\n" +++
-			   (foldr (+++) "" [ n +++ ": " +++ v +++ "\n" \\ (n,v) <- toList rsp_headers]) +++
-			   "---End headers---\n" +++
-			   "---Begin data---\n" +++
-			   rsp_data +++
-			   "--- End data---\n"
-	
+	= join "\r\n" (
+		["HTTP/1.0 " +++ toString rsp_code +++ " " +++ rsp_reason] ++
+		[(n +++ ": " +++ v) \\ (n,v) <- toList rsp_headers] ++
+		["",rsp_data])
+			   	
 instance toString HTTPProtocol
 where
 	toString HTTPProtoHTTP = "Http"
@@ -197,8 +214,9 @@ staticResponse req world
 	# filename				= req.req_path % (1, size req.req_path)		//Remove first slash
 	# (type, world)			= fileMimeType filename world
 	# (ok, content, world)	= fileContent filename world
-	| not ok 				= notfoundResponse req world
-							= ({rsp_headers = fromList [("Status","200 OK"),
+	| not ok 				= (notfoundResponse, world)
+							= ({okResponse & 
+								rsp_headers = fromList [
 											   ("Content-Type", type),
 											   ("Content-Length", toString (size content))]
 							   ,rsp_data = content}, world)						
@@ -229,38 +247,11 @@ where
 	fileMimeType "" world = ("application/octet-stream",world)
 	fileMimeType name world = fileMimeType (name % (1, size name)) world
 
-
-notfoundResponse	:: !HTTPRequest !*World 																			-> (!HTTPResponse, !*World)
-notfoundResponse req world = ({rsp_headers = fromList [("Status","404 Not Found")], rsp_data = "404 - Not found"},world)
-
-forbiddenResponse	:: !HTTPRequest !*World 																			-> (!HTTPResponse, !*World)
-forbiddenResponse req world = ({rsp_headers = fromList [("Status","403 Forbidden")], rsp_data = "403 - Forbidden"},world)
-
 customResponse		:: ![((String -> Bool),(HTTPRequest *World -> (HTTPResponse, *World)))] !Bool !HTTPRequest !*World	-> (!HTTPResponse, !*World)
 customResponse [] fallback request world 											//None of the request handlers matched
 	| fallback						= (staticResponse request world)				//Use the static response handler
-									= (notfoundResponse request world)				//Raise an error
+									= (notfoundResponse, world)						//Raise an error
 customResponse [(pred,handler):rest] fallback request world
 	| (pred request.req_path)		= handler request world							//Apply handler function
 									= customResponse rest fallback request world	//Search the rest of the list
 
-
-
-//Response utilities
-encodeResponse		:: !Bool !HTTPResponse !*World																		-> (!String,!*World)
-encodeResponse withreply {rsp_headers = headers, rsp_data = data} world  
-	# reply = if withreply
-			("HTTP/1.0 " +++ (default "200 OK" (get "Status" headers)) +++ "\r\n")
-			("Status: " +++ (default "200 OK" (get "Status" headers)) +++ "\r\n")
-	# reply = reply +++ ("Server: " +++ (default "Clean HTTP tools" (get "Server" headers)) +++ "\r\n")							//Server identifier	
-	# reply = reply +++	("Content-Type: " +++ (default "text/html" (get "Content-Type" headers)) +++ "\r\n")					//Content type header
-	# reply = reply +++	("Content-Length: " +++ (toString (size data)) +++ "\r\n")												//Content length header
-	# reply = reply +++	(foldr (+++) "" [(n +++ ": " +++ v +++ "\r\n") \\ (n,v) <- toList headers | not (skipHeader n)])		//Additional headers
-	# reply = reply +++	("\r\n" +++ data)																						//Separator + data
-	= (reply, world)
-where
-	//Do not add these headers two times
-	default def mbval = case mbval of
-		Nothing	= def
-		(Just val) = val
-	skipHeader s = isMember s ["Status","Date","Server","Content-Type","Content-Length","Last-Modified"]
