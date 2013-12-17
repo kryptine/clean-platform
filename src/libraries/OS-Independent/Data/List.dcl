@@ -7,6 +7,7 @@ import StdList, GenEq
 head            :: ![.a] -> .a
 tail            :: !u:[.a] -> u:[.a]
 isnull          :: ![.a] -> Bool
+keep            :: Int [a] -> [a]
 unzip3          :: ![(.a,.b,.c)] -> ([.a],[.b],[.c])
 unzip4          :: ![(.a,.b,.c,.d)] -> ([.a],[.b],[.c],[.d])
 unzip5          :: ![(.a,.b,.c,.d,.e)] -> ([.a],[.b],[.c],[.d],[.e])

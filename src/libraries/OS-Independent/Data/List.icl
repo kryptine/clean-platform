@@ -19,6 +19,9 @@ product xs = prod xs
 
 // End Haskell Data.List compat
 
+keep :: Int [a] -> [a]
+keep n xs = drop (length xs - n) xs
+
 unzip3 :: ![(.a,.b,.c)] -> ([.a],[.b],[.c])
 unzip3 []        = ([], [], [])
 unzip3 [(x,y,z) : xyzs]  = ([x : xs],[y : ys],[z : zs])
