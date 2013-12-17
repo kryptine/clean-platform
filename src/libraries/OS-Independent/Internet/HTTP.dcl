@@ -38,7 +38,7 @@ instance fromString HTTPMethod
 
 :: HTTPResponse	= {	rsp_code		::  Int
 				,	rsp_reason		::  String
-				,	rsp_headers		::	Map String String		// Extra return headers that should be sent (eg. ("Content-Type","text/plain"))
+				,	rsp_headers		::	[(String,String)]		// Extra return headers that should be sent (eg. ("Content-Type","text/plain"))
 				,	rsp_data		::	String					// The body of the response. (eg. html code or file data)
 				}
 			
@@ -64,8 +64,10 @@ parseHeader			:: !String																							-> Maybe (!String, !String)
 //Request utilities
 parseRequest 		:: !HTTPRequest																					-> HTTPRequest
 
-//Generating responses
+//Generating and cheking responses
 okResponse			:: HTTPResponse
+isOkResponse 		:: !HTTPResponse -> Bool
+
 notfoundResponse	:: HTTPResponse
 forbiddenResponse	:: HTTPResponse
 

@@ -23,7 +23,7 @@ newHTTPRequest
 		
 newHTTPResponse :: !Int !String -> HTTPResponse
 newHTTPResponse rspcode reason 
-	= {HTTPResponse | rsp_code = rspcode, rsp_reason = reason, rsp_headers = newMap, rsp_data = toString rspcode +++ " - " +++ reason}
+	= {HTTPResponse | rsp_code = rspcode, rsp_reason = reason, rsp_headers = [], rsp_data = toString rspcode +++ " - " +++ reason}
 		
 okResponse :: HTTPResponse
 okResponse = newHTTPResponse 200 "OK" 
@@ -41,7 +41,11 @@ errorResponse msg
 badRequestResponse :: !String -> HTTPResponse
 badRequestResponse msg 
 	= {newHTTPResponse 400 "Bad Request" & rsp_data = msg}	
-	
+
+isOkResponse :: !HTTPResponse -> Bool
+isOkResponse {rsp_code = 200} = True
+isOkResponse _ = False
+
 newHTTPUpload :: HTTPUpload
 newHTTPUpload		= {	upl_name		= ""
 					,	upl_filename	= ""
@@ -117,7 +121,7 @@ where
 			 }
 	= join "\r\n" (
 		["HTTP/1.0 " +++ toString rsp_code +++ " " +++ rsp_reason] ++
-		[(n +++ ": " +++ v) \\ (n,v) <- toList rsp_headers] ++
+		[(n +++ ": " +++ v) \\ (n,v) <- rsp_headers] ++
 		["",rsp_data])
 			   	
 instance toString HTTPProtocol
@@ -216,8 +220,7 @@ staticResponse req world
 	# (ok, content, world)	= fileContent filename world
 	| not ok 				= (notfoundResponse, world)
 							= ({okResponse & 
-								rsp_headers = fromList [
-											   ("Content-Type", type),
+								rsp_headers = [("Content-Type", type),
 											   ("Content-Length", toString (size content))]
 							   ,rsp_data = content}, world)						
 where
