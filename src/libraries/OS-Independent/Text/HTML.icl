@@ -374,13 +374,13 @@ serializeTag (UTag a t) s i				= writeTag "u" a t s i
 serializeTag (UlTag a t) s i			= writeTag "ul" a t s i
 serializeTag (VarTag a t) s i			= writeTag "var" a t s i
 
-serializeTags :: [HtmlTag] *{#Char} Int -> (*{#Char}, Int)
+serializeTags :: ![HtmlTag] !*{#Char} !Int -> (!*{#Char}, !Int)
 serializeTags [] dest dest_i = (dest,dest_i)
 serializeTags [x:xs] dest dest_i
 	# (dest, dest_i) = serializeTag x dest dest_i
 	= serializeTags xs dest dest_i
 
-serializeAttr :: HtmlAttr *{#Char} Int -> (*{#Char}, Int)
+serializeAttr :: !HtmlAttr !*{#Char} !Int -> (!*{#Char}, !Int)
 serializeAttr (AbbrAttr a) s i			= writeAttr "abbr" a s i
 serializeAttr (AcceptAttr a) s i		= writeAttr "accept" a s i
 serializeAttr (AcceptcharsetAttr a) s i	= writeAttr "accept-charset" a s i
@@ -516,7 +516,7 @@ serializeAttr (YAttr a) s i				= writeAttr "y" a s i
 serializeAttr (Y1Attr a) s i			= writeAttr "y1" a s i
 serializeAttr (Y2Attr a) s i			= writeAttr "y2" a s i
 
-serializeAttrs :: [HtmlAttr] *{#Char} Int -> (*{#Char}, Int)
+serializeAttrs :: ![HtmlAttr] !*{#Char} !Int -> (!*{#Char}, !Int)
 serializeAttrs [] dest dest_i = (dest, dest_i)
 serializeAttrs [x:xs] dest dest_i
 	# (dest, dest_i) = serializeAttr x dest dest_i
