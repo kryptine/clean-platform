@@ -96,6 +96,7 @@ difference :: (Set a) (Set a) -> Set a | < a & == a
 // The intersection of two sets.
 // Elements of the result come from the first set
 intersection :: (Set a) (Set a) -> Set a | < a & == a
+intersections :: [Set a] -> Set a | < a & == a
 
 // Filter all elements that satisfy the predicate.
 filter :: (a -> Bool) (Set a) -> Set a | < a & == a

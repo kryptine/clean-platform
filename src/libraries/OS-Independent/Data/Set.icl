@@ -200,6 +200,11 @@ where
  * Intersection
  *--------------------------------------------------------------------*/
 
+intersections :: [Set a] -> Set a | < a & == a
+intersections [t] = t
+intersections [t:ts]
+  = foldl intersection t ts
+
 // | /O(n+m)/. The intersection of two sets.
 // Elements of the result come from the first set, so for example
 //
