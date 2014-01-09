@@ -2,7 +2,10 @@ implementation module Data.Map
 
 import StdEnv
 from GenEq import generic gEq
+import GenLexOrd
 import Data.Maybe, Text.JSON
+
+gLessThan x y = (gLexOrd{|*|} x y) === LT
 
 //Create function
 newMap :: w:(Map k u:v), [ w <= u]
@@ -26,6 +29,23 @@ where
 		# h					= (max hleft hright) + 1
 		= balance (MNode left nk h nv right)
 
+gPut :: !k u:v !w:(Map k u:v) -> x:(Map k u:v) | gEq{|*|} k & gLexOrd{|*|} k, [w x <= u, w <= x]
+gPut k v MLeaf = MNode MLeaf k 1 v MLeaf
+gPut k v (MNode left nk h nv right)
+	| k === nk = (MNode left k h v right)
+	| gLessThan k nk
+		# left = gPut k v left
+		= update left nk nv right
+	| otherwise
+		# right = gPut k v right
+		= update left nk nv right
+where
+	update left nk nv right
+		# (hleft,left)   = height left
+		# (hright,right) = height right
+		# h              = (max hleft hright) + 1
+		= balance (MNode left nk h nv right)
+
 //Lookup function, non-unique version
 get :: !k !(Map k v) -> Maybe v | Eq k & Ord k
 get k MLeaf = Nothing
@@ -33,6 +53,13 @@ get k (MNode left nk _ nv right)
 	| k == nk	= Just nv
 	| k < nk	= get k left
 				= get k right
+
+gGet :: !k !(Map k v) -> Maybe v | gEq{|*|} k & gLexOrd{|*|} k
+gGet k MLeaf = Nothing
+gGet k (MNode left nk _ nv right)
+	| k === nk       = Just nv
+	| gLessThan k nk = gGet k left
+	| otherwise      = gGet k right
 
 //Lookup function, possibly spine unique version
 getU :: !k !w:(Map k v) -> x:(Maybe v,!y:(Map k v)) | Eq k & Ord k, [ x <= y, w <= y]
@@ -46,9 +73,23 @@ getU k (MNode left nk h nv right)
 		# (mbv, right) = getU k right
 		= (mbv, MNode left nk h nv right)
 
+gGetU :: !k !w:(Map k v) -> x:(Maybe v,!y:(Map k v)) | gEq{|*|} k & gLexOrd{|*|} k, [ x <= y, w <= y]
+gGetU k MLeaf = (Nothing, MLeaf)
+gGetU k (MNode left nk h nv right)
+	| k === nk = (Just nv, MNode left nk h nv right)
+	| gLessThan k nk
+		# (mbv, left) = gGetU k left
+		= (mbv, MNode left nk h nv right)
+	| otherwise
+		# (mbv, right) = gGetU k right
+		= (mbv, MNode left nk h nv right)
+
 //Delete function, only spine unique version
 del :: !k !w:(Map k v) -> x:(Map k v) | Eq k & Ord k, [ w <= x]
 del k mapping = snd (delU k mapping)
+
+gDel :: !k !w:(Map k v) -> x:(Map k v) | gEq{|*|} k & gLexOrd{|*|} k, [ w <= x]
+gDel k mapping = snd (gDelU k mapping)
 
 //Delete function
 delU :: !k !w:(Map k u:v) -> x:(Maybe u:v, !y:(Map k u:v)) | Eq k & Ord k, [ w y <= u, x <= y, w <= y]
@@ -106,6 +147,60 @@ where
 		# h					= (max hleft hright) + 1
 		= (h, left, right)
 
+gDelU :: !k !w:(Map k u:v) -> x:(Maybe u:v, !y:(Map k u:v)) | gEq{|*|} k & gLexOrd{|*|} k, [ w y <= u, x <= y, w <= y]
+gDelU k MLeaf = (Nothing, MLeaf)                            //Do nothing
+gDelU k (MNode MLeaf nk h nv MLeaf)                         //A node with just leaves as children can be safely removed
+	| k === nk  = (Just nv, MLeaf)
+	| otherwise = (Nothing, MNode MLeaf nk h nv MLeaf)
+gDelU k (MNode MLeaf nk h nv right)                         //A node without smaller items
+	| k === nk       = (Just nv, right)                     //When found, just remove
+	| gLessThan k nk = (Nothing, MNode MLeaf nk h nv right) //Do nothing, k is not in the mapping
+	| otherwise
+		# (mbv,right)    = gDelU k right
+		# (hright,right) = height right
+		# h              = hright + 1
+		= (mbv, balance (MNode MLeaf nk h nv right))
+
+gDelU k (MNode left nk h nv MLeaf)                          //A node without larger items
+	| k === nk = (Just nv, left)                            //When found just remove
+	| gLessThan k nk
+		# (mbv,left)   = gDelU k left
+		# (hleft,left) = height left
+		# h            = hleft + 1
+		= (mbv, balance (MNode left nk h nv MLeaf))
+	| otherwise = (Nothing, MNode left nk h nv MLeaf)       //Do nothing, k is not in hte mapping
+
+gDelU k (MNode left nk h nv right)                          //A node with both larger and smaller items
+	| k === nk
+		# (left,k,v)     = takeMax left
+		# (h,left,right) = parentHeight left right
+		= (Just nv, balance (MNode left k h v right))	//Replace with the largest of the smaller items and rebalance
+	| gLessThan k nk
+		# (mbv, left)    = gDelU k left
+		# (h,left,right) = parentHeight left right
+		= (mbv, balance (MNode left nk h nv right))
+	| otherwise
+		# (mbv, right)   = gDelU k right
+		# (h,left,right) = parentHeight left right
+		= (mbv, balance (MNode left nk h nv right))
+where
+	//Takes the k and v values from the maximum node in the tree and removes that node
+	takeMax MLeaf = abort "takeMax of leaf evaluated"
+	takeMax (MNode left nk _ nv MLeaf) = (left, nk, nv)
+	takeMax (MNode left nk _ nv right)
+					# (right,k,v)    = takeMax right
+					# (hleft,left)   = height left
+					# (hright,right) = height right
+					# h              = (max hleft hright) + 1
+					= (balance (MNode left nk h nv right), k, v)
+
+	//Determines the height of the parent node of two sub trees
+	parentHeight left right
+		# (hleft,left)   = height left
+		# (hright,right) = height right
+		# h              = (max hleft hright) + 1
+		= (h, left, right)
+
 foldrWithKey :: (k v u:b -> u:b) u:b (Map k v) -> u:b
 foldrWithKey f z m = go z m
   where
@@ -124,16 +219,26 @@ where
 
 
 fromList :: !w:[x:(!k,u:v)] -> y:(Map k u:v) | Eq k & Ord k, [x y <= u, w <= x, w <= y]
-//fromList :: [(k,v)] -> (Map k v) | Eq k & Ord k
-fromList [] = newMap
+fromList []         = newMap
 fromList [(k,v):xs] = put k v (fromList xs)
 
+gFromList :: !w:[x:(!k,u:v)] -> y:(Map k u:v) | gEq{|*|} k & gLexOrd{|*|} k, [x y <= u, w <= x, w <= y]
+gFromList []         = newMap
+gFromList [(k,v):xs] = gPut k v (gFromList xs)
+
 putList :: !w:[x:(!k,u:v)] !w:(Map k u:v) -> y:(Map k u:v) | Eq k & Ord k, [x y <= u, w <= x, w <= y]
-putList [] map = map
+putList [] map         = map
 putList [(k,v):xs] map = putList xs (put k v map)
+
+gPutList :: !w:[x:(!k,u:v)] !w:(Map k u:v) -> y:(Map k u:v) | gEq{|*|} k & gLexOrd{|*|} k, [x y <= u, w <= x, w <= y]
+gPutList [] map         = map
+gPutList [(k,v):xs] map = gPutList xs (gPut k v map)
 
 delList :: ![k] !w:(Map k u:v) -> y:(Map k u:v) | Eq k & Ord k, [w y <= u, w <= y]
 delList list map = seq [\map -> snd (delU key map) \\ key <- list] map
+
+gDelList :: ![k] !w:(Map k u:v) -> y:(Map k u:v) | gEq{|*|} k & gLexOrd{|*|} k, [w y <= u, w <= y]
+gDelList list map = seq [\map -> snd (gDelU key map) \\ key <- list] map
 //Helper functions
 
 //Determine the height of a tree

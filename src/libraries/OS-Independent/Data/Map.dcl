@@ -10,6 +10,7 @@ from StdClass		import class Eq, class Ord
 from StdOverloaded	import class ==, class <
 from Text.JSON      import generic JSONEncode, generic JSONDecode, :: JSONNode
 from GenEq import generic gEq
+from GenLexOrd import generic gLexOrd, :: LexOrd
 
 /**
 * The abstract Map type provides the mapping.
@@ -122,3 +123,13 @@ delList 	:: ![k] !w:(Map k u:v) -> y:(Map k u:v) | Eq k & Ord k, [w y <= u, w <=
 derive JSONEncode Map
 derive JSONDecode Map
 derive gEq Map
+
+// Generic Map functions
+gPut      :: !k u:v !w:(Map k u:v) -> x:(Map k u:v) | gEq{|*|} k & gLexOrd{|*|} k, [w x <= u, w <= x]
+gGet      :: !k !(Map k v) -> Maybe v | gEq{|*|} k & gLexOrd{|*|} k
+gGetU     :: !k !w:(Map k v) -> x:(Maybe v,!y:(Map k v)) | gEq{|*|} k & gLexOrd{|*|} k, [ x <= y, w <= y]
+gDel      :: !k !w:(Map k v) -> x:(Map k v) | gEq{|*|} k & gLexOrd{|*|} k, [ w <= x]
+gDelU     :: !k !w:(Map k u:v) -> x:(Maybe u:v, !y:(Map k u:v)) | gEq{|*|} k & gLexOrd{|*|} k, [ w y <= u, x <= y, w <= y]
+gFromList :: !w:[x:(!k,u:v)] -> y:(Map k u:v) | gEq{|*|} k & gLexOrd{|*|} k, [x y <= u, w <= x, w <= y]
+gPutList  :: !w:[x:(!k,u:v)] !w:(Map k u:v) -> y:(Map k u:v) | gEq{|*|} k & gLexOrd{|*|} k, [x y <= u, w <= x, w <= y]
+gDelList  :: ![k] !w:(Map k u:v) -> y:(Map k u:v) | gEq{|*|} k & gLexOrd{|*|} k, [w y <= u, w <= y]
