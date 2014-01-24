@@ -37,13 +37,16 @@ emptyGraph =
 	}
 
 addNode :: n .(Graph n e) -> .(NodeIndex, .(Graph n e))
-addNode n graph 
+addNode n graph = addNodeWithIndex (\_ -> n) graph
+
+addNodeWithIndex :: (NodeIndex -> n) .(Graph n e) -> .(NodeIndex, .(Graph n e))
+addNodeWithIndex fn graph 
+	# newId = inc graph.lastId
 	# node =	{ Node
-				| data			= n
+				| data			= fn newId
 				, predecessors	= []
 				, successors	= []
 				}
-	# newId = inc graph.lastId
 	=	(	newId
 		,	{ Graph
 			| graph

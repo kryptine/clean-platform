@@ -50,6 +50,7 @@ edgeExists :: !EdgeIndex !.(Graph n e) -> Bool
 
 //Graph manipulation
 addNode :: n .(Graph n e) -> .(NodeIndex, .(Graph n e))
+addNodeWithIndex :: (NodeIndex -> n) .(Graph n e) -> .(NodeIndex, .(Graph n e))
 addEdge :: e EdgeIndex u:(Graph n e) -> v:(Graph n e), [u <= v]
 removeNode :: NodeIndex u:(Graph a b) -> v:(Graph a b), [u <= v]
 removeEdge :: EdgeIndex u:(Graph a b) -> v:(Graph a b), [u <= v]
