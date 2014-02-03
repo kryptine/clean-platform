@@ -63,9 +63,9 @@ mapIndices :: ![(!NodeIndex,!NodeIndex)] !.(Graph n e) -> .(Graph n e)
 
 //Folding
 foldrNodes :: (NodeIndex (Node n) .a -> .a) .a .(Graph n e) -> .a
-foldlNodes :: (NodeIndex (Node n) .a -> .a) .a .(Graph n e) -> .a
+foldlNodes :: (.a NodeIndex (Node n) -> .a) .a .(Graph n e) -> .a
 foldrEdges :: (EdgeIndex e .a -> .a) .a .(Graph n e) -> .a
-foldlEdges :: (EdgeIndex e .a -> .a) .a .(Graph n e) -> .a
+foldlEdges :: (.a EdgeIndex e -> .a) .a .(Graph n e) -> .a
 
 //Connectivity
 components :: !.(Graph n e) -> .[.(Graph n e)]
