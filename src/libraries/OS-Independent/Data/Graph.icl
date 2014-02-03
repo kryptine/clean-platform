@@ -230,8 +230,14 @@ mapIndices updates { nodes, edges }
 foldrNodes :: (NodeIndex (Node n) .a -> .a) .a .(Graph n e) -> .a
 foldrNodes f b g = foldrWithKey f b g.nodes
 
+foldlNodes :: (NodeIndex (Node n) .a -> .a) .a .(Graph n e) -> .a
+foldlNodes f b g = foldlWithKey f b g.nodes
+
 foldrEdges :: (EdgeIndex e .a -> .a) .a .(Graph n e) -> .a
 foldrEdges f b g = foldrWithKey f b g.edges
+
+foldlEdges :: (EdgeIndex e .a -> .a) .a .(Graph n e) -> .a
+foldlEdges f b g = foldlWithKey f b g.edges
 
 //--------------------------------------------------------------------------------
 //Connectivity
