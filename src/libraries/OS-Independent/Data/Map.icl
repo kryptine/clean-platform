@@ -208,7 +208,7 @@ foldrWithKey f z m = go z m
     go z` (MNode l k _ v r) = go (f k v (go z` r)) l
 
 foldlWithKey :: (u:a k v -> u:a) u:a (Map k v) -> u:a
-foldlWithKey f z = go z
+foldlWithKey f z m = go z m
   where
     go z` MLeaf             = z`
     go z` (MNode l k _ v r) = go (f (go z` l) k v) r
