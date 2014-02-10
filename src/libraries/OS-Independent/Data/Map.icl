@@ -11,7 +11,7 @@ gLessThan x y = (gLexOrd{|*|} x y) === LT
 newMap :: w:(Map k u:v), [ w <= u]
 newMap = MLeaf
 
-singleton :: k v -> Map k v
+singleton :: k v -> Map k v | Eq k & Ord k
 singleton k v = put k v newMap
 
 empty :: (Map k v) -> Bool

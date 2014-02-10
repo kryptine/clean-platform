@@ -31,7 +31,7 @@ from GenLexOrd import generic gLexOrd, :: LexOrd
 */
 newMap		:: w:(Map k u:v), [ w <= u]
 
-singleton   :: k v -> Map k v
+singleton   :: k v -> Map k v | Eq k & Ord k
 
 empty       :: (Map k v) -> Bool
 
