@@ -30,6 +30,11 @@ from GenLexOrd import generic gLexOrd, :: LexOrd
 * @return An empty map
 */
 newMap		:: w:(Map k u:v), [ w <= u]
+
+singleton   :: k v -> Map k v
+
+empty       :: (Map k v) -> Bool
+
 /**
 * Adds or replaces the value for a given key.
 *

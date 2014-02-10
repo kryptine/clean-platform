@@ -11,6 +11,13 @@ gLessThan x y = (gLexOrd{|*|} x y) === LT
 newMap :: w:(Map k u:v), [ w <= u]
 newMap = MLeaf
 
+singleton :: k v -> Map k v
+singleton k v = put k v newMap
+
+empty :: (Map k v) -> Bool
+empty MLeaf = True
+empty _     = False
+
 //Insert function
 put :: !k u:v !w:(Map k u:v) -> x:(Map k u:v) | Eq k & Ord k, [w x <= u, w <= x]
 put k v MLeaf	= MNode MLeaf k 1 v MLeaf
