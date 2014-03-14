@@ -24,7 +24,7 @@ runProcess :: !FilePath ![String] !(Maybe String) !*World -> (MaybeOSError Proce
 /**
 * Check if a process is still running
 * @param Process handle to the process
-* @return Boolean indicating if process is still running
+* @return Return code if the process has finished, Nothing if the process is still running
 */
 checkProcess :: !ProcessHandle !*World -> (MaybeOSError (Maybe Int), *World)
 
