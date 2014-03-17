@@ -12,6 +12,9 @@ definition module Text.HTML
 */
 
 import StdString, Data.Maybe
+// the Text.JSON import should be removed as soon as the derived instances for SVGElt and SVGAttr are moved to iTasks.API.Core.Types
+from Text.JSON import :: JSONNode, generic JSONEncode, generic JSONDecode
+
 
 /**
 * This type provides an enumeration of all html tags.
@@ -53,7 +56,7 @@ import StdString, Data.Maybe
 			| FieldsetTag		![HtmlAttr] ![HtmlTag]
 			| FontTag			![HtmlAttr] ![HtmlTag]
 			| FormTag			![HtmlAttr] ![HtmlTag]
-			| GTag				![HtmlAttr] ![HtmlTag]
+//			| GTag				![HtmlAttr] ![HtmlTag]		// moved to SVGElt as GElt
 			| H1Tag				![HtmlAttr] ![HtmlTag]
 			| H2Tag				![HtmlAttr] ![HtmlTag]
 			| H3Tag				![HtmlAttr] ![HtmlTag]
@@ -101,7 +104,7 @@ import StdString, Data.Maybe
 			| StyleTag			![HtmlAttr] ![HtmlTag]
 			| SubTag			![HtmlAttr] ![HtmlTag]
 			| SupTag			![HtmlAttr] ![HtmlTag]
-			| SvgTag			![HtmlAttr] ![HtmlTag]
+			| SvgTag			![HtmlAttr] ![SVGAttr]  ![SVGElt]
 			| TableTag			![HtmlAttr] ![HtmlTag]
 			| TbodyTag			![HtmlAttr] ![HtmlTag]
 			| TdTag				![HtmlAttr] ![HtmlTag]
@@ -229,7 +232,7 @@ import StdString, Data.Maybe
 			| SrcAttr			!String
 			| StandbyAttr		!String
 			| StartAttr			!String
-			| StrokeDashArrayAttr	!String
+//			| StrokeDashArrayAttr	!String	// moved to SVGAttr
 			| StyleAttr			!String
 			| SummaryAttr		!String
 			| TabindexAttr		!String
@@ -237,26 +240,125 @@ import StdString, Data.Maybe
 			| TextAttr			!String
 			| TextAnchorAttr	!String
 			| TitleAttr			!String
-			| TransformAttr		!String
+//			| TransformAttr		!String		// moved to SVGAttr
 			| TypeAttr			!String
 			| UsemapAttr		!String
 			| ValignAttr		!String
 			| ValueAttr			!String
 			| ValuetypeAttr		!String
-			| ViewBoxAttr		!String
+//			| ViewBoxAttr		!String		// moved to SVGAttr
 			| VlinkAttr			!String
 			| VspaceAttr		!String
 			| WidthAttr			!String
-			| XAttr				!String
+//			| XAttr				!String		// moved to SVGAttr
 			| X1Attr			!String
 			| X2Attr			!String
 			| XmllangAttr		!String
 			| XmlspaceAttr		!String
-			| YAttr				!String
+//			| YAttr				!String		// moved to SVGAttr
 			| Y1Attr			!String
 			| Y2Attr			!String
 
+
+/**
+* This type provides an enumeration of (not yet) all SVG elements.
+*/
+:: SVGElt				= SVGElt   ![HtmlAttr] ![SVGAttr] ![SVGElt]
+						| GElt     ![HtmlAttr] ![SVGAttr] ![SVGElt]
+						| ImageElt ![HtmlAttr] ![SVGAttr] ![SVGElt]
+						| RectElt  ![HtmlAttr] ![SVGAttr]
+
+
+/*
+* This type provides an enumeration of (not yet) all SVG element attributes.
+*/
+:: SVGAttr				= BaseProfileAttr         !String										// necessary?
+						| ContentScriptTypeAttr   !String
+//						| ContentStyleTypeAttr    !String										// deprecated in SVG1.1
+						| ExternalResourcesRequiredAttr !Bool
+						| FillAttr                !SVGPaint
+						| FillOpacityAttr         !SVGFillOpacity
+						| FillRuleAttr            !SVGFillRule
+						| PreserveAspectRatioAttr !(Maybe SVGDefer) !(Maybe SVGAlign) !(Maybe SVGMeetOrSlice)
+						| RxAttr                  !SVGLength									// negative value is an error
+						| RyAttr                  !SVGLength									// negative value is an error
+						| StrokeAttr              !SVGPaint
+						| StrokeDashArrayAttr     !SVGStrokeDashArray
+						| StrokeDashOffsetAttr    !SVGStrokeDashOffset
+						| StrokeLineCapAttr       !SVGLineCap
+						| StrokeLineJoinAttr      !SVGLineJoin
+						| StrokeMiterLimitAttr    !SVGStrokeMiterLimit
+						| StrokeOpacityAttr       !String//SVGOpacityValue
+						| StrokeWidthAttr         !SVGStrokeWidth
+						| TransformAttr			  ![SVGTransform]
+						| VersionAttr             !String										// "1.1" for SVG1.1
+						| ViewBoxAttr             !SVGNumber !SVGNumber !SVGNumber !SVGNumber	// <min-x> <min-y> <width> <height>
+						| XAttr                   !SVGCoordinate
+						| XLinkHRefAttr           !String										// <iri>
+						| YAttr                   !SVGCoordinate
+						| ZoomAndPanAttr          !SVGZoomAndPan
+
+:: SVGAlign				= XMinYMin								// preserve aspect-ratio, align <min-x> of element's viewBox with smallest x-value of viewport,          align <min-y> of element's viewBox with smallest y-value of viewport
+						| XMidYMin								// preserve aspect-ratio, align midpoint x-value of element's viewBox with midpoint x-value of viewport, align <min-y> of element's viewBox with smallest y-value of viewport
+						| XMaxYMin								// preserve aspect-ratio, align <min-x>+<width> of element's viewBox with maximum x-value of viewport,   align <min-y> of element's viewBox with smallest y-value of viewport
+						| XMinYMid								// preserve aspect-ratio, align <min-x> of element's viewBox with smallest x-value of viewport,          align midpoint y-value of element's viewBox with midpoint y-value of viewport
+						| XMidYMid								// preserve aspect-ratio, align midpoint x-value of element's viewBox with midpoint x-value of viewport, align midpoint y-value of element's viewBox with midpoint y-value of viewport
+						| XMaxYMid								// preserve aspect-ratio, align <min-x>+<width> of element's viewBox with maximum x-value of viewport,   align midpoint y-value of element's viewBox with midpoint y-value of viewport
+						| XMinYMax								// preserve aspect-ratio, align <min-x> of element's viewBox with smallest x-value of viewport,          align <min-y>+<height> of element's viewBox with maximum y-value of viewport
+						| XMidYMax								// preserve aspect-ratio, align midpoint x-value of element's viewBox with midpoint x-value of viewport, align <min-y>+<height> of element's viewBox with maximum y-value of viewport
+						| XMaxYMax								// preserve aspect-ratio, align <min-x>+<width> of element's viewBox with maximum x-value of viewport,   align <min-y>+<height> of element's viewBox with maximum y-value of viewport
+:: SVGColor				= SVGRGB !Int !Int !Int					// <r><g><b> component values, each between 0 and 255 (inclusive)
+						| SVGColorText !String					// one of the recognized color keywords names
+:: SVGCoordinate	  :== SVGLength								// coordinate  ::= length
+:: SVGDefer				= SVGDefer
+:: SVGFillOpacity		= FillOpacity !SVGNumber//!SVGOpacityValue
+						| FillOpacityInherit
+:: SVGFillRule			= FillNonzero | FillEvenodd | FillInherit
+:: SVGFuncIRI			= IRI String							// url(<IRI>)
+:: SVGICCColor		  :== (String,[SVGNumber])					// (<color-profile-name>,<color-values>), the <color-values> list must not be empty
+:: SVGLength		  :== (SVGNumber,SVGLengthUnit)
+:: SVGLengthUnit		= EM | EX | PX | IN | CM | MM | PT | PC | PERCENT
+:: SVGLineCap			= CapButt | CapRound | CapSquare | CapInherit
+:: SVGLineJoin			= JoinMiter | JoinRound | JoinBevel | JoinInherit
+:: SVGMeetOrSlice		= SVGMeet
+						| SVGSlice
+:: SVGNumber		  :== String								// number ::= integer | [+-]? [0-9]* "." [0-9]+
+:: SVGOpacityValue	  :== SVGNumber								// value between 0.0 (fully transparant) and 1.0 (fully opaque)
+:: SVGPaint				= PaintNone
+						| PaintCurrentColor
+						| PaintColor SVGColor (Maybe SVGICCColor)
+						| PaintFuncIRI SVGFuncIRI (Maybe SVGPaint)
+						| PaintInherit
+:: SVGStrokeDashArray	= NoDash
+						| DashArray               ![String]		// non-empty list, an element is either an SVGNumber or a percentage
+						| InheritDash
+:: SVGStrokeDashOffset	= DashOffsetLength        !SVGLength	// <length> is allowed to be negative
+						| DashOffsetInherit
+:: SVGStrokeMiterLimit	= MiterLimit              !SVGNumber	// <miterlimit> >= 1.0
+						| MiterLimitInherit
+:: SVGStrokeWidth		= StrokeWidthLength       !SVGLength	// <length> >= 0.0
+						| StrokeWidthInherit
+:: SVGTransform			= MatrixTransform         !SVGNumber !SVGNumber !SVGNumber !SVGNumber !SVGNumber !SVGNumber		// matrix(<a> <b> <c> <d> <e> <f>)
+						| TranslateTransform      !SVGNumber !SVGNumber													// translate(<tx> <ty>)
+						| ScaleTransform          !SVGNumber !SVGNumber													// scale(<sx> <sy>)
+						| RotateTransform         !SVGNumber !(Maybe (SVGNumber,SVGNumber))								// rotate(<rotate-angle> [<cx> <cy>])
+						| SkewXTransform          !SVGNumber															// skewX(<skew-angle>)
+						| SkewYTransform          !SVGNumber															// skewY(<skew-angle>)
+:: SVGZoomAndPan		= Disable								// only sensible on outermost SVGElt: disable zooming and panning by user
+						| Magnify								// only sensible on outermost SVGElt:  enable zooming and panning by user
+
+svgEltSize  :: !SVGElt  -> Int
+svgAttrSize :: !SVGAttr -> Int
+
+writeSVGTag :: !{#Char} ![HtmlAttr] ![SVGAttr] ![SVGElt] !*{#Char} !Int -> (!*{#Char},!Int)
+
+// these should probably be moved to iTasks.API.Core.Types (placed them here for now, to limit the number of altered modules):
+derive JSONEncode SVGElt, SVGAttr
+derive JSONDecode SVGElt, SVGAttr
+derive gEq        SVGElt, SVGAttr
+
 instance toString HtmlTag
+instance toString SVGElt
 
 /*
 * This html class makes it possible to use either strings, or html as description/message/instruction

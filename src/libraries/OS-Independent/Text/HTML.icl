@@ -2,6 +2,10 @@ implementation module Text.HTML
 
 import StdString, StdArray, StdList, StdTuple, StdBool
 import Data.Maybe
+from StdFunc import o
+// the Text.JSON import should be removed as soon as the derived instances for SVGElt and SVGAttr are moved to iTasks.API.Core.Types
+from Text.JSON import :: JSONNode, generic JSONEncode, generic JSONDecode
+from StdMisc import abort
 
 instance toString HtmlTag
 where
@@ -52,7 +56,7 @@ tagSize (EmTag a t)			=  9 + (attrsSize a) + (tagsSize t)
 tagSize (FieldsetTag a t)	= 21 + (attrsSize a) + (tagsSize t) 
 tagSize (FontTag a t)		= 13 + (attrsSize a) + (tagsSize t) 
 tagSize (FormTag a t)		= 13 + (attrsSize a) + (tagsSize t) 
-tagSize (GTag a t)			=  7 + (attrsSize a) + (tagsSize t) 
+//tagSize (GTag a t)			=  7 + (attrsSize a) + (tagsSize t)		// GTag moved to SVGElt as GElt
 tagSize (H1Tag a t)			=  9 + (attrsSize a) + (tagsSize t) 
 tagSize (H2Tag a t)			=  9 + (attrsSize a) + (tagsSize t) 
 tagSize (H3Tag a t)			=  9 + (attrsSize a) + (tagsSize t) 
@@ -100,7 +104,7 @@ tagSize (StrongTag a t)		= 17 + (attrsSize a) + (tagsSize t)
 tagSize (StyleTag a t)		= 15 + (attrsSize a) + (tagsSize t) 
 tagSize (SubTag a t)		= 11 + (attrsSize a) + (tagsSize t) 
 tagSize (SupTag a t)		= 11 + (attrsSize a) + (tagsSize t) 
-tagSize (SvgTag a t)		= 11 + (attrsSize a) + (tagsSize t) 
+tagSize (SvgTag a b t)		= 11 + (attrsSize a) + (svgAttrsSize b) + (svgEltsSize t)
 tagSize (TableTag a t)		= 15 + (attrsSize a) + (tagsSize t) 
 tagSize (TbodyTag a t)		= 15 + (attrsSize a) + (tagsSize t) 
 tagSize (TdTag a t)			=  9 + (attrsSize a) + (tagsSize t) 
@@ -117,8 +121,8 @@ tagSize (UTag a t)			=  7 + (attrsSize a) + (tagsSize t)
 tagSize (UlTag a t)			=  9 + (attrsSize a) + (tagsSize t) 
 tagSize (VarTag a t)		= 11 + (attrsSize a) + (tagsSize t) 
 
-tagsSize :: [HtmlTag] -> Int
-tagsSize tags = sum (map tagSize tags)
+tagsSize :: ![HtmlTag] -> Int
+tagsSize tags = intsum tagSize tags
 
 //Calculates the number of chars this attribute will take once serialized
 attrSize :: HtmlAttr -> Int
@@ -230,7 +234,6 @@ attrSize (SpanAttr a)			=  8 + (escapedSize a)
 attrSize (SrcAttr a)			=  7 + (escapedSize a)
 attrSize (StandbyAttr a)		= 11 + (escapedSize a)
 attrSize (StartAttr a)			=  9 + (escapedSize a)
-attrSize (StrokeDashArrayAttr a)	= 19 + (escapedSize a)
 attrSize (StyleAttr a)			=  9 + (escapedSize a)
 attrSize (SummaryAttr a)		= 11 + (escapedSize a)
 attrSize (TabindexAttr a)		= 12 + (escapedSize a)
@@ -238,27 +241,23 @@ attrSize (TargetAttr a)			= 10 + (escapedSize a)
 attrSize (TextAttr a)			=  8 + (escapedSize a)
 attrSize (TextAnchorAttr a)		= 15 + (escapedSize a)
 attrSize (TitleAttr a)			=  9 + (escapedSize a)
-attrSize (TransformAttr a)		= 13 + (escapedSize a)
 attrSize (TypeAttr a)			=  8 + (escapedSize a)
 attrSize (UsemapAttr a)			= 10 + (escapedSize a)
 attrSize (ValignAttr a)			= 10 + (escapedSize a)
 attrSize (ValueAttr a)			=  9 + (escapedSize a)
 attrSize (ValuetypeAttr a)		= 13 + (escapedSize a)
-attrSize (ViewBoxAttr a)		= 11 + (escapedSize a)
 attrSize (VlinkAttr a)			=  9 + (escapedSize a)
 attrSize (VspaceAttr a)			= 10 + (escapedSize a)
 attrSize (WidthAttr a)			=  9 + (escapedSize a)
-attrSize (XAttr a)				=  5 + (escapedSize a)
 attrSize (X1Attr a)				=  6 + (escapedSize a)
 attrSize (X2Attr a)				=  6 + (escapedSize a)
 attrSize (XmllangAttr a)		= 12 + (escapedSize a)
 attrSize (XmlspaceAttr a)		= 13 + (escapedSize a)
-attrSize (YAttr a)				=  5 + (escapedSize a)
 attrSize (Y1Attr a)				=  6 + (escapedSize a)
 attrSize (Y2Attr a)				=  6 + (escapedSize a)
 
 attrsSize :: ![HtmlAttr] -> Int
-attrsSize attrs = sum (map attrSize attrs)
+attrsSize attrs = intsum attrSize attrs
 
 //Calculates the number of chars in a string when html special characters are escaped
 escapedSize :: !{#Char} -> Int
@@ -309,7 +308,7 @@ serializeTag (EmTag a t) s i			= writeTag "em" a t s i
 serializeTag (FieldsetTag a t) s i		= writeTag "fieldset" a t s i
 serializeTag (FontTag a t) s i			= writeTag "font" a t s i
 serializeTag (FormTag a t) s i			= writeTag "form" a t s i
-serializeTag (GTag a t) s i				= writeTag "g" a t s i
+//serializeTag (GTag a t) s i				= writeTag "g" a t s i
 serializeTag (H1Tag a t) s i			= writeTag "h1" a t s i
 serializeTag (H2Tag a t) s i			= writeTag "h2" a t s i
 serializeTag (H3Tag a t) s i			= writeTag "h3" a t s i
@@ -357,7 +356,7 @@ serializeTag (StrongTag a t) s i		= writeTag "strong" a t s i
 serializeTag (StyleTag a t) s i			= writeTag "style" a t s i
 serializeTag (SubTag a t) s i			= writeTag "sub" a t s i
 serializeTag (SupTag a t) s i			= writeTag "sup" a t s i
-serializeTag (SvgTag a t) s i			= writeTag "svg" a t s i
+serializeTag (SvgTag a b t) s i			= writeSVGTag "svg" a b t s i
 serializeTag (TableTag a t) s i			= writeTag "table" a t s i
 serializeTag (TbodyTag a t) s i			= writeTag "tbody" a t s i
 serializeTag (TdTag a t) s i			= writeTag "td" a t s i
@@ -489,7 +488,6 @@ serializeAttr (SpanAttr a) s i			= writeAttr "span" a s i
 serializeAttr (SrcAttr a) s i			= writeAttr "src" a s i
 serializeAttr (StandbyAttr a) s i		= writeAttr "standby" a s i
 serializeAttr (StartAttr a) s i			= writeAttr "start" a s i
-serializeAttr (StrokeDashArrayAttr a) s i	= writeAttr "stroke-dasharray" a s i
 serializeAttr (StyleAttr a) s i			= writeAttr "style" a s i
 serializeAttr (SummaryAttr a) s i		= writeAttr "summary" a s i
 serializeAttr (TabindexAttr a) s i		= writeAttr "tabindex" a s i
@@ -497,22 +495,18 @@ serializeAttr (TargetAttr a) s i		= writeAttr "target" a s i
 serializeAttr (TextAttr a) s i			= writeAttr "text" a s i
 serializeAttr (TextAnchorAttr a) s i	= writeAttr "text-anchor" a s i
 serializeAttr (TitleAttr a) s i			= writeAttr "title" a s i
-serializeAttr (TransformAttr a) s i		= writeAttr "transform" a s i
 serializeAttr (TypeAttr a) s i			= writeAttr "type" a s i
 serializeAttr (UsemapAttr a) s i		= writeAttr "usemap" a s i
 serializeAttr (ValignAttr a) s i		= writeAttr "valign" a s i
 serializeAttr (ValueAttr a) s i			= writeAttr "value" a s i
 serializeAttr (ValuetypeAttr a) s i		= writeAttr "valuetype" a s i
-serializeAttr (ViewBoxAttr a) s i		= writeAttr "viewBox" a s i
 serializeAttr (VlinkAttr a) s i			= writeAttr "vlink" a s i
 serializeAttr (VspaceAttr a) s i		= writeAttr "vspace" a s i
 serializeAttr (WidthAttr a) s i			= writeAttr "width" a s i
-serializeAttr (XAttr a) s i				= writeAttr "x" a s i
 serializeAttr (X1Attr a) s i			= writeAttr "x1" a s i
 serializeAttr (X2Attr a) s i			= writeAttr "x2" a s i
 serializeAttr (XmllangAttr a) s i		= writeAttr "xml:lang" a s i
 serializeAttr (XmlspaceAttr a) s i		= writeAttr "xml:space" a s i
-serializeAttr (YAttr a) s i				= writeAttr "y" a s i
 serializeAttr (Y1Attr a) s i			= writeAttr "y1" a s i
 serializeAttr (Y2Attr a) s i			= writeAttr "y2" a s i
 
@@ -613,3 +607,332 @@ instance html (Maybe a) | html a
 where
 	html Nothing	= SpanTag [] []
 	html (Just h)	= html h
+
+/* additions due to SVG elements and attributes:
+*/
+
+// these should probably be moved to iTasks.API.Core.Types (placed them here for now, to limit the number of altered modules):
+derive JSONEncode SVGElt, SVGAttr, HtmlAttr, SVGAlign, SVGColor, SVGDefer, SVGFillOpacity, SVGFuncIRI, SVGLengthUnit, SVGLineCap, SVGFillRule, SVGLineJoin, SVGMeetOrSlice, SVGStrokeMiterLimit, SVGPaint, SVGStrokeDashArray, SVGStrokeDashOffset, SVGStrokeWidth, SVGTransform, SVGZoomAndPan
+derive JSONDecode SVGElt, SVGAttr, HtmlAttr, SVGAlign, SVGColor, SVGDefer, SVGFillOpacity, SVGFuncIRI, SVGLengthUnit, SVGLineCap, SVGFillRule, SVGLineJoin, SVGMeetOrSlice, SVGStrokeMiterLimit, SVGPaint, SVGStrokeDashArray, SVGStrokeDashOffset, SVGStrokeWidth, SVGTransform, SVGZoomAndPan
+derive gEq        SVGElt, SVGAttr, HtmlAttr, SVGAlign, SVGColor, SVGDefer, SVGFillOpacity, SVGFuncIRI, SVGLengthUnit, SVGLineCap, SVGFillRule, SVGLineJoin, SVGMeetOrSlice, SVGStrokeMiterLimit, SVGPaint, SVGStrokeDashArray, SVGStrokeDashOffset, SVGStrokeWidth, SVGTransform, SVGZoomAndPan
+
+import StdDebug
+instance toString SVGElt
+where
+	toString elt
+		# eltsize	= svgEltSize elt						//Calculate the size of the string we need
+		# eltstring	= createArray eltsize '\0'				//Create an empty buffer
+		# eltstring	= fst (serializeSVGElt elt eltstring 0)	//Serialize the SVG element
+		= eltstring
+
+svgEltsSize :: ![SVGElt] -> Int
+svgEltsSize elts = intsum svgEltSize elts
+
+svgEltSize :: !SVGElt -> Int
+svgEltSize (SVGElt  html_attrs svg_attrs elts)		= 11 + attrsSize html_attrs + svgAttrsSize svg_attrs + svgEltsSize elts
+svgEltSize (GElt    html_attrs svg_attrs elts)		=  7 + attrsSize html_attrs + svgAttrsSize svg_attrs + svgEltsSize elts
+svgEltSize (RectElt html_attrs svg_attrs)			= 13 + attrsSize html_attrs + svgAttrsSize svg_attrs
+svgEltSize _										= abort "Text.HTML: svgEltSize applied to unexpected argument.\n"
+
+svgAttrsSize :: ![SVGAttr] -> Int
+svgAttrsSize attrs = intsum svgAttrSize attrs
+
+svgAttrSize :: !SVGAttr -> Int
+svgAttrSize (BaseProfileAttr         profile)		= 15 + size profile
+svgAttrSize (ContentScriptTypeAttr   type)			= 11 + size type
+svgAttrSize (ExternalResourcesRequiredAttr b)		= 29 + svgBoolSize b
+svgAttrSize (FillAttr                paint)			=  8 + svgPaintSize paint
+svgAttrSize (FillOpacityAttr         opac)			= 16 + svgFillOpacitySize opac
+svgAttrSize (FillRuleAttr            rule)			= 13 + svgFillRuleSize rule
+svgAttrSize (PreserveAspectRatioAttr md ma mms)		= 23 + case md of
+															Just SVGDefer = 5	// "defer"
+															nothing       = 0
+													     + case ma of
+													        Nothing       = 5	// " none"
+													        align         = 9	// " x{Min,Mid,Max}Y{Min,Mid,Max}"
+													     + case mms of
+													     	Just mos      = 1 + svgMeetOrSliceSize mos
+													     	nothing       = 0
+svgAttrSize (RxAttr                  length)		=  6 + svgLengthSize length
+svgAttrSize (RyAttr                  length)		=  6 + svgLengthSize length
+svgAttrSize (StrokeAttr              paint)			= 10 + svgPaintSize  paint
+svgAttrSize (StrokeDashArrayAttr     da)			= 20 + svgStrokeDashArraySize  da
+svgAttrSize (StrokeDashOffsetAttr    do)			= 21 + svgStrokeDashOffsetSize do
+svgAttrSize (StrokeLineCapAttr       cap)			= 18 + svgLineCapSize cap
+svgAttrSize (StrokeLineJoinAttr      join)			= 19 + svgLineJoinSize join
+svgAttrSize (StrokeMiterLimitAttr    limit)			= 21 + svgMiterLimitSize limit
+svgAttrSize (StrokeOpacityAttr       opac)			= 18 + size opac
+svgAttrSize (StrokeWidthAttr         width)			= 16 + svgStrokeWidthSize width
+svgAttrSize (TransformAttr			 ts)			= 13 + svgTransformsSize ts
+svgAttrSize (VersionAttr             v)				= 11 + size v
+svgAttrSize (ViewBoxAttr             x y w h)		= 11 + svgNumbersSize [x,y,w,h]
+svgAttrSize (XAttr                   x)				=  5 + svgLengthSize x
+svgAttrSize (XLinkHRefAttr           iri)			= 14 + size iri
+svgAttrSize (YAttr                   y)				=  5 + svgLengthSize y
+svgAttrSize (ZoomAndPanAttr          zp)			= 14 + 7					// "{disable,magnify}"
+svgAttrSize _										= abort "Text.HTML: svgAttrSize applied to unexpected argument.\n"
+
+instance toString SVGAlign where
+	toString XMinYMin								= "xMinYMin"
+	toString XMidYMin								= "xMidYMin"
+	toString XMaxYMin								= "xMaxYMin"
+	toString XMinYMid								= "xMinYMid"
+	toString XMidYMid								= "xMidYMid"
+	toString XMaxYMid								= "xMaxYMid"
+	toString XMinYMax								= "xMinYMax"
+	toString XMidYMax								= "xMidYMax"
+	toString XMaxYMax								= "xMaxYMax"
+
+svgBoolSize :: !Bool -> Int
+svgBoolSize True									= 4							// "true"
+svgBoolSize false									= 5 						// "false"
+
+svgColorSize :: !SVGColor -> Int
+svgColorSize (SVGRGB r g b)							= 7 + intsum (size o toString) [r,g,b]
+svgColorSize (SVGColorText name)					= size name
+
+instance toString SVGColor where
+	toString (SVGRGB r g b)							= "rgb(" +++ glue_list "," (map toString [r,g,b]) +++ ")"
+	toString (SVGColorText name)					= name
+
+svgICCColorSize :: !SVGICCColor -> Int
+svgICCColorSize (profile,values)					= 12 + size profile + svgNumbersSize values
+
+instance toString SVGICCColor where
+	toString (profile,values)						= "icc-color(" +++ profile +++ " " +++ glue_list " " (map toString values) +++ ")"
+
+svgFillOpacitySize :: !SVGFillOpacity -> Int
+svgFillOpacitySize (FillOpacity nr)					= size nr					// number
+svgFillOpacitySize FillOpacityInherit				= 7							// "inherit"
+
+instance toString SVGFillOpacity where
+	toString (FillOpacity nr)						= nr
+	toString FillOpacityInherit						= "inherit"
+
+svgFillRuleSize :: !SVGFillRule -> Int
+svgFillRuleSize _									= 7							// "{nonzero,evenodd,inherit}"
+
+instance toString SVGFillRule where
+	toString FillNonzero							= "nonzero"
+	toString FillEvenodd							= "evenodd"
+	toString FillInherit							= "inherit"
+
+svgFuncIRISize :: !SVGFuncIRI -> Int
+svgFuncIRISize (IRI url)							= 5 + size url				// "url("<url>")"
+
+instance toString SVGFuncIRI where
+	toString (IRI url)								= "url(" +++ url +++ ")"
+
+svgLengthSize :: !SVGLength -> Int
+svgLengthSize (nr,unit)								= size nr + svgLengthUnitSize unit
+
+instance toString SVGLength where
+	toString (nr,unit)								= toString nr +++ toString unit
+
+svgLengthUnitSize :: !SVGLengthUnit -> Int
+svgLengthUnitSize PERCENT							= 1							// "%"
+svgLengthUnitSize other								= 2							// "{em,px,in,cm,mm,pt,pc}"
+
+instance toString SVGLengthUnit where
+	toString EM										= "em"
+	toString EX										= "ex"
+	toString PX										= "ex"
+	toString IN										= "ex"
+	toString CM										= "ex"
+	toString MM										= "ex"
+	toString PT										= "pt"
+	toString PC										= "pc"
+	toString PERCENT								= "%"
+
+svgLineCapSize :: !SVGLineCap -> Int
+svgLineCapSize CapButt								= 4							// "butt"
+svgLineCapSize CapRound								= 5							// "round"
+svgLineCapSize CapSquare							= 6							// "square"
+svgLineCapSize CapInherit							= 7							// "inherit"
+
+instance toString SVGLineCap where
+	toString CapButt								= "butt"
+	toString CapRound								= "round"
+	toString CapSquare								= "square"
+	toString CapInherit								= "inherit"
+
+svgLineJoinSize :: !SVGLineJoin -> Int
+svgLineJoinSize JoinInherit							= 7							// "inherit"
+svgLineJoinSize other								= 5							// "{miter,round,bevel}"
+
+instance toString SVGLineJoin where
+	toString JoinMiter								= "miter"
+	toString JoinRound								= "round"
+	toString JoinBevel								= "bevel"
+	toString JoinInherit							= "inherit"
+
+svgMeetOrSliceSize :: !SVGMeetOrSlice -> Int
+svgMeetOrSliceSize SVGMeet							= 4							// "meet"
+svgMeetOrSliceSize SVGSlice							= 5							// "slice"
+
+instance toString SVGMeetOrSlice where
+	toString SVGMeet								= "meet"
+	toString SVGSlice								= "slice"
+
+svgMiterLimitSize :: !SVGStrokeMiterLimit -> Int
+svgMiterLimitSize (MiterLimit nr)					= size nr					// <miterlimit> >= 1.0
+svgMiterLimitSize MiterLimitInherit					= 7							// "inherit"
+
+instance toString SVGStrokeMiterLimit where
+	toString (MiterLimit nr)						= nr
+	toString MiterLimitInherit						= "inherit"
+
+svgNumbersSize :: ![SVGNumber] -> Int
+svgNumbersSize nrs									= intsum size nrs + length nrs - 1
+
+svgPaintSize :: !SVGPaint -> Int
+svgPaintSize PaintNone								= 4							// "none"
+svgPaintSize PaintCurrentColor						= 12						// "currentColor"
+svgPaintSize (PaintColor c mc)						= svgColorSize   c   + case mc of
+													                         Nothing  = 0
+													                         Just sc  = svgICCColorSize sc
+svgPaintSize (PaintFuncIRI iri mp)					= svgFuncIRISize iri + case mp of
+													                         Nothing  = 0
+													                         Just alt = 1 + svgPaintSize alt
+svgPaintSize PaintInherit							= 7							// "inherit"
+
+instance toString SVGPaint where
+	toString PaintNone								= "none"
+	toString PaintCurrentColor						= "currentColor"
+	toString (PaintColor c mc)						= toString c +++ case mc of
+													                     Nothing  = ""
+													                     Just sc  = toString sc
+	toString (PaintFuncIRI iri mp)					= toString iri +++ case mp of
+													                     Nothing  = ""
+													                     Just alt = " " +++ toString alt
+	toString PaintInherit							= "inherit"
+
+svgStrokeDashArraySize :: !SVGStrokeDashArray -> Int
+svgStrokeDashArraySize NoDash						= 4							// "none"
+svgStrokeDashArraySize (DashArray as)				= svgNumbersSize as			// <a_1><space><a_2>...<space><a_n>
+svgStrokeDashArraySize InheritDash					= 7							// "inherit"
+
+instance toString SVGStrokeDashArray where
+	toString NoDash									= "none"
+	toString (DashArray as)							= glue_list " " as
+	toString InheritDash							= "inherit"
+
+svgStrokeDashOffsetSize :: !SVGStrokeDashOffset -> Int
+svgStrokeDashOffsetSize (DashOffsetLength length)	= svgLengthSize length
+svgStrokeDashOffsetSize DashOffsetInherit			= 7							// "inherit"
+
+instance toString SVGStrokeDashOffset where
+	toString (DashOffsetLength length)				= toString length
+	toString DashOffsetInherit						= "inherit"
+
+svgStrokeWidthSize :: !SVGStrokeWidth -> Int
+svgStrokeWidthSize (StrokeWidthLength length)		= svgLengthSize length
+svgStrokeWidthSize StrokeWidthInherit				= 7 						// "inherit"
+
+instance toString SVGStrokeWidth where
+	toString (StrokeWidthLength length)				= toString length
+	toString StrokeWidthInherit						= "inherit"
+
+svgTransformsSize :: ![SVGTransform] -> Int
+svgTransformsSize ts								= intsum svgTransformSize ts + length ts - 1
+
+svgTransformSize :: !SVGTransform -> Int
+svgTransformSize (MatrixTransform a b c d e f)		=  8 + intsum size [a,b,c,d,e,f] + 5
+svgTransformSize (TranslateTransform tx ty)			= 11 + size tx + 1 + size ty
+svgTransformSize (ScaleTransform     sx sy)			=  7 + size sx + 1 + size sy
+svgTransformSize (RotateTransform    a  mc)			=  8 + size a  + case mc of
+													                   Just (cx,cy) = 1 + size cx + 1 + size cy
+													                   nothing      = 0
+svgTransformSize (SkewXTransform     a)				=  7 + size a
+svgTransformSize (SkewYTransform     a)				=  7 + size a
+
+instance toString SVGTransform where
+	toString (MatrixTransform a b c d e f)			= "matrix(" +++ glue_list " " [a,b,c,d,e,f] +++ ")"
+	toString (TranslateTransform tx ty)				= "translate(" +++ tx +++ " " +++ ty +++ ")"
+	toString (ScaleTransform     sx sy)				= "scale(" +++ sx +++ " " +++ sy +++")"
+	toString (RotateTransform    a  mc)				= "rotate(" +++ a +++ case mc of
+													                        Just (cx,cy) = " " +++ cx +++ " " +++ cy +++ ")"
+													                        nothing      = ")"
+	toString (SkewXTransform     a)					= "skewX(" +++ a +++ ")"
+	toString (SkewYTransform     a)					= "skewY(" +++ a +++ ")"
+
+instance toString SVGZoomAndPan where
+	toString Disable								= "disable"
+	toString Magnify								= "magnify"
+
+serializeSVGElts :: ![SVGElt] !*{#Char} !Int -> (!*{#Char},!Int)
+serializeSVGElts [] dest dest_i = (dest, dest_i)
+serializeSVGElts [x:xs] dest dest_i
+	# (dest, dest_i) = serializeSVGElt x dest dest_i
+	= serializeSVGElts xs dest dest_i
+
+serializeSVGElt :: !SVGElt !*{#Char} !Int -> (!*{#Char}, !Int)
+serializeSVGElt (SVGElt html_attrs svg_attrs elts) s i = writeSVGTag "svg"  html_attrs svg_attrs elts s i
+serializeSVGElt (RectElt html_attrs svg_attrs)     s i = writeSVGTag "rect" html_attrs svg_attrs []   s i
+serializeSVGElt _ _ _                                  = abort "Text.HTML: serializeSVGElt applied to unexpected argument.\n"
+
+serializeSVGAttrs :: ![SVGAttr] !*{#Char} !Int -> (!*{#Char}, !Int)
+serializeSVGAttrs [] dest dest_i = (dest, dest_i)
+serializeSVGAttrs [x:xs] dest dest_i
+	# (dest, dest_i) = serializeSVGAttr x dest dest_i
+	= serializeSVGAttrs xs dest dest_i
+
+serializeSVGAttr :: !SVGAttr !*{#Char} !Int -> (!*{#Char}, !Int)
+serializeSVGAttr (BaseProfileAttr         profile)   s i	= writeAttr "baseProfile"         profile          s i
+serializeSVGAttr (ContentScriptTypeAttr   type)      s i	= writeAttr "contentScriptType"   type             s i
+serializeSVGAttr (ExternalResourcesRequiredAttr b)   s i	= writeAttr "externalResourcesRequired" (if b "true" "false") s i
+serializeSVGAttr (FillAttr                paint)     s i	= writeAttr "fill"                (toString paint) s i
+serializeSVGAttr (FillOpacityAttr         opac)      s i	= writeAttr "fill-opacity"        (toString opac)  s i
+serializeSVGAttr (FillRuleAttr            rule)      s i	= writeAttr "fill-rule"           (toString rule)  s i
+serializeSVGAttr (PreserveAspectRatioAttr md ma mms) s i	= writeAttr "preserveAspectRatio" (   case md of
+															                                        Nothing = ""
+															                                        Just d  = "defer"
+															                                  +++ case ma of
+															                                        Nothing = " none"
+															                                        Just a  = " " +++ toString a
+															                                  +++ case mms of
+															                                        Nothing = ""
+															                                        Just ms = " " +++ toString ms
+															                                  ) s i
+serializeSVGAttr (RxAttr                  length)    s i	= writeAttr "rx"                  (toString length) s i
+serializeSVGAttr (RyAttr                  length)    s i	= writeAttr "ry"                  (toString length) s i
+serializeSVGAttr (StrokeAttr              paint)     s i	= writeAttr "stroke"              (toString paint)  s i
+serializeSVGAttr (StrokeDashArrayAttr     da)        s i	= writeAttr "stroke-dasharray"    (toString da)     s i
+serializeSVGAttr (StrokeDashOffsetAttr    do)        s i	= writeAttr "stroke-dashoffset"   (toString do)     s i
+serializeSVGAttr (StrokeLineCapAttr       cap)       s i	= writeAttr "stroke-linecap"      (toString cap)    s i
+serializeSVGAttr (StrokeLineJoinAttr      join)      s i	= writeAttr "stroke-linejoin"     (toString join)   s i
+serializeSVGAttr (StrokeMiterLimitAttr    limit)     s i	= writeAttr "stroke-miterlimit"   (toString limit)  s i
+serializeSVGAttr (StrokeOpacityAttr       opac)      s i	= writeAttr "stroke-opacity"      (toString opac)   s i
+serializeSVGAttr (StrokeWidthAttr         width)     s i	= writeAttr "stroke-width"        (toString width)  s i
+serializeSVGAttr (TransformAttr			  ts)        s i	= writeAttr "transform"           (glue_list " " (map toString ts)) s i
+serializeSVGAttr (VersionAttr             v)         s i	= writeAttr "version"             v                 s i
+serializeSVGAttr (ViewBoxAttr             x y w h)   s i	= writeAttr "viewBox"             (glue_list " " [x,y,w,h]) s i
+serializeSVGAttr (XAttr                   x)         s i	= writeAttr "x"                   (toString x)      s i
+serializeSVGAttr (XLinkHRefAttr           iri)       s i	= writeAttr "xlink:href"          iri               s i
+serializeSVGAttr (YAttr                   y)         s i	= writeAttr "y"                   (toString y)      s i
+serializeSVGAttr (ZoomAndPanAttr          zap)       s i	= writeAttr "zoomAndPan"          (toString zap)    s i
+
+writeSVGTag :: !{#Char} ![HtmlAttr] ![SVGAttr] ![SVGElt] !*{#Char} !Int -> (!*{#Char},!Int)
+writeSVGTag name html_attrs svg_attrs elts dest dest_i
+	# dest = {dest & [dest_i] = '<'}
+	# dest_i = dest_i + 1
+	# (dest,dest_i) = copyChars name 0 False dest dest_i
+	# (dest, dest_i) = serializeAttrs html_attrs dest dest_i
+	# (dest, dest_i) = serializeSVGAttrs svg_attrs dest dest_i
+	# dest = {dest & [dest_i] = '>'}
+	# dest_i = dest_i + 1
+	# (dest, dest_i) = serializeSVGElts elts dest dest_i
+	# dest = {dest & [dest_i] = '<'}
+	# dest = {dest & [dest_i + 1] = '/'}
+	# dest_i = dest_i + 2
+	# (dest,dest_i) = copyChars name 0 False dest dest_i
+	# dest = {dest & [dest_i] = '>'}
+	# dest_i = dest_i + 1
+	= (dest,dest_i)
+
+glue_list :: !String ![String] -> String
+glue_list sep [str : strs]	= str +++ foldr (\t txt -> sep +++ t +++ txt) "" strs
+glue_list _ _				= ""
+
+intsum :: !(a -> Int) ![a] -> Int
+intsum f xs				= sum (map f xs)
