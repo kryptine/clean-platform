@@ -3,8 +3,6 @@ implementation module Text.HTML
 import StdString, StdArray, StdList, StdTuple, StdBool
 import Data.Maybe
 from StdFunc import o
-// the Text.JSON import should be removed as soon as the derived instances for SVGElt and SVGAttr are moved to iTasks.API.Core.Types
-from Text.JSON import :: JSONNode, generic JSONEncode, generic JSONDecode
 from StdMisc import abort
 
 instance toString HtmlTag
@@ -608,15 +606,10 @@ where
 	html Nothing	= SpanTag [] []
 	html (Just h)	= html h
 
-/* additions due to SVG elements and attributes:
+
+/* handling SVG elements and attributes:
 */
 
-// these should probably be moved to iTasks.API.Core.Types (placed them here for now, to limit the number of altered modules):
-derive JSONEncode SVGElt, SVGAttr, HtmlAttr, SVGAlign, SVGColor, SVGDefer, SVGFillOpacity, SVGFuncIRI, SVGLengthUnit, SVGLineCap, SVGFillRule, SVGLineJoin, SVGMeetOrSlice, SVGStrokeMiterLimit, SVGPaint, SVGStrokeDashArray, SVGStrokeDashOffset, SVGStrokeWidth, SVGTransform, SVGZoomAndPan
-derive JSONDecode SVGElt, SVGAttr, HtmlAttr, SVGAlign, SVGColor, SVGDefer, SVGFillOpacity, SVGFuncIRI, SVGLengthUnit, SVGLineCap, SVGFillRule, SVGLineJoin, SVGMeetOrSlice, SVGStrokeMiterLimit, SVGPaint, SVGStrokeDashArray, SVGStrokeDashOffset, SVGStrokeWidth, SVGTransform, SVGZoomAndPan
-derive gEq        SVGElt, SVGAttr, HtmlAttr, SVGAlign, SVGColor, SVGDefer, SVGFillOpacity, SVGFuncIRI, SVGLengthUnit, SVGLineCap, SVGFillRule, SVGLineJoin, SVGMeetOrSlice, SVGStrokeMiterLimit, SVGPaint, SVGStrokeDashArray, SVGStrokeDashOffset, SVGStrokeWidth, SVGTransform, SVGZoomAndPan
-
-import StdDebug
 instance toString SVGElt
 where
 	toString elt
@@ -736,10 +729,10 @@ svgLengthUnitSize other								= 2							// "{em,px,in,cm,mm,pt,pc}"
 instance toString SVGLengthUnit where
 	toString EM										= "em"
 	toString EX										= "ex"
-	toString PX										= "ex"
-	toString IN										= "ex"
-	toString CM										= "ex"
-	toString MM										= "ex"
+	toString PX										= "px"
+	toString IN										= "in"
+	toString CM										= "cm"
+	toString MM										= "mm"
 	toString PT										= "pt"
 	toString PC										= "pc"
 	toString PERCENT								= "%"

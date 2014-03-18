@@ -12,8 +12,6 @@ definition module Text.HTML
 */
 
 import StdString, Data.Maybe
-// the Text.JSON import should be removed as soon as the derived instances for SVGElt and SVGAttr are moved to iTasks.API.Core.Types
-from Text.JSON import :: JSONNode, generic JSONEncode, generic JSONDecode
 
 
 /**
@@ -351,11 +349,6 @@ svgEltSize  :: !SVGElt  -> Int
 svgAttrSize :: !SVGAttr -> Int
 
 writeSVGTag :: !{#Char} ![HtmlAttr] ![SVGAttr] ![SVGElt] !*{#Char} !Int -> (!*{#Char},!Int)
-
-// these should probably be moved to iTasks.API.Core.Types (placed them here for now, to limit the number of altered modules):
-derive JSONEncode SVGElt, SVGAttr
-derive JSONDecode SVGElt, SVGAttr
-derive gEq        SVGElt, SVGAttr
 
 instance toString HtmlTag
 instance toString SVGElt
