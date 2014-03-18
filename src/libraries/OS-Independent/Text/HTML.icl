@@ -622,9 +622,10 @@ svgEltsSize :: ![SVGElt] -> Int
 svgEltsSize elts = intsum svgEltSize elts
 
 svgEltSize :: !SVGElt -> Int
-svgEltSize (SVGElt  html_attrs svg_attrs elts)		= 11 + attrsSize html_attrs + svgAttrsSize svg_attrs + svgEltsSize elts
-svgEltSize (GElt    html_attrs svg_attrs elts)		=  7 + attrsSize html_attrs + svgAttrsSize svg_attrs + svgEltsSize elts
-svgEltSize (RectElt html_attrs svg_attrs)			= 13 + attrsSize html_attrs + svgAttrsSize svg_attrs
+svgEltSize (SVGElt   html_attrs svg_attrs elts)		= 11 + attrsSize html_attrs + svgAttrsSize svg_attrs + svgEltsSize elts
+svgEltSize (GElt     html_attrs svg_attrs elts)		=  7 + attrsSize html_attrs + svgAttrsSize svg_attrs + svgEltsSize elts
+svgEltSize (ImageElt html_attrs svg_attrs elts)		= 15 + attrsSize html_attrs + svgAttrsSize svg_attrs + svgEltsSize elts
+svgEltSize (RectElt  html_attrs svg_attrs)			= 13 + attrsSize html_attrs + svgAttrsSize svg_attrs
 svgEltSize _										= abort "Text.HTML: svgEltSize applied to unexpected argument.\n"
 
 svgAttrsSize :: ![SVGAttr] -> Int
@@ -860,9 +861,10 @@ serializeSVGElts [x:xs] dest dest_i
 	= serializeSVGElts xs dest dest_i
 
 serializeSVGElt :: !SVGElt !*{#Char} !Int -> (!*{#Char}, !Int)
-serializeSVGElt (SVGElt html_attrs svg_attrs elts) s i = writeSVGTag "svg"  html_attrs svg_attrs elts s i
-serializeSVGElt (RectElt html_attrs svg_attrs)     s i = writeSVGTag "rect" html_attrs svg_attrs []   s i
-serializeSVGElt _ _ _                                  = abort "Text.HTML: serializeSVGElt applied to unexpected argument.\n"
+serializeSVGElt (SVGElt   html_attrs svg_attrs elts) s i = writeSVGTag "svg"   html_attrs svg_attrs elts s i
+serializeSVGElt (ImageElt html_attrs svg_attrs elts) s i = writeSVGTag "image" html_attrs svg_attrs elts s i
+serializeSVGElt (RectElt  html_attrs svg_attrs)      s i = writeSVGTag "rect"  html_attrs svg_attrs []   s i
+serializeSVGElt _ _ _                                    = abort "Text.HTML: serializeSVGElt applied to unexpected argument.\n"
 
 serializeSVGAttrs :: ![SVGAttr] !*{#Char} !Int -> (!*{#Char}, !Int)
 serializeSVGAttrs [] dest dest_i = (dest, dest_i)
@@ -871,39 +873,39 @@ serializeSVGAttrs [x:xs] dest dest_i
 	= serializeSVGAttrs xs dest dest_i
 
 serializeSVGAttr :: !SVGAttr !*{#Char} !Int -> (!*{#Char}, !Int)
-serializeSVGAttr (BaseProfileAttr         profile)   s i	= writeAttr "baseProfile"         profile          s i
-serializeSVGAttr (ContentScriptTypeAttr   type)      s i	= writeAttr "contentScriptType"   type             s i
-serializeSVGAttr (ExternalResourcesRequiredAttr b)   s i	= writeAttr "externalResourcesRequired" (if b "true" "false") s i
-serializeSVGAttr (FillAttr                paint)     s i	= writeAttr "fill"                (toString paint) s i
-serializeSVGAttr (FillOpacityAttr         opac)      s i	= writeAttr "fill-opacity"        (toString opac)  s i
-serializeSVGAttr (FillRuleAttr            rule)      s i	= writeAttr "fill-rule"           (toString rule)  s i
-serializeSVGAttr (PreserveAspectRatioAttr md ma mms) s i	= writeAttr "preserveAspectRatio" (   case md of
-															                                        Nothing = ""
-															                                        Just d  = "defer"
-															                                  +++ case ma of
-															                                        Nothing = " none"
-															                                        Just a  = " " +++ toString a
-															                                  +++ case mms of
-															                                        Nothing = ""
-															                                        Just ms = " " +++ toString ms
-															                                  ) s i
-serializeSVGAttr (RxAttr                  length)    s i	= writeAttr "rx"                  (toString length) s i
-serializeSVGAttr (RyAttr                  length)    s i	= writeAttr "ry"                  (toString length) s i
-serializeSVGAttr (StrokeAttr              paint)     s i	= writeAttr "stroke"              (toString paint)  s i
-serializeSVGAttr (StrokeDashArrayAttr     da)        s i	= writeAttr "stroke-dasharray"    (toString da)     s i
-serializeSVGAttr (StrokeDashOffsetAttr    do)        s i	= writeAttr "stroke-dashoffset"   (toString do)     s i
-serializeSVGAttr (StrokeLineCapAttr       cap)       s i	= writeAttr "stroke-linecap"      (toString cap)    s i
-serializeSVGAttr (StrokeLineJoinAttr      join)      s i	= writeAttr "stroke-linejoin"     (toString join)   s i
-serializeSVGAttr (StrokeMiterLimitAttr    limit)     s i	= writeAttr "stroke-miterlimit"   (toString limit)  s i
-serializeSVGAttr (StrokeOpacityAttr       opac)      s i	= writeAttr "stroke-opacity"      (toString opac)   s i
-serializeSVGAttr (StrokeWidthAttr         width)     s i	= writeAttr "stroke-width"        (toString width)  s i
-serializeSVGAttr (TransformAttr			  ts)        s i	= writeAttr "transform"           (glue_list " " (map toString ts)) s i
-serializeSVGAttr (VersionAttr             v)         s i	= writeAttr "version"             v                 s i
-serializeSVGAttr (ViewBoxAttr             x y w h)   s i	= writeAttr "viewBox"             (glue_list " " [x,y,w,h]) s i
-serializeSVGAttr (XAttr                   x)         s i	= writeAttr "x"                   (toString x)      s i
-serializeSVGAttr (XLinkHRefAttr           iri)       s i	= writeAttr "xlink:href"          iri               s i
-serializeSVGAttr (YAttr                   y)         s i	= writeAttr "y"                   (toString y)      s i
-serializeSVGAttr (ZoomAndPanAttr          zap)       s i	= writeAttr "zoomAndPan"          (toString zap)    s i
+serializeSVGAttr (BaseProfileAttr         profile)   s i = writeAttr "baseProfile"         profile          s i
+serializeSVGAttr (ContentScriptTypeAttr   type)      s i = writeAttr "contentScriptType"   type             s i
+serializeSVGAttr (ExternalResourcesRequiredAttr b)   s i = writeAttr "externalResourcesRequired" (if b "true" "false") s i
+serializeSVGAttr (FillAttr                paint)     s i = writeAttr "fill"                (toString paint) s i
+serializeSVGAttr (FillOpacityAttr         opac)      s i = writeAttr "fill-opacity"        (toString opac)  s i
+serializeSVGAttr (FillRuleAttr            rule)      s i = writeAttr "fill-rule"           (toString rule)  s i
+serializeSVGAttr (PreserveAspectRatioAttr md ma mms) s i = writeAttr "preserveAspectRatio" (   case md of
+														                                         Nothing = ""
+														                                         Just d  = "defer"
+														                                   +++ case ma of
+														                                         Nothing = " none"
+														                                         Just a  = " " +++ toString a
+														                                   +++ case mms of
+														                                         Nothing = ""
+														                                         Just ms = " " +++ toString ms
+														                                   ) s i
+serializeSVGAttr (RxAttr                  length)    s i = writeAttr "rx"                  (toString length) s i
+serializeSVGAttr (RyAttr                  length)    s i = writeAttr "ry"                  (toString length) s i
+serializeSVGAttr (StrokeAttr              paint)     s i = writeAttr "stroke"              (toString paint)  s i
+serializeSVGAttr (StrokeDashArrayAttr     da)        s i = writeAttr "stroke-dasharray"    (toString da)     s i
+serializeSVGAttr (StrokeDashOffsetAttr    do)        s i = writeAttr "stroke-dashoffset"   (toString do)     s i
+serializeSVGAttr (StrokeLineCapAttr       cap)       s i = writeAttr "stroke-linecap"      (toString cap)    s i
+serializeSVGAttr (StrokeLineJoinAttr      join)      s i = writeAttr "stroke-linejoin"     (toString join)   s i
+serializeSVGAttr (StrokeMiterLimitAttr    limit)     s i = writeAttr "stroke-miterlimit"   (toString limit)  s i
+serializeSVGAttr (StrokeOpacityAttr       opac)      s i = writeAttr "stroke-opacity"      (toString opac)   s i
+serializeSVGAttr (StrokeWidthAttr         width)     s i = writeAttr "stroke-width"        (toString width)  s i
+serializeSVGAttr (TransformAttr			  ts)        s i = writeAttr "transform"           (glue_list " " (map toString ts)) s i
+serializeSVGAttr (VersionAttr             v)         s i = writeAttr "version"             v                 s i
+serializeSVGAttr (ViewBoxAttr             x y w h)   s i = writeAttr "viewBox"             (glue_list " " [x,y,w,h]) s i
+serializeSVGAttr (XAttr                   x)         s i = writeAttr "x"                   (toString x)      s i
+serializeSVGAttr (XLinkHRefAttr           iri)       s i = writeAttr "xlink:href"          iri               s i
+serializeSVGAttr (YAttr                   y)         s i = writeAttr "y"                   (toString y)      s i
+serializeSVGAttr (ZoomAndPanAttr          zap)       s i = writeAttr "zoomAndPan"          (toString zap)    s i
 
 writeSVGTag :: !{#Char} ![HtmlAttr] ![SVGAttr] ![SVGElt] !*{#Char} !Int -> (!*{#Char},!Int)
 writeSVGTag name html_attrs svg_attrs elts dest dest_i
