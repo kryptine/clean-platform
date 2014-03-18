@@ -777,6 +777,7 @@ instance toString SVGStrokeMiterLimit where
 	toString MiterLimitInherit						= "inherit"
 
 svgNumbersSize :: ![SVGNumber] -> Int
+svgNumbersSize []									= 0
 svgNumbersSize nrs									= intsum size nrs + length nrs - 1
 
 svgPaintSize :: !SVGPaint -> Int
@@ -828,6 +829,7 @@ instance toString SVGStrokeWidth where
 	toString StrokeWidthInherit						= "inherit"
 
 svgTransformsSize :: ![SVGTransform] -> Int
+svgTransformsSize []								= 0
 svgTransformsSize ts								= intsum svgTransformSize ts + length ts - 1
 
 svgTransformSize :: !SVGTransform -> Int
@@ -862,6 +864,7 @@ serializeSVGElts [x:xs] dest dest_i
 
 serializeSVGElt :: !SVGElt !*{#Char} !Int -> (!*{#Char}, !Int)
 serializeSVGElt (SVGElt   html_attrs svg_attrs elts) s i = writeSVGTag "svg"   html_attrs svg_attrs elts s i
+serializeSVGElt (GElt     html_attrs svg_attrs elts) s i = writeSVGTag "g"     html_attrs svg_attrs elts s i
 serializeSVGElt (ImageElt html_attrs svg_attrs elts) s i = writeSVGTag "image" html_attrs svg_attrs elts s i
 serializeSVGElt (RectElt  html_attrs svg_attrs)      s i = writeSVGTag "rect"  html_attrs svg_attrs []   s i
 serializeSVGElt _ _ _                                    = abort "Text.HTML: serializeSVGElt applied to unexpected argument.\n"
