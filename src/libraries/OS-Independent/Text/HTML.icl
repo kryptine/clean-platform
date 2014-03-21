@@ -154,8 +154,6 @@ attrSize (CodetypeAttr a)		= 12 + (escapedSize a)
 attrSize (ContentAttr a)		= 11 + (escapedSize a)
 attrSize (CompactAttr)			= 18
 attrSize (CoordsAttr a)			= 10 + (escapedSize a)
-attrSize (CXAttr a)				=  6 + (escapedSize a)
-attrSize (CYAttr a)				=  6 + (escapedSize a)
 attrSize (DataAttr a)			=  8 + (escapedSize a)
 attrSize (DatetimeAttr a)		= 12 + (escapedSize a)
 attrSize (DeclareAttr)			= 18
@@ -219,7 +217,6 @@ attrSize (RevAttr a)			=  7 + (escapedSize a)
 attrSize (RowsAttr a)			=  8 + (escapedSize a)
 attrSize (RowspanAttr a)		= 11 + (escapedSize a)
 attrSize (RulesAttr a)			=  9 + (escapedSize a)
-attrSize (RAttr a)				=  5 + (escapedSize a)
 attrSize (RXAttr a)				=  6 + (escapedSize a)
 attrSize (RYAttr a)				=  6 + (escapedSize a)
 attrSize (SchemeAttr a)			= 10 + (escapedSize a)
@@ -408,8 +405,6 @@ serializeAttr (CodetypeAttr a) s i		= writeAttr "codetype" a s i
 serializeAttr (ContentAttr a) s i		= writeAttr "content" a s i
 serializeAttr (CompactAttr) s i			= writeAttr "compact" "compact" s i
 serializeAttr (CoordsAttr a) s i		= writeAttr "coords" a s i
-serializeAttr (CXAttr a) s i			= writeAttr "cx" a s i
-serializeAttr (CYAttr a) s i			= writeAttr "cy" a s i
 serializeAttr (DataAttr a) s i			= writeAttr "data" a s i
 serializeAttr (DatetimeAttr a) s i		= writeAttr "datetime" a s i
 serializeAttr (DeclareAttr) s i			= writeAttr "declare" "declare" s i
@@ -473,7 +468,6 @@ serializeAttr (RevAttr a) s i			= writeAttr "rev" a s i
 serializeAttr (RowsAttr a) s i			= writeAttr "rows" a s i
 serializeAttr (RowspanAttr a) s i		= writeAttr "rowspan" a s i
 serializeAttr (RulesAttr a) s i			= writeAttr "rules" a s i
-serializeAttr (RAttr a) s i				= writeAttr "r" a s i
 serializeAttr (RXAttr a) s i			= writeAttr "rx" a s i
 serializeAttr (RYAttr a) s i			= writeAttr "ry" a s i
 serializeAttr (SchemeAttr a) s i		= writeAttr "scheme" a s i
@@ -622,10 +616,12 @@ svgEltsSize :: ![SVGElt] -> Int
 svgEltsSize elts = intsum svgEltSize elts
 
 svgEltSize :: !SVGElt -> Int
-svgEltSize (SVGElt   html_attrs svg_attrs elts)		= 11 + attrsSize html_attrs + svgAttrsSize svg_attrs + svgEltsSize elts
-svgEltSize (GElt     html_attrs svg_attrs elts)		=  7 + attrsSize html_attrs + svgAttrsSize svg_attrs + svgEltsSize elts
-svgEltSize (ImageElt html_attrs svg_attrs elts)		= 15 + attrsSize html_attrs + svgAttrsSize svg_attrs + svgEltsSize elts
-svgEltSize (RectElt  html_attrs svg_attrs)			= 13 + attrsSize html_attrs + svgAttrsSize svg_attrs
+svgEltSize (SVGElt     html_attrs svg_attrs elts)	= 11 + attrsSize html_attrs + svgAttrsSize svg_attrs + svgEltsSize elts
+svgEltSize (GElt       html_attrs svg_attrs elts)	=  7 + attrsSize html_attrs + svgAttrsSize svg_attrs + svgEltsSize elts
+svgEltSize (ImageElt   html_attrs svg_attrs elts)	= 15 + attrsSize html_attrs + svgAttrsSize svg_attrs + svgEltsSize elts
+svgEltSize (RectElt    html_attrs svg_attrs)		= 13 + attrsSize html_attrs + svgAttrsSize svg_attrs
+svgEltSize (CircleElt  html_attrs svg_attrs)		= 17 + attrsSize html_attrs + svgAttrsSize svg_attrs
+svgEltSize (EllipseElt html_attrs svg_attrs)		= 19 + attrsSize html_attrs + svgAttrsSize svg_attrs
 svgEltSize _										= abort "Text.HTML: svgEltSize applied to unexpected argument.\n"
 
 svgAttrsSize :: ![SVGAttr] -> Int
@@ -634,6 +630,8 @@ svgAttrsSize attrs = intsum svgAttrSize attrs
 svgAttrSize :: !SVGAttr -> Int
 svgAttrSize (BaseProfileAttr         profile)		= 15 + size profile
 svgAttrSize (ContentScriptTypeAttr   type)			= 11 + size type
+svgAttrSize (CxAttr                  cx)			=  6 + svgLengthSize cx
+svgAttrSize (CyAttr                  cy)			=  6 + svgLengthSize cy
 svgAttrSize (ExternalResourcesRequiredAttr b)		= 29 + svgBoolSize b
 svgAttrSize (FillAttr                paint)			=  8 + svgPaintSize paint
 svgAttrSize (FillOpacityAttr         opac)			= 16 + svgFillOpacitySize opac
@@ -647,6 +645,7 @@ svgAttrSize (PreserveAspectRatioAttr md ma mms)		= 23 + case md of
 													     + case mms of
 													     	Just mos      = 1 + svgMeetOrSliceSize mos
 													     	nothing       = 0
+svgAttrSize (RAttr                   length)		=  5 + svgLengthSize length
 svgAttrSize (RxAttr                  length)		=  6 + svgLengthSize length
 svgAttrSize (RyAttr                  length)		=  6 + svgLengthSize length
 svgAttrSize (StrokeAttr              paint)			= 10 + svgPaintSize  paint
@@ -863,11 +862,13 @@ serializeSVGElts [x:xs] dest dest_i
 	= serializeSVGElts xs dest dest_i
 
 serializeSVGElt :: !SVGElt !*{#Char} !Int -> (!*{#Char}, !Int)
-serializeSVGElt (SVGElt   html_attrs svg_attrs elts) s i = writeSVGTag "svg"   html_attrs svg_attrs elts s i
-serializeSVGElt (GElt     html_attrs svg_attrs elts) s i = writeSVGTag "g"     html_attrs svg_attrs elts s i
-serializeSVGElt (ImageElt html_attrs svg_attrs elts) s i = writeSVGTag "image" html_attrs svg_attrs elts s i
-serializeSVGElt (RectElt  html_attrs svg_attrs)      s i = writeSVGTag "rect"  html_attrs svg_attrs []   s i
-serializeSVGElt _ _ _                                    = abort "Text.HTML: serializeSVGElt applied to unexpected argument.\n"
+serializeSVGElt (SVGElt     html_attrs svg_attrs elts) s i = writeSVGTag "svg"     html_attrs svg_attrs elts s i
+serializeSVGElt (GElt       html_attrs svg_attrs elts) s i = writeSVGTag "g"       html_attrs svg_attrs elts s i
+serializeSVGElt (ImageElt   html_attrs svg_attrs elts) s i = writeSVGTag "image"   html_attrs svg_attrs elts s i
+serializeSVGElt (RectElt    html_attrs svg_attrs)      s i = writeSVGTag "rect"    html_attrs svg_attrs []   s i
+serializeSVGElt (CircleElt  html_attrs svg_attrs)      s i = writeSVGTag "circle"  html_attrs svg_attrs []   s i
+serializeSVGElt (EllipseElt html_attrs svg_attrs)      s i = writeSVGTag "ellipse" html_attrs svg_attrs []   s i
+serializeSVGElt _ _ _                                      = abort "Text.HTML: serializeSVGElt applied to unexpected argument.\n"
 
 serializeSVGAttrs :: ![SVGAttr] !*{#Char} !Int -> (!*{#Char}, !Int)
 serializeSVGAttrs [] dest dest_i = (dest, dest_i)
@@ -878,6 +879,8 @@ serializeSVGAttrs [x:xs] dest dest_i
 serializeSVGAttr :: !SVGAttr !*{#Char} !Int -> (!*{#Char}, !Int)
 serializeSVGAttr (BaseProfileAttr         profile)   s i = writeAttr "baseProfile"         profile          s i
 serializeSVGAttr (ContentScriptTypeAttr   type)      s i = writeAttr "contentScriptType"   type             s i
+serializeSVGAttr (CxAttr                  cx)        s i = writeAttr "cx"                  (toString cx)    s i
+serializeSVGAttr (CyAttr                  cy)        s i = writeAttr "cy"                  (toString cy)    s i
 serializeSVGAttr (ExternalResourcesRequiredAttr b)   s i = writeAttr "externalResourcesRequired" (if b "true" "false") s i
 serializeSVGAttr (FillAttr                paint)     s i = writeAttr "fill"                (toString paint) s i
 serializeSVGAttr (FillOpacityAttr         opac)      s i = writeAttr "fill-opacity"        (toString opac)  s i
@@ -892,6 +895,7 @@ serializeSVGAttr (PreserveAspectRatioAttr md ma mms) s i = writeAttr "preserveAs
 														                                         Nothing = ""
 														                                         Just ms = " " +++ toString ms
 														                                   ) s i
+serializeSVGAttr (RAttr                   length)    s i = writeAttr "r"                   (toString length) s i
 serializeSVGAttr (RxAttr                  length)    s i = writeAttr "rx"                  (toString length) s i
 serializeSVGAttr (RyAttr                  length)    s i = writeAttr "ry"                  (toString length) s i
 serializeSVGAttr (StrokeAttr              paint)     s i = writeAttr "stroke"              (toString paint)  s i

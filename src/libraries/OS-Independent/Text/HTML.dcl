@@ -152,8 +152,8 @@ import StdString, Data.Maybe
 			| ContentAttr		!String
 			| CompactAttr
 			| CoordsAttr		!String
-			| CYAttr 			!String
-			| CXAttr 			!String
+//			| CYAttr 			!String     // moved to SVGAttr
+//			| CXAttr 			!String     // moved to SVGAttr
 			| DataAttr			!String
 			| DatetimeAttr		!String
 			| DeclareAttr
@@ -217,7 +217,7 @@ import StdString, Data.Maybe
 			| RowsAttr			!String
 			| RowspanAttr		!String
 			| RulesAttr			!String
-			| RAttr 			!String
+//			| RAttr 			!String // moved to SVGAttr
 			| RXAttr 			!String
 			| RYAttr 			!String
 			| SchemeAttr		!String
@@ -261,10 +261,12 @@ import StdString, Data.Maybe
 /**
 * This type provides an enumeration of (not yet) all SVG elements.
 */
-:: SVGElt				= SVGElt   ![HtmlAttr] ![SVGAttr] ![SVGElt]
-						| GElt     ![HtmlAttr] ![SVGAttr] ![SVGElt]
-						| ImageElt ![HtmlAttr] ![SVGAttr] ![SVGElt]
-						| RectElt  ![HtmlAttr] ![SVGAttr]
+:: SVGElt				= SVGElt     ![HtmlAttr] ![SVGAttr] ![SVGElt]
+						| GElt       ![HtmlAttr] ![SVGAttr] ![SVGElt]
+						| ImageElt   ![HtmlAttr] ![SVGAttr] ![SVGElt]
+						| RectElt    ![HtmlAttr] ![SVGAttr]
+                        | CircleElt  ![HtmlAttr] ![SVGAttr]
+                        | EllipseElt ![HtmlAttr] ![SVGAttr]
 
 
 /*
@@ -273,11 +275,14 @@ import StdString, Data.Maybe
 :: SVGAttr				= BaseProfileAttr         !String										// necessary?
 						| ContentScriptTypeAttr   !String
 //						| ContentStyleTypeAttr    !String										// deprecated in SVG1.1
+						| CxAttr                  !SVGCoordinate
+						| CyAttr                  !SVGCoordinate
 						| ExternalResourcesRequiredAttr !Bool
 						| FillAttr                !SVGPaint
 						| FillOpacityAttr         !SVGFillOpacity
 						| FillRuleAttr            !SVGFillRule
 						| PreserveAspectRatioAttr !(Maybe SVGDefer) !(Maybe SVGAlign) !(Maybe SVGMeetOrSlice)
+                        | RAttr                   !SVGLength
 						| RxAttr                  !SVGLength									// negative value is an error
 						| RyAttr                  !SVGLength									// negative value is an error
 						| StrokeAttr              !SVGPaint
