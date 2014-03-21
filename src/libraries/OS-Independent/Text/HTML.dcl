@@ -249,24 +249,28 @@ import StdString, Data.Maybe
 			| VspaceAttr		!String
 			| WidthAttr			!String
 //			| XAttr				!String		// moved to SVGAttr
-			| X1Attr			!String
-			| X2Attr			!String
+//			| X1Attr			!String     // moved to SVGAttr
+//			| X2Attr			!String     // moved to SVGAttr
 			| XmllangAttr		!String
 			| XmlspaceAttr		!String
 //			| YAttr				!String		// moved to SVGAttr
-			| Y1Attr			!String
-			| Y2Attr			!String
+//			| Y1Attr			!String     // moved to SVGAttr
+//			| Y2Attr			!String     // moved to SVGAttr
 
 
 /**
 * This type provides an enumeration of (not yet) all SVG elements.
 */
-:: SVGElt				= SVGElt     ![HtmlAttr] ![SVGAttr] ![SVGElt]
-						| GElt       ![HtmlAttr] ![SVGAttr] ![SVGElt]
-						| ImageElt   ![HtmlAttr] ![SVGAttr] ![SVGElt]
-						| RectElt    ![HtmlAttr] ![SVGAttr]
-                        | CircleElt  ![HtmlAttr] ![SVGAttr]
-                        | EllipseElt ![HtmlAttr] ![SVGAttr]
+:: SVGElt				= SVGElt            ![HtmlAttr] ![SVGAttr] ![SVGElt]
+                        | CircleElt         ![HtmlAttr] ![SVGAttr]
+                        | DefsElt           ![HtmlAttr] ![SVGAttr] ![SVGElt]
+                        | EllipseElt        ![HtmlAttr] ![SVGAttr]
+						| GElt              ![HtmlAttr] ![SVGAttr] ![SVGElt]
+						| ImageElt          ![HtmlAttr] ![SVGAttr] ![SVGElt]
+                        | LinearGradientElt ![HtmlAttr] ![SVGAttr] ![SVGElt]
+						| RectElt           ![HtmlAttr] ![SVGAttr]
+                        | RadialGradientElt ![HtmlAttr] ![SVGAttr] ![SVGElt]
+						| StopElt           ![HtmlAttr] ![SVGAttr]
 
 
 /*
@@ -281,10 +285,13 @@ import StdString, Data.Maybe
 						| FillAttr                !SVGPaint
 						| FillOpacityAttr         !SVGFillOpacity
 						| FillRuleAttr            !SVGFillRule
+                        | OffsetAttr              !String
 						| PreserveAspectRatioAttr !(Maybe SVGDefer) !(Maybe SVGAlign) !(Maybe SVGMeetOrSlice)
                         | RAttr                   !SVGLength
 						| RxAttr                  !SVGLength									// negative value is an error
 						| RyAttr                  !SVGLength									// negative value is an error
+                        | StopColorAttr           !String
+                        | StopOpacityAttr         !String
 						| StrokeAttr              !SVGPaint
 						| StrokeDashArrayAttr     !SVGStrokeDashArray
 						| StrokeDashOffsetAttr    !SVGStrokeDashOffset
@@ -297,8 +304,12 @@ import StdString, Data.Maybe
 						| VersionAttr             !String										// "1.1" for SVG1.1
 						| ViewBoxAttr             !SVGNumber !SVGNumber !SVGNumber !SVGNumber	// <min-x> <min-y> <width> <height>
 						| XAttr                   !SVGCoordinate
+						| X1Attr                  !SVGLength									// negative value is an error
+						| X2Attr                  !SVGLength									// negative value is an error
 						| XLinkHRefAttr           !String										// <iri>
 						| YAttr                   !SVGCoordinate
+						| Y1Attr                  !SVGLength									// negative value is an error
+						| Y2Attr                  !SVGLength									// negative value is an error
 						| ZoomAndPanAttr          !SVGZoomAndPan
 
 :: SVGAlign				= XMinYMin								// preserve aspect-ratio, align <min-x> of element's viewBox with smallest x-value of viewport,          align <min-y> of element's viewBox with smallest y-value of viewport

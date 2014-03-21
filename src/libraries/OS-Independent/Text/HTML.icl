@@ -244,12 +244,8 @@ attrSize (ValuetypeAttr a)		= 13 + (escapedSize a)
 attrSize (VlinkAttr a)			=  9 + (escapedSize a)
 attrSize (VspaceAttr a)			= 10 + (escapedSize a)
 attrSize (WidthAttr a)			=  9 + (escapedSize a)
-attrSize (X1Attr a)				=  6 + (escapedSize a)
-attrSize (X2Attr a)				=  6 + (escapedSize a)
 attrSize (XmllangAttr a)		= 12 + (escapedSize a)
 attrSize (XmlspaceAttr a)		= 13 + (escapedSize a)
-attrSize (Y1Attr a)				=  6 + (escapedSize a)
-attrSize (Y2Attr a)				=  6 + (escapedSize a)
 
 attrsSize :: ![HtmlAttr] -> Int
 attrsSize attrs = intsum attrSize attrs
@@ -495,12 +491,8 @@ serializeAttr (ValuetypeAttr a) s i		= writeAttr "valuetype" a s i
 serializeAttr (VlinkAttr a) s i			= writeAttr "vlink" a s i
 serializeAttr (VspaceAttr a) s i		= writeAttr "vspace" a s i
 serializeAttr (WidthAttr a) s i			= writeAttr "width" a s i
-serializeAttr (X1Attr a) s i			= writeAttr "x1" a s i
-serializeAttr (X2Attr a) s i			= writeAttr "x2" a s i
 serializeAttr (XmllangAttr a) s i		= writeAttr "xml:lang" a s i
 serializeAttr (XmlspaceAttr a) s i		= writeAttr "xml:space" a s i
-serializeAttr (Y1Attr a) s i			= writeAttr "y1" a s i
-serializeAttr (Y2Attr a) s i			= writeAttr "y2" a s i
 
 serializeAttrs :: ![HtmlAttr] !*{#Char} !Int -> (!*{#Char}, !Int)
 serializeAttrs [] dest dest_i = (dest, dest_i)
@@ -616,13 +608,18 @@ svgEltsSize :: ![SVGElt] -> Int
 svgEltsSize elts = intsum svgEltSize elts
 
 svgEltSize :: !SVGElt -> Int
-svgEltSize (SVGElt     html_attrs svg_attrs elts)	= 11 + attrsSize html_attrs + svgAttrsSize svg_attrs + svgEltsSize elts
-svgEltSize (GElt       html_attrs svg_attrs elts)	=  7 + attrsSize html_attrs + svgAttrsSize svg_attrs + svgEltsSize elts
-svgEltSize (ImageElt   html_attrs svg_attrs elts)	= 15 + attrsSize html_attrs + svgAttrsSize svg_attrs + svgEltsSize elts
-svgEltSize (RectElt    html_attrs svg_attrs)		= 13 + attrsSize html_attrs + svgAttrsSize svg_attrs
-svgEltSize (CircleElt  html_attrs svg_attrs)		= 17 + attrsSize html_attrs + svgAttrsSize svg_attrs
-svgEltSize (EllipseElt html_attrs svg_attrs)		= 19 + attrsSize html_attrs + svgAttrsSize svg_attrs
-svgEltSize _										= abort "Text.HTML: svgEltSize applied to unexpected argument.\n"
+svgEltSize (SVGElt     html_attrs svg_attrs elts)	        = 11 + attrsSize html_attrs + svgAttrsSize svg_attrs + svgEltsSize elts
+svgEltSize (CircleElt  html_attrs svg_attrs)		        = 17 + attrsSize html_attrs + svgAttrsSize svg_attrs
+svgEltSize (DefsElt    html_attrs svg_attrs elts)	        = 13 + attrsSize html_attrs + svgAttrsSize svg_attrs + svgEltsSize elts
+svgEltSize (EllipseElt html_attrs svg_attrs)		        = 19 + attrsSize html_attrs + svgAttrsSize svg_attrs
+svgEltSize (GElt       html_attrs svg_attrs elts)	        =  7 + attrsSize html_attrs + svgAttrsSize svg_attrs + svgEltsSize elts
+svgEltSize (ImageElt   html_attrs svg_attrs elts)	        = 15 + attrsSize html_attrs + svgAttrsSize svg_attrs + svgEltsSize elts
+svgEltSize (LinearGradientElt    html_attrs svg_attrs elts)	= 33 + attrsSize html_attrs + svgAttrsSize svg_attrs + svgEltsSize elts
+svgEltSize (RectElt    html_attrs svg_attrs)		        = 13 + attrsSize html_attrs + svgAttrsSize svg_attrs
+svgEltSize (StopElt    html_attrs svg_attrs)		        = 13 + attrsSize html_attrs + svgAttrsSize svg_attrs
+svgEltSize (RadialGradientElt    html_attrs svg_attrs elts)	= 33 + attrsSize html_attrs + svgAttrsSize svg_attrs + svgEltsSize elts
+svgEltSize (StopElt    html_attrs svg_attrs)		        = 13 + attrsSize html_attrs + svgAttrsSize svg_attrs
+svgEltSize _										        = abort "Text.HTML: svgEltSize applied to unexpected argument.\n"
 
 svgAttrsSize :: ![SVGAttr] -> Int
 svgAttrsSize attrs = intsum svgAttrSize attrs
@@ -636,6 +633,7 @@ svgAttrSize (ExternalResourcesRequiredAttr b)		= 29 + svgBoolSize b
 svgAttrSize (FillAttr                paint)			=  8 + svgPaintSize paint
 svgAttrSize (FillOpacityAttr         opac)			= 16 + svgFillOpacitySize opac
 svgAttrSize (FillRuleAttr            rule)			= 13 + svgFillRuleSize rule
+svgAttrSize (OffsetAttr            offset)			= 10 + size offset
 svgAttrSize (PreserveAspectRatioAttr md ma mms)		= 23 + case md of
 															Just SVGDefer = 5	// "defer"
 															nothing       = 0
@@ -648,6 +646,8 @@ svgAttrSize (PreserveAspectRatioAttr md ma mms)		= 23 + case md of
 svgAttrSize (RAttr                   length)		=  5 + svgLengthSize length
 svgAttrSize (RxAttr                  length)		=  6 + svgLengthSize length
 svgAttrSize (RyAttr                  length)		=  6 + svgLengthSize length
+svgAttrSize (StopColorAttr           color)			= 14 + size color
+svgAttrSize (StopOpacityAttr         opacity)		= 16 + size opacity
 svgAttrSize (StrokeAttr              paint)			= 10 + svgPaintSize  paint
 svgAttrSize (StrokeDashArrayAttr     da)			= 20 + svgStrokeDashArraySize  da
 svgAttrSize (StrokeDashOffsetAttr    do)			= 21 + svgStrokeDashOffsetSize do
@@ -660,8 +660,12 @@ svgAttrSize (TransformAttr			 ts)			= 13 + svgTransformsSize ts
 svgAttrSize (VersionAttr             v)				= 11 + size v
 svgAttrSize (ViewBoxAttr             x y w h)		= 11 + svgNumbersSize [x,y,w,h]
 svgAttrSize (XAttr                   x)				=  5 + svgLengthSize x
+svgAttrSize (X1Attr                  x1)			=  6 + svgLengthSize x1
+svgAttrSize (X2Attr                  x2)			=  6 + svgLengthSize x2
 svgAttrSize (XLinkHRefAttr           iri)			= 14 + size iri
 svgAttrSize (YAttr                   y)				=  5 + svgLengthSize y
+svgAttrSize (Y1Attr                  y1)			=  6 + svgLengthSize y1
+svgAttrSize (Y2Attr                  y2)			=  6 + svgLengthSize y2
 svgAttrSize (ZoomAndPanAttr          zp)			= 14 + 7					// "{disable,magnify}"
 svgAttrSize _										= abort "Text.HTML: svgAttrSize applied to unexpected argument.\n"
 
@@ -862,13 +866,17 @@ serializeSVGElts [x:xs] dest dest_i
 	= serializeSVGElts xs dest dest_i
 
 serializeSVGElt :: !SVGElt !*{#Char} !Int -> (!*{#Char}, !Int)
-serializeSVGElt (SVGElt     html_attrs svg_attrs elts) s i = writeSVGTag "svg"     html_attrs svg_attrs elts s i
-serializeSVGElt (GElt       html_attrs svg_attrs elts) s i = writeSVGTag "g"       html_attrs svg_attrs elts s i
-serializeSVGElt (ImageElt   html_attrs svg_attrs elts) s i = writeSVGTag "image"   html_attrs svg_attrs elts s i
-serializeSVGElt (RectElt    html_attrs svg_attrs)      s i = writeSVGTag "rect"    html_attrs svg_attrs []   s i
-serializeSVGElt (CircleElt  html_attrs svg_attrs)      s i = writeSVGTag "circle"  html_attrs svg_attrs []   s i
-serializeSVGElt (EllipseElt html_attrs svg_attrs)      s i = writeSVGTag "ellipse" html_attrs svg_attrs []   s i
-serializeSVGElt _ _ _                                      = abort "Text.HTML: serializeSVGElt applied to unexpected argument.\n"
+serializeSVGElt (SVGElt             html_attrs svg_attrs elts) s i = writeSVGTag "svg"              html_attrs svg_attrs elts s i
+serializeSVGElt (CircleElt          html_attrs svg_attrs)      s i = writeSVGTag "circle"           html_attrs svg_attrs []   s i
+serializeSVGElt (EllipseElt         html_attrs svg_attrs)      s i = writeSVGTag "ellipse"          html_attrs svg_attrs []   s i
+serializeSVGElt (DefsElt            html_attrs svg_attrs elts) s i = writeSVGTag "defs"             html_attrs svg_attrs elts s i
+serializeSVGElt (GElt               html_attrs svg_attrs elts) s i = writeSVGTag "g"                html_attrs svg_attrs elts s i
+serializeSVGElt (ImageElt           html_attrs svg_attrs elts) s i = writeSVGTag "image"            html_attrs svg_attrs elts s i
+serializeSVGElt (LinearGradientElt  html_attrs svg_attrs elts) s i = writeSVGTag "linearGradient"   html_attrs svg_attrs elts s i
+serializeSVGElt (RectElt            html_attrs svg_attrs)      s i = writeSVGTag "rect"             html_attrs svg_attrs []   s i
+serializeSVGElt (RadialGradientElt  html_attrs svg_attrs elts) s i = writeSVGTag "radialGradient"   html_attrs svg_attrs elts s i
+serializeSVGElt (StopElt            html_attrs svg_attrs)      s i = writeSVGTag "stop"             html_attrs svg_attrs []   s i
+serializeSVGElt _ _ _                                              = abort "Text.HTML: serializeSVGElt applied to unexpected argument.\n"
 
 serializeSVGAttrs :: ![SVGAttr] !*{#Char} !Int -> (!*{#Char}, !Int)
 serializeSVGAttrs [] dest dest_i = (dest, dest_i)
@@ -885,6 +893,7 @@ serializeSVGAttr (ExternalResourcesRequiredAttr b)   s i = writeAttr "externalRe
 serializeSVGAttr (FillAttr                paint)     s i = writeAttr "fill"                (toString paint) s i
 serializeSVGAttr (FillOpacityAttr         opac)      s i = writeAttr "fill-opacity"        (toString opac)  s i
 serializeSVGAttr (FillRuleAttr            rule)      s i = writeAttr "fill-rule"           (toString rule)  s i
+serializeSVGAttr (OffsetAttr              offset)    s i = writeAttr "offset"              offset           s i
 serializeSVGAttr (PreserveAspectRatioAttr md ma mms) s i = writeAttr "preserveAspectRatio" (   case md of
 														                                         Nothing = ""
 														                                         Just d  = "defer"
@@ -898,6 +907,8 @@ serializeSVGAttr (PreserveAspectRatioAttr md ma mms) s i = writeAttr "preserveAs
 serializeSVGAttr (RAttr                   length)    s i = writeAttr "r"                   (toString length) s i
 serializeSVGAttr (RxAttr                  length)    s i = writeAttr "rx"                  (toString length) s i
 serializeSVGAttr (RyAttr                  length)    s i = writeAttr "ry"                  (toString length) s i
+serializeSVGAttr (StopColorAttr           color)     s i = writeAttr "stop-color"          color             s i
+serializeSVGAttr (StopOpacityAttr         opacity)   s i = writeAttr "stop-opacity"        opacity           s i
 serializeSVGAttr (StrokeAttr              paint)     s i = writeAttr "stroke"              (toString paint)  s i
 serializeSVGAttr (StrokeDashArrayAttr     da)        s i = writeAttr "stroke-dasharray"    (toString da)     s i
 serializeSVGAttr (StrokeDashOffsetAttr    do)        s i = writeAttr "stroke-dashoffset"   (toString do)     s i
@@ -910,8 +921,12 @@ serializeSVGAttr (TransformAttr			  ts)        s i = writeAttr "transform"      
 serializeSVGAttr (VersionAttr             v)         s i = writeAttr "version"             v                 s i
 serializeSVGAttr (ViewBoxAttr             x y w h)   s i = writeAttr "viewBox"             (glue_list " " [x,y,w,h]) s i
 serializeSVGAttr (XAttr                   x)         s i = writeAttr "x"                   (toString x)      s i
+serializeSVGAttr (X1Attr                  x1)        s i = writeAttr "x1"                  (toString x1)     s i
+serializeSVGAttr (X2Attr                  x2)        s i = writeAttr "x2"                  (toString x2)     s i
 serializeSVGAttr (XLinkHRefAttr           iri)       s i = writeAttr "xlink:href"          iri               s i
 serializeSVGAttr (YAttr                   y)         s i = writeAttr "y"                   (toString y)      s i
+serializeSVGAttr (Y1Attr                  y1)        s i = writeAttr "y1"                  (toString y1)     s i
+serializeSVGAttr (Y2Attr                  y2)        s i = writeAttr "y2"                  (toString y2)     s i
 serializeSVGAttr (ZoomAndPanAttr          zap)       s i = writeAttr "zoomAndPan"          (toString zap)    s i
 
 writeSVGTag :: !{#Char} ![HtmlAttr] ![SVGAttr] ![SVGElt] !*{#Char} !Int -> (!*{#Char},!Int)
