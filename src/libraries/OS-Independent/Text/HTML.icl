@@ -234,7 +234,7 @@ attrSize (SummaryAttr a)		= 11 + (escapedSize a)
 attrSize (TabindexAttr a)		= 12 + (escapedSize a)
 attrSize (TargetAttr a)			= 10 + (escapedSize a)
 attrSize (TextAttr a)			=  8 + (escapedSize a)
-attrSize (TextAnchorAttr a)		= 15 + (escapedSize a)
+//attrSize (TextAnchorAttr a)		= 15 + (escapedSize a)		// moved to SVGAttr
 attrSize (TitleAttr a)			=  9 + (escapedSize a)
 attrSize (TypeAttr a)			=  8 + (escapedSize a)
 attrSize (UsemapAttr a)			= 10 + (escapedSize a)
@@ -481,7 +481,7 @@ serializeAttr (SummaryAttr a) s i		= writeAttr "summary" a s i
 serializeAttr (TabindexAttr a) s i		= writeAttr "tabindex" a s i
 serializeAttr (TargetAttr a) s i		= writeAttr "target" a s i
 serializeAttr (TextAttr a) s i			= writeAttr "text" a s i
-serializeAttr (TextAnchorAttr a) s i	= writeAttr "text-anchor" a s i
+//serializeAttr (TextAnchorAttr a) s i	= writeAttr "text-anchor" a s i			// moved to SVGAttr
 serializeAttr (TitleAttr a) s i			= writeAttr "title" a s i
 serializeAttr (TypeAttr a) s i			= writeAttr "type" a s i
 serializeAttr (UsemapAttr a) s i		= writeAttr "usemap" a s i
@@ -616,10 +616,10 @@ svgEltSize (GElt       html_attrs svg_attrs elts)	        =  7 + attrsSize html_
 svgEltSize (ImageElt   html_attrs svg_attrs elts)	        = 15 + attrsSize html_attrs + svgAttrsSize svg_attrs + svgEltsSize elts
 svgEltSize (LinearGradientElt    html_attrs svg_attrs elts)	= 33 + attrsSize html_attrs + svgAttrsSize svg_attrs + svgEltsSize elts
 svgEltSize (LineElt    html_attrs svg_attrs)				= 13 + attrsSize html_attrs + svgAttrsSize svg_attrs
+svgEltSize (RadialGradientElt    html_attrs svg_attrs elts)	= 33 + attrsSize html_attrs + svgAttrsSize svg_attrs + svgEltsSize elts
 svgEltSize (RectElt    html_attrs svg_attrs)		        = 13 + attrsSize html_attrs + svgAttrsSize svg_attrs
 svgEltSize (StopElt    html_attrs svg_attrs)		        = 13 + attrsSize html_attrs + svgAttrsSize svg_attrs
-svgEltSize (RadialGradientElt    html_attrs svg_attrs elts)	= 33 + attrsSize html_attrs + svgAttrsSize svg_attrs + svgEltsSize elts
-svgEltSize (StopElt    html_attrs svg_attrs)		        = 13 + attrsSize html_attrs + svgAttrsSize svg_attrs
+svgEltSize (TextElt    html_attrs svg_attrs text)			= 13 + attrsSize html_attrs + svgAttrsSize svg_attrs + size text
 svgEltSize _										        = abort "Text.HTML: svgEltSize applied to unexpected argument.\n"
 
 svgAttrsSize :: ![SVGAttr] -> Int
@@ -634,6 +634,10 @@ svgAttrSize (ExternalResourcesRequiredAttr b)		= 29 + svgBoolSize b
 svgAttrSize (FillAttr                paint)			=  8 + svgPaintSize paint
 svgAttrSize (FillOpacityAttr         opac)			= 16 + svgFillOpacitySize opac
 svgAttrSize (FillRuleAttr            rule)			= 13 + svgFillRuleSize rule
+svgAttrSize (FontFamilyAttr          family)        = 15 + size family
+svgAttrSize (FontSizeAttr            s)             = 13 + size s
+svgAttrSize (FontStyleAttr           s)				= 14 + size s
+svgAttrSize (LengthAdjustAttr        adjust)		= 16 + svgLengthAdjustSize adjust
 svgAttrSize (OffsetAttr            offset)			= 10 + size offset
 svgAttrSize (PreserveAspectRatioAttr md ma mms)		= 23 + case md of
 															Just SVGDefer = 5	// "defer"
@@ -657,6 +661,8 @@ svgAttrSize (StrokeLineJoinAttr      join)			= 19 + svgLineJoinSize join
 svgAttrSize (StrokeMiterLimitAttr    limit)			= 21 + svgMiterLimitSize limit
 svgAttrSize (StrokeOpacityAttr       opac)			= 18 + size opac
 svgAttrSize (StrokeWidthAttr         width)			= 16 + svgStrokeWidthSize width
+svgAttrSize (TextAnchorAttr          anchor)		= 15 + size anchor
+svgAttrSize (TextLengthAttr          length)		= 14 + svgLengthSize length
 svgAttrSize (TransformAttr			 ts)			= 13 + svgTransformsSize ts
 svgAttrSize (VersionAttr             v)				= 11 + size v
 svgAttrSize (ViewBoxAttr             x y w h)		= 11 + svgNumbersSize [x,y,w,h]
@@ -726,6 +732,14 @@ svgLengthSize (nr,unit)								= size nr + svgLengthUnitSize unit
 
 instance toString SVGLength where
 	toString (nr,unit)								= toString nr +++ toString unit
+
+svgLengthAdjustSize :: !SVGLengthAdjust -> Int
+svgLengthAdjustSize Spacing							= 7							// "spacing"
+svgLengthAdjustSize spacingAndGlyphs				= 16						// "spacingAndGlyphs"
+
+instance toString SVGLengthAdjust where
+	toString Spacing								= "spacing"
+	toString spacingAndGlyphs						= "spacingAndGlyphs"
 
 svgLengthUnitSize :: !SVGLengthUnit -> Int
 svgLengthUnitSize PERCENT							= 1							// "%"
@@ -875,9 +889,10 @@ serializeSVGElt (GElt               html_attrs svg_attrs elts) s i = writeSVGTag
 serializeSVGElt (ImageElt           html_attrs svg_attrs elts) s i = writeSVGTag "image"            html_attrs svg_attrs elts s i
 serializeSVGElt (LinearGradientElt  html_attrs svg_attrs elts) s i = writeSVGTag "linearGradient"   html_attrs svg_attrs elts s i
 serializeSVGElt (LineElt            html_attrs svg_attrs)      s i = writeSVGTag "line"             html_attrs svg_attrs []   s i
-serializeSVGElt (RectElt            html_attrs svg_attrs)      s i = writeSVGTag "rect"             html_attrs svg_attrs []   s i
 serializeSVGElt (RadialGradientElt  html_attrs svg_attrs elts) s i = writeSVGTag "radialGradient"   html_attrs svg_attrs elts s i
+serializeSVGElt (RectElt            html_attrs svg_attrs)      s i = writeSVGTag "rect"             html_attrs svg_attrs []   s i
 serializeSVGElt (StopElt            html_attrs svg_attrs)      s i = writeSVGTag "stop"             html_attrs svg_attrs []   s i
+serializeSVGElt (TextElt            html_attrs svg_attrs text) s i = writeSVGPlainTag "text"        html_attrs svg_attrs text s i
 serializeSVGElt _ _ _                                              = abort "Text.HTML: serializeSVGElt applied to unexpected argument.\n"
 
 serializeSVGAttrs :: ![SVGAttr] !*{#Char} !Int -> (!*{#Char}, !Int)
@@ -895,6 +910,10 @@ serializeSVGAttr (ExternalResourcesRequiredAttr b)   s i = writeAttr "externalRe
 serializeSVGAttr (FillAttr                paint)     s i = writeAttr "fill"                (toString paint) s i
 serializeSVGAttr (FillOpacityAttr         opac)      s i = writeAttr "fill-opacity"        (toString opac)  s i
 serializeSVGAttr (FillRuleAttr            rule)      s i = writeAttr "fill-rule"           (toString rule)  s i
+serializeSVGAttr (FontFamilyAttr          family)    s i = writeAttr "font-family"        (toString family) s i
+serializeSVGAttr (FontSizeAttr            size)      s i = writeAttr "font-size"          (toString size)   s i
+serializeSVGAttr (FontStyleAttr           style)     s i = writeAttr "font-style"         (toString style)  s i
+serializeSVGAttr (LengthAdjustAttr        adjust)    s i = writeAttr "lengthAdjust"       (toString adjust) s i
 serializeSVGAttr (OffsetAttr              offset)    s i = writeAttr "offset"              offset           s i
 serializeSVGAttr (PreserveAspectRatioAttr md ma mms) s i = writeAttr "preserveAspectRatio" (   case md of
 														                                         Nothing = ""
@@ -919,6 +938,8 @@ serializeSVGAttr (StrokeLineJoinAttr      join)      s i = writeAttr "stroke-lin
 serializeSVGAttr (StrokeMiterLimitAttr    limit)     s i = writeAttr "stroke-miterlimit"   (toString limit)  s i
 serializeSVGAttr (StrokeOpacityAttr       opac)      s i = writeAttr "stroke-opacity"      (toString opac)   s i
 serializeSVGAttr (StrokeWidthAttr         width)     s i = writeAttr "stroke-width"        (toString width)  s i
+serializeSVGAttr (TextAnchorAttr          anchor)    s i = writeAttr "text-anchor"         (toString anchor) s i
+serializeSVGAttr (TextLengthAttr          length)    s i = writeAttr "textLength"          (toString length) s i
 serializeSVGAttr (TransformAttr			  ts)        s i = writeAttr "transform"           (glue_list " " (map toString ts)) s i
 serializeSVGAttr (VersionAttr             v)         s i = writeAttr "version"             v                 s i
 serializeSVGAttr (ViewBoxAttr             x y w h)   s i = writeAttr "viewBox"             (glue_list " " [x,y,w,h]) s i
@@ -941,6 +962,24 @@ writeSVGTag name html_attrs svg_attrs elts dest dest_i
 	# dest = {dest & [dest_i] = '>'}
 	# dest_i = dest_i + 1
 	# (dest, dest_i) = serializeSVGElts elts dest dest_i
+	# dest = {dest & [dest_i] = '<'}
+	# dest = {dest & [dest_i + 1] = '/'}
+	# dest_i = dest_i + 2
+	# (dest,dest_i) = copyChars name 0 False dest dest_i
+	# dest = {dest & [dest_i] = '>'}
+	# dest_i = dest_i + 1
+	= (dest,dest_i)
+
+writeSVGPlainTag :: !{#Char} ![HtmlAttr] ![SVGAttr] !{#Char} !*{#Char} !Int -> (!*{#Char},!Int)
+writeSVGPlainTag name html_attrs svg_attrs plain dest dest_i
+	# dest = {dest & [dest_i] = '<'}
+	# dest_i = dest_i + 1
+	# (dest,dest_i) = copyChars name 0 False dest dest_i
+	# (dest, dest_i) = serializeAttrs html_attrs dest dest_i
+	# (dest, dest_i) = serializeSVGAttrs svg_attrs dest dest_i
+	# dest = {dest & [dest_i] = '>'}
+	# dest_i = dest_i + 1
+	# (dest,dest_i) = copyChars plain 0 False dest dest_i
 	# dest = {dest & [dest_i] = '<'}
 	# dest = {dest & [dest_i + 1] = '/'}
 	# dest_i = dest_i + 2

@@ -236,7 +236,7 @@ import StdString, Data.Maybe
 			| TabindexAttr		!String
 			| TargetAttr		!String
 			| TextAttr			!String
-			| TextAnchorAttr	!String
+//			| TextAnchorAttr	!String		// moved to SVGAttr
 			| TitleAttr			!String
 //			| TransformAttr		!String		// moved to SVGAttr
 			| TypeAttr			!String
@@ -272,6 +272,7 @@ import StdString, Data.Maybe
 						| RectElt           ![HtmlAttr] ![SVGAttr]
                         | RadialGradientElt ![HtmlAttr] ![SVGAttr] ![SVGElt]
 						| StopElt           ![HtmlAttr] ![SVGAttr]
+						| TextElt           ![HtmlAttr] ![SVGAttr] !String                      // currently only a String as content
 
 
 /*
@@ -286,6 +287,10 @@ import StdString, Data.Maybe
 						| FillAttr                !SVGPaint
 						| FillOpacityAttr         !SVGFillOpacity
 						| FillRuleAttr            !SVGFillRule
+						| FontFamilyAttr          !String
+						| FontSizeAttr            !String										// {<absolute-size>,<relative-size>,<length>,<percentage>,inherit}
+						| FontStyleAttr           !String										// {normal,italic,oblique,inherit}
+						| LengthAdjustAttr        !SVGLengthAdjust
                         | OffsetAttr              !String
 						| PreserveAspectRatioAttr !(Maybe SVGDefer) !(Maybe SVGAlign) !(Maybe SVGMeetOrSlice)
                         | RAttr                   !SVGLength
@@ -301,6 +306,8 @@ import StdString, Data.Maybe
 						| StrokeMiterLimitAttr    !SVGStrokeMiterLimit
 						| StrokeOpacityAttr       !String//SVGOpacityValue
 						| StrokeWidthAttr         !SVGStrokeWidth
+						| TextAnchorAttr          !String										// {start,middle,end,inherit}
+						| TextLengthAttr          !SVGLength
 						| TransformAttr			  ![SVGTransform]
 						| VersionAttr             !String										// "1.1" for SVG1.1
 						| ViewBoxAttr             !SVGNumber !SVGNumber !SVGNumber !SVGNumber	// <min-x> <min-y> <width> <height>
@@ -332,6 +339,7 @@ import StdString, Data.Maybe
 :: SVGFuncIRI			= IRI String							// url(<IRI>)
 :: SVGICCColor		  :== (String,[SVGNumber])					// (<color-profile-name>,<color-values>), the <color-values> list must not be empty
 :: SVGLength		  :== (SVGNumber,SVGLengthUnit)
+:: SVGLengthAdjust		= Spacing | SpacingAndGlyphs
 :: SVGLengthUnit		= EM | EX | PX | IN | CM | MM | PT | PC | PERCENT
 :: SVGLineCap			= CapButt | CapRound | CapSquare | CapInherit
 :: SVGLineJoin			= JoinMiter | JoinRound | JoinBevel | JoinInherit
