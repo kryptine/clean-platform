@@ -74,7 +74,7 @@ import StdString, Data.Maybe
 			| LabelTag			![HtmlAttr] ![HtmlTag]
 			| LegendTag			![HtmlAttr] ![HtmlTag]
 			| LiTag				![HtmlAttr] ![HtmlTag]
-			| LineTag			![HtmlAttr]
+//			| LineTag			![HtmlAttr]					// moved to SVGElt as LineElt
 			| LinkTag			![HtmlAttr] ![HtmlTag]
 			| MapTag			![HtmlAttr] ![HtmlTag]
 			| MenuTag			![HtmlAttr] ![HtmlTag]
@@ -268,6 +268,7 @@ import StdString, Data.Maybe
 						| GElt              ![HtmlAttr] ![SVGAttr] ![SVGElt]
 						| ImageElt          ![HtmlAttr] ![SVGAttr] ![SVGElt]
                         | LinearGradientElt ![HtmlAttr] ![SVGAttr] ![SVGElt]
+                        | LineElt           ![HtmlAttr] ![SVGAttr]
 						| RectElt           ![HtmlAttr] ![SVGAttr]
                         | RadialGradientElt ![HtmlAttr] ![SVGAttr] ![SVGElt]
 						| StopElt           ![HtmlAttr] ![SVGAttr]
