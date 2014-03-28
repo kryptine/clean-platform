@@ -11,23 +11,20 @@ from StdFunc              import flip, id, o, const
 from StdInt               import class +, instance + Int
 
 instance Monad IO where
-  //lift x           = IO (\s -> (x, s))
-  (>>=) ioa a2iob  = IO iob
-    where iob st = let (IO fb) = a2iob a
-                   in  fb nst
-            where (a, nst) = let (IO fa) = ioa
-                             in  fa st
+  (>>=) (IO f) a2mb = IO run
+    where
+      run world
+        # (x, world) = f world
+        # (IO g)     = a2mb x
+        = g world
 
 instance Monad ((->) r) where
-  //lift x         = const x
-  (>>=) ma a2mb  = \r -> a2mb (ma r) r
+  (>>=) ma a2mb = \r -> a2mb (ma r) r
 
 instance Monad [] where
-  //lift x     = [x]
-  (>>=) m k  = foldr ((++) o k) [] m
+  (>>=) m k = foldr ((++) o k) [] m
 
 instance Monad Maybe where
-  //lift x            = Just x
   (>>=) (Just x) k  = k x
   (>>=) Nothing  _  = Nothing
 
@@ -44,10 +41,10 @@ instance MonadPlus Maybe where
 return :: a -> m a | Monad m
 return x = pure x
 
-(>>|) infixl 1 :: (a b) (a c) -> a c | Monad a
+(>>|) infixl 1 :: (m a) (m b) -> m b | Monad m
 (>>|) ma mb = ma >>= \_ -> mb
 
-(=<<) infixr 1 :: (a -> b c) (b a) -> b c | Monad b
+(=<<) infixr 1 :: (a -> m b) (m a) -> m b | Monad m
 (=<<) f x = x >>= f
 
 sequence :: .[a b] -> a [b] | Monad a
