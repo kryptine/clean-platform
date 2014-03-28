@@ -6,9 +6,9 @@ from Control.Applicative import class Applicative
 
 :: Identity a = Identity a
 
+runIdentity :: (Identity .a) -> .a
+
 instance Functor Identity
 instance Applicative Identity
 instance Monad Identity
-
-runIdentity :: (Identity .a) -> .a
 
