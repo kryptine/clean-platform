@@ -1,23 +1,22 @@
 implementation module System.TTS
 
+import StdOverloaded, StdString, StdList
 import Data.Maybe
 import System.Process
 
 tts :: String *World -> *World
-tts str world = say [str] world
-
-say :: [String] *World -> *World
-say str world
-  # (_, world) = echo "' > \"" +++ tmpFileNm +++ "\""
-  # (_, world) = echo "set speech = Wscript.CreateObject(\"SAPI.spVoice\") >> \"" +++ tmpFileNm +++ "\""
-  # (_, world) = echo "speech.speak \"" +++ str +++ "\" >> \"" +++ tmpFileNm +++ "\""
-  # (_, world) = start "tmpFileNm"
-  # (_, world) = pause
-  # (_, world) = del tmpFileNm
-  = snd (runProcess "/usr/bin/say" args Nothing world)
+tts str world
+  #! (_, world) = echo ("' > \"" +++ tmpFileNm +++ "\"") world
+  #! (_, world) = echo ("set speech = Wscript.CreateObject(\"SAPI.spVoice\") >> \"" +++ tmpFileNm +++ "\"") world
+  #! (_, world) = echo ("speech.speak \"" +++ str +++ "\" >> \"" +++ tmpFileNm +++ "\"") world
+  #! (_, world) = start tmpFileNm world
+  #! (_, world) = pause world
+  #! (_, world) = del tmpFileNm world
+  = world
   where
-    tmpFileNm       = "temp%num%.vbs"
-    echo str world  = runProcess "echo" [str] Nothing world
-    start str world = runProcess "start" [str] Nothing world
-    pause world     = runProcess "pause" [] Nothing world
-    del file world  = runProcess "del" [file] Nothing world
+    tmpFileNm       = "temp.vbs"
+	exec cmd world  = runProcess "C:\\Windows\\System32\\cmd.exe" ["/c " +++ cmd] Nothing world
+    echo str world  = exec ("echo " +++ str) world
+    start str world = exec ("start " +++ str) world
+    pause world     = exec "pause" world
+    del file world  = exec ("del " +++ file) world
