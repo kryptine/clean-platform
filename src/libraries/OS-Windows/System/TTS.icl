@@ -6,9 +6,7 @@ import System.Process
 
 tts :: String *World -> *World
 tts str world
-  #! (_, world) = echo ("' > \"" +++ tmpFileNm +++ "\"") world
-  #! (_, world) = echo ("set speech = Wscript.CreateObject(\"SAPI.spVoice\") >> \"" +++ tmpFileNm +++ "\"") world
-  #! (_, world) = echo ("speech.speak \"" +++ str +++ "\" >> \"" +++ tmpFileNm +++ "\"") world
+  #! (_, world) = echo ("Wscript.CreateObject(\"SAPI.spVoice\").speak \"" +++ str +++ "\" > \"" +++ tmpFileNm +++ "\"") world
   #! (_, world) = start tmpFileNm world
   #! (_, world) = pause world
   #! (_, world) = del tmpFileNm world
