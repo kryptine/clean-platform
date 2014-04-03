@@ -7,8 +7,14 @@ import System.Process
 tts :: String *World -> *World
 tts str world = say [str] world
 
+ttsToFile :: String String *World -> *World
+ttsToFile str fn world = say [str, "-o", fn] world
+
 ttsWithVoice :: Voice String *World -> *World
 ttsWithVoice voice str world = say ["-v", toString voice, str] world
+
+ttsWithVoiceToFile :: Voice String String *World -> *World
+ttsWithVoiceToFile voice str fn world = say ["-v", toString voice, str, "-o", fn] world
 
 say :: [String] *World -> *World
 say args world = snd (runProcess "/usr/bin/say" args Nothing world)

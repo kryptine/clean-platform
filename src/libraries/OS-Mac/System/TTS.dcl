@@ -32,4 +32,8 @@ instance toString Voice
 
 tts :: String *World -> *World
 
+ttsToFile :: String String *World -> *World
+
 ttsWithVoice :: Voice String *World -> *World
+
+ttsWithVoiceToFile :: Voice String String *World -> *World
