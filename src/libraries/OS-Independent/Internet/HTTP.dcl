@@ -60,6 +60,7 @@ instance toString HTTPResponse
 //Server utilities
 parseRequestLine	:: !String																							-> Maybe (!String, !String, !String, !String)
 parseHeader			:: !String																							-> Maybe (!String, !String)
+parseResponse 		:: !String 																							-> Maybe HTTPResponse
 
 //Request utilities
 parseRequest 		:: !HTTPRequest																					-> HTTPRequest

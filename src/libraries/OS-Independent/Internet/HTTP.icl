@@ -147,6 +147,29 @@ parseHeader header
 	# value					= trim (header % (index + 1, size header))
 	= Just (name,value)
 
+// TODO: fast solution, needs multipart handling and stuff
+parseResponse :: !String -> Maybe HTTPResponse
+parseResponse rsp | startsWith "HTTP/" rsp
+	| length lines < 4
+		= Nothing
+	| length code_words < 2
+		= Nothing
+	= Just {rsp_code = rsp_code, rsp_reason = rsp_reason, rsp_headers = rsp_headers, rsp_data = rsp_data} 
+where
+	lines 		 = split "\n" rsp
+
+	code_words 	 = split " " (hd lines)
+	rsp_code     = toInt (hd (tl code_words))
+	rsp_reason   = join " " (tl (tl code_words))
+	
+	header_lines = takeWhile ((<>) "\r") (tl lines)
+	rsp_headers	 = map fromJust (filter isJust (map parseHeader header_lines))
+	
+	data_lines	 = tl (dropWhile ((<>) "\r") (tl lines))
+	rsp_data	 = join "\n" data_lines
+	
+parseResponse rsp = Nothing
+
 //Request utilities
 parseRequest 		::	!HTTPRequest																					-> HTTPRequest
 parseRequest req
