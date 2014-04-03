@@ -1,6 +1,6 @@
 implementation module System.TTS
 
-import StdTuple, StdOverloaded, StdString
+import StdTuple, StdOverloaded
 import Data.Maybe
 import System.Process
 
