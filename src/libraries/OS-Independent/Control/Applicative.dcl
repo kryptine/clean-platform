@@ -1,10 +1,8 @@
 definition module Control.Applicative
 
 from Data.Functor  import class Functor
-from Data.IO       import :: IO
 from Data.Maybe    import :: Maybe
 
-instance Applicative IO
 instance Applicative ((->) r)
 instance Applicative Maybe
 instance Applicative []

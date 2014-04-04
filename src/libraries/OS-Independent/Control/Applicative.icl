@@ -1,11 +1,7 @@
 implementation module Control.Applicative
 
-import Data.Func, Data.Functor, Data.IO, Data.List, Data.Maybe
+import Data.Func, Data.Functor, System.IO, Data.List, Data.Maybe
 import StdFunc
-
-instance Applicative IO where
-  pure x     = IO (\s -> (x, s))
-  (<*>) f g  = liftA2 id f g
 
 instance Applicative ((->) r) where
   pure x      = const x

@@ -2,14 +2,11 @@ definition module Control.Monad
 
 from Control.Applicative  import class Applicative
 from Data.Functor         import class Functor
-from Data.IO              import :: IO
 from Data.Maybe           import :: Maybe
 from Data.Void            import :: Void
 
 class Monad m | Applicative m where
   (>>=) infixl 1 :: (m a) (a -> m b) -> m b
-
-instance Monad IO
 
 instance Monad ((->) r)
 

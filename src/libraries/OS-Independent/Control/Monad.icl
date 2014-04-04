@@ -2,21 +2,12 @@ implementation module Control.Monad
 
 from Control.Applicative  import class Applicative (..), lift
 from Data.Functor         import class Functor (..)
-from Data.IO              import :: IO (..)
 from Data.List            import map, zipWith, replicate
 from Data.Maybe           import :: Maybe, Nothing, Just
 from Data.Void            import :: Void (..)
 from StdList              import foldr, ++
 from StdFunc              import flip, id, o, const
 from StdInt               import class +, instance + Int
-
-instance Monad IO where
-  (>>=) (IO f) a2mb = IO run
-    where
-      run world
-        # (x, world) = f world
-        # (IO g)     = a2mb x
-        = g world
 
 instance Monad ((->) r) where
   (>>=) ma a2mb = \r -> a2mb (ma r) r
