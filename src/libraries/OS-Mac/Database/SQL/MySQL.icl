@@ -2,7 +2,7 @@ implementation module Database.SQL.MySQL
 //MySQL implementation of the Clean SQL database API
 // 
 import Database.SQL
-import StdEnv, Data.Maybe, System._Pointer
+import StdEnv, Data.Maybe, System._Pointer, Text
 
 //MySQL Does not really need a context
 :: MySQLContext		:== Int
@@ -346,3 +346,89 @@ where
 
 	rollback :: !*MySQLCursor -> (!(Maybe SQLError), !*MySQLCursor)
 	rollback cursor = (Just SQLNotSupportedError, cursor)
+
+instance SQLSchemaCursor MySQLCursor
+where
+    listTables :: !*MySQLCursor -> (!(Maybe SQLError), ![SQLTableName], !*MySQLCursor)
+    listTables cur
+        # (error, cur)      = execute listTablesStatement [] cur
+        | isJust error      = (error,[],cur)
+        # (error, res, cur) = fetchAll cur
+        | isJust error      = (error,[],cur)
+        = (Nothing, [table \\ [SQLVVarchar table:_] <- res],cur)
+
+    describeTable :: !SQLTableName !*MySQLCursor -> (!(Maybe SQLError), !(Maybe SQLTable), !*MySQLCursor)
+    describeTable name cur
+        # (error, cur)      = execute (describeTableStatement name) [] cur
+        | isJust error      = (error,Nothing,cur)
+        # (error, res, cur) = fetchAll cur
+        | isJust error      = (error,Nothing,cur)
+        # (columns,primaryKey,foreignKeys) = foldr addColumn ([],[],[]) res
+        = (Nothing,Just {SQLTable|name=name,columns=columns,primaryKey=primaryKey,foreignKeys=foreignKeys},cur)
+    where
+        addColumn [SQLVVarchar colName,SQLVText colType,SQLVVarchar nullYesNo,SQLVVarchar key,def,SQLVVarchar extra] (cols,pk,fks)
+            # null = nullYesNo == "YES"
+            # autoIncrement = indexOf "auto_increment" extra >= 0
+            # cols  = [{SQLColumn|name=colName,type=columnTypeFromString colType,null=null,autoIncrement = autoIncrement}:cols]
+            # pk    = if (key == "PRI") [colName:pk] pk
+            = (cols,pk,fks)
+        addColumn row (cols,pk,fks) = (cols,pk,fks)
+
+    createTable :: !SQLTable !*MySQLCursor -> (!(Maybe SQLError), !*MySQLCursor)
+    createTable table cur
+        # (error, cur)      = execute (createTableStatement table) [] cur
+        | isJust error      = (error,cur)
+        = (Nothing,cur)
+
+    deleteTable :: !SQLTableName !*MySQLCursor -> (!(Maybe SQLError), !*MySQLCursor)
+    deleteTable name cur
+        # (error, cur)      = execute (deleteTableStatement name) [] cur
+        | isJust error      = (error,cur)
+        = (Nothing,cur)
+
+listTablesStatement :: SQLStatement
+listTablesStatement = "SHOW TABLES"
+
+describeTableStatement :: SQLTableName -> SQLStatement
+describeTableStatement tablename = "DESCRIBE `" +++tablename +++ "`"
+
+createTableStatement :: SQLTable -> SQLStatement
+createTableStatement {SQLTable|name,columns,primaryKey,foreignKeys}
+    = "CREATE TABLE `" +++ name +++ "` (" +++ join "," (colSQL ++ pkSQL ++ fkSQL) +++ ")"
+where
+    colSQL = [concat (["`",name,"` ",columnTypeToString type]
+                ++ if autoIncrement [" auto_increment"] []
+                ++ if null [] [" NOT NULL"])
+              \\{SQLColumn|name,type,null,autoIncrement}<- columns]
+    pkSQL = case primaryKey of
+        [] = []
+        pk = ["PRIMARY KEY ("+++ join "," ["`"+++col+++"`" \\col <- pk] +++")"]
+
+    fkSQL = case foreignKeys of
+        [] = []
+        fk = ["FOREIGN KEY ("+++ join "," ["`"+++col+++"`" \\col <- fk_cols] +++
+              ") REFERENCES `" +++ fk_table +++ "` ("+++ join "," ["`"+++col+++"`" \\col <- fk_refs] +++ ")"
+             \\ (fk_cols,fk_table,fk_refs) <- fk]
+
+deleteTableStatement :: SQLTableName -> SQLStatement
+deleteTableStatement tablename = "DROP TABLE `" +++ tablename +++ "`"
+
+columnTypeToString :: SQLColumnType -> String
+columnTypeToString (SQLTText) = "TEXT"
+columnTypeToString (SQLTInteger) = "INT"
+columnTypeToString (SQLTReal) = "REAL"
+columnTypeToString (SQLTDate) = "DATE"
+columnTypeToString (SQLTTime) = "TIME"
+columnTypeToString (SQLTDatetime) = "DATETIME"
+columnTypeToString (SQLTEnum options) = "ENUM (" +++ join "," ["'"+++option+++"'" \\ option <- options] +++ ")"
+columnTypeToString _ = "TEXT" //TODO Add all types
+
+columnTypeFromString :: String -> SQLColumnType //TODO Add more column types
+columnTypeFromString "text" = SQLTText
+columnTypeFromString "date" = SQLTDate
+columnTypeFromString "time" = SQLTTime
+columnTypeFromString "datetime" = SQLTDatetime
+columnTypeFromString s
+    | startsWith "int(" s   = SQLTInteger
+                            = SQLTUnknown
+

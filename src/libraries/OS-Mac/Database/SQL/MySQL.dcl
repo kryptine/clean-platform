@@ -13,3 +13,4 @@ instance SQLEnvironment		World			MySQLContext
 instance SQLContext			MySQLContext	MySQLConnection
 instance SQLConnection		MySQLConnection	MySQLCursor
 instance SQLCursor			MySQLCursor
+instance SQLSchemaCursor    MySQLCursor
