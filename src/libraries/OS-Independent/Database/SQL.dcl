@@ -153,6 +153,13 @@ where
 	commit			:: !*cur									-> (!(Maybe SQLError), !*cur)
 	rollback		:: !*cur									-> (!(Maybe SQLError), !*cur)
 
+class SQLSchemaCursor cur
+where
+    listTables      :: !*cur                                    -> (!(Maybe SQLError), ![SQLTableName], !*cur)
+    describeTable   :: !SQLTableName                            -> (!(Maybe SQLError), !(Maybe SQLTable), !*cur)
+    createTable     :: !SQLTable !*cur                          -> (!(Maybe SQLError), !*cur)
+    deleteTable     :: !SQLTableName !*cur                      -> (!(Maybe SQLError), !*cur)
+
 // *********************************************************************************************************************
 // Common class instances
 // *********************************************************************************************************************
