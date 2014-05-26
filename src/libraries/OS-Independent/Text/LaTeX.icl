@@ -3,8 +3,9 @@ implementation module Text.LaTeX
 import StdFunc
 import StdList
 
-import Text.PPrint
 import Text
+from Text.PPrint import class Pretty(..), :: Doc, :: SimpleDoc
+from Text.PPrint import renderPretty, text, display, braces, <->, <$>, <+>, hsep, vsep, linebreak
 
 printLaTeX :: ![LaTeX] -> String
 printLaTeX l = display (renderPretty 0.8 80 (pretty l))
