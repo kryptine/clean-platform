@@ -36,6 +36,14 @@ emptyGraph =
 	, lastId = 0
 	}
 
+emptyGraphWithLastId :: Int -> .(Graph n e)
+emptyGraphWithLastId n = 
+	{ Graph
+	| nodes = newMap
+	, edges = newMap
+	, lastId = n
+	}
+
 addNode :: n .(Graph n e) -> .(NodeIndex, .(Graph n e))
 addNode n graph = addNodeWithIndex (\_ -> n) graph
 

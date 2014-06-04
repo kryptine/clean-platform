@@ -27,6 +27,7 @@ derive gEq Graph, Node
 
 //Initialization
 emptyGraph :: .(Graph n e)
+emptyGraphWithLastId :: Int -> .(Graph n e)
 trivialGraph :: n -> .(NodeIndex, .(Graph n e))
 
 //Query
