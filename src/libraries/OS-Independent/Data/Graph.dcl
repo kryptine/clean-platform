@@ -31,6 +31,7 @@ emptyGraphWithLastId :: Int -> .(Graph n e)
 trivialGraph :: n -> .(NodeIndex, .(Graph n e))
 
 //Query
+getLastId :: .(Graph n e) -> Int
 nodeIndices :: !.(Graph n e) -> [NodeIndex]
 edgeIndices :: !.(Graph n e) -> [EdgeIndex]
 nodeCount :: !.(Graph n e) -> Int
