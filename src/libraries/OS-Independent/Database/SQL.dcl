@@ -12,10 +12,10 @@ import StdString, Data.Maybe
 // *********************************************************************************************************************
 
 :: SQLDatabase =
-	{ host		:: !String
-	, username	:: !String
-	, password	:: !String
-	, database	:: !String
+	{ database	:: !String
+	, host		:: !Maybe String
+	, username	:: !Maybe String
+	, password	:: !Maybe String
 	}
 
 // SQL Statements and queries are just strings

@@ -2,7 +2,8 @@ implementation module Database.SQL.SQLite
 //SQLite implementation of the Clean SQL database API
 //
 import Database.SQL
-import StdEnv, Data.Maybe, System._Pointer
+import StdEnv, Data.Maybe, System._Pointer, Text
+import Database.SQL._SQLite
 
 //SQLite Does not really need a context
 :: SQLiteContext :== Int
@@ -18,69 +19,6 @@ import StdEnv, Data.Maybe, System._Pointer
     , step_res      :: !Int
     , num_cols      :: !Int
 	}
-
-SQLITE_OK       :== 0
-SQLITE_ERROR    :== 1
-SQLITE_ROW      :== 100
-SQLITE_DONE     :== 101
-SQLITE_INTEGER  :== 1
-SQLITE_FLOAT    :== 2
-SQLITE_TEXT     :== 3
-SQLITE_BLOB     :== 4
-SQLITE_NULL     :== 5
-
-sqlite3_open :: !{#Char} -> (!Int,!Pointer)
-sqlite3_open a0 = code {
-	ccall sqlite3_open "s:Ip"
-}
-sqlite3_close :: !Pointer -> Int
-sqlite3_close a0 = code {
-    ccall sqlite3_close "p:I"
-}
-sqlite3_errcode :: !Pointer -> Int
-sqlite3_errcode a0 = code {
-    ccall sqlite3_errcode "p:I"
-}
-sqlite3_errmsg :: !Pointer -> Pointer
-sqlite3_errmsg a0 = code {
-    ccall sqlite3_errmsg "p:p"
-}
-sqlite3_prepare :: !Pointer !{#Char} !Int -> (!Int,!Pointer,!Pointer)
-sqlite3_prepare a0 a1 a2 = code {
-    ccall sqlite3_prepare "psI:Ipp"
-}
-sqlite3_step :: !Pointer -> Int
-sqlite3_step a0 = code {
-    ccall sqlite3_step "p:I"
-}
-sqlite3_finalize :: !Pointer -> Int
-sqlite3_finalize a0 = code {
-    ccall sqlite3_finalize "p:I"
-}
-sqlite3_column_count :: !Pointer -> Int
-sqlite3_column_count a0 = code {
-    ccall sqlite3_column_count "p:I"
-}
-sqlite3_column_type :: !Pointer !Int -> Int
-sqlite3_column_type a0 a1 = code {
-    ccall sqlite3_column_type "pI:I"
-}
-sqlite3_column_int :: !Pointer !Int -> Int
-sqlite3_column_int a0 a1 = code {
-    ccall sqlite3_column_int "pI:I"
-}
-sqlite3_column_text :: !Pointer !Int -> Pointer
-sqlite3_column_text a0 a1 = code {
-    ccall sqlite3_column_text "pI:p"
-}
-sqlite3_last_insert_rowid :: !Pointer -> Int
-sqlite3_last_insert_rowid a0 = code {
-    ccall sqlite3_last_insert_rowid "p:I"
-}
-sqlite3_changes :: !Pointer -> Int
-sqlite3_changes a0 = code {
-    ccall sqlite3_changes "p:I"
-}
 
 instance SQLEnvironment World SQLiteContext
 where
@@ -152,7 +90,12 @@ where
         # num_cols = sqlite3_column_count stmt_ptr
 		| num_cols <> num_cols = undef	// Force eval
         //Bind parameters
-        //TODO
+        # rc = bind_parameters stmt_ptr 1 values
+        | rc <> SQLITE_OK
+			# errno 	= sqlite3_errcode conn_ptr
+			# errmsg	= derefString (sqlite3_errmsg conn_ptr)
+			| errno <> errno || errmsg <> errmsg	= undef //Force eval
+            = (Just (SQLDatabaseError errno errmsg), cursor)
         //Step once to actually start executing the query
         # rc                        = sqlite3_step stmt_ptr
         | rc == SQLITE_ERROR
@@ -161,35 +104,33 @@ where
 			| errno <> errno || errmsg <> errmsg	= undef //Force eval
             = (Just (SQLDatabaseError errno errmsg), cursor)
         = (Nothing, {SQLiteCursor|cursor & stmt_ptr = stmt_ptr, step_res = rc, num_cols = num_cols})
-        /*
     where
-		//Convert an SQLValue to a string which is properly escaped for inclusion in an SQL statement
-		formatSQLValue :: !SQLValue !*SQLiteCursor -> (!String, !*SQLiteCursor)
-		formatSQLValue (SQLVChar s) cursor
-			# (s, cursor) = escapeString s cursor
-			= ("'" +++ s +++ "'", cursor)
-		formatSQLValue (SQLVVarchar s) cursor
-			# (s, cursor) = escapeString s cursor
-			= ("'" +++ s +++ "'", cursor)
-		formatSQLValue (SQLVText s) cursor
-			# (s, cursor) = escapeString s cursor
-			= ("'" +++ s +++ "'", cursor)
-		formatSQLValue (SQLVInteger i) cursor = (toString i, cursor)
-		formatSQLValue (SQLVReal r) cursor = (toString r, cursor)
-		formatSQLValue (SQLVFloat f) cursor = (toString f, cursor)
-		formatSQLValue (SQLVDouble d) cursor = (toString d, cursor)
-		formatSQLValue (SQLVDate d) cursor = ("'" +++ toString d +++  "'", cursor)
-		formatSQLValue (SQLVTime t) cursor = ("'" +++ toString t +++ "'", cursor)
-		formatSQLValue (SQLVTimestamp t) cursor = (toString t, cursor)
-		formatSQLValue (SQLVDatetime d t) cursor = ("'" +++ toString d +++ " " +++ toString t +++ "'", cursor) 
-		formatSQLValue (SQLVEnum s) cursor
-			# (s, cursor) = escapeString s cursor
-			= ("'" +++ s +++ "'", cursor)
-		formatSQLValue (SQLVNull) cursor = ("NULL", cursor)
-		formatSQLValue (SQLVUnknown s) cursor
-			# (s, cursor) = escapeString s cursor
-			= ("'" +++ s +++ "'", cursor)
-	    */	
+        bind_parameters stmt_ptr i [] = SQLITE_OK
+        bind_parameters stmt_ptr i [v:vs]
+            # rc = case v of
+                (SQLVChar x)        = sqlite3_bind_text stmt_ptr i x (size x) SQLITE_TRANSIENT
+                (SQLVVarchar x)     = sqlite3_bind_text stmt_ptr i x (size x) SQLITE_TRANSIENT
+                (SQLVText x)        = sqlite3_bind_text stmt_ptr i x (size x) SQLITE_TRANSIENT
+                (SQLVInteger x)     = sqlite3_bind_int64 stmt_ptr i x
+                (SQLVReal x)        = sqlite3_bind_double stmt_ptr i x
+                (SQLVFloat x)       = sqlite3_bind_double stmt_ptr i x
+                (SQLVDouble x)      = sqlite3_bind_double stmt_ptr i x
+                (SQLVDate d)
+                    # x = toString d
+                    = sqlite3_bind_text stmt_ptr i x (size x) SQLITE_TRANSIENT
+                (SQLVTime t)
+                    # x = toString t
+                    = sqlite3_bind_text stmt_ptr i x (size x) SQLITE_TRANSIENT
+                (SQLVTimestamp x)   = sqlite3_bind_int64 stmt_ptr i x
+                (SQLVDatetime d t)
+                    # x = toString d +++ " " +++ toString t
+                    = sqlite3_bind_text stmt_ptr i x (size x) SQLITE_TRANSIENT
+                (SQLVEnum x)        = sqlite3_bind_text stmt_ptr i x (size x) SQLITE_TRANSIENT
+                (SQLVNull)          = sqlite3_bind_null stmt_ptr i
+                (SQLVBlob x)        = sqlite3_bind_blob stmt_ptr i x (size x) SQLITE_TRANSIENT
+                (SQLVUnknown x)     = sqlite3_bind_blob stmt_ptr i x (size x) SQLITE_TRANSIENT
+            | rc == SQLITE_OK   = bind_parameters stmt_ptr (i + 1) vs
+                                = rc
 
 	executeMany :: !SQLStatement ![[SQLValue]] !*SQLiteCursor -> (!(Maybe SQLError), !*SQLiteCursor)
 	executeMany statement [] 	cursor = (Nothing, cursor)
@@ -277,3 +218,87 @@ where
 	rollback :: !*SQLiteCursor -> (!(Maybe SQLError), !*SQLiteCursor)
 	rollback cursor = (Just SQLNotSupportedError, cursor)
 
+instance SQLSchemaCursor SQLiteCursor
+where
+    listTables :: !*SQLiteCursor -> (!(Maybe SQLError), ![SQLTableName], !*SQLiteCursor)
+    listTables cur
+        # (error, cur)      = execute listTablesStatement [] cur
+        | isJust error      = (error,[],cur)
+        # (error, res, cur) = fetchAll cur
+        | isJust error      = (error,[],cur)
+        = (Nothing, [table \\ [SQLVText table:_] <- res],cur)
+
+    describeTable :: !SQLTableName !*SQLiteCursor -> (!(Maybe SQLError), !(Maybe SQLTable), !*SQLiteCursor)
+    describeTable name cur
+        # (error, cur)      = execute (describeTableStatement name) [] cur
+        | isJust error      = (error,Nothing,cur)
+        # (error, res, cur) = fetchAll cur
+        | isJust error      = (error,Nothing,cur)
+        # (columns,primaryKey,foreignKeys) = foldr addColumn ([],[],[]) res
+        = (Nothing,Just {SQLTable|name=name,columns=columns,primaryKey=primaryKey,foreignKeys=foreignKeys},cur)
+    where
+        addColumn [_,SQLVText colName,SQLVText colType,SQLVInteger nullYesNo,_,SQLVInteger keyYesNo] (cols,pk,fks)
+            # null = nullYesNo == 1
+            # cols  = [{SQLColumn|name=colName,type=columnTypeFromString colType,null=null,autoIncrement = False}:cols]
+            # pk    = if (keyYesNo == 1) [colName:pk] pk
+            = (cols,pk,fks)
+        addColumn row (cols,pk,fks) = (cols,pk,fks)
+
+    createTable :: !SQLTable !*SQLiteCursor -> (!(Maybe SQLError), !*SQLiteCursor)
+    createTable table cur
+        # (error, cur)      = execute (createTableStatement table) [] cur
+        | isJust error      = (error,cur)
+        = (Nothing,cur)
+
+    deleteTable :: !SQLTableName !*SQLiteCursor -> (!(Maybe SQLError), !*SQLiteCursor)
+    deleteTable name cur
+        # (error, cur)      = execute (deleteTableStatement name) [] cur
+        | isJust error      = (error,cur)
+        = (Nothing,cur)
+
+listTablesStatement :: SQLStatement
+listTablesStatement = "SELECT name FROM sqlite_master WHERE type = 'table'"
+
+describeTableStatement :: SQLTableName -> SQLStatement
+describeTableStatement tablename = "PRAGMA table_info(" +++tablename +++ ")"
+
+createTableStatement :: SQLTable -> SQLStatement
+createTableStatement {SQLTable|name,columns,primaryKey,foreignKeys}
+    = "CREATE TABLE `" +++ name +++ "` (" +++ join "," (colSQL  ++ pkSQL ++ fkSQL) +++ ")"
+where
+    colSQL = [concat (["`",name,"` ",columnTypeToString type] ++ if null [] [" NOT NULL"])
+             \\ {SQLColumn|name,type,null} <- columns]
+    pkSQL = case primaryKey of
+        [] = []
+        pk = ["PRIMARY KEY ("+++ join "," ["`"+++col+++"`" \\col <- pk] +++")"]
+
+    fkSQL = case foreignKeys of
+        [] = []
+        fk = ["FOREIGN KEY ("+++ join "," ["`"+++col+++"`" \\col <- fk_cols] +++
+              ") REFERENCES `" +++ fk_table +++ "` ("+++ join "," ["`"+++col+++"`" \\col <- fk_refs] +++ ")"
+             \\ (fk_cols,fk_table,fk_refs) <- fk]
+
+deleteTableStatement :: SQLTableName -> SQLStatement
+deleteTableStatement tablename = "DROP TABLE `" +++ tablename +++ "`"
+
+columnTypeToString :: SQLColumnType -> String
+columnTypeToString (SQLTChar _) = "TEXT"
+columnTypeToString (SQLTVarchar _) = "TEXT"
+columnTypeToString (SQLTText) = "TEXT"
+columnTypeToString (SQLTInteger) = "INTEGER"
+columnTypeToString (SQLTReal) = "REAL"
+columnTypeToString (SQLTFloat) = "REAL"
+columnTypeToString (SQLTDouble) = "REAL"
+columnTypeToString (SQLTDate) = "NUMERIC"
+columnTypeToString (SQLTTime) = "NUMERIC"
+columnTypeToString (SQLTTimestamp) = "INTEGER"
+columnTypeToString (SQLTDatetime) = "NUMERIC"
+columnTypeToString (SQLTEnum _) = "TEXT"
+columnTypeToString (SQLTBlob) = "NONE"
+columnTypeToString (SQLTUnknown) = "TEXT"
+
+columnTypeFromString :: String -> SQLColumnType //TODO Add more column types
+columnTypeFromString "TEXT"     = SQLTText
+columnTypeFromString "INTEGER"  = SQLTInteger
+columnTypeFromString "REAL"     = SQLTReal
+columnTypeFromString _          = SQLTUnknown

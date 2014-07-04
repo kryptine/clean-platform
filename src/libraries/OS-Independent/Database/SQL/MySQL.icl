@@ -39,7 +39,7 @@ where
 		# conn_ptr	= mysql_init 0
 		| conn_ptr == 0		= (Just (SQLInterfaceError 1 "Could not initialize a connection"), Nothing, context)
 		//Connect
-		# ok_ptr	= mysql_real_connect conn_ptr (packString host) (packString username) (packString password) (packString database) 0 0 CLIENT_FOUND_ROWS
+		# ok_ptr	= mysql_real_connect conn_ptr (packString (fromMaybe "" host)) (packString (fromMaybe "" username)) (packString (fromMaybe "" password)) (packString database) 0 0 CLIENT_FOUND_ROWS
 		| ok_ptr == 0
 			# errno 	= mysql_errno conn_ptr
 			# errmsg	= derefString (mysql_error conn_ptr)

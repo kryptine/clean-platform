@@ -13,3 +13,4 @@ instance SQLEnvironment		World			    SQLiteContext
 instance SQLContext			SQLiteContext	    SQLiteConnection
 instance SQLConnection		SQLiteConnection	SQLiteCursor
 instance SQLCursor			SQLiteCursor
+instance SQLSchemaCursor    SQLiteCursor
