@@ -47,6 +47,9 @@ emptyGraphWithLastId n =
 getLastId :: .(Graph n e) -> Int
 getLastId g = g.lastId
 
+setLastId :: .(Graph n e) Int -> .Graph n e
+setLastId g n = {g & lastId = n}
+
 addNode :: n .(Graph n e) -> .(NodeIndex, .(Graph n e))
 addNode n graph = addNodeWithIndex (\_ -> n) graph
 

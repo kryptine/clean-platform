@@ -32,6 +32,7 @@ trivialGraph :: n -> .(NodeIndex, .(Graph n e))
 
 //Query
 getLastId :: .(Graph n e) -> Int
+setLastId :: .(Graph n e) Int -> .Graph n e
 nodeIndices :: !.(Graph n e) -> [NodeIndex]
 edgeIndices :: !.(Graph n e) -> [EdgeIndex]
 nodeCount :: !.(Graph n e) -> Int
