@@ -84,9 +84,12 @@ del			:: !k !w:(Map k v) -> x:(Map k v) | Eq k & Ord k, [ w <= x]
 delU		:: !k !w:(Map k u:v) -> x:(Maybe u:v, !y:(Map k u:v)) | Eq k & Ord k, [ w y <= u, x <= y, w <= y]
 
 foldrWithKey :: (k v u:a -> u:a) u:a (Map k v) -> u:a
+foldrNoKey   :: (v u:a -> u:a) u:a (Map k v) -> u:a
 foldlWithKey :: (u:a k v -> u:a) u:a (Map k v) -> u:a
+foldlNoKey   :: (u:a v -> u:a) u:a (Map k v) -> u:a
 
-keys :: (Map k a) -> [k]
+keys  :: (Map k a) -> [k]
+elems :: (Map k a) -> [a]
 
 //Conversion functions
 

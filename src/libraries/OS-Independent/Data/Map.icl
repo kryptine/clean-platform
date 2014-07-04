@@ -214,14 +214,30 @@ foldrWithKey f z m = go z m
     go z` MLeaf             = z`
     go z` (MNode l k _ v r) = go (f k v (go z` r)) l
 
+foldrNoKey :: (v u:a -> u:a) u:a (Map k v) -> u:a
+foldrNoKey f z m = go z m
+  where
+    go z` MLeaf             = z`
+    go z` (MNode l _ _ v r) = go (f v (go z` r)) l
+
+
 foldlWithKey :: (u:a k v -> u:a) u:a (Map k v) -> u:a
 foldlWithKey f z m = go z m
   where
     go z` MLeaf             = z`
     go z` (MNode l k _ v r) = go (f (go z` l) k v) r
 
+foldlNoKey :: (u:a v -> u:a) u:a (Map k v) -> u:a
+foldlNoKey f z m = go z m
+  where
+    go z` MLeaf             = z`
+    go z` (MNode l _ _ v r) = go (f (go z` l) v) r
+
 keys :: (Map k a) -> [k]
 keys m = foldrWithKey (\k _ ks -> [k : ks]) [] m
+
+elems :: (Map k a) -> [a]
+elems m = foldrNoKey (\x xs -> [x:xs]) [] m
 
 //Conversion functions
 toList :: !w:(Map k u:v)	-> x:[y:(!k,u:v)] , [w y <= u, x <= y, w <= x]
