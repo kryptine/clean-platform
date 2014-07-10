@@ -85,7 +85,7 @@ where
 			# errno 	= sqlite3_errcode conn_ptr
 			# errmsg	= derefString (sqlite3_errmsg conn_ptr)
 			| errno <> errno || errmsg <> errmsg	= undef //Force eval
-            = (Just (SQLDatabaseError errno errmsg), cursor)
+            = (Just (SQLDatabaseError errno errmsg), {SQLiteCursor|cursor & stmt_ptr = 0})
         //Get column count
         # num_cols = sqlite3_column_count stmt_ptr
 		| num_cols <> num_cols = undef	// Force eval
@@ -95,14 +95,14 @@ where
 			# errno 	= sqlite3_errcode conn_ptr
 			# errmsg	= derefString (sqlite3_errmsg conn_ptr)
 			| errno <> errno || errmsg <> errmsg	= undef //Force eval
-            = (Just (SQLDatabaseError errno errmsg), cursor)
+            = (Just (SQLDatabaseError errno errmsg), {SQLiteCursor|cursor & stmt_ptr = 0})
         //Step once to actually start executing the query
         # rc                        = sqlite3_step stmt_ptr
         | rc == SQLITE_ERROR
 			# errno 	= sqlite3_errcode conn_ptr
 			# errmsg	= derefString (sqlite3_errmsg conn_ptr)
 			| errno <> errno || errmsg <> errmsg	= undef //Force eval
-            = (Just (SQLDatabaseError errno errmsg), cursor)
+            = (Just (SQLDatabaseError errno errmsg), {SQLiteCursor|cursor & stmt_ptr = 0})
         = (Nothing, {SQLiteCursor|cursor & stmt_ptr = stmt_ptr, step_res = rc, num_cols = num_cols})
     where
         bind_parameters stmt_ptr i [] = SQLITE_OK
