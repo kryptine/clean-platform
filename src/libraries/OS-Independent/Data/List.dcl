@@ -51,6 +51,7 @@ findIndices     :: (.a -> .Bool) [.a] -> .[Int]
 zip3            :: ![.a] [.b] [.c] -> [(.a,.b,.c)]
 zip4            :: ![.a] [.b] [.c] [.d] -> [(.a,.b,.c,.d)]
 zip5            :: ![.a] [.b] [.c] [.d] [.e] -> [(.a,.b,.c,.d,.e)]
+zipSt           :: (.a -> .(.b -> (.st -> .st))) ![.a] [.b] .st -> .st
 zipWith         :: (.a -> .(.b -> .h)) ![.a] [.b] -> [.h]
 zipWithSt       :: (.a -> .(.b -> (.st -> .(.h, .st)))) ![.a] [.b] .st -> .([.h], .st)
 zipWith3        :: (.a -> .(.b -> .(.c -> .h))) ![.a] [.b] [.c] -> [.h]

@@ -231,6 +231,12 @@ zipWith z [a:as] [b:bs]
                    = [ z a b : zipWith z as bs]
 zipWith _ _ _ = []
 
+zipSt :: (.a -> .(.b -> (.st -> .st))) ![.a] [.b] .st -> .st
+zipSt z [a:as] [b:bs] st
+  # st = z a b st
+  = zipSt z as bs st
+zipSt _ _ _ st = st
+
 zipWithSt :: (.a -> .(.b -> (.st -> .(.h, .st)))) ![.a] [.b] .st -> .([.h], .st)
 zipWithSt z [a:as] [b:bs] st
   # (x, st)  = z a b st
