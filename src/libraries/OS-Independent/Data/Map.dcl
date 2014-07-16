@@ -35,6 +35,8 @@ singleton   :: k v -> Map k v | Eq k & Ord k
 
 empty       :: (Map k v) -> Bool
 
+mapSize     :: (Map k v) -> Int
+
 /**
 * Adds or replaces the value for a given key.
 *

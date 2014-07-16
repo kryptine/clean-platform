@@ -18,6 +18,10 @@ empty :: (Map k v) -> Bool
 empty MLeaf = True
 empty _     = False
 
+mapSize :: (Map k v) -> Int
+mapSize MLeaf = 0
+mapSize (MNode left _ _ _ right) = 1 + mapSize left + mapSize right
+
 //Insert function
 put :: !k u:v !w:(Map k u:v) -> x:(Map k u:v) | Eq k & Ord k, [w x <= u, w <= x]
 put k v MLeaf	= MNode MLeaf k 1 v MLeaf
