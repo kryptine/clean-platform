@@ -27,6 +27,10 @@ maybe :: .b (.a -> .b) !(Maybe .a) -> .b
 maybe x _ Nothing  = x
 maybe _ f (Just x) = f x
 
+maybeSt :: *st (.a *st -> *st) !(Maybe .a) -> *st
+maybeSt st _ Nothing  = st
+maybeSt st f (Just x) = f x st
+
 fromMaybe :: .a !(Maybe .a) -> .a
 fromMaybe x mb = maybe x id mb
 

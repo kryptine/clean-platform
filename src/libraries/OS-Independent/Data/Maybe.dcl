@@ -24,6 +24,14 @@ instance Functor Maybe
  * the result, or return a default value if the argument is a Nothing value.
  */
 maybe :: .b (.a -> .b) !(Maybe .a) -> .b
+
+/**
+ * Apply a function to the the contents of a Just value and the state, and
+ * directly return the result and a new state. Return the state immediately
+ * if the argument is a Nothing value.
+ */
+maybeSt :: *st (.a *st -> *st) !(Maybe .a) -> *st
+
 /**
  * Directly return a Just value or return a default value if the argument is a Nothing value.
  */
