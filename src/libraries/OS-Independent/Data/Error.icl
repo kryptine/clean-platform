@@ -31,6 +31,10 @@ liftError	(Ok _)		= abort "Data.Error.liftError: argument is Ok"
 mb2error :: !e !(Maybe a) -> MaybeError e a
 mb2error error mbV = maybe (Error error) Ok mbV
 
+okSt :: *st (.a *st -> *st) (MaybeError .e .a) -> *st
+okSt st f (Error _) = st
+okSt st f (Ok x)    = f x st
+
 error2mb :: !(MaybeError e a) -> Maybe a
 error2mb (Error _) = Nothing
 error2mb (Ok a)  = Just a

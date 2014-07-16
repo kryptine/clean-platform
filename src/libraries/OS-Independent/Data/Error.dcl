@@ -40,7 +40,12 @@ liftError 		:: !(MaybeError .a .b) -> (MaybeError .a .c)
  * @param The Maybe value to be converted
  * @return The resulting MaybeError value
  */
-mb2error			:: !e !(Maybe a) -> MaybeError e a
+mb2error		:: !e !(Maybe a) -> MaybeError e a
+
+/**
+ * Returns st on Error, state continuation on OK
+ */
+okSt :: *st (.a *st -> *st) (MaybeError .e .a) -> *st
 
 /**
 * Converts a MaybeError value into a Maybe value.
