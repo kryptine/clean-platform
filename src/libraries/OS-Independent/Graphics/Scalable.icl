@@ -21,6 +21,7 @@ import Text.HTML
 	| LineImage !Slash
 	| CircleImage
 	| RectImage
+	| EllipseImage
 :: Slash
 	= Slash | Backslash
 :: CompositeImage m
@@ -191,6 +192,18 @@ circle diameter
 	  }
 where
 	d             = maximum [zero,diameter]
+
+ellipse :: !Span !Span -> Image m
+ellipse diax diay
+	= { content   = Basic EllipseImage {xspan=maximum zero diax,yspan=maximum zero diay}
+	  , attribs   = [ImageStrokeAttr      {stroke      = toSVGColor "black"}
+	                ,ImageStrokeWidthAttr {strokewidth = px 1.0}
+	                ,ImageFillAttr        {fill        = toSVGColor "black"}
+	                ,ImageOpacityAttr     {opacity     = 1.0}
+	                ]
+	  , transform = []
+	  , tags      = []
+	  }
 
 rect :: !Span !Span -> Image m
 rect xspan yspan
