@@ -393,3 +393,41 @@ spanfilter c [x:xs]
 | otherwise		= (yes,[x:no])
 where
 	(yes,no)	= spanfilter c xs
+
+reduceSpan :: Span -> Span
+reduceSpan (PxSpan  r)   = PxSpan r
+reduceSpan (AddSpan x y) = reduceSpanBin x y (+) AddSpan
+reduceSpan (SubSpan x y) = reduceSpanBin x y (-) SubSpan
+reduceSpan (MulSpan x y) = reduceSpanNum x y (*) MulSpan
+reduceSpan (DivSpan x y) = reduceSpanNum x y (/) DivSpan
+reduceSpan (AbsSpan x)
+  = case reduceSpan x of
+      PxSpan x` -> PxSpan (abs x`)
+      x`        -> AbsSpan x`
+reduceSpan (MinSpan ss)  = reduceSpanList ss min MinSpan
+reduceSpan (MaxSpan ss)  = reduceSpanList ss max MaxSpan
+reduceSpan sp            = sp
+
+reduceSpanBin :: Span Span (Real Real -> Real) (Span Span -> Span) -> Span
+reduceSpanBin x y op cons
+  = case (reduceSpan x, reduceSpan y) of
+      (PxSpan x`, PxSpan y`) -> PxSpan (op x` y`)
+      (x`, y`)               -> cons x` y`
+
+reduceSpanNum :: Span Real (Real Real -> Real) (Span Real -> Span) -> Span
+reduceSpanNum x y op cons
+  = case reduceSpan x of
+      PxSpan x` -> PxSpan (op x` y)
+      x`        -> cons x` y
+
+reduceSpanList :: [Span] (Real Real -> Real) ([Span] -> Span) -> Span
+reduceSpanList ss op cons
+  = case reduceSpans (map reduceSpan ss) of
+      [PxSpan x] -> PxSpan x
+      xs         -> cons xs
+  where
+  reduceSpans [PxSpan x : PxSpan y : xs] = reduceSpans [PxSpan (op x y) : xs]
+  reduceSpans [PxSpan x : y : xs]        = [y : reduceSpans [PxSpan x : xs]]
+  reduceSpans [x : xs]                   = [x : reduceSpans xs]
+  reduceSpans []                         = []
+

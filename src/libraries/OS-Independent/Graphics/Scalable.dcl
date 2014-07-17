@@ -174,3 +174,5 @@ instance imageTag String
 
 tag  :: [ImageTag] (Image m) -> Image m
 tags :: (Image m) -> [ImageTag]
+
+reduceSpan :: Span -> Span
