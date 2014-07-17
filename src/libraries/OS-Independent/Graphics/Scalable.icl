@@ -9,32 +9,32 @@ import Text.HTML
 :: Slash
 	= Slash | Backslash
 
-isPxSpan :: !Span -> Bool
+isPxSpan :: Span -> Bool
 isPxSpan (PxSpan _) = True
 isPxSpan _          = False
 
-px :: !Real -> Span
+px :: Real -> Span
 px a = PxSpan a
 
-ex :: !FontDef -> Span
+ex :: FontDef -> Span
 ex a = LookupSpan (ExYSpan a)
 
-descent :: !FontDef -> Span
+descent :: FontDef -> Span
 descent a = LookupSpan (DescentYSpan a)
 
-textxspan :: !FontDef !String -> Span
+textxspan :: FontDef String -> Span
 textxspan a b = LookupSpan (TextXSpan a b)
 
-imagexspan :: ![ImageTag] -> Span
+imagexspan :: [ImageTag] -> Span
 imagexspan as = LookupSpan (ImageXSpan as)
 
-imageyspan :: ![ImageTag] -> Span
+imageyspan :: [ImageTag] -> Span
 imageyspan as = LookupSpan (ImageYSpan as)
 
-columnspan :: ![ImageTag] !Int -> Span
+columnspan :: [ImageTag] Int -> Span
 columnspan as a = LookupSpan (ColumnXSpan as a)
 
-rowspan :: ![ImageTag] !Int -> Span
+rowspan :: [ImageTag] Int -> Span
 rowspan as a = LookupSpan (RowYSpan as a)
 
 instance zero Span where zero                    = PxSpan zero
@@ -61,7 +61,7 @@ instance /.   Real where /. (PxSpan  a)    k     = PxSpan    (a/k)
                          /. (DivSpan a k1) k     = DivSpan a (k1*k)
                          /. s              k     = DivSpan s k
 
-minSpan :: ![Span] -> Span
+minSpan :: [Span] -> Span
 minSpan []			= zero
 minSpan [a]			= a
 minSpan as
@@ -72,7 +72,7 @@ where
 	(pxs,others)	= spanfilter isPxSpan as
 	min_pxs			= PxSpan (minList [x \\ PxSpan x <- pxs])
 
-maxSpan :: ![Span] -> Span
+maxSpan :: [Span] -> Span
 maxSpan []			= zero
 maxSpan [a]			= a
 maxSpan as
@@ -84,7 +84,7 @@ where
 	max_pxs			= PxSpan (maxList [x \\ PxSpan x <- pxs])
 
 
-empty :: !Span !Span -> Image m
+empty :: Span Span -> Image m
 empty xspan yspan
 	= { content   = Basic EmptyImage {xspan=maxSpan [zero,xspan],yspan=maxSpan [zero,yspan]}
 	  , attribs   = []
@@ -92,7 +92,7 @@ empty xspan yspan
 	  , tags      = []
 	  }
 
-text :: !FontDef !String -> Image m
+text :: FontDef String -> Image m
 text font str
 	= { content   = Basic (TextImage font str) {xspan=textxspan font str,yspan=font.FontDef.fontyspan}
 	  , attribs   = [ImageStrokeAttr      {stroke      = toSVGColor "black"}
@@ -104,15 +104,15 @@ text font str
 	  , tags      = []
 	  }
 
-xline :: !Span -> Image m
+xline :: Span -> Image m
 xline xspan
 	= line Slash xspan zero
 
-yline :: !Span -> Image m
+yline :: Span -> Image m
 yline yspan
 	= line Slash zero yspan
 
-line :: !Slash !Span !Span -> Image m
+line :: Slash Span Span -> Image m
 line slash xspan yspan
 	= { content   = Basic (LineImage slash) {xspan=abs xspan,yspan=abs yspan}
 	  , attribs   = [ImageStrokeAttr      {stroke      = toSVGColor "black"}
@@ -124,7 +124,7 @@ line slash xspan yspan
 	  , tags      = []
 	  }
 
-circle :: !Span -> Image m
+circle :: Span -> Image m
 circle diameter
 	= { content   = Basic CircleImage {xspan=d,yspan=d}
 	  , attribs   = [ImageStrokeAttr      {stroke      = toSVGColor "black"}
@@ -138,7 +138,7 @@ circle diameter
 where
 	d             = maxSpan [zero,diameter]
 
-ellipse :: !Span !Span -> Image m
+ellipse :: Span Span -> Image m
 ellipse diax diay
 	= { content   = Basic EllipseImage {xspan=maxSpan [zero, diax],yspan=maxSpan [zero, diay]}
 	  , attribs   = [ImageStrokeAttr      {stroke      = toSVGColor "black"}
@@ -150,7 +150,7 @@ ellipse diax diay
 	  , tags      = []
 	  }
 
-rect :: !Span !Span -> Image m
+rect :: Span Span -> Image m
 rect xspan yspan
 	= { content   = Basic RectImage {xspan=maxSpan [zero,xspan],yspan=maxSpan [zero,yspan]}
 	  , attribs   = [ImageStrokeAttr      {stroke      = toSVGColor "black"}
@@ -162,7 +162,7 @@ rect xspan yspan
 	  , tags      = []
 	  }
 
-rotate :: !ImageAngle !(Image m) -> Image m
+rotate :: ImageAngle (Image m) -> Image m
 rotate a image=:{Image | transform = ts}
 | a` == zero	= image
 | otherwise		= {Image | image & transform = ts`}
@@ -173,7 +173,7 @@ where
 						= let a` = normalize_angle (angle + a) in if (a` == zero) ts [RotateImage a` : ts]
 					ts  = [RotateImage a` : ts]
 
-fit :: !Span !Span !(Image m) -> Image m
+fit :: Span Span (Image m) -> Image m
 fit xspan yspan image=:{Image | transform = ts}
 	= {Image | image & transform = ts`}
 where
@@ -183,7 +183,7 @@ where
 					[FitImage _ _ : ts] = [FitImage xspan` yspan` : ts]
 					ts                  = [FitImage xspan` yspan` : ts]
 
-fitx :: !Span !(Image m) -> Image m
+fitx :: Span (Image m) -> Image m
 fitx xspan image=:{Image | transform = ts}
 	= {Image | image & transform = ts`}
 where
@@ -193,7 +193,7 @@ where
 					[FitYImage _ : ts] = [FitXImage xspan` : ts]
 					ts                 = [FitXImage xspan` : ts]
 
-fity :: !Span !(Image m) -> Image m
+fity :: Span (Image m) -> Image m
 fity yspan image=:{Image | transform = ts}
 	= {Image | image & transform = ts`}
 where
@@ -203,7 +203,7 @@ where
 					[FitYImage _ : ts] = [FitYImage yspan` : ts]
 					ts                 = [FitYImage yspan` : ts]
 
-skewx :: !ImageAngle !(Image m) -> Image m
+skewx :: ImageAngle (Image m) -> Image m
 skewx xskew image=:{Image | transform = ts}
 | xskew` == zero	= image
 | otherwise			= {Image | image & transform = ts`}
@@ -213,7 +213,7 @@ where
 						[SkewXImage a : ts] = let a` = normalize_angle (a + xskew) in if (a` == zero) ts [SkewXImage a` : ts]
 						ts                  = [SkewXImage xskew` : ts]
 
-skewy :: !ImageAngle !(Image m) -> Image m
+skewy :: ImageAngle (Image m) -> Image m
 skewy yskew image=:{Image | transform = ts}
 | yskew` == zero	= image
 | otherwise			= {Image | image & transform = ts`}
@@ -223,7 +223,7 @@ where
 						[SkewYImage a : ts] = let a` = normalize_angle (a + yskew) in if (a` == zero) ts [SkewYImage a` : ts]
 						ts                  = [SkewYImage yskew` : ts]
 
-normalize_angle :: !Real -> Real
+normalize_angle :: Real -> Real
 normalize_angle a
 | a` < 2.0*pi	= a
 | a  > 0.0		= a - d
@@ -232,15 +232,15 @@ where
 	a`			= abs a
 	d			= toReal (entier (a` / (2.0*pi))) * 2.0*pi
 
-radian :: !Real -> ImageAngle
+radian :: Real -> ImageAngle
 radian r = r
 
-degree :: !Real -> ImageAngle
+degree :: Real -> ImageAngle
 degree d = d * pi / 180.0
 
 pi =: 3.1415926
 
-overlay :: ![ImageAlign] ![ImageOffset] ![Image m] !(Host m) -> Image m
+overlay :: [ImageAlign] [ImageOffset] [Image m] (Host m) -> Image m
 overlay _ _ [] host
 	= case host of
 		Just img = img
@@ -252,15 +252,15 @@ overlay aligns offsets imgs host
 	  , tags      = []
 	  }
 
-beside :: ![YAlign] ![ImageOffset] ![Image m] !(Host m) -> Image m
+beside :: [YAlign] [ImageOffset] [Image m] (Host m) -> Image m
 beside ylayouts offsets imgs host
 	= grid (Rows 1) (LeftToRight,TopToBottom) [(AtLeft,ylayout) \\ ylayout <- ylayouts] offsets imgs host
 
-above :: ![XAlign] ![ImageOffset] ![Image m] !(Host m) -> Image m
+above :: [XAlign] [ImageOffset] [Image m] (Host m) -> Image m
 above xlayouts offsets imgs host
 	= grid (Columns 1) (LeftToRight,TopToBottom) [(xlayout,AtTop) \\ xlayout <- xlayouts] offsets imgs host
 
-grid :: !GridDimension !GridLayout ![ImageAlign] ![ImageOffset] ![Image m] !(Host m) -> Image m
+grid :: GridDimension GridLayout [ImageAlign] [ImageOffset] [Image m] (Host m) -> Image m
 grid _ _ _ _ [] host
 	= case host of
 	    Just img = img
@@ -284,17 +284,17 @@ where
 	                                                   [map (flip (!!) i) (partition rows imgs_complete) \\ i <- [0..rows-1]]
 	                                               ))
 	
-	is_row_major :: !GridDimension -> Bool
+	is_row_major :: GridDimension -> Bool
 	is_row_major (Rows _) = True
 	is_row_major _        = False
 	
-	arrange_layout :: !GridLayout ![[a]] -> [[a]]
+	arrange_layout :: GridLayout [[a]] -> [[a]]
 	arrange_layout (LeftToRight,TopToBottom) xs = xs
 	arrange_layout (RightToLeft,TopToBottom) xs = map reverse xs
 	arrange_layout (LeftToRight,BottomToTop) xs = reverse xs
 	arrange_layout (RightToLeft,BottomToTop) xs = reverse (map reverse xs)
 
-collage :: ![ImageOffset] ![Image m] !(Host m) -> Image m
+collage :: [ImageOffset] [Image m] (Host m) -> Image m
 collage offsets imgs host
 	= { content   = Composite { offsets = offsets, content = imgs, host = host, compose = AsCollage}
 	  , attribs   = []
@@ -308,20 +308,20 @@ instance tune_image FillAttr        where tune_image image=:{Image | attribs} at
 instance tune_image OpacityAttr     where tune_image image=:{Image | attribs} attr = {Image | image & attribs = update_or_add sameImageAttr (ImageOpacityAttr     attr) attribs}
 instance tune_image OnClickAttr     where tune_image image=:{Image | attribs} attr = {Image | image & attribs = update_or_add sameImageAttr (ImageOnClickAttr     attr) attribs}
 
-(<@<) infixl 2 :: !(Image m) !(attr m) -> Image m | tune_image attr
+(<@<) infixl 2 :: (Image m) (attr m) -> Image m | tune_image attr
 (<@<) image attr = tune_image image attr
 
-(>@>) infixr 2 :: !(attr m) !(Image m) -> Image m | tune_image attr
+(>@>) infixr 2 :: (attr m) (Image m) -> Image m | tune_image attr
 (>@>) attr image = tune_image image attr
 
-consNameOf :: !(ImageAttr m) -> String
+consNameOf :: (ImageAttr m) -> String
 consNameOf (ImageStrokeAttr      _) = "ImageStrokeAttr"
 consNameOf (ImageStrokeWidthAttr _) = "ImageStrokeWidthAttr"
 consNameOf (ImageFillAttr        _) = "ImageFillAttr"
 consNameOf (ImageOpacityAttr     _) = "ImageOpacityAttr"
 consNameOf (ImageOnClickAttr     _) = "ImageOnClickAttr"
 
-sameImageAttr :: !(ImageAttr m) !(ImageAttr m) -> Bool
+sameImageAttr :: (ImageAttr m) (ImageAttr m) -> Bool
 sameImageAttr a b = consNameOf a == consNameOf b
 
 instance < (ImageAttr m) where < a b = consNameOf a < consNameOf b
@@ -343,10 +343,10 @@ instance <  ImageTag     where <  (ImageTagInt    n1) (ImageTagInt    n2) = n1 <
                                <  (ImageTagSystem s1) (ImageTagSystem s2) = s1 < s2
                                <  _                   _                   = False
 
-tag :: ![ImageTag] !(Image m) -> Image m
+tag :: [ImageTag] (Image m) -> Image m
 tag ts image=:{Image | tags} = {Image | image & tags = foldr insert_no_dup tags ts}
 
-tags :: !(Image m) -> [ImageTag]
+tags :: (Image m) -> [ImageTag]
 tags image=:{Image | tags} = tags
 
 //	general utility functions.
@@ -354,7 +354,7 @@ tags image=:{Image | tags} = tags
 		@xs must be a sorted list. @ys is the result of adding @x to @xs only if @x is not a member of @xs.
 		@ys is also a sorted list.
 */
-insert_no_dup :: a ![a] -> [a] | <, == a
+insert_no_dup :: a [a] -> [a] | <, == a
 insert_no_dup x [] = [x]
 insert_no_dup x yys=:[y:ys]
 | y <  x	= [y : insert_no_dup x ys]
@@ -366,7 +366,7 @@ insert_no_dup x yys=:[y:ys]
 		If such an element is not found, then @x is added to @xs.
 		@ys is also a sorted list if @c respects the ordering relation.
 */
-update_or_add :: !(a a -> Bool) a [a] -> [a] | < a
+update_or_add :: (a a -> Bool) a [a] -> [a] | < a
 update_or_add c x [] = [x]
 update_or_add c x yys=:[y:ys]
 | y < x		= [y : update_or_add c x ys]
@@ -377,7 +377,7 @@ update_or_add c x yys=:[y:ys]
         @xss consists of the subsequent sub-lists of @xs of length @n.
         The length of the last element of @xss can be less than @n.
 */
-partition :: !Int ![a] -> [[a]]
+partition :: Int [a] -> [[a]]
 partition n [] = []
 partition n xs = [first_n : partition n without_n]
 where
@@ -386,7 +386,7 @@ where
 /** spanfilter c xs = (yes,no):
 		@yes is (filter @c @xs), and @no is (filter (not o @c) @xs).
 */
-spanfilter :: !(a -> Bool) ![a] -> (![a],![a])
+spanfilter :: (a -> Bool) [a] -> ([a],[a])
 spanfilter c [] = ([],[])
 spanfilter c [x:xs]
 | c x			= ([x:yes],no)
