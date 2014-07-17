@@ -6,63 +6,8 @@ import Data.List
 import Data.Maybe
 import Text.HTML
 
-:: Image m
-	= { content   :: !ImageContent m		// the image elements
-	  , attribs   :: ![ImageAttr m]			// the image attributes
-	  , transform :: ![ImageTransform]		// [t_1, ..., t_n] transforms the image as t_1 o ... o t_n
-	  , tags      :: ![ImageTag]			// sorted list of tags
-	  }
-:: ImageContent m
-	= Basic     !BasicImage !ImageSpan
-	| Composite !(CompositeImage m)
-:: BasicImage
-	= EmptyImage
-	| TextImage !FontDef !String
-	| LineImage !Slash
-	| CircleImage
-	| RectImage
-	| EllipseImage
 :: Slash
 	= Slash | Backslash
-:: CompositeImage m
-	= { offsets   :: ![ImageOffset]
-	  , content   :: ![Image m]
-	  , host      :: !Host m
-	  , compose   :: !Compose
-	  }
-:: Compose
-	= AsGrid !Int ![ImageAlign]				// (AsGrid nr_of_rows alignments) composes elements in rows, using alignments per image
-	| AsCollage								// AsCollage composes elements in freestyle, framed in optional host
-	| AsOverlay   ![ImageAlign]				// AsOverlay composes elements, framed in optional host or largest spans
-:: ImageTransform
-	= RotateImage !ImageAngle
-	| SkewXImage  !ImageAngle
-	| SkewYImage  !ImageAngle
-	| FitImage    !Span !Span
-	| FitXImage   !Span
-	| FitYImage   !Span
-:: ImageSpan
-	= { xspan     :: !Span
-	  , yspan     :: !Span
-	  }
-:: Span
-	= PxSpan       !Real					// (PxSpan a) is a pixels
-	| LookupSpan   !LookupSpan				// (LookupSpan a) needs to be looked up after computing dimensions
-	| AddSpan      !Span !Span				// (AddSpan a b) is span a + span b
-	| SubSpan      !Span !Span				// (SubSpan a b) is span a - span b
-	| MulSpan      !Span !Real				// (MulSpan a k) is (span a) * k
-	| DivSpan      !Span !Real				// (DivSpan a k) is (span a) / k
-	| AbsSpan      !Span					// (AbsSpan a)  is absolute value of span a
-	| MinSpan      ![Span]					// (MinSpan as) is minimum span value in as
-	| MaxSpan      ![Span]					// (MaxSpan as) is maximum span value in as
-:: LookupSpan
-	= ColumnXSpan  ![ImageTag] !Int			// (ColumnXSpan as a) is x-span of column number a in grid tagged with superset of as
-	| DescentYSpan !FontDef					// (DescentYSpan a) is descent height of font a
-	| ExYSpan      !FontDef					// (ExYSpan a) is ex height of font a
-	| ImageXSpan   ![ImageTag]				// (ImageXSpan as) is x-span of image tagged with superset of as
-	| ImageYSpan   ![ImageTag]				// (ImageYSpan as) is y-span of image tagged with superset of as
-	| RowYSpan     ![ImageTag] !Int			// (RowYSpan as a) is y-span of row number a in grid tagged with superset of as
-	| TextXSpan    !FontDef !String			// (TextXSpan a b) is width of text b written in font a
 
 isPxSpan :: !Span -> Bool
 isPxSpan (PxSpan _) = True
@@ -287,9 +232,6 @@ where
 	a`			= abs a
 	d			= toReal (entier (a` / (2.0*pi))) * 2.0*pi
 
-:: ImageAngle
-	:== Real
-
 radian :: !Real -> ImageAngle
 radian r = r
 
@@ -372,13 +314,6 @@ instance tune_image OnClickAttr     where tune_image image=:{Image | attribs} at
 (>@>) infixr 2 :: !(attr m) !(Image m) -> Image m | tune_image attr
 (>@>) attr image = tune_image image attr
 
-:: ImageAttr m
-	= ImageStrokeAttr      !(StrokeAttr      m)
-	| ImageStrokeWidthAttr !(StrokeWidthAttr m)
-	| ImageFillAttr        !(FillAttr        m)
-	| ImageOpacityAttr     !(OpacityAttr     m)
-	| ImageOnClickAttr     !(OnClickAttr     m)
-
 consNameOf :: !(ImageAttr m) -> String
 consNameOf (ImageStrokeAttr      _) = "ImageStrokeAttr"
 consNameOf (ImageStrokeWidthAttr _) = "ImageStrokeWidthAttr"
@@ -394,13 +329,6 @@ instance < (ImageAttr m) where < a b = consNameOf a < consNameOf b
 
 instance toSVGColor String where toSVGColor name = SVGColorText name
 instance toSVGColor RGB    where toSVGColor {RGB | r,g,b} = SVGRGB r g b
-
-
-
-:: ImageTag
-	= ImageTagInt    !Int
-	| ImageTagString !String
-	| ImageTagSystem !Int
 
 instance imageTag Int    where imageTag n = ImageTagInt n
 instance imageTag String where imageTag s = ImageTagString s

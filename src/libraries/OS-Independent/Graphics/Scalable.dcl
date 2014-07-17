@@ -15,8 +15,54 @@ from StdOverloaded import class zero, class +, class -, class ~, class one, clas
 	  , tags      :: ![ImageTag]			// sorted list of tags
 	  }
 :: ImageTransform
+	= RotateImage !ImageAngle
+	| SkewXImage  !ImageAngle
+	| SkewYImage  !ImageAngle
+	| FitImage    !Span !Span
+	| FitXImage   !Span
+	| FitYImage   !Span
 :: ImageContent m
+	= Basic     !BasicImage !ImageSpan
+	| Composite !(CompositeImage m)
 :: Span
+	= PxSpan       !Real					// (PxSpan a) is a pixels
+	| LookupSpan   !LookupSpan				// (LookupSpan a) needs to be looked up after computing dimensions
+	| AddSpan      !Span !Span				// (AddSpan a b) is span a + span b
+	| SubSpan      !Span !Span				// (SubSpan a b) is span a - span b
+	| MulSpan      !Span !Real				// (MulSpan a k) is (span a) * k
+	| DivSpan      !Span !Real				// (DivSpan a k) is (span a) / k
+	| AbsSpan      !Span					// (AbsSpan a)  is absolute value of span a
+	| MinSpan      ![Span]					// (MinSpan as) is minimum span value in as
+	| MaxSpan      ![Span]					// (MaxSpan as) is maximum span value in as
+:: ImageSpan
+	= { xspan     :: !Span
+	  , yspan     :: !Span
+	  }
+:: BasicImage
+	= EmptyImage
+	| TextImage !FontDef !String
+	| LineImage !Slash
+	| CircleImage
+	| RectImage
+	| EllipseImage
+:: CompositeImage m
+	= { offsets   :: ![ImageOffset]
+	  , content   :: ![Image m]
+	  , host      :: !Host m
+	  , compose   :: !Compose
+	  }
+:: LookupSpan
+	= ColumnXSpan  ![ImageTag] !Int			// (ColumnXSpan as a) is x-span of column number a in grid tagged with superset of as
+	| DescentYSpan !FontDef					// (DescentYSpan a) is descent height of font a
+	| ExYSpan      !FontDef					// (ExYSpan a) is ex height of font a
+	| ImageXSpan   ![ImageTag]				// (ImageXSpan as) is x-span of image tagged with superset of as
+	| ImageYSpan   ![ImageTag]				// (ImageYSpan as) is y-span of image tagged with superset of as
+	| RowYSpan     ![ImageTag] !Int			// (RowYSpan as a) is y-span of row number a in grid tagged with superset of as
+	| TextXSpan    !FontDef !String			// (TextXSpan a b) is width of text b written in font a
+:: Compose
+	= AsGrid !Int ![ImageAlign]				// (AsGrid nr_of_rows alignments) composes elements in rows, using alignments per image
+	| AsCollage								// AsCollage composes elements in freestyle, framed in optional host
+	| AsOverlay   ![ImageAlign]				// AsOverlay composes elements, framed in optional host or largest spans
 
 px			:: !Real            -> Span		// (px a) is a pixels
 ex			:: !FontDef         -> Span		// (ex font) is the ex height (ascent) of font
@@ -70,6 +116,8 @@ skewy   :: !ImageAngle !(Image m) -> Image m
 :: Slash = Slash | Backslash
 
 :: ImageAngle
+	:== Real
+
 radian  :: !Real -> ImageAngle
 degree  :: !Real -> ImageAngle
 
@@ -93,6 +141,12 @@ collage ::                                          ![ImageOffset] ![Image m] !(
 :: GridYLayout   = TopToBottom | BottomToTop
 
 :: ImageAttr m
+	= ImageStrokeAttr      !(StrokeAttr      m)
+	| ImageStrokeWidthAttr !(StrokeWidthAttr m)
+	| ImageFillAttr        !(FillAttr        m)
+	| ImageOpacityAttr     !(OpacityAttr     m)
+	| ImageOnClickAttr     !(OnClickAttr     m)
+
 
 class tune_image attr :: !(Image m) !(attr m) -> Image m
 (<@<) infixl 2 :: !(Image m) !(attr m) -> Image m | tune_image attr
@@ -111,6 +165,9 @@ instance toSVGColor String, RGB
 :: RGB = { r :: !Int, g :: !Int, b :: !Int }
 
 :: ImageTag
+	= ImageTagInt    !Int
+	| ImageTagString !String
+	| ImageTagSystem !Int
 class imageTag a :: !a -> ImageTag
 instance imageTag Int
 instance imageTag String
