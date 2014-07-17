@@ -9,6 +9,13 @@ from Text.HTML import :: SVGColor
 from StdOverloaded import class zero, class +, class -, class ~, class one, class abs
 
 :: Image m
+	= { content   :: !ImageContent m		// the image elements
+	  , attribs   :: ![ImageAttr m]			// the image attributes
+	  , transform :: ![ImageTransform]		// [t_1, ..., t_n] transforms the image as t_1 o ... o t_n
+	  , tags      :: ![ImageTag]			// sorted list of tags
+	  }
+:: ImageTransform
+:: ImageContent m
 :: Span
 
 px			:: !Real            -> Span		// (px a) is a pixels
