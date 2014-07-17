@@ -116,10 +116,10 @@ instance /.   Real where /. (PxSpan  a)    k     = PxSpan    (a/k)
                          /. (DivSpan a k1) k     = DivSpan a (k1*k)
                          /. s              k     = DivSpan s k
 
-minimum :: ![Span] -> Span
-minimum []			= zero
-minimum [a]			= a
-minimum as
+minSpan :: ![Span] -> Span
+minSpan []			= zero
+minSpan [a]			= a
+minSpan as
 | isEmpty others	= min_pxs
 | isEmpty pxs		= MinSpan others
 | otherwise			= MinSpan [min_pxs : others]
@@ -127,10 +127,10 @@ where
 	(pxs,others)	= spanfilter isPxSpan as
 	min_pxs			= PxSpan (minList [x \\ PxSpan x <- pxs])
 
-maximum :: ![Span] -> Span
-maximum []			= zero
-maximum [a]			= a
-maximum as
+maxSpan :: ![Span] -> Span
+maxSpan []			= zero
+maxSpan [a]			= a
+maxSpan as
 | isEmpty others	= max_pxs
 | isEmpty pxs		= MaxSpan others
 | otherwise			= MaxSpan [max_pxs : others]
@@ -141,7 +141,7 @@ where
 
 empty :: !Span !Span -> Image m
 empty xspan yspan
-	= { content   = Basic EmptyImage {xspan=maximum [zero,xspan],yspan=maximum [zero,yspan]}
+	= { content   = Basic EmptyImage {xspan=maxSpan [zero,xspan],yspan=maxSpan [zero,yspan]}
 	  , attribs   = []
 	  , transform = []
 	  , tags      = []
@@ -191,11 +191,11 @@ circle diameter
 	  , tags      = []
 	  }
 where
-	d             = maximum [zero,diameter]
+	d             = maxSpan [zero,diameter]
 
 ellipse :: !Span !Span -> Image m
 ellipse diax diay
-	= { content   = Basic EllipseImage {xspan=maximum zero diax,yspan=maximum zero diay}
+	= { content   = Basic EllipseImage {xspan=maxSpan [zero, diax],yspan=maxSpan [zero, diay]}
 	  , attribs   = [ImageStrokeAttr      {stroke      = toSVGColor "black"}
 	                ,ImageStrokeWidthAttr {strokewidth = px 1.0}
 	                ,ImageFillAttr        {fill        = toSVGColor "black"}
@@ -207,7 +207,7 @@ ellipse diax diay
 
 rect :: !Span !Span -> Image m
 rect xspan yspan
-	= { content   = Basic RectImage {xspan=maximum [zero,xspan],yspan=maximum [zero,yspan]}
+	= { content   = Basic RectImage {xspan=maxSpan [zero,xspan],yspan=maxSpan [zero,yspan]}
 	  , attribs   = [ImageStrokeAttr      {stroke      = toSVGColor "black"}
 	                ,ImageStrokeWidthAttr {strokewidth = px 1.0}
 	                ,ImageFillAttr        {fill        = toSVGColor "black"}
@@ -232,8 +232,8 @@ fit :: !Span !Span !(Image m) -> Image m
 fit xspan yspan image=:{Image | transform = ts}
 	= {Image | image & transform = ts`}
 where
-	xspan`		= maximum [zero,xspan]
-	yspan`		= maximum [zero,yspan]
+	xspan`		= maxSpan [zero,xspan]
+	yspan`		= maxSpan [zero,yspan]
 	ts`			= case ts of
 					[FitImage _ _ : ts] = [FitImage xspan` yspan` : ts]
 					ts                  = [FitImage xspan` yspan` : ts]
@@ -242,7 +242,7 @@ fitx :: !Span !(Image m) -> Image m
 fitx xspan image=:{Image | transform = ts}
 	= {Image | image & transform = ts`}
 where
-	xspan`		= maximum [zero,xspan]
+	xspan`		= maxSpan [zero,xspan]
 	ts`			= case ts of
 					[FitXImage _ : ts] = [FitXImage xspan` : ts]
 					[FitYImage _ : ts] = [FitXImage xspan` : ts]
@@ -252,7 +252,7 @@ fity :: !Span !(Image m) -> Image m
 fity yspan image=:{Image | transform = ts}
 	= {Image | image & transform = ts`}
 where
-	yspan`		= maximum [zero,yspan]
+	yspan`		= maxSpan [zero,yspan]
 	ts`			= case ts of
 					[FitXImage _ : ts] = [FitYImage yspan` : ts]
 					[FitYImage _ : ts] = [FitYImage yspan` : ts]

@@ -32,8 +32,8 @@ instance ~    Span
 instance *.   Int, Real
 instance /.   Int, Real
 
-minimum :: ![Span] -> Span					// (minimum as) is the minimum of as (zero if as = [])
-maximum :: ![Span] -> Span					// (maximum as) is the maximum of as (zero if as = [])
+minSpan :: ![Span] -> Span					// (minimum as) is the minimum of as (zero if as = [])
+maxSpan :: ![Span] -> Span					// (maximum as) is the maximum of as (zero if as = [])
 
 :: FontDef
 	= { fontfamily  :: !String
