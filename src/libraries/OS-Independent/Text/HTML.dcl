@@ -377,6 +377,25 @@ writeSVGTag :: !{#Char} ![HtmlAttr] ![SVGAttr] ![SVGElt] !*{#Char} !Int -> (!*{#
 
 instance toString HtmlTag
 instance toString SVGElt
+instance toString SVGAlign
+instance toString SVGColor
+instance toString SVGICCColor
+instance toString SVGFillOpacity
+instance toString SVGFillRule
+instance toString SVGFuncIRI
+instance toString SVGLength
+instance toString SVGLengthAdjust
+instance toString SVGLengthUnit
+instance toString SVGLineCap
+instance toString SVGLineJoin
+instance toString SVGMeetOrSlice
+instance toString SVGStrokeMiterLimit
+instance toString SVGPaint
+instance toString SVGStrokeDashArray
+instance toString SVGStrokeDashOffset
+instance toString SVGStrokeWidth
+instance toString SVGTransform
+instance toString SVGZoomAndPan
 
 /*
 * This html class makes it possible to use either strings, or html as description/message/instruction
