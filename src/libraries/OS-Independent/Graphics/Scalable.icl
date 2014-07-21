@@ -98,7 +98,7 @@ text font str
 	  , attribs   = [ImageStrokeAttr      {stroke      = toSVGColor "black"}
 	                ,ImageStrokeWidthAttr {strokewidth = px 1.0}
 	                ,ImageFillAttr        {fill        = toSVGColor "black"}
-	                ,ImageOpacityAttr     {opacity     = 1.0}
+	                ,ImageFillOpacityAttr {opacity     = 1.0}
 	                ]
 	  , transform = []
 	  , tags      = []
@@ -118,7 +118,7 @@ line slash xspan yspan
 	  , attribs   = [ImageStrokeAttr      {stroke      = toSVGColor "black"}
 	                ,ImageStrokeWidthAttr {strokewidth = px 1.0}
 	                ,ImageFillAttr        {fill        = toSVGColor "black"}
-	                ,ImageOpacityAttr     {opacity     = 1.0}
+	                ,ImageFillOpacityAttr {opacity     = 1.0}
 	                ]
 	  , transform = []
 	  , tags      = []
@@ -130,7 +130,7 @@ circle diameter
 	  , attribs   = [ImageStrokeAttr      {stroke      = toSVGColor "black"}
 	                ,ImageStrokeWidthAttr {strokewidth = px 1.0}
 	                ,ImageFillAttr        {fill        = toSVGColor "black"}
-	                ,ImageOpacityAttr     {opacity     = 1.0}
+	                ,ImageFillOpacityAttr {opacity     = 1.0}
 	                ]
 	  , transform = []
 	  , tags      = []
@@ -144,7 +144,7 @@ ellipse diax diay
 	  , attribs   = [ImageStrokeAttr      {stroke      = toSVGColor "black"}
 	                ,ImageStrokeWidthAttr {strokewidth = px 1.0}
 	                ,ImageFillAttr        {fill        = toSVGColor "black"}
-	                ,ImageOpacityAttr     {opacity     = 1.0}
+	                ,ImageFillOpacityAttr {opacity     = 1.0}
 	                ]
 	  , transform = []
 	  , tags      = []
@@ -156,7 +156,7 @@ rect xspan yspan
 	  , attribs   = [ImageStrokeAttr      {stroke      = toSVGColor "black"}
 	                ,ImageStrokeWidthAttr {strokewidth = px 1.0}
 	                ,ImageFillAttr        {fill        = toSVGColor "black"}
-	                ,ImageOpacityAttr     {opacity     = 1.0}
+	                ,ImageFillOpacityAttr {opacity     = 1.0}
 	                ]
 	  , transform = []
 	  , tags      = []
@@ -305,7 +305,7 @@ collage offsets imgs host
 instance tune_image StrokeAttr      where tune_image image=:{Image | attribs} attr = {Image | image & attribs = update_or_add sameImageAttr (ImageStrokeAttr      attr) attribs}
 instance tune_image StrokeWidthAttr where tune_image image=:{Image | attribs} attr = {Image | image & attribs = update_or_add sameImageAttr (ImageStrokeWidthAttr attr) attribs}
 instance tune_image FillAttr        where tune_image image=:{Image | attribs} attr = {Image | image & attribs = update_or_add sameImageAttr (ImageFillAttr        attr) attribs}
-instance tune_image OpacityAttr     where tune_image image=:{Image | attribs} attr = {Image | image & attribs = update_or_add sameImageAttr (ImageOpacityAttr     attr) attribs}
+instance tune_image OpacityAttr     where tune_image image=:{Image | attribs} attr = {Image | image & attribs = update_or_add sameImageAttr (ImageFillOpacityAttr attr) attribs}
 instance tune_image OnClickAttr     where tune_image image=:{Image | attribs} attr = {Image | image & attribs = update_or_add sameImageAttr (ImageOnClickAttr     attr) attribs}
 
 (<@<) infixl 2 :: (Image m) (attr m) -> Image m | tune_image attr
@@ -318,7 +318,7 @@ consNameOf :: (ImageAttr m) -> String
 consNameOf (ImageStrokeAttr      _) = "ImageStrokeAttr"
 consNameOf (ImageStrokeWidthAttr _) = "ImageStrokeWidthAttr"
 consNameOf (ImageFillAttr        _) = "ImageFillAttr"
-consNameOf (ImageOpacityAttr     _) = "ImageOpacityAttr"
+consNameOf (ImageFillOpacityAttr _) = "ImageFillOpacityAttr"
 consNameOf (ImageOnClickAttr     _) = "ImageOnClickAttr"
 
 sameImageAttr :: (ImageAttr m) (ImageAttr m) -> Bool

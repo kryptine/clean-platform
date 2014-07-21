@@ -107,7 +107,7 @@ ellipse	:: Span Span            -> Image m		// (ellipse a b) is an image of an e
 rect	:: Span Span            -> Image m		// (rect a b) is an image of a rectangle with x-span a and y-span b
 
 rotate  :: ImageAngle (Image m) -> Image m
-fit     :: Span Span (Image m)  -> Image m
+fit     :: Span Span  (Image m) -> Image m
 fitx    :: Span       (Image m) -> Image m
 fity    :: Span       (Image m) -> Image m
 skewx   :: ImageAngle (Image m) -> Image m
@@ -141,22 +141,23 @@ collage ::                                       [ImageOffset] [Image m] (Host m
 :: GridYLayout   = TopToBottom | BottomToTop
 
 :: ImageAttr m
-	= ImageStrokeAttr      (StrokeAttr      m)
-	| ImageStrokeWidthAttr (StrokeWidthAttr m)
-	| ImageFillAttr        (FillAttr        m)
-	| ImageOpacityAttr     (OpacityAttr     m)
-	| ImageOnClickAttr     (OnClickAttr     m)
+	= ImageStrokeAttr        (StrokeAttr      m)
+	| ImageStrokeWidthAttr   (StrokeWidthAttr m)
+	| ImageStrokeOpacityAttr (OpacityAttr     m)
+	| ImageFillAttr          (FillAttr        m)
+	| ImageFillOpacityAttr   (OpacityAttr     m)
+	| ImageOnClickAttr       (OnClickAttr     m)
 
 
 class tune_image attr :: (Image m) (attr m) -> Image m
 (<@<) infixl 2 :: (Image m) (attr m) -> Image m | tune_image attr
 (>@>) infixr 2 :: (attr m) (Image m) -> Image m | tune_image attr
 
-:: StrokeAttr      m = { stroke      :: SVGColor }
-:: StrokeWidthAttr m = { strokewidth :: Span     }
-:: FillAttr        m = { fill        :: SVGColor }
-:: OpacityAttr     m = { opacity     :: Real     }
-:: OnClickAttr     m = { onclick     :: (m -> m) }
+:: StrokeAttr        m = { stroke      :: SVGColor }
+:: StrokeWidthAttr   m = { strokewidth :: Span     }
+:: FillAttr          m = { fill        :: SVGColor }
+:: OpacityAttr       m = { opacity     :: Real     }
+:: OnClickAttr       m = { onclick     :: (m -> m) }
 
 instance tune_image StrokeAttr, StrokeWidthAttr, FillAttr, OpacityAttr, OnClickAttr
 
