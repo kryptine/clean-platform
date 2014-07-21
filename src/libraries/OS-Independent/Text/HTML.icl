@@ -245,7 +245,7 @@ attrSize (VlinkAttr a)			=  9 + (escapedSize a)
 attrSize (VspaceAttr a)			= 10 + (escapedSize a)
 attrSize (WidthAttr a)			=  9 + (escapedSize a)
 attrSize (XmllangAttr a)		= 12 + (escapedSize a)
-attrSize (XmlnsAttr a)			= 15 + (escapedSize a)
+attrSize (XmlnsAttr a)			=  9 + (escapedSize a)
 attrSize (XmlspaceAttr a)		= 13 + (escapedSize a)
 
 attrsSize :: ![HtmlAttr] -> Int
