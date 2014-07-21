@@ -245,6 +245,7 @@ attrSize (VlinkAttr a)			=  9 + (escapedSize a)
 attrSize (VspaceAttr a)			= 10 + (escapedSize a)
 attrSize (WidthAttr a)			=  9 + (escapedSize a)
 attrSize (XmllangAttr a)		= 12 + (escapedSize a)
+attrSize (XmlnsAttr a)			= 15 + (escapedSize a)
 attrSize (XmlspaceAttr a)		= 13 + (escapedSize a)
 
 attrsSize :: ![HtmlAttr] -> Int
@@ -492,6 +493,7 @@ serializeAttr (VlinkAttr a) s i			= writeAttr "vlink" a s i
 serializeAttr (VspaceAttr a) s i		= writeAttr "vspace" a s i
 serializeAttr (WidthAttr a) s i			= writeAttr "width" a s i
 serializeAttr (XmllangAttr a) s i		= writeAttr "xml:lang" a s i
+serializeAttr (XmlnsAttr a) s i			= writeAttr "xmlns" a s i
 serializeAttr (XmlspaceAttr a) s i		= writeAttr "xml:space" a s i
 
 serializeAttrs :: ![HtmlAttr] !*{#Char} !Int -> (!*{#Char}, !Int)

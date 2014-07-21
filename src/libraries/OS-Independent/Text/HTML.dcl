@@ -253,6 +253,7 @@ import StdString, Data.Maybe
 //			| X2Attr			!String     // moved to SVGAttr
 			| XmllangAttr		!String
 			| XmlspaceAttr		!String
+			| XmlnsAttr			!String
 //			| YAttr				!String		// moved to SVGAttr
 //			| Y1Attr			!String     // moved to SVGAttr
 //			| Y2Attr			!String     // moved to SVGAttr
