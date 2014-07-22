@@ -54,7 +54,6 @@ import StdString, Data.Maybe
 			| FieldsetTag		![HtmlAttr] ![HtmlTag]
 			| FontTag			![HtmlAttr] ![HtmlTag]
 			| FormTag			![HtmlAttr] ![HtmlTag]
-//			| GTag				![HtmlAttr] ![HtmlTag]		// moved to SVGElt as GElt
 			| H1Tag				![HtmlAttr] ![HtmlTag]
 			| H2Tag				![HtmlAttr] ![HtmlTag]
 			| H3Tag				![HtmlAttr] ![HtmlTag]
@@ -74,7 +73,6 @@ import StdString, Data.Maybe
 			| LabelTag			![HtmlAttr] ![HtmlTag]
 			| LegendTag			![HtmlAttr] ![HtmlTag]
 			| LiTag				![HtmlAttr] ![HtmlTag]
-//			| LineTag			![HtmlAttr]					// moved to SVGElt as LineElt
 			| LinkTag			![HtmlAttr] ![HtmlTag]
 			| MapTag			![HtmlAttr] ![HtmlTag]
 			| MenuTag			![HtmlAttr] ![HtmlTag]
@@ -152,8 +150,6 @@ import StdString, Data.Maybe
 			| ContentAttr		!String
 			| CompactAttr
 			| CoordsAttr		!String
-//			| CYAttr 			!String     // moved to SVGAttr
-//			| CXAttr 			!String     // moved to SVGAttr
 			| DataAttr			!String
 			| DatetimeAttr		!String
 			| DeclareAttr
@@ -217,7 +213,6 @@ import StdString, Data.Maybe
 			| RowsAttr			!String
 			| RowspanAttr		!String
 			| RulesAttr			!String
-//			| RAttr 			!String // moved to SVGAttr
 			| RXAttr 			!String
 			| RYAttr 			!String
 			| SchemeAttr		!String
@@ -230,34 +225,23 @@ import StdString, Data.Maybe
 			| SrcAttr			!String
 			| StandbyAttr		!String
 			| StartAttr			!String
-//			| StrokeDashArrayAttr	!String	// moved to SVGAttr
 			| StyleAttr			!String
 			| SummaryAttr		!String
 			| TabindexAttr		!String
 			| TargetAttr		!String
 			| TextAttr			!String
-//			| TextAnchorAttr	!String		// moved to SVGAttr
 			| TitleAttr			!String
-//			| TransformAttr		!String		// moved to SVGAttr
 			| TypeAttr			!String
 			| UsemapAttr		!String
 			| ValignAttr		!String
 			| ValueAttr			!String
 			| ValuetypeAttr		!String
-//			| ViewBoxAttr		!String		// moved to SVGAttr
 			| VlinkAttr			!String
 			| VspaceAttr		!String
 			| WidthAttr			!String
-//			| XAttr				!String		// moved to SVGAttr
-//			| X1Attr			!String     // moved to SVGAttr
-//			| X2Attr			!String     // moved to SVGAttr
 			| XmllangAttr		!String
 			| XmlspaceAttr		!String
 			| XmlnsAttr			!String
-//			| YAttr				!String		// moved to SVGAttr
-//			| Y1Attr			!String     // moved to SVGAttr
-//			| Y2Attr			!String     // moved to SVGAttr
-
 
 /**
 * This type provides an enumeration of (not yet) all SVG elements.
@@ -375,6 +359,9 @@ svgEltSize  :: !SVGElt  -> Int
 svgAttrSize :: !SVGAttr -> Int
 
 writeSVGTag :: !{#Char} ![HtmlAttr] ![SVGAttr] ![SVGElt] !*{#Char} !Int -> (!*{#Char},!Int)
+
+serializeAttr :: !HtmlAttr !*{#Char} !Int -> (!*{#Char}, !Int)
+serializeSVGAttr :: !SVGAttr !*{#Char} !Int -> (!*{#Char}, !Int)
 
 instance toString HtmlTag
 instance toString SVGElt
