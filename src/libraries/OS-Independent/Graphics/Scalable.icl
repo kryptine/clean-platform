@@ -225,18 +225,18 @@ where
 
 normalize_angle :: Real -> Real
 normalize_angle a
-| a` < 2.0*pi	= a
+| a` <= 360.0	= a
 | a  > 0.0		= a - d
 | otherwise		= a + d
 where
 	a`			= abs a
-	d			= toReal (entier (a` / (2.0*pi))) * 2.0*pi
+	d			= toReal (entier (a` / 360.0)) * 360.0
 
 radian :: Real -> ImageAngle
-radian r = r
+radian r = r / (pi / 180.0)
 
 degree :: Real -> ImageAngle
-degree d = d * pi / 180.0
+degree d = d
 
 pi =: 3.1415926
 
