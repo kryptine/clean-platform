@@ -6,13 +6,14 @@ definition module Graphics.Scalable
 */
 from Data.Maybe import :: Maybe
 from Text.HTML import :: SVGColor
+from Data.Set import :: Set
 from StdOverloaded import class zero, class +, class -, class ~, class one, class abs
 
 :: Image m
 	= { content   :: ImageContent m		// the image elements
 	  , attribs   :: [ImageAttr m]			// the image attributes
 	  , transform :: [ImageTransform]		// [t_1, ..., t_n] transforms the image as t_1 o ... o t_n
-	  , tags      :: [ImageTag]			// sorted list of tags
+	  , tags      :: Set ImageTag			// set of tags
 	  }
 :: ImageTransform
 	= RotateImage ImageAngle
@@ -52,26 +53,26 @@ from StdOverloaded import class zero, class +, class -, class ~, class one, clas
 	  , compose   :: Compose
 	  }
 :: LookupSpan
-	= ColumnXSpan  [ImageTag] Int			// (ColumnXSpan as a) is x-span of column number a in grid tagged with superset of as
+	= ColumnXSpan  (Set ImageTag) Int		// (ColumnXSpan as a) is x-span of column number a in grid tagged with superset of as
 	| DescentYSpan FontDef					// (DescentYSpan a) is descent height of font a
 	| ExYSpan      FontDef					// (ExYSpan a) is ex height of font a
-	| ImageXSpan   [ImageTag]				// (ImageXSpan as) is x-span of image tagged with superset of as
-	| ImageYSpan   [ImageTag]				// (ImageYSpan as) is y-span of image tagged with superset of as
-	| RowYSpan     [ImageTag] Int			// (RowYSpan as a) is y-span of row number a in grid tagged with superset of as
+	| ImageXSpan   (Set ImageTag)			// (ImageXSpan as) is x-span of image tagged with superset of as
+	| ImageYSpan   (Set ImageTag)			// (ImageYSpan as) is y-span of image tagged with superset of as
+	| RowYSpan     (Set ImageTag) Int		// (RowYSpan as a) is y-span of row number a in grid tagged with superset of as
 	| TextXSpan    FontDef String			// (TextXSpan a b) is width of text b written in font a
 :: Compose
 	= AsGrid Int [ImageAlign]				// (AsGrid nr_of_rows alignments) composes elements in rows, using alignments per image
 	| AsCollage								// AsCollage composes elements in freestyle, framed in optional host
 	| AsOverlay   [ImageAlign]				// AsOverlay composes elements, framed in optional host or largest spans
 
-px			:: Real            -> Span		// (px a) is a pixels
-ex			:: FontDef         -> Span		// (ex font) is the ex height (ascent) of font
-descent		:: FontDef         -> Span		// (descent font) is the descent height of font
-textxspan	:: FontDef String -> Span		// (textxspan font str) is the x-span of str written in font
-imagexspan	:: [ImageTag]      -> Span		// (imagexspan ts) is x-span of image tagged with superset of ts
-imageyspan  :: [ImageTag]      -> Span		// (imageyspan ts) is y-span of image tagged with superset of ts
-columnspan	:: [ImageTag] Int -> Span		// (columnspan ts i) is x-span of column i in grid tagged with superset of ts
-rowspan		:: [ImageTag] Int -> Span		// (rowspan ts i) is y-span of row i in grid tagged with superset of ts
+px			:: Real               -> Span		// (px a) is a pixels
+ex			:: FontDef            -> Span		// (ex font) is the ex height (ascent) of font
+descent		:: FontDef            -> Span		// (descent font) is the descent height of font
+textxspan	:: FontDef String     -> Span		// (textxspan font str) is the x-span of str written in font
+imagexspan	:: (Set ImageTag)     -> Span		// (imagexspan ts) is x-span of image tagged with superset of ts
+imageyspan  :: (Set ImageTag)     -> Span		// (imageyspan ts) is y-span of image tagged with superset of ts
+columnspan	:: (Set ImageTag) Int -> Span		// (columnspan ts i) is x-span of column i in grid tagged with superset of ts
+rowspan		:: (Set ImageTag) Int -> Span		// (rowspan ts i) is y-span of row i in grid tagged with superset of ts
 
 class (*.) infixl 7 a :: Span a -> Span
 class (/.) infixl 7 a :: Span a -> Span
@@ -173,7 +174,7 @@ class imageTag a :: a -> ImageTag
 instance imageTag Int
 instance imageTag String
 
-tag  :: [ImageTag] (Image m) -> Image m
-tags :: (Image m) -> [ImageTag]
+tag  :: (Set ImageTag) (Image m) -> Image m
+tags :: (Image m) -> Set ImageTag
 
 reduceSpan :: Span -> Span

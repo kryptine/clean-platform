@@ -4,6 +4,8 @@ from StdFunc import flip
 from StdOrdList import minList, maxList
 import Data.List
 import Data.Maybe
+from Data.Set import :: Set
+import qualified Data.Set as DS
 import Text.HTML
 
 :: Slash
@@ -25,16 +27,16 @@ descent a = LookupSpan (DescentYSpan a)
 textxspan :: FontDef String -> Span
 textxspan a b = LookupSpan (TextXSpan a b)
 
-imagexspan :: [ImageTag] -> Span
+imagexspan :: (Set ImageTag) -> Span
 imagexspan as = LookupSpan (ImageXSpan as)
 
-imageyspan :: [ImageTag] -> Span
+imageyspan :: (Set ImageTag) -> Span
 imageyspan as = LookupSpan (ImageYSpan as)
 
-columnspan :: [ImageTag] Int -> Span
+columnspan :: (Set ImageTag) Int -> Span
 columnspan as a = LookupSpan (ColumnXSpan as a)
 
-rowspan :: [ImageTag] Int -> Span
+rowspan :: (Set ImageTag) Int -> Span
 rowspan as a = LookupSpan (RowYSpan as a)
 
 instance zero Span where zero                    = PxSpan zero
@@ -89,7 +91,7 @@ empty xspan yspan
 	= { content   = Basic EmptyImage {xspan=maxSpan [zero,xspan],yspan=maxSpan [zero,yspan]}
 	  , attribs   = []
 	  , transform = []
-	  , tags      = []
+	  , tags      = 'DS'.newSet
 	  }
 
 text :: FontDef String -> Image m
@@ -101,7 +103,7 @@ text font str
 	                ,ImageFillOpacityAttr {opacity     = 1.0}
 	                ]
 	  , transform = []
-	  , tags      = []
+	  , tags      = 'DS'.newSet
 	  }
 
 xline :: Span -> Image m
@@ -121,7 +123,7 @@ line slash xspan yspan
 	                ,ImageFillOpacityAttr {opacity     = 1.0}
 	                ]
 	  , transform = []
-	  , tags      = []
+	  , tags      = 'DS'.newSet
 	  }
 
 circle :: Span -> Image m
@@ -133,7 +135,7 @@ circle diameter
 	                ,ImageFillOpacityAttr {opacity     = 1.0}
 	                ]
 	  , transform = []
-	  , tags      = []
+	  , tags      = 'DS'.newSet
 	  }
 where
 	d             = maxSpan [zero,diameter]
@@ -147,7 +149,7 @@ ellipse diax diay
 	                ,ImageFillOpacityAttr {opacity     = 1.0}
 	                ]
 	  , transform = []
-	  , tags      = []
+	  , tags      = 'DS'.newSet
 	  }
 
 rect :: Span Span -> Image m
@@ -159,7 +161,7 @@ rect xspan yspan
 	                ,ImageFillOpacityAttr {opacity     = 1.0}
 	                ]
 	  , transform = []
-	  , tags      = []
+	  , tags      = 'DS'.newSet
 	  }
 
 rotate :: ImageAngle (Image m) -> Image m
@@ -249,7 +251,7 @@ overlay aligns offsets imgs host
 	= { content   = Composite { offsets = offsets, content = imgs, host = host, compose = AsOverlay aligns }
 	  , attribs   = []
 	  , transform = []
-	  , tags      = []
+	  , tags      = 'DS'.newSet
 	  }
 
 beside :: [YAlign] [ImageOffset] [Image m] (Host m) -> Image m
@@ -269,7 +271,7 @@ grid dimension layout aligns offsets imgs host
 	= { content   = Composite { offsets = offsets, content = imgs`, host = host, compose = AsGrid rows aligns }
 	  , attribs   = []
 	  , transform = []
-	  , tags      = []
+	  , tags      = 'DS'.newSet
 	  }
 where
 	nr_of_imgs    = length imgs
@@ -299,14 +301,19 @@ collage offsets imgs host
 	= { content   = Composite { offsets = offsets, content = imgs, host = host, compose = AsCollage}
 	  , attribs   = []
 	  , transform = []
-	  , tags      = []
+	  , tags      = 'DS'.newSet
 	  }
 
-instance tune_image StrokeAttr      where tune_image image=:{Image | attribs} attr = {Image | image & attribs = update_or_add sameImageAttr (ImageStrokeAttr      attr) attribs}
-instance tune_image StrokeWidthAttr where tune_image image=:{Image | attribs} attr = {Image | image & attribs = update_or_add sameImageAttr (ImageStrokeWidthAttr attr) attribs}
-instance tune_image FillAttr        where tune_image image=:{Image | attribs} attr = {Image | image & attribs = update_or_add sameImageAttr (ImageFillAttr        attr) attribs}
-instance tune_image OpacityAttr     where tune_image image=:{Image | attribs} attr = {Image | image & attribs = update_or_add sameImageAttr (ImageFillOpacityAttr attr) attribs}
-instance tune_image OnClickAttr     where tune_image image=:{Image | attribs} attr = {Image | image & attribs = update_or_add sameImageAttr (ImageOnClickAttr     attr) attribs}
+instance tune_image StrokeAttr      where
+  tune_image image=:{Image | attribs} attr = {Image | image & attribs = update_or_add sameImageAttr (ImageStrokeAttr      attr) attribs}
+instance tune_image StrokeWidthAttr where
+  tune_image image=:{Image | attribs} attr = {Image | image & attribs = update_or_add sameImageAttr (ImageStrokeWidthAttr attr) attribs}
+instance tune_image FillAttr        where
+  tune_image image=:{Image | attribs} attr = {Image | image & attribs = update_or_add sameImageAttr (ImageFillAttr        attr) attribs}
+instance tune_image OpacityAttr     where
+  tune_image image=:{Image | attribs} attr = {Image | image & attribs = update_or_add sameImageAttr (ImageFillOpacityAttr attr) attribs}
+instance tune_image OnClickAttr     where
+  tune_image image=:{Image | attribs} attr = {Image | image & attribs = update_or_add sameImageAttr (ImageOnClickAttr     attr) attribs}
 
 (<@<) infixl 2 :: (Image m) (attr m) -> Image m | tune_image attr
 (<@<) image attr = tune_image image attr
@@ -343,23 +350,11 @@ instance <  ImageTag     where <  (ImageTagInt    n1) (ImageTagInt    n2) = n1 <
                                <  (ImageTagSystem s1) (ImageTagSystem s2) = s1 < s2
                                <  _                   _                   = False
 
-tag :: [ImageTag] (Image m) -> Image m
-tag ts image=:{Image | tags} = {Image | image & tags = foldr insert_no_dup tags ts}
+tag :: (Set ImageTag) (Image m) -> Image m
+tag ts image=:{Image | tags} = {Image | image & tags = 'DS'.union tags ts}
 
-tags :: (Image m) -> [ImageTag]
+tags :: (Image m) -> (Set ImageTag)
 tags image=:{Image | tags} = tags
-
-//	general utility functions.
-/** insert_no_dup x xs = ys:
-		@xs must be a sorted list. @ys is the result of adding @x to @xs only if @x is not a member of @xs.
-		@ys is also a sorted list.
-*/
-insert_no_dup :: a [a] -> [a] | <, == a
-insert_no_dup x [] = [x]
-insert_no_dup x yys=:[y:ys]
-| y <  x	= [y : insert_no_dup x ys]
-| y == x	= yys
-| otherwise	= [x : yys]
 
 /** update_or_add c x xs = ys:
 		@xs must be a sorted list. @ys replaces the first element y in @xs for which (@c @x y) is valid with @x.
