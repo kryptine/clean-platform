@@ -40,7 +40,8 @@ from Data.Maybe		import :: Maybe
  * equality.
  *---------------------------------------------------------------------------*/
 
-:: Set a
+:: Set a = Tip
+         | Bin !Int a !(Set a) !(Set a)
 
 // Is this the empty set?
 null :: (Set a) -> Bool
