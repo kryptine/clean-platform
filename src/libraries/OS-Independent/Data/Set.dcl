@@ -112,6 +112,9 @@ split :: a (Set a) -> (Set a,Set a) | < a & == a
 // element was found in the original set.
 splitMember :: a (Set a) -> (Set a,Bool,Set a) | < a & == a
 
+// | /O(n)/. Post-order fold.
+fold :: (a -> b -> b) b (Set a) -> b
+
 // Convert the set to an ascending list of elements.
 toList :: (Set a) -> [a]
 // Create a set from a list of elements.
