@@ -58,40 +58,40 @@ isProperSubsetOf :: (Set a) (Set a) -> Bool | < a & == a
 // The empty set.
 newSet :: Set a
 // Create a singleton set.
-singleton :: a -> Set a
+singleton :: u:a -> w:(Set u:a), [w <= u]
 // Insert an element in a set.
 // If the set already contains an element equal to the given value,
 // it is replaced with the new value.
-insert :: a (Set a) -> Set a | < a & == a
+insert :: a .(Set a) -> Set a | < a & == a
 // Delete an element from a set.
-delete :: a (Set a) -> Set a | < a & == a
+delete :: a .(Set a) -> Set a | < a & == a
 
 // The minimal element of a set.
 findMin :: (Set a) -> a
 // The maximal element of a set.
 findMax :: (Set a) -> a
 // Delete the minimal element.
-deleteMin :: (Set a) -> Set a
+deleteMin :: .(Set a) -> Set a
 // Delete the maximal element.
-deleteMax :: (Set a) -> Set a
+deleteMax :: .(Set a) -> Set a
 // deleteFindMin set = (findMin set, deleteMin set)
-deleteFindMin :: (Set a) -> (a,Set a)
+deleteFindMin :: .(Set a) -> (a, Set a)
 // deleteFindMax set = (findMax set, deleteMax set)
-deleteFindMax :: (Set a) -> (a,Set a)
+deleteFindMax :: .(Set a) -> (a, Set a)
 // Retrieves the minimal key of the set, and the set
 // stripped of that element, or 'Nothing' if passed an empty set.
-minView :: (Set a) -> Maybe (a, Set a)
+minView :: .(Set a) -> .(Maybe (a,Set a))
 // Retrieves the maximal key of the set, and the set
 // stripped of that element, or 'Nothing' if passed an empty set.
-maxView :: (Set a) -> Maybe (a, Set a)
+maxView :: .(Set a) -> .(Maybe (a,Set a))
 
 // The union of two sets, preferring the first set when
 // equal elements are encountered.
 // The implementation uses the efficient /hedge-union/ algorithm.
 // Hedge-union is more efficient on (bigset `union` smallset).
-union :: (Set a) (Set a) -> Set a | < a & == a
+union :: u:(Set a) u:(Set a) -> Set a | < a & == a
 // The union of a list of sets: (@'unions' == 'foldl' 'union' 'empty'@).
-unions :: [Set a] -> Set a | < a & == a
+unions :: u:[v:(Set a)] -> Set a | < a & == a, [u <= v]
 // Difference of two sets. 
 difference :: (Set a) (Set a) -> Set a | < a & == a
 // The intersection of two sets.
@@ -113,7 +113,7 @@ split :: a (Set a) -> (Set a,Set a) | < a & == a
 splitMember :: a (Set a) -> (Set a,Bool,Set a) | < a & == a
 
 // | /O(n)/. Post-order fold.
-fold :: (a -> b -> b) b (Set a) -> b
+fold :: (a -> .b -> .b) .b .(Set a) -> .b
 
 // Convert the set to an ascending list of elements.
 toList :: (Set a) -> [a]
