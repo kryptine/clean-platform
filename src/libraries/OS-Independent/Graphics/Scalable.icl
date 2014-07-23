@@ -337,6 +337,9 @@ instance < (ImageAttr m) where < a b = consNameOf a < consNameOf b
 instance toSVGColor String where toSVGColor name = SVGColorText name
 instance toSVGColor RGB    where toSVGColor {RGB | r,g,b} = SVGRGB r g b
 
+instance zero RGB where
+  zero = { r = 0, g = 0, b = 0 }
+
 instance imageTag Int    where imageTag n = ImageTagInt n
 instance imageTag String where imageTag s = ImageTagString s
 instance == ImageTag     where == (ImageTagInt    n1) (ImageTagInt    n2) = n1 == n2

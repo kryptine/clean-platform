@@ -164,6 +164,8 @@ instance tune_image StrokeAttr, StrokeWidthAttr, FillAttr, OpacityAttr, OnClickA
 
 class toSVGColor a :: a -> SVGColor
 instance toSVGColor String, RGB
+instance zero RGB
+
 :: RGB = { r :: Int, g :: Int, b :: Int }
 
 :: ImageTag
