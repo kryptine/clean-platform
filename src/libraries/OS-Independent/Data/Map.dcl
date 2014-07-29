@@ -90,6 +90,8 @@ foldrNoKey   :: (v u:a -> u:a) u:a (Map k v) -> u:a
 foldlWithKey :: (u:a k v -> u:a) u:a (Map k v) -> u:a
 foldlNoKey   :: (u:a v -> u:a) u:a (Map k v) -> u:a
 
+filterWithKey :: (k a -> Bool) (Map k a) -> Map k a | Eq k & Ord k
+
 keys  :: (Map k a) -> [k]
 elems :: (Map k a) -> [a]
 
