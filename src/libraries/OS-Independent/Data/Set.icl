@@ -8,12 +8,26 @@ import Data.Maybe
 compare :: a a -> Ordering | < a & == a
 compare x y = if (x<y) LT (if (x>y) GT EQ)
 
-/* 
+/*
  * Sets are size balanced trees.
  * A set of values @a@.
  */
-:: Set a = Tip 
-         | Bin !Int a !(Set a) !(Set a) 
+:: Set a = Tip
+         | Bin !Int a !(Set a) !(Set a)
+
+instance == (Set a) | == a where
+  (==) t1 t2  = (size t1 == size t2) && (toAscList t1 == toAscList t2)
+
+instance < (Set a) | < a where
+  (<) s1 s2 = compare (toAscList s1) (toAscList s2)
+    where
+    compare []     [] = False
+    compare []     _  = True
+    compare [_:_]  [] = False
+    compare [a:as] [b:bs]
+      | a < b     = True
+      | a > b     = False
+      | otherwise = compare as bs
 
 /*--------------------------------------------------------------------
  * Query

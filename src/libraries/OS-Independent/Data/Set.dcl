@@ -43,6 +43,10 @@ from Data.Maybe		import :: Maybe
 :: Set a = Tip
          | Bin !Int a !(Set a) !(Set a)
 
+instance == (Set a) | == a
+
+instance < (Set a) | < a
+
 // Is this the empty set?
 null :: (Set a) -> Bool
 // The number of elements in the set.
