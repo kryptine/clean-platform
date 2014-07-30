@@ -1,6 +1,8 @@
 implementation module Graphics.Scalable
 
+from StdMisc import abort
 from StdFunc import flip
+from StdTuple import fst, snd
 from StdOrdList import minList, maxList
 import Data.List
 import Data.Maybe
@@ -205,6 +207,38 @@ where
 					[FitYImage _ : ts] = [FitYImage yspan` : ts]
 					ts                 = [FitYImage yspan` : ts]
 
+applyTransforms :: [ImageTransform] ImageSpan -> ImageSpan
+applyTransforms ts sp = foldr f sp ts
+  where
+  f (RotateImage th)   accSp          = rotatedImageSpan accSp th
+  f (SkewXImage th)    accSp=:{xspan} = {accSp & xspan = skewXImageWidth accSp th}
+  f (SkewYImage th)    accSp=:{yspan} = {accSp & yspan = skewYImageHeight accSp th}
+  f (FitImage xsp ysp) accSp          = {ImageSpan | xspan = xsp,   yspan = ysp}
+  f (FitXImage sp)     {yspan}        = {ImageSpan | xspan = sp,    yspan = yspan}
+  f (FitYImage sp)     {xspan}        = {ImageSpan | xspan = xspan, yspan = sp}
+
+skewXImageWidth :: ImageSpan ImageAngle -> Span
+skewXImageWidth {xspan, yspan} angle = xspan + (AbsSpan (yspan *. tan angle))
+
+skewYImageHeight :: ImageSpan ImageAngle -> Span
+skewYImageHeight {xspan, yspan} angle = yspan + (AbsSpan (xspan *. tan angle))
+
+rotatedImageSpan :: ImageSpan ImageAngle -> ImageSpan
+rotatedImageSpan {xspan, yspan} angle
+  = { xspan = AbsSpan (maxSpan allX - minSpan allX)
+    , yspan = AbsSpan (maxSpan allY - minSpan allY) }
+  where
+  cx = xspan /. 2.0
+  cy = yspan /. 2.0
+  allPoints = [ mkTransform (px 0.0) (px 0.0)
+              , mkTransform xspan    (px 0.0)
+              , mkTransform (px 0.0) yspan
+              , mkTransform xspan    yspan ]
+  allX = map fst allPoints
+  allY = map snd allPoints
+  mkTransform x y = ( cx + (x - cx) *. (cos angle) + (y - cy) *. (sin angle)
+                    , cy - (x - cx) *. (sin angle) + (y - cy) *. (cos angle))
+
 skewx :: ImageAngle (Image m) -> Image m
 skewx xskew image=:{Image | transform = ts}
 | xskew` == zero	= image
@@ -248,7 +282,7 @@ overlay _ _ [] host
 		Just img = img
 		nothing  = empty zero zero
 overlay aligns offsets imgs host
-	= { content   = Composite { offsets = offsets, content = imgs, host = host, compose = AsOverlay aligns }
+	= { content   = Composite { offsets = offsets, host = host, compose = AsOverlay aligns imgs }
 	  , attribs   = []
 	  , transform = []
 	  , tags      = 'DS'.newSet
@@ -268,7 +302,7 @@ grid _ _ _ _ [] host
 	    Just img = img
 	    nothing  = empty zero zero
 grid dimension layout aligns offsets imgs host
-	= { content   = Composite { offsets = offsets, content = imgs`, host = host, compose = AsGrid rows aligns }
+	= { content   = Composite { offsets = offsets, host = host, compose = AsGrid (cols, rows) aligns imgs` }
 	  , attribs   = []
 	  , transform = []
 	  , tags      = 'DS'.newSet
@@ -281,24 +315,24 @@ where
 	                   Columns nr = let nr` = max 1 nr
 	                                 in (nr`,nr_of_imgs / nr` + sign (nr_of_imgs rem nr`))
 	imgs_complete = imgs ++ repeatn (cols*rows-nr_of_imgs) (empty zero zero)
-	imgs`         = flatten (arrange_layout layout (if (is_row_major dimension) 
-	                                                   (partition cols imgs_complete) 
-	                                                   [map (flip (!!) i) (partition rows imgs_complete) \\ i <- [0..rows-1]]
-	                                               ))
+	imgs`         = arrange_layout layout (if (is_row_major dimension) 
+	                                         (partition cols imgs_complete) 
+	                                         [map (flip (!!) i) (partition rows imgs_complete) \\ i <- [0..rows-1]]
+	                                         )
 	
 	is_row_major :: GridDimension -> Bool
 	is_row_major (Rows _) = True
 	is_row_major _        = False
 	
 	arrange_layout :: GridLayout [[a]] -> [[a]]
-	arrange_layout (LeftToRight,TopToBottom) xs = xs
-	arrange_layout (RightToLeft,TopToBottom) xs = map reverse xs
-	arrange_layout (LeftToRight,BottomToTop) xs = reverse xs
-	arrange_layout (RightToLeft,BottomToTop) xs = reverse (map reverse xs)
+	arrange_layout (LeftToRight, TopToBottom) xs = xs
+	arrange_layout (RightToLeft, TopToBottom) xs = map reverse xs
+	arrange_layout (LeftToRight, BottomToTop) xs = reverse xs
+	arrange_layout (RightToLeft, BottomToTop) xs = reverse (map reverse xs)
 
 collage :: [ImageOffset] [Image m] (Host m) -> Image m
 collage offsets imgs host
-	= { content   = Composite { offsets = offsets, content = imgs, host = host, compose = AsCollage}
+	= { content   = Composite { offsets = offsets, host = host, compose = AsCollage imgs}
 	  , attribs   = []
 	  , transform = []
 	  , tags      = 'DS'.newSet
@@ -392,40 +426,5 @@ spanfilter c [x:xs]
 where
 	(yes,no)	= spanfilter c xs
 
-reduceSpan :: Span -> Span
-reduceSpan (PxSpan  r)   = PxSpan r
-reduceSpan (AddSpan x y) = reduceSpanBin x y (+) AddSpan
-reduceSpan (SubSpan x y) = reduceSpanBin x y (-) SubSpan
-reduceSpan (MulSpan x y) = reduceSpanNum x y (*) MulSpan
-reduceSpan (DivSpan x y) = reduceSpanNum x y (/) DivSpan
-reduceSpan (AbsSpan x)
-  = case reduceSpan x of
-      PxSpan x` -> PxSpan (abs x`)
-      x`        -> AbsSpan x`
-reduceSpan (MinSpan ss)  = reduceSpanList ss min MinSpan
-reduceSpan (MaxSpan ss)  = reduceSpanList ss max MaxSpan
-reduceSpan sp            = sp
-
-reduceSpanBin :: Span Span (Real Real -> Real) (Span Span -> Span) -> Span
-reduceSpanBin x y op cons
-  = case (reduceSpan x, reduceSpan y) of
-      (PxSpan x`, PxSpan y`) -> PxSpan (op x` y`)
-      (x`, y`)               -> cons x` y`
-
-reduceSpanNum :: Span Real (Real Real -> Real) (Span Real -> Span) -> Span
-reduceSpanNum x y op cons
-  = case reduceSpan x of
-      PxSpan x` -> PxSpan (op x` y)
-      x`        -> cons x` y
-
-reduceSpanList :: [Span] (Real Real -> Real) ([Span] -> Span) -> Span
-reduceSpanList ss op cons
-  = case reduceSpans (map reduceSpan ss) of
-      [PxSpan x] -> PxSpan x
-      xs         -> cons xs
-  where
-  reduceSpans [PxSpan x : PxSpan y : xs] = reduceSpans [PxSpan (op x y) : xs]
-  reduceSpans [PxSpan x : y : xs]        = [y : reduceSpans [PxSpan x : xs]]
-  reduceSpans [x : xs]                   = [x : reduceSpans xs]
-  reduceSpans []                         = []
-
+instance + ImageOffset where
+  (+) (xal1, yal1) (xal2, yal2) = (xal1 + xal2, yal1 + yal2)

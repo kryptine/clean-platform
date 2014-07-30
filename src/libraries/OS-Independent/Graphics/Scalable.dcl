@@ -7,7 +7,7 @@ definition module Graphics.Scalable
 from Data.Maybe import :: Maybe
 from Text.HTML import :: SVGColor
 from Data.Set import :: Set
-from StdOverloaded import class zero, class +, class -, class ~, class one, class abs
+from StdOverloaded import class zero, class +, class -, class ~, class one, class abs, class <, class ==
 
 :: Image m
 	= { content   :: ImageContent m		// the image elements
@@ -48,22 +48,21 @@ from StdOverloaded import class zero, class +, class -, class ~, class one, clas
 	| EllipseImage
 :: CompositeImage m
 	= { offsets   :: [ImageOffset]
-	  , content   :: [Image m]
 	  , host      :: Host m
-	  , compose   :: Compose
+	  , compose   :: Compose m
 	  }
 :: LookupSpan
 	= ColumnXSpan  (Set ImageTag) Int		// (ColumnXSpan as a) is x-span of column number a in grid tagged with superset of as
-	| DescentYSpan FontDef					// (DescentYSpan a) is descent height of font a
-	| ExYSpan      FontDef					// (ExYSpan a) is ex height of font a
+	| RowYSpan     (Set ImageTag) Int		// (RowYSpan as a) is y-span of row number a in grid tagged with superset of as
 	| ImageXSpan   (Set ImageTag)			// (ImageXSpan as) is x-span of image tagged with superset of as
 	| ImageYSpan   (Set ImageTag)			// (ImageYSpan as) is y-span of image tagged with superset of as
-	| RowYSpan     (Set ImageTag) Int		// (RowYSpan as a) is y-span of row number a in grid tagged with superset of as
+	| DescentYSpan FontDef					// (DescentYSpan a) is descent height of font a
+	| ExYSpan      FontDef					// (ExYSpan a) is ex height of font a
 	| TextXSpan    FontDef String			// (TextXSpan a b) is width of text b written in font a
-:: Compose
-	= AsGrid Int [ImageAlign]				// (AsGrid nr_of_rows alignments) composes elements in rows, using alignments per image
-	| AsCollage								// AsCollage composes elements in freestyle, framed in optional host
-	| AsOverlay   [ImageAlign]				// AsOverlay composes elements, framed in optional host or largest spans
+:: Compose m
+	= AsGrid    (Int, Int) [ImageAlign] [[Image m]]	// (AsGrid (nr_of_cols, nr_of_rows) alignments) composes elements in rows, using alignments per image
+	| AsCollage                         [Image m]		// AsCollage composes elements in freestyle, framed in optional host
+	| AsOverlay            [ImageAlign] [Image m]		// AsOverlay composes elements, framed in optional host or largest spans
 
 px			:: Real               -> Span		// (px a) is a pixels
 ex			:: FontDef            -> Span		// (ex font) is the ex height (ascent) of font
@@ -113,6 +112,11 @@ fitx    :: Span       (Image m) -> Image m
 fity    :: Span       (Image m) -> Image m
 skewx   :: ImageAngle (Image m) -> Image m
 skewy   :: ImageAngle (Image m) -> Image m
+
+applyTransforms  :: [ImageTransform] ImageSpan -> ImageSpan
+skewXImageWidth  :: ImageSpan ImageAngle -> Span
+skewYImageHeight :: ImageSpan ImageAngle -> Span
+rotatedImageSpan :: ImageSpan ImageAngle -> ImageSpan
 
 :: Slash = Slash | Backslash
 
@@ -179,4 +183,7 @@ instance imageTag String
 tag  :: (Set ImageTag) (Image m) -> Image m
 tags :: (Image m) -> Set ImageTag
 
-reduceSpan :: Span -> Span
+instance == ImageTag
+instance <  ImageTag
+
+instance + ImageOffset where
