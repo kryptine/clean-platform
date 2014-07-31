@@ -248,6 +248,7 @@ import StdString, Data.Maybe
 */
 :: SVGElt				= SVGElt            ![HtmlAttr] ![SVGAttr] ![SVGElt]
                         | CircleElt         ![HtmlAttr] ![SVGAttr]
+                        | ClipPathElt       ![HtmlAttr] ![SVGAttr] ![SVGElt]
                         | DefsElt           ![HtmlAttr] ![SVGAttr] ![SVGElt]
                         | EllipseElt        ![HtmlAttr] ![SVGAttr]
 						| GElt              ![HtmlAttr] ![SVGAttr] ![SVGElt]
