@@ -236,8 +236,8 @@ rotatedImageSpan {xspan, yspan} angle
               , mkTransform xspan    yspan ]
   allX = map fst allPoints
   allY = map snd allPoints
-  mkTransform x y = ( cx + (x - cx) *. (cos angle) + (y - cy) *. (sin angle)
-                    , cy - (x - cx) *. (sin angle) + (y - cy) *. (cos angle))
+  mkTransform x y = ( cx + (x - cx) *. cos angle + (y - cy) *. sin angle
+                    , cy - (x - cx) *. sin angle + (y - cy) *. cos angle)
 
 skewx :: ImageAngle (Image m) -> Image m
 skewx xskew image=:{Image | transform = ts}
