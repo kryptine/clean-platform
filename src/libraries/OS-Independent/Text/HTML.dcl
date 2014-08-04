@@ -276,6 +276,9 @@ import StdString, Data.Maybe
 						| FontFamilyAttr          !String
 						| FontSizeAttr            !String										// {<absolute-size>,<relative-size>,<length>,<percentage>,inherit}
 						| FontStyleAttr           !String										// {normal,italic,oblique,inherit}
+						| FontStretchAttr         !String										// {normal,wider,narrower,ultra-condensed,extra-condensed,condensed,semi-condensed,semi-expanded,expanded,extra-expanded,ultra-expanded,inherit}
+                        | FontVariantAttr         !String                                       // {normal,small-caps,inherit}
+                        | FontWeightAttr          !String                                       // {normal,bold,bolder,lighter,100,200,300,400,500,600,700,800,900,inherit}
 						| LengthAdjustAttr        !SVGLengthAdjust
                         | OffsetAttr              !String
 						| PreserveAspectRatioAttr !(Maybe SVGDefer) !(Maybe SVGAlign) !(Maybe SVGMeetOrSlice)

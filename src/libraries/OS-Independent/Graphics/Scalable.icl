@@ -270,7 +270,7 @@ radian r = r / (pi / 180.0)
 degree :: Real -> ImageAngle
 degree d = d
 
-pi =: 3.1415926
+pi =: 3.14159265359
 
 overlay :: [ImageAlign] [ImageOffset] [Image m] (Host m) -> Image m
 overlay _ _ [] host
