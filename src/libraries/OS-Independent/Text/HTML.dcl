@@ -264,7 +264,8 @@ import StdString, Data.Maybe
 /*
 * This type provides an enumeration of (not yet) all SVG element attributes.
 */
-:: SVGAttr				= BaseProfileAttr         !String										// necessary?
+:: SVGAttr				= AlignmentBaselineAttr   !String
+                        | BaseProfileAttr         !String										// necessary?
 						| ContentScriptTypeAttr   !String
 //						| ContentStyleTypeAttr    !String										// deprecated in SVG1.1
 						| CxAttr                  !SVGCoordinate

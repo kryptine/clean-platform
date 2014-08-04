@@ -626,6 +626,7 @@ svgAttrsSize :: ![SVGAttr] -> Int
 svgAttrsSize attrs = intsum svgAttrSize attrs
 
 svgAttrSize :: !SVGAttr -> Int
+svgAttrSize (AlignmentBaselineAttr   bl)	    	= 20 + size bl
 svgAttrSize (BaseProfileAttr         profile)		= 15 + size profile
 svgAttrSize (ContentScriptTypeAttr   type)			= 11 + size type
 svgAttrSize (CxAttr                  cx)			=  6 + svgLengthSize cx
@@ -906,6 +907,7 @@ serializeSVGAttrs [x:xs] dest dest_i
 	= serializeSVGAttrs xs dest dest_i
 
 serializeSVGAttr :: !SVGAttr !*{#Char} !Int -> (!*{#Char}, !Int)
+serializeSVGAttr (AlignmentBaselineAttr   bl)        s i = writeAttr "alignment-baseline"  bl               s i
 serializeSVGAttr (BaseProfileAttr         profile)   s i = writeAttr "baseProfile"         profile          s i
 serializeSVGAttr (ContentScriptTypeAttr   type)      s i = writeAttr "contentScriptType"   type             s i
 serializeSVGAttr (CxAttr                  cx)        s i = writeAttr "cx"                  (toString cx)    s i
