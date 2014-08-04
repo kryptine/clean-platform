@@ -270,6 +270,7 @@ import StdString, Data.Maybe
 //						| ContentStyleTypeAttr    !String										// deprecated in SVG1.1
 						| CxAttr                  !SVGCoordinate
 						| CyAttr                  !SVGCoordinate
+                        | DominantBaselineAttr    !String
 						| ExternalResourcesRequiredAttr !Bool
 						| FillAttr                !SVGPaint
 						| FillOpacityAttr         !SVGFillOpacity
