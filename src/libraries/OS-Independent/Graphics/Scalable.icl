@@ -232,8 +232,9 @@ rotatedImageSpan {xspan, yspan} angle
               , mkTransform xspan    yspan ]
   allX = map fst allPoints
   allY = map snd allPoints
-  mkTransform x y = ( cx + (x - cx) *. cos angle + (y - cy) *. sin angle
-                    , cy - (x - cx) *. sin angle + (y - cy) *. cos angle)
+  angle` = (pi / 180.0) * angle
+  mkTransform x y = ( ((x - cx) *. cos angle`) - ((y - cy) *. sin angle`)
+                    , ((x - cx) *. sin angle`) + ((y - cy) *. cos angle`))
 
 skewx :: ImageAngle (Image m) -> Image m
 skewx xskew image=:{Image | transform = ts}
@@ -278,19 +279,27 @@ overlay _ _ [] host
 		Just img = img
 		nothing  = empty zero zero
 overlay aligns offsets imgs host
-	= { content   = Composite { offsets = offsets, host = host, compose = AsOverlay aligns imgs }
+	= { content   = Composite { offsets = take l offsets
+                              , host    = host
+                              , compose = AsOverlay (take l aligns) imgs }
 	  , attribs   = []
 	  , transform = []
 	  , tags      = 'DS'.newSet
 	  }
+  where
+  l = length imgs
 
 beside :: [YAlign] [ImageOffset] [Image m] (Host m) -> Image m
 beside ylayouts offsets imgs host
-	= grid (Rows 1) (LeftToRight,TopToBottom) [(AtLeft,ylayout) \\ ylayout <- ylayouts] offsets imgs host
+  = grid (Rows 1) (LeftToRight,TopToBottom) (take l [(AtLeft,ylayout) \\ ylayout <- ylayouts]) (take l offsets) imgs host
+  where
+  l = length imgs
 
 above :: [XAlign] [ImageOffset] [Image m] (Host m) -> Image m
 above xlayouts offsets imgs host
-	= grid (Columns 1) (LeftToRight,TopToBottom) [(xlayout,AtTop) \\ xlayout <- xlayouts] offsets imgs host
+  = grid (Columns 1) (LeftToRight,TopToBottom) (take l [(xlayout,AtTop) \\ xlayout <- xlayouts]) (take l offsets) imgs host
+  where
+  l = length imgs
 
 grid :: GridDimension GridLayout [ImageAlign] [ImageOffset] [Image m] (Host m) -> Image m
 grid _ _ _ _ [] host
@@ -298,7 +307,10 @@ grid _ _ _ _ [] host
 	    Just img = img
 	    nothing  = empty zero zero
 grid dimension layout aligns offsets imgs host
-	= { content   = Composite { offsets = offsets, host = host, compose = AsGrid (cols, rows) aligns imgs` }
+	= { content   = Composite { offsets = take nr_of_imgs offsets
+                              , host    = host
+                              , compose = AsGrid (cols, rows) (take nr_of_imgs aligns) imgs`
+                              }
 	  , attribs   = []
 	  , transform = []
 	  , tags      = 'DS'.newSet
@@ -328,7 +340,7 @@ where
 
 collage :: [ImageOffset] [Image m] (Host m) -> Image m
 collage offsets imgs host
-	= { content   = Composite { offsets = offsets, host = host, compose = AsCollage imgs}
+	= { content   = Composite { offsets = take (length imgs) offsets, host = host, compose = AsCollage imgs}
 	  , attribs   = []
 	  , transform = []
 	  , tags      = 'DS'.newSet
