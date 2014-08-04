@@ -11,9 +11,9 @@ from StdOverloaded import class zero, class +, class -, class ~, class one, clas
 
 :: Image m
 	= { content   :: ImageContent m		// the image elements
-	  , attribs   :: [ImageAttr m]			// the image attributes
-	  , transform :: [ImageTransform]		// [t_1, ..., t_n] transforms the image as t_1 o ... o t_n
-	  , tags      :: Set ImageTag			// set of tags
+	  , attribs   :: [ImageAttr m]		// the image attributes
+	  , transform :: [ImageTransform]	// [t_1, ..., t_n] transforms the image as t_1 o ... o t_n
+	  , tags      :: Set ImageTag		// set of tags
 	  }
 :: ImageTransform
 	= RotateImage ImageAngle
@@ -27,14 +27,14 @@ from StdOverloaded import class zero, class +, class -, class ~, class one, clas
 	| Composite (CompositeImage m)
 :: Span
 	= PxSpan       Real					// (PxSpan a) is a pixels
-	| LookupSpan   LookupSpan				// (LookupSpan a) needs to be looked up after computing dimensions
-	| AddSpan      Span Span				// (AddSpan a b) is span a + span b
-	| SubSpan      Span Span				// (SubSpan a b) is span a - span b
-	| MulSpan      Span Real				// (MulSpan a k) is (span a) * k
-	| DivSpan      Span Real				// (DivSpan a k) is (span a) / k
+	| LookupSpan   LookupSpan			// (LookupSpan a) needs to be looked up after computing dimensions
+	| AddSpan      Span Span			// (AddSpan a b) is span a + span b
+	| SubSpan      Span Span			// (SubSpan a b) is span a - span b
+	| MulSpan      Span Real			// (MulSpan a k) is (span a) * k
+	| DivSpan      Span Real			// (DivSpan a k) is (span a) / k
 	| AbsSpan      Span					// (AbsSpan a)  is absolute value of span a
-	| MinSpan      [Span]					// (MinSpan as) is minimum span value in as
-	| MaxSpan      [Span]					// (MaxSpan as) is maximum span value in as
+	| MinSpan      [Span]				// (MinSpan as) is minimum span value in as
+	| MaxSpan      [Span]				// (MaxSpan as) is maximum span value in as
 :: ImageSpan
 	= { xspan     :: Span
 	  , yspan     :: Span

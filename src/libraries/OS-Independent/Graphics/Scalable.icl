@@ -99,11 +99,7 @@ empty xspan yspan
 text :: FontDef String -> Image m
 text font str
 	= { content   = Basic (TextImage font str) {xspan=textxspan font str,yspan=font.FontDef.fontyspan}
-	  , attribs   = [ImageStrokeAttr      {stroke      = toSVGColor "black"}
-	                ,ImageStrokeWidthAttr {strokewidth = px 1.0}
-	                ,ImageFillAttr        {fill        = toSVGColor "black"}
-	                ,ImageFillOpacityAttr {opacity     = 1.0}
-	                ]
+	  , attribs   = []
 	  , transform = []
 	  , tags      = 'DS'.newSet
 	  }
