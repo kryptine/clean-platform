@@ -35,10 +35,7 @@ from StdOverloaded import class zero, class +, class -, class ~, class one, clas
 	| AbsSpan      Span					// (AbsSpan a)  is absolute value of span a
 	| MinSpan      [Span]				// (MinSpan as) is minimum span value in as
 	| MaxSpan      [Span]				// (MaxSpan as) is maximum span value in as
-:: ImageSpan
-	= { xspan     :: Span
-	  , yspan     :: Span
-	  }
+:: ImageSpan :== (Span, Span)
 :: BasicImage
 	= EmptyImage
 	| TextImage FontDef String
@@ -73,8 +70,8 @@ imageyspan  :: (Set ImageTag)     -> Span		// (imageyspan ts) is y-span of image
 columnspan	:: (Set ImageTag) Int -> Span		// (columnspan ts i) is x-span of column i in grid tagged with superset of ts
 rowspan		:: (Set ImageTag) Int -> Span		// (rowspan ts i) is y-span of row i in grid tagged with superset of ts
 
-class (*.) infixl 7 a :: Span a -> Span
-class (/.) infixl 7 a :: Span a -> Span
+class (*.) infixl 7 a :: a n -> a | toReal n
+class (/.) infixl 7 a :: a n -> a | toReal n
 
 instance zero Span
 instance one  Span
@@ -82,8 +79,16 @@ instance +    Span
 instance -    Span
 instance abs  Span
 instance ~    Span
-instance *.   Int, Real
-instance /.   Int, Real
+instance *.   Span, Real
+instance /.   Span, Real
+
+class maxOf a :: [a] -> a
+class minOf a :: [a] -> a
+
+instance maxOf Span, Real, Int
+instance minOf Span, Real, Int
+
+class span a | zero a & one a & + a & - a & abs a & ~ a & *. a & /. a & maxOf a & minOf a
 
 minSpan :: [Span] -> Span					// (minimum as) is the minimum of as (zero if as = [])
 maxSpan :: [Span] -> Span					// (maximum as) is the maximum of as (zero if as = [])
@@ -106,17 +111,17 @@ circle	:: Span                 -> Image m		// (circle a) is an image of a circle
 ellipse	:: Span Span            -> Image m		// (ellipse a b) is an image of an ellipse with x-diameter a and y-diameter b
 rect	:: Span Span            -> Image m		// (rect a b) is an image of a rectangle with x-span a and y-span b
 
-rotate  :: a         (Image m) -> Image m | Angle a
+rotate  :: th        (Image m) -> Image m | Angle th
 fit     :: Span Span (Image m) -> Image m
 fitx    :: Span      (Image m) -> Image m
 fity    :: Span      (Image m) -> Image m
-skewx   :: a         (Image m) -> Image m | Angle a
-skewy   :: a         (Image m) -> Image m | Angle a
+skewx   :: th        (Image m) -> Image m | Angle th
+skewy   :: th        (Image m) -> Image m | Angle th
 
 applyTransforms  :: [ImageTransform] ImageSpan -> ImageSpan
-skewXImageWidth  :: a ImageSpan -> Span | Angle a
-skewYImageHeight :: a ImageSpan -> Span | Angle a
-rotatedImageSpanAndOriginOffset :: a ImageSpan -> (ImageSpan, ImageOffset) | Angle a
+skewXImageWidth  :: th (a, a) -> a | Angle th & span a
+skewYImageHeight :: th (a, a) -> a | Angle th & span a
+rotatedImageSpanAndOriginOffset :: th (a, a) -> ((a, a), (a, a)) | Angle th & span a
 
 :: Slash = Slash | Backslash
 

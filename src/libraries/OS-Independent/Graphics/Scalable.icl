@@ -44,9 +44,9 @@ rowspan as a = LookupSpan (RowYSpan as a)
 
 instance zero Span where zero                    = PxSpan zero
 instance one  Span where one                     = PxSpan one
-instance +    Span where + (PxSpan a) (PxSpan b) = PxSpan (a+b)
+instance +    Span where + (PxSpan a) (PxSpan b) = PxSpan (a + b)
                          + s          t          = AddSpan s t
-instance -    Span where - (PxSpan a) (PxSpan b) = PxSpan (a-b)
+instance -    Span where - (PxSpan a) (PxSpan b) = PxSpan (a - b)
                          - s          t          = SubSpan s t
 instance abs  Span where abs (PxSpan  a)         = PxSpan  (abs a)
                          abs (AddSpan a b)       = AbsSpan (AddSpan a b)
@@ -54,17 +54,38 @@ instance abs  Span where abs (PxSpan  a)         = PxSpan  (abs a)
                          abs (MulSpan a k)       = AbsSpan (MulSpan a k)
                          abs (DivSpan a k)       = AbsSpan (DivSpan a k)
                          abs span                = span
-instance ~    Span where ~ s                     = zero - s           
-instance *.   Int  where *. s k                  = s *. (toReal k)
-instance /.   Int  where /. s k                  = s /. (toReal k)
-instance *.   Real where *. (PxSpan  a)    k     = PxSpan    (a*k)
-                         *. (MulSpan a k1) k     = MulSpan a (k*k1)
-                         *. (DivSpan a k1) k     = MulSpan a (k/k1)
-                         *. s              k     = MulSpan s k
-instance /.   Real where /. (PxSpan  a)    k     = PxSpan    (a/k)
-                         /. (MulSpan a k1) k     = MulSpan a (k1/k)
-                         /. (DivSpan a k1) k     = DivSpan a (k1*k)
-                         /. s              k     = DivSpan s k
+instance ~    Span where ~ s                     = zero - s
+instance *.   Real where *. l              r     = l * toReal r
+instance *.   Span where *. (PxSpan  a)    k     = PxSpan    (a * toReal k)
+                         *. (MulSpan a k1) k     = MulSpan a (toReal k * k1)
+                         *. (DivSpan a k1) k     = MulSpan a (toReal k / k1)
+                         *. s              k     = MulSpan s (toReal k)
+instance /.   Real where /. l              r     = l / toReal r
+instance /.   Span where /. (PxSpan  a)    k     = PxSpan    (a / toReal k)
+                         /. (MulSpan a k1) k     = MulSpan a (k1 / toReal k)
+                         /. (DivSpan a k1) k     = DivSpan a (k1 * toReal k)
+                         /. s              k     = DivSpan s (toReal k)
+
+class maxOf a :: [a] -> a
+class minOf a :: [a] -> a
+
+instance maxOf Span where
+  maxOf xs = maxSpan xs
+
+instance maxOf Real where
+  maxOf xs = maxList xs
+
+instance maxOf Int where
+  maxOf xs = maxList xs
+
+instance minOf Span where
+  minOf xs = minSpan xs
+
+instance minOf Real where
+  minOf xs = minList xs
+
+instance minOf Int where
+  minOf xs = minList xs
 
 minSpan :: [Span] -> Span
 minSpan []			= zero
@@ -91,7 +112,7 @@ where
 
 empty :: Span Span -> Image m
 empty xspan yspan
-	= { content   = Basic EmptyImage {xspan=maxSpan [zero,xspan],yspan=maxSpan [zero,yspan]}
+	= { content   = Basic EmptyImage (maxSpan [zero,xspan], maxSpan [zero,yspan])
 	  , attribs   = []
 	  , transform = []
 	  , tags      = 'DS'.newSet
@@ -99,7 +120,7 @@ empty xspan yspan
 
 text :: FontDef String -> Image m
 text font str
-	= { content   = Basic (TextImage font str) {xspan=textxspan font str,yspan=font.FontDef.fontyspan}
+	= { content   = Basic (TextImage font str) (textxspan font str, font.FontDef.fontyspan)
 	  , attribs   = []
 	  , transform = []
 	  , tags      = 'DS'.newSet
@@ -115,7 +136,7 @@ yline yspan
 
 line :: Slash Span Span -> Image m
 line slash xspan yspan
-	= { content   = Basic (LineImage slash) {xspan=abs xspan,yspan=abs yspan}
+	= { content   = Basic (LineImage slash) (abs xspan, abs yspan)
 	  , attribs   = [ImageStrokeAttr      {stroke      = toSVGColor "black"}
 	                ,ImageStrokeWidthAttr {strokewidth = px 1.0}
 	                ,ImageFillAttr        {fill        = toSVGColor "black"}
@@ -127,7 +148,7 @@ line slash xspan yspan
 
 circle :: Span -> Image m
 circle diameter
-	= { content   = Basic CircleImage {xspan=d,yspan=d}
+	= { content   = Basic CircleImage (d, d)
 	  , attribs   = [ImageStrokeAttr      {stroke      = toSVGColor "black"}
 	                ,ImageStrokeWidthAttr {strokewidth = px 1.0}
 	                ,ImageFillAttr        {fill        = toSVGColor "black"}
@@ -141,7 +162,7 @@ where
 
 ellipse :: Span Span -> Image m
 ellipse diax diay
-	= { content   = Basic EllipseImage {xspan=maxSpan [zero, diax],yspan=maxSpan [zero, diay]}
+	= { content   = Basic EllipseImage (maxSpan [zero, diax], maxSpan [zero, diay])
 	  , attribs   = [ImageStrokeAttr      {stroke      = toSVGColor "black"}
 	                ,ImageStrokeWidthAttr {strokewidth = px 1.0}
 	                ,ImageFillAttr        {fill        = toSVGColor "black"}
@@ -153,7 +174,7 @@ ellipse diax diay
 
 rect :: Span Span -> Image m
 rect xspan yspan
-	= { content   = Basic RectImage {xspan=maxSpan [zero,xspan],yspan=maxSpan [zero,yspan]}
+	= { content   = Basic RectImage (maxSpan [zero,xspan], maxSpan [zero,yspan])
 	  , attribs   = [ImageStrokeAttr      {stroke      = toSVGColor "black"}
 	                ,ImageStrokeWidthAttr {strokewidth = px 1.0}
 	                ,ImageFillAttr        {fill        = toSVGColor "black"}
@@ -163,7 +184,7 @@ rect xspan yspan
 	  , tags      = 'DS'.newSet
 	  }
 
-rotate :: a (Image m) -> Image m | Angle a
+rotate :: th (Image m) -> Image m | Angle th
 rotate a image=:{Image | transform = ts}
 | a` == zero	= image
 | otherwise		= {Image | image & transform = ts`}
@@ -207,45 +228,45 @@ where
 applyTransforms :: [ImageTransform] ImageSpan -> ImageSpan
 applyTransforms ts sp = foldr f sp ts
   where
-  f (RotateImage th)   accSp          = fst (rotatedImageSpanAndOriginOffset th accSp)
-  f (SkewXImage th)    accSp=:{xspan} = {accSp & xspan = skewXImageWidth th accSp}
-  f (SkewYImage th)    accSp=:{yspan} = {accSp & yspan = skewYImageHeight th accSp}
-  f (FitImage xsp ysp) accSp          = {ImageSpan | xspan = xsp,   yspan = ysp}
-  f (FitXImage sp)     {yspan}        = {ImageSpan | xspan = sp,    yspan = yspan}
-  f (FitYImage sp)     {xspan}        = {ImageSpan | xspan = xspan, yspan = sp}
+  f (RotateImage th)   accSp           = fst (rotatedImageSpanAndOriginOffset th accSp)
+  f (SkewXImage th)    accSp=:(_, ysp) = (skewXImageWidth th accSp, ysp)
+  f (SkewYImage th)    accSp=:(xsp, _) = (xsp, skewYImageHeight th accSp)
+  f (FitImage xsp ysp) _               = (xsp, ysp)
+  f (FitXImage sp)     (_, ysp)        = (sp, ysp)
+  f (FitYImage sp)     (xsp, _)        = (xsp, sp)
 
-skewXImageWidth :: a ImageSpan -> Span | Angle a
-skewXImageWidth angle {xspan, yspan} = xspan + (AbsSpan (yspan *. tan (toReal (toRad angle))))
+skewXImageWidth :: th (a, a) -> a | Angle th & span a
+skewXImageWidth angle (xspan, yspan) = xspan + (abs (yspan *. tan (toReal (toRad angle))))
 
-skewYImageHeight :: a ImageSpan -> Span | Angle a
-skewYImageHeight angle {xspan, yspan} = yspan + (AbsSpan (xspan *. tan (toReal (toRad (angle)))))
+skewYImageHeight :: th (a, a) -> a | Angle th & span a
+skewYImageHeight angle (xspan, yspan) = yspan + (abs (xspan *. tan (toReal (toRad (angle)))))
 
-rotatedImageSpanAndOriginOffset :: a ImageSpan -> (ImageSpan, ImageOffset) | Angle a
-rotatedImageSpanAndOriginOffset angle {xspan, yspan}
-  = ({ xspan = AbsSpan (maxAllX - minAllX)
-     , yspan = AbsSpan (maxAllY - minAllY) }
+rotatedImageSpanAndOriginOffset :: th (a, a) -> ((a, a), (a, a)) | Angle th & span a
+rotatedImageSpanAndOriginOffset angle (xspan, yspan)
+  = (( abs (maxAllX - minAllX)
+     , abs (maxAllY - minAllY) )
     , ( maxAllX - fst tTopLeft
       , maxAllY - snd tTopLeft)
     )
   where
   cx        = xspan /. 2.0
   cy        = yspan /. 2.0
-  tTopLeft  = mkTransform (px 0.0) (px 0.0)
+  tTopLeft  = mkTransform zero zero
   allPoints = [ tTopLeft
-              , mkTransform xspan    (px 0.0)
-              , mkTransform (px 0.0) yspan
-              , mkTransform xspan    yspan ]
+              , mkTransform xspan zero
+              , mkTransform zero  yspan
+              , mkTransform xspan yspan ]
   allX      = map fst allPoints
-  maxAllX   = maxSpan allX
-  minAllX   = minSpan allX
+  maxAllX   = maxOf allX
+  minAllX   = minOf allX
   allY      = map snd allPoints
-  maxAllY   = maxSpan allY
-  minAllY   = minSpan allY
+  maxAllY   = maxOf allY
+  minAllY   = minOf allY
   angle`    = toReal (toRad angle)
   mkTransform x y = ( ((x - cx) *. cos angle`) - ((y - cy) *. sin angle`)
                     , ((x - cx) *. sin angle`) + ((y - cy) *. cos angle`))
 
-skewx :: a (Image m) -> Image m | Angle a
+skewx :: th (Image m) -> Image m | Angle th
 skewx xskew image=:{Image | transform = ts}
 | xskew` == zero	= image
 | otherwise			= {Image | image & transform = ts`}
@@ -255,7 +276,7 @@ where
 						[SkewXImage a : ts] = let a` = normalize (a + toDeg xskew) in if (a` == zero) ts [SkewXImage a` : ts]
 						ts                  = [SkewXImage xskew` : ts]
 
-skewy :: a (Image m) -> Image m | Angle a
+skewy :: th (Image m) -> Image m | Angle th
 skewy yskew image=:{Image | transform = ts}
 | yskew` == zero	= image
 | otherwise			= {Image | image & transform = ts`}
