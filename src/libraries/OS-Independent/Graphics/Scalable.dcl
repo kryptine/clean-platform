@@ -7,7 +7,7 @@ definition module Graphics.Scalable
 from Data.Maybe import :: Maybe
 from Text.HTML import :: SVGColor
 from Data.Set import :: Set
-from StdOverloaded import class zero, class +, class -, class ~, class one, class abs, class <, class ==
+from StdOverloaded import class zero, class +, class -, class ~, class one, class abs, class <, class ==, class toReal
 
 :: Image m
 	= { content   :: ImageContent m		// the image elements
@@ -16,9 +16,9 @@ from StdOverloaded import class zero, class +, class -, class ~, class one, clas
 	  , tags      :: Set ImageTag		// set of tags
 	  }
 :: ImageTransform
-	= RotateImage ImageAngle
-	| SkewXImage  ImageAngle
-	| SkewYImage  ImageAngle
+	= RotateImage Deg
+	| SkewXImage  Deg
+	| SkewYImage  Deg
 	| FitImage    Span Span
 	| FitXImage   Span
 	| FitYImage   Span
@@ -106,25 +106,22 @@ circle	:: Span                 -> Image m		// (circle a) is an image of a circle
 ellipse	:: Span Span            -> Image m		// (ellipse a b) is an image of an ellipse with x-diameter a and y-diameter b
 rect	:: Span Span            -> Image m		// (rect a b) is an image of a rectangle with x-span a and y-span b
 
-rotate  :: ImageAngle (Image m) -> Image m
-fit     :: Span Span  (Image m) -> Image m
-fitx    :: Span       (Image m) -> Image m
-fity    :: Span       (Image m) -> Image m
-skewx   :: ImageAngle (Image m) -> Image m
-skewy   :: ImageAngle (Image m) -> Image m
+rotate  :: a         (Image m) -> Image m | Angle a
+fit     :: Span Span (Image m) -> Image m
+fitx    :: Span      (Image m) -> Image m
+fity    :: Span      (Image m) -> Image m
+skewx   :: a         (Image m) -> Image m | Angle a
+skewy   :: a         (Image m) -> Image m | Angle a
 
 applyTransforms  :: [ImageTransform] ImageSpan -> ImageSpan
-skewXImageWidth  :: ImageSpan ImageAngle -> Span
-skewYImageHeight :: ImageSpan ImageAngle -> Span
-rotatedImageSpan :: ImageSpan ImageAngle -> ImageSpan
+skewXImageWidth  :: a ImageSpan -> Span | Angle a
+skewYImageHeight :: a ImageSpan -> Span | Angle a
+rotatedImageSpanAndOriginOffset :: a ImageSpan -> (ImageSpan, ImageOffset) | Angle a
 
 :: Slash = Slash | Backslash
 
-:: ImageAngle
-	:== Real
-
-radian  :: Real -> ImageAngle
-degree  :: Real -> ImageAngle
+radian  :: Real -> Rad
+degree  :: Real -> Deg
 
 :: Host m :== Maybe (Image m)
 
@@ -186,4 +183,18 @@ tags :: (Image m) -> Set ImageTag
 instance == ImageTag
 instance <  ImageTag
 
-instance + ImageOffset where
+instance + ImageOffset
+
+:: Deg = Deg Real
+:: Rad = Rad Real
+
+class Angle a where
+  toDeg     :: a -> Deg
+  toRad     :: a -> Rad
+  normalize :: a -> a
+
+instance toReal Deg
+instance toReal Rad
+
+instance Angle Deg
+instance Angle Rad

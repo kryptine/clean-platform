@@ -4,6 +4,7 @@ from StdMisc import abort
 from StdFunc import flip
 from StdTuple import fst, snd
 from StdOrdList import minList, maxList
+from StdOverloaded import class toReal
 import Data.List
 import Data.Maybe
 from Data.Set import :: Set
@@ -162,15 +163,15 @@ rect xspan yspan
 	  , tags      = 'DS'.newSet
 	  }
 
-rotate :: ImageAngle (Image m) -> Image m
+rotate :: a (Image m) -> Image m | Angle a
 rotate a image=:{Image | transform = ts}
 | a` == zero	= image
 | otherwise		= {Image | image & transform = ts`}
 where
-	a`			= normalize_angle a
+	a`			= toDeg (normalize a)
 	ts`			= case ts of
 					[RotateImage angle : ts]
-						= let a` = normalize_angle (angle + a) in if (a` == zero) ts [RotateImage a` : ts]
+						= let a` = normalize (toDeg angle + toDeg a) in if (a` == zero) ts [RotateImage a` : ts]
 					ts  = [RotateImage a` : ts]
 
 fit :: Span Span (Image m) -> Image m
@@ -206,70 +207,69 @@ where
 applyTransforms :: [ImageTransform] ImageSpan -> ImageSpan
 applyTransforms ts sp = foldr f sp ts
   where
-  f (RotateImage th)   accSp          = rotatedImageSpan accSp th
-  f (SkewXImage th)    accSp=:{xspan} = {accSp & xspan = skewXImageWidth accSp th}
-  f (SkewYImage th)    accSp=:{yspan} = {accSp & yspan = skewYImageHeight accSp th}
+  f (RotateImage th)   accSp          = fst (rotatedImageSpanAndOriginOffset th accSp)
+  f (SkewXImage th)    accSp=:{xspan} = {accSp & xspan = skewXImageWidth th accSp}
+  f (SkewYImage th)    accSp=:{yspan} = {accSp & yspan = skewYImageHeight th accSp}
   f (FitImage xsp ysp) accSp          = {ImageSpan | xspan = xsp,   yspan = ysp}
   f (FitXImage sp)     {yspan}        = {ImageSpan | xspan = sp,    yspan = yspan}
   f (FitYImage sp)     {xspan}        = {ImageSpan | xspan = xspan, yspan = sp}
 
-skewXImageWidth :: ImageSpan ImageAngle -> Span
-skewXImageWidth {xspan, yspan} angle = xspan + (AbsSpan (yspan *. tan angle))
+skewXImageWidth :: a ImageSpan -> Span | Angle a
+skewXImageWidth angle {xspan, yspan} = xspan + (AbsSpan (yspan *. tan (toReal (toRad angle))))
 
-skewYImageHeight :: ImageSpan ImageAngle -> Span
-skewYImageHeight {xspan, yspan} angle = yspan + (AbsSpan (xspan *. tan angle))
+skewYImageHeight :: a ImageSpan -> Span | Angle a
+skewYImageHeight angle {xspan, yspan} = yspan + (AbsSpan (xspan *. tan (toReal (toRad (angle)))))
 
-rotatedImageSpan :: ImageSpan ImageAngle -> ImageSpan
-rotatedImageSpan {xspan, yspan} angle
-  = { xspan = AbsSpan (maxSpan allX - minSpan allX)
-    , yspan = AbsSpan (maxSpan allY - minSpan allY) }
+rotatedImageSpanAndOriginOffset :: a ImageSpan -> (ImageSpan, ImageOffset) | Angle a
+rotatedImageSpanAndOriginOffset angle {xspan, yspan}
+  = ({ xspan = AbsSpan (maxAllX - minAllX)
+     , yspan = AbsSpan (maxAllY - minAllY) }
+    , ( maxAllX - fst tTopLeft
+      , maxAllY - snd tTopLeft)
+    )
   where
-  cx = xspan /. 2.0
-  cy = yspan /. 2.0
-  allPoints = [ mkTransform (px 0.0) (px 0.0)
+  cx        = xspan /. 2.0
+  cy        = yspan /. 2.0
+  tTopLeft  = mkTransform (px 0.0) (px 0.0)
+  allPoints = [ tTopLeft
               , mkTransform xspan    (px 0.0)
               , mkTransform (px 0.0) yspan
               , mkTransform xspan    yspan ]
-  allX = map fst allPoints
-  allY = map snd allPoints
-  angle` = (pi / 180.0) * angle
+  allX      = map fst allPoints
+  maxAllX   = maxSpan allX
+  minAllX   = minSpan allX
+  allY      = map snd allPoints
+  maxAllY   = maxSpan allY
+  minAllY   = minSpan allY
+  angle`    = toReal (toRad angle)
   mkTransform x y = ( ((x - cx) *. cos angle`) - ((y - cy) *. sin angle`)
                     , ((x - cx) *. sin angle`) + ((y - cy) *. cos angle`))
 
-skewx :: ImageAngle (Image m) -> Image m
+skewx :: a (Image m) -> Image m | Angle a
 skewx xskew image=:{Image | transform = ts}
 | xskew` == zero	= image
 | otherwise			= {Image | image & transform = ts`}
 where
-	xskew`			= normalize_angle xskew
+	xskew`			= toDeg (normalize xskew)
 	ts`				= case ts of
-						[SkewXImage a : ts] = let a` = normalize_angle (a + xskew) in if (a` == zero) ts [SkewXImage a` : ts]
+						[SkewXImage a : ts] = let a` = normalize (a + toDeg xskew) in if (a` == zero) ts [SkewXImage a` : ts]
 						ts                  = [SkewXImage xskew` : ts]
 
-skewy :: ImageAngle (Image m) -> Image m
+skewy :: a (Image m) -> Image m | Angle a
 skewy yskew image=:{Image | transform = ts}
 | yskew` == zero	= image
 | otherwise			= {Image | image & transform = ts`}
 where
-	yskew`			= normalize_angle yskew
+	yskew`			= toDeg (normalize yskew)
 	ts`				= case ts of
-						[SkewYImage a : ts] = let a` = normalize_angle (a + yskew) in if (a` == zero) ts [SkewYImage a` : ts]
+						[SkewYImage a : ts] = let a` = normalize (a + toDeg yskew) in if (a` == zero) ts [SkewYImage a` : ts]
 						ts                  = [SkewYImage yskew` : ts]
 
-normalize_angle :: Real -> Real
-normalize_angle a
-| a` <= 360.0	= a
-| a  > 0.0		= a - d
-| otherwise		= a + d
-where
-	a`			= abs a
-	d			= toReal (entier (a` / 360.0)) * 360.0
+radian :: Real -> Rad
+radian r = Rad r
 
-radian :: Real -> ImageAngle
-radian r = r / (pi / 180.0)
-
-degree :: Real -> ImageAngle
-degree d = d
+degree :: Real -> Deg
+degree d = Deg d
 
 pi =: 3.14159265359
 
@@ -436,3 +436,62 @@ where
 
 instance + ImageOffset where
   (+) (xal1, yal1) (xal2, yal2) = (xal1 + xal2, yal1 + yal2)
+
+instance Angle Deg where
+  toDeg  r       = r
+  toRad  (Deg r) = Rad ((pi / 180.0) * r)
+  normalize a
+    | absa` <= 360.0 = a
+    | a`    >  0.0   = Deg (a` - d)
+    | otherwise      = Deg (a` + d)
+    where
+    a`    = toReal a
+    absa` = abs a`
+    d     = toReal (entier (absa` / 360.0)) * 360.0
+
+instance toReal Deg where
+  toReal (Deg r) = r
+
+instance == Deg where
+  (==) (Deg r) (Deg r`) = r == r`
+
+instance < Deg where
+  (<) (Deg r) (Deg r`) = r < r`
+
+instance + Deg where
+  (+) (Deg r) (Deg r`) = Deg (r + r`)
+
+instance - Deg where
+  (-) (Deg r) (Deg r`) = Deg (r - r`)
+
+instance zero Deg where
+  zero = Deg 0.0
+
+instance one Deg where
+  one = Deg 1.0
+
+instance Angle Rad where
+  toDeg  (Rad r) = Deg (r / (pi / 180.0))
+  toRad  r       = r
+  normalize r    = toRad (normalize (toDeg r))
+
+instance toReal Rad where
+  toReal (Rad r) = r
+
+instance == Rad where
+  (==) (Rad r) (Rad r`) = r == r`
+
+instance < Rad where
+  (<) (Rad r) (Rad r`) = r < r`
+
+instance + Rad where
+  (+) (Rad r) (Rad r`) = Rad (r + r`)
+
+instance - Rad where
+  (-) (Rad r) (Rad r`) = Rad (r - r`)
+
+instance zero Rad where
+  zero = Rad 0.0
+
+instance one Rad where
+  one = Rad 1.0
