@@ -11,9 +11,6 @@ from Data.Set import :: Set
 import qualified Data.Set as DS
 import Text.HTML
 
-:: Slash
-	= Slash | Backslash
-
 isPxSpan :: Span -> Bool
 isPxSpan (PxSpan _) = True
 isPxSpan _          = False
@@ -65,9 +62,6 @@ instance /.   Span where /. (PxSpan  a)    k     = PxSpan    (a / toReal k)
                          /. (MulSpan a k1) k     = MulSpan a (k1 / toReal k)
                          /. (DivSpan a k1) k     = DivSpan a (k1 * toReal k)
                          /. s              k     = DivSpan s (toReal k)
-
-class maxOf a :: [a] -> a
-class minOf a :: [a] -> a
 
 instance maxOf Span where
   maxOf xs = maxSpan xs
