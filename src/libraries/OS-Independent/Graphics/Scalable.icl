@@ -185,6 +185,17 @@ polygon offsets
     , tags      = 'DS'.newSet
     }
 
+polyline :: [ImageOffset] -> Image m
+polyline offsets
+  = { content   = Basic (PolylineImage offsets) (maxSpan (map fst offsets), maxSpan (map snd offsets))
+    , attribs   = [ ImageFillAttr        {fill        = toSVGColor "none"}
+                  , ImageStrokeAttr      {stroke      = toSVGColor "black"}
+                  , ImageStrokeWidthAttr {strokewidth = px 1.0}
+                  ]
+    , transform = []
+    , tags      = 'DS'.newSet
+    }
+
 rotate :: th (Image m) -> Image m | Angle th
 rotate a image=:{Image | transform = ts}
 | a` == zero	= image

@@ -41,6 +41,7 @@ from StdOverloaded import class zero, class +, class -, class ~, class one, clas
 	| TextImage FontDef String
 	| LineImage Slash
 	| PolygonImage [ImageOffset]
+	| PolylineImage [ImageOffset]
 	| CircleImage
 	| RectImage
 	| EllipseImage
@@ -103,15 +104,16 @@ maxSpan :: [Span] -> Span					// (maximum as) is the maximum of as (zero if as =
 	  , fontweight  :: String
 	  }
 
-empty	:: Span Span            -> Image m		// (empty a b) is an empty image with x-span a and y-span b
-text	:: FontDef String       -> Image m		// (text font str) is an image containg str written in font
-xline	:: Span                 -> Image m		// (xline a) is an image of a line with x-span a and y-span zero
-yline	:: Span                 -> Image m		// (yline a) is an image of a line with y-span a and x-span zero
-line	:: Slash Span Span      -> Image m		// (line a b) is an image of a line with x-span a and y-span b
-circle	:: Span                 -> Image m		// (circle a) is an image of a circle with diameter a
-ellipse	:: Span Span            -> Image m		// (ellipse a b) is an image of an ellipse with x-diameter a and y-diameter b
-rect	:: Span Span            -> Image m		// (rect a b) is an image of a rectangle with x-span a and y-span b
-polygon	:: [ImageOffset]        -> Image m		// (poly xs) is an image of a polygon with coordinates xs
+empty    :: Span Span            -> Image m    // (empty a b) is an empty image with x-span a and y-span b
+text     :: FontDef String       -> Image m    // (text font str) is an image containg str written in font
+xline    :: Span                 -> Image m    // (xline a) is an image of a line with x-span a and y-span zero
+yline    :: Span                 -> Image m    // (yline a) is an image of a line with y-span a and x-span zero
+line     :: Slash Span Span      -> Image m    // (line a b) is an image of a line with x-span a and y-span b
+circle   :: Span                 -> Image m    // (circle a) is an image of a circle with diameter a
+ellipse  :: Span Span            -> Image m    // (ellipse a b) is an image of an ellipse with x-diameter a and y-diameter b
+rect     :: Span Span            -> Image m    // (rect a b) is an image of a rectangle with x-span a and y-span b
+polygon  :: [ImageOffset]        -> Image m    // (polygon xs) is an image of a polygon with coordinates xs
+polyline :: [ImageOffset]        -> Image m    // (polyline xs) is an image of a polyline with coordinates xs
 
 rotate  :: th        (Image m) -> Image m | Angle th
 fit     :: Span Span (Image m) -> Image m
