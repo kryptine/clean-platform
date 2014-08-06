@@ -82,27 +82,26 @@ instance minOf Int where
   minOf xs = minList xs
 
 minSpan :: [Span] -> Span
-minSpan []			= zero
-minSpan [a]			= a
+minSpan []  = zero
+minSpan [a] = a
 minSpan as
-| isEmpty others	= min_pxs
-| isEmpty pxs		= MinSpan others
-| otherwise			= MinSpan [min_pxs : others]
-where
-	(pxs,others)	= spanfilter isPxSpan as
-	min_pxs			= PxSpan (minList [x \\ PxSpan x <- pxs])
+  | isEmpty others = min_pxs
+  | isEmpty pxs    = MinSpan others
+  | otherwise      = MinSpan [min_pxs : others]
+  where
+  (pxs, others) = partition isPxSpan as
+  min_pxs       = PxSpan (minList [x \\ PxSpan x <- pxs])
 
 maxSpan :: [Span] -> Span
-maxSpan []			= zero
-maxSpan [a]			= a
+maxSpan []  = zero
+maxSpan [a] = a
 maxSpan as
-| isEmpty others	= max_pxs
-| isEmpty pxs		= MaxSpan others
-| otherwise			= MaxSpan [max_pxs : others]
-where
-	(pxs,others)	= spanfilter isPxSpan as
-	max_pxs			= PxSpan (maxList [x \\ PxSpan x <- pxs])
-
+  | isEmpty others = max_pxs
+  | isEmpty pxs    = MaxSpan others
+  | otherwise      = MaxSpan [max_pxs : others]
+  where
+  (pxs, others) = partition isPxSpan as
+  max_pxs       = PxSpan (maxList [x \\ PxSpan x <- pxs])
 
 empty :: Span Span -> Image m
 empty xspan yspan
@@ -177,6 +176,14 @@ rect xspan yspan
 	  , transform = []
 	  , tags      = 'DS'.newSet
 	  }
+
+polygon :: [ImageOffset] -> Image m
+polygon offsets
+  = { content   = Basic (PolygonImage offsets) (maxSpan (map fst offsets), maxSpan (map snd offsets))
+    , attribs   = []
+    , transform = []
+    , tags      = 'DS'.newSet
+    }
 
 rotate :: th (Image m) -> Image m | Angle th
 rotate a image=:{Image | transform = ts}
@@ -339,8 +346,8 @@ where
 	                                 in (nr`,nr_of_imgs / nr` + sign (nr_of_imgs rem nr`))
 	imgs_complete = imgs ++ repeatn (cols*rows-nr_of_imgs) (empty zero zero)
 	imgs`         = arrange_layout layout (if (is_row_major dimension) 
-	                                         (partition cols imgs_complete) 
-	                                         [map (flip (!!) i) (partition rows imgs_complete) \\ i <- [0..rows-1]]
+	                                         (chop cols imgs_complete) 
+	                                         [map (flip (!!) i) (chop rows imgs_complete) \\ i <- [0..rows-1]]
 	                                         )
 	
 	is_row_major :: GridDimension -> Bool
@@ -428,26 +435,15 @@ update_or_add c x yys=:[y:ys]
 | c x y		= [x : ys]
 | otherwise	= [x : yys]
 
-/** partition n xs = xss:
+/** chop n xs = xss:
         @xss consists of the subsequent sub-lists of @xs of length @n.
         The length of the last element of @xss can be less than @n.
 */
-partition :: Int [a] -> [[a]]
-partition n [] = []
-partition n xs = [first_n : partition n without_n]
+chop :: Int [a] -> [[a]]
+chop n [] = []
+chop n xs = [first_n : chop n without_n]
 where
 	(first_n,without_n) = splitAt n xs
-
-/** spanfilter c xs = (yes,no):
-		@yes is (filter @c @xs), and @no is (filter (not o @c) @xs).
-*/
-spanfilter :: (a -> Bool) [a] -> ([a],[a])
-spanfilter c [] = ([],[])
-spanfilter c [x:xs]
-| c x			= ([x:yes],no)
-| otherwise		= (yes,[x:no])
-where
-	(yes,no)	= spanfilter c xs
 
 instance + ImageOffset where
   (+) (xal1, yal1) (xal2, yal2) = (xal1 + xal2, yal1 + yal2)
