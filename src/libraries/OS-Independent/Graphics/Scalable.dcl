@@ -65,10 +65,10 @@ px			:: Real               -> Span		// (px a) is a pixels
 ex			:: FontDef            -> Span		// (ex font) is the ex height (ascent) of font
 descent		:: FontDef            -> Span		// (descent font) is the descent height of font
 textxspan	:: FontDef String     -> Span		// (textxspan font str) is the x-span of str written in font
-imagexspan	:: (Set ImageTag)     -> Span		// (imagexspan ts) is x-span of image tagged with superset of ts
-imageyspan  :: (Set ImageTag)     -> Span		// (imageyspan ts) is y-span of image tagged with superset of ts
-columnspan	:: (Set ImageTag) Int -> Span		// (columnspan ts i) is x-span of column i in grid tagged with superset of ts
-rowspan		:: (Set ImageTag) Int -> Span		// (rowspan ts i) is y-span of row i in grid tagged with superset of ts
+imagexspan	:: [ImageTag]     -> Span		// (imagexspan ts) is x-span of image tagged with superset of ts
+imageyspan  :: [ImageTag]     -> Span		// (imageyspan ts) is y-span of image tagged with superset of ts
+columnspan	:: [ImageTag] Int -> Span		// (columnspan ts i) is x-span of column i in grid tagged with superset of ts
+rowspan		:: [ImageTag] Int -> Span		// (rowspan ts i) is y-span of row i in grid tagged with superset of ts
 
 class (*.) infixl 7 a :: a n -> a | toReal n
 class (/.) infixl 7 a :: a n -> a | toReal n
@@ -182,8 +182,8 @@ class imageTag a :: a -> ImageTag
 instance imageTag Int
 instance imageTag String
 
-tag  :: (Set ImageTag) (Image m) -> Image m
-tags :: (Image m) -> Set ImageTag
+tag  :: [ImageTag] (Image m) -> Image m
+tags :: (Image m) -> [ImageTag]
 
 instance == ImageTag
 instance <  ImageTag

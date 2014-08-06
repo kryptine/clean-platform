@@ -27,17 +27,17 @@ descent a = LookupSpan (DescentYSpan a)
 textxspan :: FontDef String -> Span
 textxspan a b = LookupSpan (TextXSpan a b)
 
-imagexspan :: (Set ImageTag) -> Span
-imagexspan as = LookupSpan (ImageXSpan as)
+imagexspan :: [ImageTag] -> Span
+imagexspan as = LookupSpan (ImageXSpan ('DS'.fromList as))
 
-imageyspan :: (Set ImageTag) -> Span
-imageyspan as = LookupSpan (ImageYSpan as)
+imageyspan :: [ImageTag] -> Span
+imageyspan as = LookupSpan (ImageYSpan ('DS'.fromList as))
 
-columnspan :: (Set ImageTag) Int -> Span
-columnspan as a = LookupSpan (ColumnXSpan as a)
+columnspan :: [ImageTag] Int -> Span
+columnspan as a = LookupSpan (ColumnXSpan ('DS'.fromList as) a)
 
-rowspan :: (Set ImageTag) Int -> Span
-rowspan as a = LookupSpan (RowYSpan as a)
+rowspan :: [ImageTag] Int -> Span
+rowspan as a = LookupSpan (RowYSpan ('DS'.fromList as) a)
 
 instance zero Span where zero                    = PxSpan zero
 instance one  Span where one                     = PxSpan one
@@ -410,11 +410,11 @@ instance <  ImageTag     where <  (ImageTagInt    n1) (ImageTagInt    n2) = n1 <
                                <  (ImageTagSystem s1) (ImageTagSystem s2) = s1 < s2
                                <  _                   _                   = False
 
-tag :: (Set ImageTag) (Image m) -> Image m
-tag ts image=:{Image | tags} = {Image | image & tags = 'DS'.union tags ts}
+tag :: [ImageTag] (Image m) -> Image m
+tag ts image=:{Image | tags} = {Image | image & tags = 'DS'.union tags ('DS'.fromList ts)}
 
-tags :: (Image m) -> (Set ImageTag)
-tags image=:{Image | tags} = tags
+tags :: (Image m) -> [ImageTag]
+tags image=:{Image | tags} = 'DS'.toList tags
 
 /** update_or_add c x xs = ys:
 		@xs must be a sorted list. @ys replaces the first element y in @xs for which (@c @x y) is valid with @x.
