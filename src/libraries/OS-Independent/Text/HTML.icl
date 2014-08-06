@@ -4,6 +4,7 @@ import StdString, StdArray, StdList, StdTuple, StdBool
 import Data.Maybe
 from StdFunc import o
 from StdMisc import abort
+from Data.List import intersperse
 
 instance toString HtmlTag
 where
@@ -85,7 +86,6 @@ tagSize (OptgroupTag a t)	= 21 + (attrsSize a) + (tagsSize t)
 tagSize (OptionTag a t)		= 17 + (attrsSize a) + (tagsSize t) 
 tagSize (PTag a t)			=  7 + (attrsSize a) + (tagsSize t) 
 tagSize (ParamTag a t)		= 15 + (attrsSize a) + (tagsSize t) 
-tagSize (PolygonTag a)		= 10 + (attrsSize a)
 tagSize (PreTag a t)		= 11 + (attrsSize a) + (tagsSize t) 
 tagSize (QTag a t)			=  7 + (attrsSize a) + (tagsSize t) 
 tagSize (RectTag a)			=  7 + (attrsSize a)
@@ -206,7 +206,6 @@ attrSize (OnresetAttr a)		= 11 + (escapedSize a)
 attrSize (OnselectAttr a)		= 12 + (escapedSize a)
 attrSize (OnsubmitAttr a)		= 12 + (escapedSize a)
 attrSize (OnunloadAttr a)		= 12 + (escapedSize a)
-attrSize (PointsAttr a)			= 10 + (escapedSize a)
 attrSize (ProfileAttr a)		= 11 + (escapedSize a)
 attrSize (PromptAttr a)			= 10 + (escapedSize a)
 attrSize (ReadonlyAttr)			= 20
@@ -330,7 +329,6 @@ serializeTag (OptgroupTag a t) s i		= writeTag "optgroup" a t s i
 serializeTag (OptionTag a t) s i		= writeTag "option" a t s i
 serializeTag (PTag a t) s i				= writeTag "p" a t s i
 serializeTag (ParamTag a t) s i			= writeTag "param" a t s i
-serializeTag (PolygonTag a) s i			= writeEmptyTag "polygon" a s i
 serializeTag (PreTag a t) s i			= writeTag "pre" a t s i
 serializeTag (QTag a t) s i				= writeTag "q" a t s i
 serializeTag (RectTag a) s i			= writeEmptyTag "rect" a s i
@@ -453,7 +451,6 @@ serializeAttr (OnresetAttr a) s i		= writeAttr "onreset" a s i
 serializeAttr (OnselectAttr a) s i		= writeAttr "onselect" a s i
 serializeAttr (OnsubmitAttr a) s i		= writeAttr "onsubmit" a s i
 serializeAttr (OnunloadAttr a) s i		= writeAttr "onunload" a s i
-serializeAttr (PointsAttr a) s i		= writeAttr "points" a s i
 serializeAttr (ProfileAttr a) s i		= writeAttr "profile" a s i
 serializeAttr (PromptAttr a) s i		= writeAttr "prompt" a s i
 serializeAttr (ReadonlyAttr) s i		= writeAttr "readonly" "readonly" s i
@@ -616,6 +613,7 @@ svgEltSize (GElt        html_attrs svg_attrs elts)	        =  7 + attrsSize html
 svgEltSize (ImageElt    html_attrs svg_attrs elts)	        = 15 + attrsSize html_attrs + svgAttrsSize svg_attrs + svgEltsSize elts
 svgEltSize (LinearGradientElt    html_attrs svg_attrs elts)	= 33 + attrsSize html_attrs + svgAttrsSize svg_attrs + svgEltsSize elts
 svgEltSize (LineElt     html_attrs svg_attrs)				= 13 + attrsSize html_attrs + svgAttrsSize svg_attrs
+svgEltSize (PolygonElt  html_attrs svg_attrs)				= 10 + attrsSize html_attrs + svgAttrsSize svg_attrs
 svgEltSize (RadialGradientElt    html_attrs svg_attrs elts)	= 33 + attrsSize html_attrs + svgAttrsSize svg_attrs + svgEltsSize elts
 svgEltSize (RectElt     html_attrs svg_attrs)		        = 13 + attrsSize html_attrs + svgAttrsSize svg_attrs
 svgEltSize (StopElt     html_attrs svg_attrs)		        = 13 + attrsSize html_attrs + svgAttrsSize svg_attrs
@@ -643,7 +641,8 @@ svgAttrSize (FontStretchAttr         s)				= 16 + size s
 svgAttrSize (FontVariantAttr         s)				= 16 + size s
 svgAttrSize (FontWeightAttr          s)				= 15 + size s
 svgAttrSize (LengthAdjustAttr        adjust)		= 16 + svgLengthAdjustSize adjust
-svgAttrSize (OffsetAttr            offset)			= 10 + size offset
+svgAttrSize (OffsetAttr              offset)		= 10 + size offset
+svgAttrSize (PointsAttr              points)		= 10 + (foldr (\(x, y) acc -> size x + size y + acc + 1) 0 points + (length points - 1))
 svgAttrSize (PreserveAspectRatioAttr md ma mms)		= 23 + case md of
 															Just SVGDefer = 5	// "defer"
 															nothing       = 0
@@ -895,6 +894,7 @@ serializeSVGElt (GElt               html_attrs svg_attrs elts) s i = writeSVGTag
 serializeSVGElt (ImageElt           html_attrs svg_attrs elts) s i = writeSVGTag "image"            html_attrs svg_attrs elts s i
 serializeSVGElt (LinearGradientElt  html_attrs svg_attrs elts) s i = writeSVGTag "linearGradient"   html_attrs svg_attrs elts s i
 serializeSVGElt (LineElt            html_attrs svg_attrs)      s i = writeSVGTag "line"             html_attrs svg_attrs []   s i
+serializeSVGElt (PolygonElt         html_attrs svg_attrs)      s i = writeSVGTag "polygon"          html_attrs svg_attrs []   s i
 serializeSVGElt (RadialGradientElt  html_attrs svg_attrs elts) s i = writeSVGTag "radialGradient"   html_attrs svg_attrs elts s i
 serializeSVGElt (RectElt            html_attrs svg_attrs)      s i = writeSVGTag "rect"             html_attrs svg_attrs []   s i
 serializeSVGElt (StopElt            html_attrs svg_attrs)      s i = writeSVGTag "stop"             html_attrs svg_attrs []   s i
@@ -926,6 +926,7 @@ serializeSVGAttr (FontVariantAttr         variant)   s i = writeAttr "font-varia
 serializeSVGAttr (FontWeightAttr          weight)    s i = writeAttr "font-weight"        (toString weight)  s i
 serializeSVGAttr (LengthAdjustAttr        adjust)    s i = writeAttr "lengthAdjust"       (toString adjust)  s i
 serializeSVGAttr (OffsetAttr              offset)    s i = writeAttr "offset"              offset            s i
+serializeSVGAttr (PointsAttr              points)    s i = writeAttr "points"              (foldr (+++) "" (intersperse " " (map (\(x, y) -> x +++ "," +++ y) points))) s i
 serializeSVGAttr (PreserveAspectRatioAttr md ma mms) s i = writeAttr "preserveAspectRatio" (   case md of
 														                                         Nothing = ""
 														                                         Just d  = "defer"

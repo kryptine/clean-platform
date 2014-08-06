@@ -85,7 +85,6 @@ import StdString, Data.Maybe
 			| OptionTag			![HtmlAttr] ![HtmlTag]
 			| PTag				![HtmlAttr] ![HtmlTag]
 			| ParamTag			![HtmlAttr] ![HtmlTag]
-			| PolygonTag		![HtmlAttr]
 			| PreTag			![HtmlAttr] ![HtmlTag]
 			| QTag				![HtmlAttr] ![HtmlTag]
 			| RectTag			![HtmlAttr]
@@ -204,7 +203,6 @@ import StdString, Data.Maybe
 			| OnselectAttr		!String
 			| OnsubmitAttr		!String
 			| OnunloadAttr		!String
-			| PointsAttr		!String
 			| ProfileAttr		!String
 			| PromptAttr		!String
 			| ReadonlyAttr
@@ -255,6 +253,7 @@ import StdString, Data.Maybe
 						| ImageElt          ![HtmlAttr] ![SVGAttr] ![SVGElt]
                         | LinearGradientElt ![HtmlAttr] ![SVGAttr] ![SVGElt]
                         | LineElt           ![HtmlAttr] ![SVGAttr]
+                        | PolygonElt		![HtmlAttr] ![SVGAttr]
 						| RectElt           ![HtmlAttr] ![SVGAttr]
                         | RadialGradientElt ![HtmlAttr] ![SVGAttr] ![SVGElt]
 						| StopElt           ![HtmlAttr] ![SVGAttr]
@@ -283,6 +282,7 @@ import StdString, Data.Maybe
                         | FontWeightAttr          !String                                       // {normal,bold,bolder,lighter,100,200,300,400,500,600,700,800,900,inherit}
 						| LengthAdjustAttr        !SVGLengthAdjust
                         | OffsetAttr              !String
+						| PointsAttr              ![(String, String)]
 						| PreserveAspectRatioAttr !(Maybe SVGDefer) !(Maybe SVGAlign) !(Maybe SVGMeetOrSlice)
                         | RAttr                   !SVGLength
 						| RxAttr                  !SVGLength									// negative value is an error
