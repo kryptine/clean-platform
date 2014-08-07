@@ -26,7 +26,38 @@ from StdOverloaded import class zero, class +, class -, class ~, class one, clas
 
 :: ImageContent m
   = Basic     BasicImage ImageSpan
+  | Line      (LineImage m)
   | Composite (CompositeImage m)
+
+:: LineImage m
+  = { lineSpan    :: ImageSpan
+    , markers     :: Maybe (Markers m)
+    , lineContent :: LineContent
+    }
+
+:: Markers m
+  = { markerStart :: Maybe (Image m)
+    , markerMid   :: Maybe (Image m)
+    , markerEnd   :: Maybe (Image m)
+    }
+
+:: LineContent
+  = SimpleLineImage Slash
+  | PolygonImage    [ImageOffset]
+  | PolylineImage   [ImageOffset]
+  //| PathImage       [PathSegment]
+
+//:: PathSegment
+  //= MMoveTo                       ImageOffset
+  //| LLineTo                       ImageOffset
+  //| HHorizontalLineTo             Span
+  //| VVerticalLineTo               Span
+  //| CCurveTo                      ImageOffset ImageOffset ImageOffset
+  //| SSmoothCurveTo                ImageOffset ImageOffset
+  //| QQuadraticBezierCurve         ImageOffset ImageOffset
+  //| TSmoothQuadraticBezierCurveTo ImageOffset
+  //| AEllipticalArc                ImageSpan Deg Bool Bool ImageOffset
+  //| ZClosePath
 
 :: Span
   = PxSpan     Real       // (PxSpan a) is a pixels
@@ -44,9 +75,6 @@ from StdOverloaded import class zero, class +, class -, class ~, class one, clas
 :: BasicImage
   = EmptyImage
   | TextImage FontDef String
-  | LineImage Slash
-  | PolygonImage [ImageOffset]
-  | PolylineImage [ImageOffset]
   | CircleImage
   | RectImage
   | EllipseImage
@@ -112,16 +140,17 @@ maxSpan :: [Span] -> Span // (maximum as) is the maximum of as (zero if as = [])
     , fontweight  :: String
     }
 
-empty    :: Span Span            -> Image m    // (empty a b) is an empty image with x-span a and y-span b
-text     :: FontDef String       -> Image m    // (text font str) is an image containg str written in font
-xline    :: Span                 -> Image m    // (xline a) is an image of a line with x-span a and y-span zero
-yline    :: Span                 -> Image m    // (yline a) is an image of a line with y-span a and x-span zero
-line     :: Slash Span Span      -> Image m    // (line a b) is an image of a line with x-span a and y-span b
-circle   :: Span                 -> Image m    // (circle a) is an image of a circle with diameter a
-ellipse  :: Span Span            -> Image m    // (ellipse a b) is an image of an ellipse with x-diameter a and y-diameter b
-rect     :: Span Span            -> Image m    // (rect a b) is an image of a rectangle with x-span a and y-span b
-polygon  :: [ImageOffset]        -> Image m    // (polygon xs) is an image of a polygon with coordinates xs
-polyline :: [ImageOffset]        -> Image m    // (polyline xs) is an image of a polyline with coordinates xs
+empty    :: Span Span      -> Image m // (empty a b) is an empty image with x-span a and y-span b
+text     :: FontDef String -> Image m // (text font str) is an image containg str written in font
+circle   :: Span           -> Image m // (circle a) is an image of a circle with diameter a
+ellipse  :: Span Span      -> Image m // (ellipse a b) is an image of an ellipse with x-diameter a and y-diameter b
+rect     :: Span Span      -> Image m // (rect a b) is an image of a rectangle with x-span a and y-span b
+
+xline    :: (Maybe (Markers m)) Span            -> Image m // (xline a) is an image of a line with x-span a and y-span zero
+yline    :: (Maybe (Markers m)) Span            -> Image m // (yline a) is an image of a line with y-span a and x-span zero
+line     :: (Maybe (Markers m)) Slash Span Span -> Image m // (line a b) is an image of a line with x-span a and y-span b
+polygon  :: (Maybe (Markers m)) [ImageOffset]   -> Image m // (polygon xs) is an image of a polygon with coordinates xs
+polyline :: (Maybe (Markers m)) [ImageOffset]   -> Image m // (polyline xs) is an image of a polyline with coordinates xs
 
 rotate  :: th        (Image m) -> Image m | Angle th
 fit     :: Span Span (Image m) -> Image m

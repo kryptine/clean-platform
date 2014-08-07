@@ -119,24 +119,6 @@ text font str
     , tags      = 'DS'.newSet
     }
 
-xline :: Span -> Image m
-xline xspan = line Slash xspan zero
-
-yline :: Span -> Image m
-yline yspan = line Slash zero yspan
-
-line :: Slash Span Span -> Image m
-line slash xspan yspan
-  = { content   = Basic (LineImage slash) (abs xspan, abs yspan)
-    , attribs   = [ ImageStrokeAttr      {stroke      = toSVGColor "black"}
-                  , ImageStrokeWidthAttr {strokewidth = px 1.0}
-                  , ImageFillAttr        {fill        = toSVGColor "black"}
-                  , ImageFillOpacityAttr {opacity     = 1.0}
-                  ]
-    , transform = []
-    , tags      = 'DS'.newSet
-    }
-
 circle :: Span -> Image m
 circle diameter
   = { content   = Basic CircleImage (d, d)
@@ -175,17 +157,44 @@ rect xspan yspan
     , tags      = 'DS'.newSet
     }
 
-polygon :: [ImageOffset] -> Image m
-polygon offsets
-  = { content   = Basic (PolygonImage offsets) (maxSpan (map fst offsets), maxSpan (map snd offsets))
+xline :: (Maybe (Markers m)) Span -> Image m
+xline markers xspan = line markers Slash xspan zero
+
+yline :: (Maybe (Markers m)) Span -> Image m
+yline markers yspan = line markers Slash zero yspan
+
+line :: (Maybe (Markers m)) Slash Span Span -> Image m
+line markers slash xspan yspan
+  = { content   = Line { lineSpan    = (abs xspan, abs yspan)
+                       , markers     = markers
+                       , lineContent = SimpleLineImage slash
+                       }
+    , attribs   = [ ImageStrokeAttr      {stroke      = toSVGColor "black"}
+                  , ImageStrokeWidthAttr {strokewidth = px 1.0}
+                  , ImageFillAttr        {fill        = toSVGColor "black"}
+                  , ImageFillOpacityAttr {opacity     = 1.0}
+                  ]
+    , transform = []
+    , tags      = 'DS'.newSet
+    }
+
+polygon :: (Maybe (Markers m)) [ImageOffset] -> Image m
+polygon markers offsets
+  = { content   = Line { lineSpan    = (maxSpan (map fst offsets), maxSpan (map snd offsets))
+                       , markers     = markers
+                       , lineContent = PolygonImage offsets
+                       }
     , attribs   = []
     , transform = []
     , tags      = 'DS'.newSet
     }
 
-polyline :: [ImageOffset] -> Image m
-polyline offsets
-  = { content   = Basic (PolylineImage offsets) (maxSpan (map fst offsets), maxSpan (map snd offsets))
+polyline :: (Maybe (Markers m)) [ImageOffset] -> Image m
+polyline markers offsets
+  = { content   = Line { lineSpan    = (maxSpan (map fst offsets), maxSpan (map snd offsets))
+                       , markers     = markers
+                       , lineContent = PolylineImage offsets
+                       }
     , attribs   = [ ImageFillAttr        {fill        = toSVGColor "none"}
                   , ImageStrokeAttr      {stroke      = toSVGColor "black"}
                   , ImageStrokeWidthAttr {strokewidth = px 1.0}
