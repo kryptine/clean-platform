@@ -253,6 +253,7 @@ import StdString, Data.Maybe
 						| ImageElt          ![HtmlAttr] ![SVGAttr] ![SVGElt]
                         | LinearGradientElt ![HtmlAttr] ![SVGAttr] ![SVGElt]
                         | LineElt           ![HtmlAttr] ![SVGAttr]
+                        | MarkerElt         ![HtmlAttr] ![SVGAttr] ![SVGElt]
                         | PathElt           ![HtmlAttr] ![SVGAttr]
                         | PolygonElt        ![HtmlAttr] ![SVGAttr]
                         | PolylineElt       ![HtmlAttr] ![SVGAttr]
@@ -283,7 +284,11 @@ import StdString, Data.Maybe
                         | FontVariantAttr         !String                                       // {normal,small-caps,inherit}
                         | FontWeightAttr          !String                                       // {normal,bold,bolder,lighter,100,200,300,400,500,600,700,800,900,inherit}
 						| LengthAdjustAttr        !SVGLengthAdjust
+                        | MarkerStartAttr         !String
+                        | MarkerMidAttr           !String
+                        | MarkerEndAttr           !String
                         | OffsetAttr              !String
+                        | OrientAttr              !String
 						| PointsAttr              ![(String, String)]
 						| PreserveAspectRatioAttr !(Maybe SVGDefer) !(Maybe SVGAlign) !(Maybe SVGMeetOrSlice)
                         | RAttr                   !SVGLength
