@@ -105,77 +105,75 @@ maxSpan as
 
 empty :: Span Span -> Image m
 empty xspan yspan
-	= { content   = Basic EmptyImage (maxSpan [zero,xspan], maxSpan [zero,yspan])
-	  , attribs   = []
-	  , transform = []
-	  , tags      = 'DS'.newSet
-	  }
+  = { content   = Basic EmptyImage (maxSpan [zero,xspan], maxSpan [zero,yspan])
+    , attribs   = []
+    , transform = []
+    , tags      = 'DS'.newSet
+    }
 
 text :: FontDef String -> Image m
 text font str
-	= { content   = Basic (TextImage font str) (textxspan font str, font.FontDef.fontyspan)
-	  , attribs   = []
-	  , transform = []
-	  , tags      = 'DS'.newSet
-	  }
+  = { content   = Basic (TextImage font str) (textxspan font str, font.FontDef.fontyspan)
+    , attribs   = []
+    , transform = []
+    , tags      = 'DS'.newSet
+    }
 
 xline :: Span -> Image m
-xline xspan
-	= line Slash xspan zero
+xline xspan = line Slash xspan zero
 
 yline :: Span -> Image m
-yline yspan
-	= line Slash zero yspan
+yline yspan = line Slash zero yspan
 
 line :: Slash Span Span -> Image m
 line slash xspan yspan
-	= { content   = Basic (LineImage slash) (abs xspan, abs yspan)
-	  , attribs   = [ImageStrokeAttr      {stroke      = toSVGColor "black"}
-	                ,ImageStrokeWidthAttr {strokewidth = px 1.0}
-	                ,ImageFillAttr        {fill        = toSVGColor "black"}
-	                ,ImageFillOpacityAttr {opacity     = 1.0}
-	                ]
-	  , transform = []
-	  , tags      = 'DS'.newSet
-	  }
+  = { content   = Basic (LineImage slash) (abs xspan, abs yspan)
+    , attribs   = [ ImageStrokeAttr      {stroke      = toSVGColor "black"}
+                  , ImageStrokeWidthAttr {strokewidth = px 1.0}
+                  , ImageFillAttr        {fill        = toSVGColor "black"}
+                  , ImageFillOpacityAttr {opacity     = 1.0}
+                  ]
+    , transform = []
+    , tags      = 'DS'.newSet
+    }
 
 circle :: Span -> Image m
 circle diameter
-	= { content   = Basic CircleImage (d, d)
-	  , attribs   = [ImageStrokeAttr      {stroke      = toSVGColor "black"}
-	                ,ImageStrokeWidthAttr {strokewidth = px 1.0}
-	                ,ImageFillAttr        {fill        = toSVGColor "black"}
-	                ,ImageFillOpacityAttr {opacity     = 1.0}
-	                ]
-	  , transform = []
-	  , tags      = 'DS'.newSet
-	  }
-where
-	d             = maxSpan [zero,diameter]
+  = { content   = Basic CircleImage (d, d)
+    , attribs   = [ ImageStrokeAttr      {stroke      = toSVGColor "black"}
+                  , ImageStrokeWidthAttr {strokewidth = px 1.0}
+                  , ImageFillAttr        {fill        = toSVGColor "black"}
+                  , ImageFillOpacityAttr {opacity     = 1.0}
+                  ]
+    , transform = []
+    , tags      = 'DS'.newSet
+    }
+  where
+  d             = maxSpan [zero,diameter]
 
 ellipse :: Span Span -> Image m
 ellipse diax diay
-	= { content   = Basic EllipseImage (maxSpan [zero, diax], maxSpan [zero, diay])
-	  , attribs   = [ImageStrokeAttr      {stroke      = toSVGColor "black"}
-	                ,ImageStrokeWidthAttr {strokewidth = px 1.0}
-	                ,ImageFillAttr        {fill        = toSVGColor "black"}
-	                ,ImageFillOpacityAttr {opacity     = 1.0}
-	                ]
-	  , transform = []
-	  , tags      = 'DS'.newSet
-	  }
+  = { content   = Basic EllipseImage (maxSpan [zero, diax], maxSpan [zero, diay])
+    , attribs   = [ ImageStrokeAttr      {stroke      = toSVGColor "black"}
+                  , ImageStrokeWidthAttr {strokewidth = px 1.0}
+                  , ImageFillAttr        {fill        = toSVGColor "black"}
+                  , ImageFillOpacityAttr {opacity     = 1.0}
+                  ]
+    , transform = []
+    , tags      = 'DS'.newSet
+    }
 
 rect :: Span Span -> Image m
 rect xspan yspan
-	= { content   = Basic RectImage (maxSpan [zero,xspan], maxSpan [zero,yspan])
-	  , attribs   = [ImageStrokeAttr      {stroke      = toSVGColor "black"}
-	                ,ImageStrokeWidthAttr {strokewidth = px 1.0}
-	                ,ImageFillAttr        {fill        = toSVGColor "black"}
-	                ,ImageFillOpacityAttr {opacity     = 1.0}
-	                ]
-	  , transform = []
-	  , tags      = 'DS'.newSet
-	  }
+  = { content   = Basic RectImage (maxSpan [zero,xspan], maxSpan [zero,yspan])
+    , attribs   = [ ImageStrokeAttr      {stroke      = toSVGColor "black"}
+                  , ImageStrokeWidthAttr {strokewidth = px 1.0}
+                  , ImageFillAttr        {fill        = toSVGColor "black"}
+                  , ImageFillOpacityAttr {opacity     = 1.0}
+                  ]
+    , transform = []
+    , tags      = 'DS'.newSet
+    }
 
 polygon :: [ImageOffset] -> Image m
 polygon offsets
@@ -198,44 +196,46 @@ polyline offsets
 
 rotate :: th (Image m) -> Image m | Angle th
 rotate a image=:{Image | transform = ts}
-| a` == zero	= image
-| otherwise		= {Image | image & transform = ts`}
-where
-	a`			= toDeg (normalize a)
-	ts`			= case ts of
-					[RotateImage angle : ts]
-						= let a` = normalize (toDeg angle + toDeg a) in if (a` == zero) ts [RotateImage a` : ts]
-					ts  = [RotateImage a` : ts]
+  | a` == zero = image
+  | otherwise  = {Image | image & transform = ts`}
+  where
+  a`  = toDeg (normalize a)
+  ts` = case ts of
+          [RotateImage angle : ts]
+            # a` = normalize (toDeg angle + toDeg a)
+            = if (a` == zero) ts [RotateImage a` : ts]
+          ts
+            = [RotateImage a` : ts]
 
 fit :: Span Span (Image m) -> Image m
 fit xspan yspan image=:{Image | transform = ts}
-	= {Image | image & transform = ts`}
-where
-	xspan`		= maxSpan [zero,xspan]
-	yspan`		= maxSpan [zero,yspan]
-	ts`			= case ts of
-					[FitImage _ _ : ts] = [FitImage xspan` yspan` : ts]
-					ts                  = [FitImage xspan` yspan` : ts]
+  = {Image | image & transform = ts`}
+  where
+  xspan` = maxSpan [zero,xspan]
+  yspan` = maxSpan [zero,yspan]
+  ts`    = case ts of
+             [FitImage _ _ : ts] = [FitImage xspan` yspan` : ts]
+             ts                  = [FitImage xspan` yspan` : ts]
 
 fitx :: Span (Image m) -> Image m
 fitx xspan image=:{Image | transform = ts}
-	= {Image | image & transform = ts`}
-where
-	xspan`		= maxSpan [zero,xspan]
-	ts`			= case ts of
-					[FitXImage _ : ts] = [FitXImage xspan` : ts]
-					[FitYImage _ : ts] = [FitXImage xspan` : ts]
-					ts                 = [FitXImage xspan` : ts]
+  = {Image | image & transform = ts`}
+  where
+  xspan` = maxSpan [zero,xspan]
+  ts`    = case ts of
+             [FitXImage _ : ts] = [FitXImage xspan` : ts]
+             [FitYImage _ : ts] = [FitXImage xspan` : ts]
+             ts                 = [FitXImage xspan` : ts]
 
 fity :: Span (Image m) -> Image m
 fity yspan image=:{Image | transform = ts}
-	= {Image | image & transform = ts`}
-where
-	yspan`		= maxSpan [zero,yspan]
-	ts`			= case ts of
-					[FitXImage _ : ts] = [FitYImage yspan` : ts]
-					[FitYImage _ : ts] = [FitYImage yspan` : ts]
-					ts                 = [FitYImage yspan` : ts]
+  = {Image | image & transform = ts`}
+  where
+  yspan` = maxSpan [zero,yspan]
+  ts`    = case ts of
+             [FitXImage _ : ts] = [FitYImage yspan` : ts]
+             [FitYImage _ : ts] = [FitYImage yspan` : ts]
+             ts                 = [FitYImage yspan` : ts]
 
 applyTransforms :: [ImageTransform] ImageSpan -> ImageSpan
 applyTransforms ts sp = foldr f sp ts
@@ -280,23 +280,29 @@ rotatedImageSpanAndOriginOffset angle (xspan, yspan)
 
 skewx :: th (Image m) -> Image m | Angle th
 skewx xskew image=:{Image | transform = ts}
-| xskew` == zero	= image
-| otherwise			= {Image | image & transform = ts`}
-where
-	xskew`			= toDeg (normalize xskew)
-	ts`				= case ts of
-						[SkewXImage a : ts] = let a` = normalize (a + toDeg xskew) in if (a` == zero) ts [SkewXImage a` : ts]
-						ts                  = [SkewXImage xskew` : ts]
+  | xskew` == zero = image
+  | otherwise      = {Image | image & transform = ts`}
+  where
+  xskew` = toDeg (normalize xskew)
+  ts`    = case ts of
+             [SkewXImage a : ts]
+               # a` = normalize (a + toDeg xskew)
+               = if (a` == zero) ts [SkewXImage a` : ts]
+             ts
+               = [SkewXImage xskew` : ts]
 
 skewy :: th (Image m) -> Image m | Angle th
 skewy yskew image=:{Image | transform = ts}
-| yskew` == zero	= image
-| otherwise			= {Image | image & transform = ts`}
-where
-	yskew`			= toDeg (normalize yskew)
-	ts`				= case ts of
-						[SkewYImage a : ts] = let a` = normalize (a + toDeg yskew) in if (a` == zero) ts [SkewYImage a` : ts]
-						ts                  = [SkewYImage yskew` : ts]
+  | yskew` == zero = image
+  | otherwise      = {Image | image & transform = ts`}
+  where
+  yskew` = toDeg (normalize yskew)
+  ts`    = case ts of
+            [SkewYImage a : ts]
+              # a` = normalize (a + toDeg yskew)
+              = if (a` == zero) ts [SkewYImage a` : ts]
+            ts
+              = [SkewYImage yskew` : ts]
 
 radian :: Real -> Rad
 radian r = Rad r
@@ -307,18 +313,16 @@ degree d = Deg d
 pi =: 3.14159265359
 
 overlay :: [ImageAlign] [ImageOffset] [Image m] (Host m) -> Image m
-overlay _ _ [] host
-	= case host of
-		Just img = img
-		nothing  = empty zero zero
+overlay _ _ [] (Just img) = img
+overlay _ _ [] _          = empty zero zero
 overlay aligns offsets imgs host
-	= { content   = Composite { offsets = take l offsets
-                              , host    = host
-                              , compose = AsOverlay (take l aligns) imgs }
-	  , attribs   = []
-	  , transform = []
-	  , tags      = 'DS'.newSet
-	  }
+  = { content   = Composite { offsets = take l offsets
+                            , host    = host
+                            , compose = AsOverlay (take l aligns) imgs }
+    , attribs   = []
+    , transform = []
+    , tags      = 'DS'.newSet
+    }
   where
   l = length imgs
 
@@ -335,49 +339,47 @@ above xlayouts offsets imgs host
   l = length imgs
 
 grid :: GridDimension GridLayout [ImageAlign] [ImageOffset] [Image m] (Host m) -> Image m
-grid _ _ _ _ [] host
-	= case host of
-	    Just img = img
-	    nothing  = empty zero zero
+grid _ _ _ _ [] (Just img) = img
+grid _ _ _ _ [] _          = empty zero zero
 grid dimension layout aligns offsets imgs host
-	= { content   = Composite { offsets = take nr_of_imgs offsets
-                              , host    = host
-                              , compose = AsGrid (cols, rows) (take nr_of_imgs aligns) imgs`
-                              }
-	  , attribs   = []
-	  , transform = []
-	  , tags      = 'DS'.newSet
-	  }
-where
-	nr_of_imgs    = length imgs
-	(cols,rows)   = case dimension of
-	                   Rows    nr = let nr` = max 1 nr
-	                                 in (nr_of_imgs / nr` + sign (nr_of_imgs rem nr`),nr`)
-	                   Columns nr = let nr` = max 1 nr
-	                                 in (nr`,nr_of_imgs / nr` + sign (nr_of_imgs rem nr`))
-	imgs_complete = imgs ++ repeatn (cols*rows-nr_of_imgs) (empty zero zero)
-	imgs`         = arrange_layout layout (if (is_row_major dimension) 
-	                                         (chop cols imgs_complete) 
-	                                         [map (flip (!!) i) (chop rows imgs_complete) \\ i <- [0..rows-1]]
-	                                         )
-	
-	is_row_major :: GridDimension -> Bool
-	is_row_major (Rows _) = True
-	is_row_major _        = False
-	
-	arrange_layout :: GridLayout [[a]] -> [[a]]
-	arrange_layout (LeftToRight, TopToBottom) xs = xs
-	arrange_layout (RightToLeft, TopToBottom) xs = map reverse xs
-	arrange_layout (LeftToRight, BottomToTop) xs = reverse xs
-	arrange_layout (RightToLeft, BottomToTop) xs = reverse (map reverse xs)
+  = { content   = Composite { offsets = take nr_of_imgs offsets
+                            , host    = host
+                            , compose = AsGrid (cols, rows) (take nr_of_imgs aligns) imgs`
+                            }
+    , attribs   = []
+    , transform = []
+    , tags      = 'DS'.newSet
+    }
+  where
+  nr_of_imgs    = length imgs
+  (cols,rows)   = case dimension of
+                     Rows    nr = let nr` = max 1 nr
+                                   in (nr_of_imgs / nr` + sign (nr_of_imgs rem nr`),nr`)
+                     Columns nr = let nr` = max 1 nr
+                                   in (nr`,nr_of_imgs / nr` + sign (nr_of_imgs rem nr`))
+  imgs_complete = imgs ++ repeatn (cols*rows-nr_of_imgs) (empty zero zero)
+  imgs`         = arrange_layout layout (if (is_row_major dimension) 
+                                           (chop cols imgs_complete) 
+                                           [map (flip (!!) i) (chop rows imgs_complete) \\ i <- [0..rows-1]]
+                                           )
+
+  is_row_major :: GridDimension -> Bool
+  is_row_major (Rows _) = True
+  is_row_major _        = False
+
+  arrange_layout :: GridLayout [[a]] -> [[a]]
+  arrange_layout (LeftToRight, TopToBottom) xs = xs
+  arrange_layout (RightToLeft, TopToBottom) xs = map reverse xs
+  arrange_layout (LeftToRight, BottomToTop) xs = reverse xs
+  arrange_layout (RightToLeft, BottomToTop) xs = reverse (map reverse xs)
 
 collage :: [ImageOffset] [Image m] (Host m) -> Image m
 collage offsets imgs host
-	= { content   = Composite { offsets = take (length imgs) offsets, host = host, compose = AsCollage imgs}
-	  , attribs   = []
-	  , transform = []
-	  , tags      = 'DS'.newSet
-	  }
+  = { content   = Composite { offsets = take (length imgs) offsets, host = host, compose = AsCollage imgs}
+    , attribs   = []
+    , transform = []
+    , tags      = 'DS'.newSet
+    }
 
 instance tune_image StrokeAttr      where
   tune_image image=:{Image | attribs} attr = {Image | image & attribs = update_or_add sameImageAttr (ImageStrokeAttr      attr) attribs}
@@ -442,9 +444,9 @@ tags image=:{Image | tags} = 'DS'.toList tags
 update_or_add :: (a a -> Bool) a [a] -> [a] | < a
 update_or_add c x [] = [x]
 update_or_add c x yys=:[y:ys]
-| y < x		= [y : update_or_add c x ys]
-| c x y		= [x : ys]
-| otherwise	= [x : yys]
+  | y < x     = [y : update_or_add c x ys]
+  | c x y     = [x : ys]
+  | otherwise = [x : yys]
 
 /** chop n xs = xss:
         @xss consists of the subsequent sub-lists of @xs of length @n.
@@ -453,8 +455,8 @@ update_or_add c x yys=:[y:ys]
 chop :: Int [a] -> [[a]]
 chop n [] = []
 chop n xs = [first_n : chop n without_n]
-where
-	(first_n,without_n) = splitAt n xs
+  where
+  (first_n,without_n) = splitAt n xs
 
 instance + ImageOffset where
   (+) (xal1, yal1) (xal2, yal2) = (xal1 + xal2, yal1 + yal2)
