@@ -67,7 +67,7 @@ from StdOverloaded import class zero, class +, class -, class ~, class one, clas
   | TextXSpan    FontDef String     // (TextXSpan a b) is width of text b written in font a
 
 :: Compose m
-  = AsGrid    (Int, Int) [ImageAlign] [[Image m]] // (AsGrid (nr_of_cols, nr_of_rows) alignments) composes elements in rows, using alignments per image
+  = AsGrid    (Int, Int) [ImageAlign] [[Image m]] // (AsGrid (noOfCols, noOfRows) alignments) composes elements in rows, using alignments per image
   | AsCollage                         [Image m]   // AsCollage composes elements in freestyle, framed in optional host
   | AsOverlay            [ImageAlign] [Image m]   // AsOverlay composes elements, framed in optional host or largest spans
 
@@ -98,7 +98,7 @@ class minOf a :: [a] -> a
 instance maxOf Span, Real, Int
 instance minOf Span, Real, Int
 
-class span a | zero a & one a & + a & - a & abs a & ~ a & *. a & /. a & maxOf a & minOf a
+class IsSpan a | zero a & one a & + a & - a & abs a & ~ a & *. a & /. a & maxOf a & minOf a
 
 minSpan :: [Span] -> Span // (minimum as) is the minimum of as (zero if as = [])
 maxSpan :: [Span] -> Span // (maximum as) is the maximum of as (zero if as = [])
@@ -131,9 +131,9 @@ skewx   :: th        (Image m) -> Image m | Angle th
 skewy   :: th        (Image m) -> Image m | Angle th
 
 applyTransforms  :: [ImageTransform] ImageSpan -> ImageSpan
-skewXImageWidth  :: th (a, a) -> a | Angle th & span a
-skewYImageHeight :: th (a, a) -> a | Angle th & span a
-rotatedImageSpanAndOriginOffset :: th (a, a) -> ((a, a), (a, a)) | Angle th & span a
+skewXImageWidth  :: th (a, a) -> a | Angle th & IsSpan a
+skewYImageHeight :: th (a, a) -> a | Angle th & IsSpan a
+rotatedImageSpanAndOriginOffset :: th (a, a) -> ((a, a), (a, a)) | Angle th & IsSpan a
 
 :: Slash = Slash | Backslash
 
@@ -174,9 +174,9 @@ collage ::                                       [ImageOffset] [Image m] (Host m
   | ImageOnClickAttr       (OnClickAttr     m)
 
 
-class tune_image attr :: (Image m) (attr m) -> Image m
-(<@<) infixl 2 :: (Image m) (attr m) -> Image m | tune_image attr
-(>@>) infixr 2 :: (attr m) (Image m) -> Image m | tune_image attr
+class tuneImage attr :: (Image m) (attr m) -> Image m
+(<@<) infixl 2 :: (Image m) (attr m) -> Image m | tuneImage attr
+(>@>) infixr 2 :: (attr m) (Image m) -> Image m | tuneImage attr
 
 :: StrokeAttr        m = { stroke      :: SVGColor }
 :: StrokeWidthAttr   m = { strokewidth :: Span     }
@@ -184,7 +184,7 @@ class tune_image attr :: (Image m) (attr m) -> Image m
 :: OpacityAttr       m = { opacity     :: Real     }
 :: OnClickAttr       m = { onclick     :: (m -> m) }
 
-instance tune_image StrokeAttr, StrokeWidthAttr, FillAttr, OpacityAttr, OnClickAttr
+instance tuneImage StrokeAttr, StrokeWidthAttr, FillAttr, OpacityAttr, OnClickAttr
 
 class toSVGColor a :: a -> SVGColor
 instance toSVGColor String, RGB

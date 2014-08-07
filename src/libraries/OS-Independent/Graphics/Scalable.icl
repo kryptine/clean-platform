@@ -85,27 +85,27 @@ minSpan :: [Span] -> Span
 minSpan []  = zero
 minSpan [a] = a
 minSpan as
-  | isEmpty others = min_pxs
+  | isEmpty others = minPxs
   | isEmpty pxs    = MinSpan others
-  | otherwise      = MinSpan [min_pxs : others]
+  | otherwise      = MinSpan [minPxs : others]
   where
   (pxs, others) = partition isPxSpan as
-  min_pxs       = PxSpan (minList [x \\ PxSpan x <- pxs])
+  minPxs        = PxSpan (minList [x \\ PxSpan x <- pxs])
 
 maxSpan :: [Span] -> Span
 maxSpan []  = zero
 maxSpan [a] = a
 maxSpan as
-  | isEmpty others = max_pxs
+  | isEmpty others = maxPxs
   | isEmpty pxs    = MaxSpan others
-  | otherwise      = MaxSpan [max_pxs : others]
+  | otherwise      = MaxSpan [maxPxs : others]
   where
   (pxs, others) = partition isPxSpan as
-  max_pxs       = PxSpan (maxList [x \\ PxSpan x <- pxs])
+  maxPxs        = PxSpan (maxList [x \\ PxSpan x <- pxs])
 
 empty :: Span Span -> Image m
 empty xspan yspan
-  = { content   = Basic EmptyImage (maxSpan [zero,xspan], maxSpan [zero,yspan])
+  = { content   = Basic EmptyImage (maxSpan [zero, xspan], maxSpan [zero, yspan])
     , attribs   = []
     , transform = []
     , tags      = 'DS'.newSet
@@ -149,7 +149,7 @@ circle diameter
     , tags      = 'DS'.newSet
     }
   where
-  d             = maxSpan [zero,diameter]
+  d             = maxSpan [zero, diameter]
 
 ellipse :: Span Span -> Image m
 ellipse diax diay
@@ -165,7 +165,7 @@ ellipse diax diay
 
 rect :: Span Span -> Image m
 rect xspan yspan
-  = { content   = Basic RectImage (maxSpan [zero,xspan], maxSpan [zero,yspan])
+  = { content   = Basic RectImage (maxSpan [zero, xspan], maxSpan [zero, yspan])
     , attribs   = [ ImageStrokeAttr      {stroke      = toSVGColor "black"}
                   , ImageStrokeWidthAttr {strokewidth = px 1.0}
                   , ImageFillAttr        {fill        = toSVGColor "black"}
@@ -211,8 +211,8 @@ fit :: Span Span (Image m) -> Image m
 fit xspan yspan image=:{Image | transform = ts}
   = {Image | image & transform = ts`}
   where
-  xspan` = maxSpan [zero,xspan]
-  yspan` = maxSpan [zero,yspan]
+  xspan` = maxSpan [zero, xspan]
+  yspan` = maxSpan [zero, yspan]
   ts`    = case ts of
              [FitImage _ _ : ts] = [FitImage xspan` yspan` : ts]
              ts                  = [FitImage xspan` yspan` : ts]
@@ -247,13 +247,13 @@ applyTransforms ts sp = foldr f sp ts
   f (FitXImage sp)     (_, ysp)        = (sp, ysp)
   f (FitYImage sp)     (xsp, _)        = (xsp, sp)
 
-skewXImageWidth :: th (a, a) -> a | Angle th & span a
+skewXImageWidth :: th (a, a) -> a | Angle th & IsSpan a
 skewXImageWidth angle (xspan, yspan) = xspan + (abs (yspan *. tan (toReal (toRad angle))))
 
-skewYImageHeight :: th (a, a) -> a | Angle th & span a
+skewYImageHeight :: th (a, a) -> a | Angle th & IsSpan a
 skewYImageHeight angle (xspan, yspan) = yspan + (abs (xspan *. tan (toReal (toRad (angle)))))
 
-rotatedImageSpanAndOriginOffset :: th (a, a) -> ((a, a), (a, a)) | Angle th & span a
+rotatedImageSpanAndOriginOffset :: th (a, a) -> ((a, a), (a, a)) | Angle th & IsSpan a
 rotatedImageSpanAndOriginOffset angle (xspan, yspan)
   = (( abs (maxAllX - minAllX)
      , abs (maxAllY - minAllY) )
@@ -328,13 +328,13 @@ overlay aligns offsets imgs host
 
 beside :: [YAlign] [ImageOffset] [Image m] (Host m) -> Image m
 beside ylayouts offsets imgs host
-  = grid (Rows 1) (LeftToRight,TopToBottom) (take l [(AtLeft,ylayout) \\ ylayout <- ylayouts]) (take l offsets) imgs host
+  = grid (Rows 1) (LeftToRight, TopToBottom) (take l [(AtLeft,ylayout) \\ ylayout <- ylayouts]) (take l offsets) imgs host
   where
   l = length imgs
 
 above :: [XAlign] [ImageOffset] [Image m] (Host m) -> Image m
 above xlayouts offsets imgs host
-  = grid (Columns 1) (LeftToRight,TopToBottom) (take l [(xlayout,AtTop) \\ xlayout <- xlayouts]) (take l offsets) imgs host
+  = grid (Columns 1) (LeftToRight, TopToBottom) (take l [(xlayout,AtTop) \\ xlayout <- xlayouts]) (take l offsets) imgs host
   where
   l = length imgs
 
@@ -342,61 +342,63 @@ grid :: GridDimension GridLayout [ImageAlign] [ImageOffset] [Image m] (Host m) -
 grid _ _ _ _ [] (Just img) = img
 grid _ _ _ _ [] _          = empty zero zero
 grid dimension layout aligns offsets imgs host
-  = { content   = Composite { offsets = take nr_of_imgs offsets
+  = { content   = Composite { offsets = take noOfImgs offsets
                             , host    = host
-                            , compose = AsGrid (cols, rows) (take nr_of_imgs aligns) imgs`
+                            , compose = AsGrid (cols, rows) (take noOfImgs aligns) imgs`
                             }
     , attribs   = []
     , transform = []
     , tags      = 'DS'.newSet
     }
   where
-  nr_of_imgs    = length imgs
-  (cols,rows)   = case dimension of
-                     Rows    nr = let nr` = max 1 nr
-                                   in (nr_of_imgs / nr` + sign (nr_of_imgs rem nr`),nr`)
-                     Columns nr = let nr` = max 1 nr
-                                   in (nr`,nr_of_imgs / nr` + sign (nr_of_imgs rem nr`))
-  imgs_complete = imgs ++ repeatn (cols*rows-nr_of_imgs) (empty zero zero)
-  imgs`         = arrange_layout layout (if (is_row_major dimension) 
-                                           (chop cols imgs_complete) 
-                                           [map (flip (!!) i) (chop rows imgs_complete) \\ i <- [0..rows-1]]
-                                           )
+  noOfImgs     = length imgs
+  (cols, rows) = case dimension of
+                   Rows    no = let no` = max 1 no
+                                in (noOfImgs / no` + sign (noOfImgs rem no`), no`)
+                   Columns no = let no` = max 1 no
+                                in (no`, noOfImgs / no` + sign (noOfImgs rem no`))
+  imgsComplete = imgs ++ repeatn (cols * rows - noOfImgs) (empty zero zero)
+  imgs`        = arrangeLayout layout (if (isRowMajor dimension)
+                                         (chop cols imgsComplete)
+                                         [map (flip (!!) i) (chop rows imgsComplete) \\ i <- [0 .. rows - 1]]
+                                      )
 
-  is_row_major :: GridDimension -> Bool
-  is_row_major (Rows _) = True
-  is_row_major _        = False
+  isRowMajor :: GridDimension -> Bool
+  isRowMajor (Rows _) = True
+  isRowMajor _        = False
 
-  arrange_layout :: GridLayout [[a]] -> [[a]]
-  arrange_layout (LeftToRight, TopToBottom) xs = xs
-  arrange_layout (RightToLeft, TopToBottom) xs = map reverse xs
-  arrange_layout (LeftToRight, BottomToTop) xs = reverse xs
-  arrange_layout (RightToLeft, BottomToTop) xs = reverse (map reverse xs)
+  arrangeLayout :: GridLayout [[a]] -> [[a]]
+  arrangeLayout (LeftToRight, TopToBottom) xs = xs
+  arrangeLayout (RightToLeft, TopToBottom) xs = map reverse xs
+  arrangeLayout (LeftToRight, BottomToTop) xs = reverse xs
+  arrangeLayout (RightToLeft, BottomToTop) xs = reverse (map reverse xs)
 
 collage :: [ImageOffset] [Image m] (Host m) -> Image m
 collage offsets imgs host
-  = { content   = Composite { offsets = take (length imgs) offsets, host = host, compose = AsCollage imgs}
+  = { content   = Composite { offsets = take (length imgs) offsets
+                            , host    = host
+                            , compose = AsCollage imgs}
     , attribs   = []
     , transform = []
     , tags      = 'DS'.newSet
     }
 
-instance tune_image StrokeAttr      where
-  tune_image image=:{Image | attribs} attr = {Image | image & attribs = update_or_add sameImageAttr (ImageStrokeAttr      attr) attribs}
-instance tune_image StrokeWidthAttr where
-  tune_image image=:{Image | attribs} attr = {Image | image & attribs = update_or_add sameImageAttr (ImageStrokeWidthAttr attr) attribs}
-instance tune_image FillAttr        where
-  tune_image image=:{Image | attribs} attr = {Image | image & attribs = update_or_add sameImageAttr (ImageFillAttr        attr) attribs}
-instance tune_image OpacityAttr     where
-  tune_image image=:{Image | attribs} attr = {Image | image & attribs = update_or_add sameImageAttr (ImageFillOpacityAttr attr) attribs}
-instance tune_image OnClickAttr     where
-  tune_image image=:{Image | attribs} attr = {Image | image & attribs = update_or_add sameImageAttr (ImageOnClickAttr     attr) attribs}
+instance tuneImage StrokeAttr      where
+  tuneImage image=:{Image | attribs} attr = {Image | image & attribs = updateOrAdd sameImageAttr (ImageStrokeAttr      attr) attribs}
+instance tuneImage StrokeWidthAttr where
+  tuneImage image=:{Image | attribs} attr = {Image | image & attribs = updateOrAdd sameImageAttr (ImageStrokeWidthAttr attr) attribs}
+instance tuneImage FillAttr        where
+  tuneImage image=:{Image | attribs} attr = {Image | image & attribs = updateOrAdd sameImageAttr (ImageFillAttr        attr) attribs}
+instance tuneImage OpacityAttr     where
+  tuneImage image=:{Image | attribs} attr = {Image | image & attribs = updateOrAdd sameImageAttr (ImageFillOpacityAttr attr) attribs}
+instance tuneImage OnClickAttr     where
+  tuneImage image=:{Image | attribs} attr = {Image | image & attribs = updateOrAdd sameImageAttr (ImageOnClickAttr     attr) attribs}
 
-(<@<) infixl 2 :: (Image m) (attr m) -> Image m | tune_image attr
-(<@<) image attr = tune_image image attr
+(<@<) infixl 2 :: (Image m) (attr m) -> Image m | tuneImage attr
+(<@<) image attr = tuneImage image attr
 
-(>@>) infixr 2 :: (attr m) (Image m) -> Image m | tune_image attr
-(>@>) attr image = tune_image image attr
+(>@>) infixr 2 :: (attr m) (Image m) -> Image m | tuneImage attr
+(>@>) attr image = tuneImage image attr
 
 consNameOf :: (ImageAttr m) -> String
 consNameOf (ImageStrokeAttr      _) = "ImageStrokeAttr"
@@ -412,7 +414,7 @@ instance < (ImageAttr m) where < a b = consNameOf a < consNameOf b
 
 
 instance toSVGColor String where toSVGColor name = SVGColorText name
-instance toSVGColor RGB    where toSVGColor {RGB | r,g,b} = SVGRGB r g b
+instance toSVGColor RGB    where toSVGColor {RGB | r, g, b} = SVGRGB r g b
 
 instance zero RGB where
   zero = { r = 0, g = 0, b = 0 }
@@ -436,27 +438,27 @@ tag ts image=:{Image | tags} = {Image | image & tags = 'DS'.union tags ('DS'.fro
 tags :: (Image m) -> [ImageTag]
 tags image=:{Image | tags} = 'DS'.toList tags
 
-/** update_or_add c x xs = ys:
-		@xs must be a sorted list. @ys replaces the first element y in @xs for which (@c @x y) is valid with @x.
-		If such an element is not found, then @x is added to @xs.
-		@ys is also a sorted list if @c respects the ordering relation.
+/** updateOrAdd c x xs = ys:
+      @xs must be a sorted list. @ys replaces the first element y in @xs for which (@c @x y) is valid with @x.
+      If such an element is not found, then @x is added to @xs.
+      @ys is also a sorted list if @c respects the ordering relation.
 */
-update_or_add :: (a a -> Bool) a [a] -> [a] | < a
-update_or_add c x [] = [x]
-update_or_add c x yys=:[y:ys]
-  | y < x     = [y : update_or_add c x ys]
+updateOrAdd :: (a a -> Bool) a [a] -> [a] | < a
+updateOrAdd c x [] = [x]
+updateOrAdd c x yys=:[y:ys]
+  | y < x     = [y : updateOrAdd c x ys]
   | c x y     = [x : ys]
   | otherwise = [x : yys]
 
 /** chop n xs = xss:
-        @xss consists of the subsequent sub-lists of @xs of length @n.
-        The length of the last element of @xss can be less than @n.
+      @xss consists of the subsequent sub-lists of @xs of length @n.
+      The length of the last element of @xss can be less than @n.
 */
 chop :: Int [a] -> [[a]]
 chop n [] = []
-chop n xs = [first_n : chop n without_n]
+chop n xs = [firstN : chop n withoutN]
   where
-  (first_n,without_n) = splitAt n xs
+  (firstN, withoutN) = splitAt n xs
 
 instance + ImageOffset where
   (+) (xal1, yal1) (xal2, yal2) = (xal1 + xal2, yal1 + yal2)
