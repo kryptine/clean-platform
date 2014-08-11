@@ -256,12 +256,23 @@ applyTransforms ts sp = foldr f sp ts
   f (FitXImage sp)     (_, ysp)        = (sp, ysp)
   f (FitYImage sp)     (xsp, _)        = (xsp, sp)
 
-skewXImageWidth :: th (a, a) -> a | Angle th & IsSpan a
-skewXImageWidth angle (xspan, yspan) = xspan + (abs (yspan *. tan (toReal (toRad angle))))
-
-skewYImageHeight :: th (a, a) -> a | Angle th & IsSpan a
-skewYImageHeight angle (xspan, yspan) = yspan + (abs (xspan *. tan (toReal (toRad (angle)))))
-
+// Rotates a rectangle by a given angle. Currently, this function is rather
+// naive. It rotates the rectangle (usually the bounding box of a shape) around
+// its centre point. It returns the span of the entire rotated image, i.e., the
+// new bounding box of the rotated image. If you rotate a square by, e.g. 45
+// degrees, then the resulting bounding box will be larger than the original
+// square bounding box. If you rotate the square again by 45 degrees, you would
+// expect that the bounding box after the second rotation is as big as the
+// original square again. However, with this particular function, the
+// resulting bounding box is bigger still, because the new bounding box was
+// rotated.
+//
+// @param (th | Angle th)     angle          The angle of rotation
+// @param ((a, a) | IsSpan a) (xspan, yspan) The original x and y spans of the
+//                                           non-rotated image
+// @return ( (a, a)   The span of the rotated image
+//         , (a, a))  The difference between the transformed top-left
+//         | IsSpan a coordinate and the maximum coordinate
 rotatedImageSpanAndOriginOffset :: th (a, a) -> ((a, a), (a, a)) | Angle th & IsSpan a
 rotatedImageSpanAndOriginOffset angle (xspan, yspan)
   = (( abs (maxAllX - minAllX)
@@ -286,6 +297,27 @@ rotatedImageSpanAndOriginOffset angle (xspan, yspan)
   angle`    = toReal (toRad angle)
   mkTransform x y = ( ((x - cx) *. cos angle`) - ((y - cy) *. sin angle`)
                     , ((x - cx) *. sin angle`) + ((y - cy) *. cos angle`))
+
+// Skew an image by a given angle. This function is naive as well, for the same
+// reasons as the rotation function.
+//
+// @param (th | Angle th)     angle          The skew angle
+// @param ((a, a) | IsSpan a) (xspan, yspan) The original x and y spans of the
+//                                           non-skewed image
+// @return (a | IsSpan a) The new width of the skewed image
+skewXImageWidth :: th (a, a) -> a | Angle th & IsSpan a
+skewXImageWidth angle (xspan, yspan) = xspan + (abs (yspan *. tan (toReal (toRad angle))))
+
+// Skew an image by a given angle. This function is naive as well, for the same
+// reasons as the rotation function.
+//
+// @param (th | Angle th)     angle          The skew angle
+// @param ((a, a) | IsSpan a) (xspan, yspan) The original x and y spans of the
+//                                           non-skewed image
+// @return (a | IsSpan a) The new height of the skewed image
+skewYImageHeight :: th (a, a) -> a | Angle th & IsSpan a
+skewYImageHeight angle (xspan, yspan) = yspan + (abs (xspan *. tan (toReal (toRad (angle)))))
+
 
 skewx :: th (Image m) -> Image m | Angle th
 skewx xskew image=:{Image | transform = ts}
