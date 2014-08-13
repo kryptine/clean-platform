@@ -102,58 +102,60 @@ maxSpan as
   (pxs, others) = partition isPxSpan as
   maxPxs        = PxSpan (maxList [x \\ PxSpan x <- pxs])
 
+mkImage :: (ImageContent m) -> Image m
+mkImage cnt =
+  { content   = cnt
+  , attribs   = []
+  , transform = []
+  , tags      = 'DS'.newSet
+  , margin    = (px 0.0, px 0.0, px 0.0, px 0.0)
+  }
+
+marginTRBL :: !Span !Span !Span !Span !(Image m) -> Image m
+marginTRBL t r b l im = { im & margin = (t, r, b, l) }
+
+marginHV :: !Span !Span !(Image m) -> Image m
+marginHV h v im = marginTRBL h v h v im
+
+margin :: !Span !(Image m) -> Image m
+margin m im = marginTRBL m m m m im
+
 empty :: !Span !Span -> Image m
-empty xspan yspan
-  = { content   = Basic EmptyImage (maxSpan [zero, xspan], maxSpan [zero, yspan])
-    , attribs   = []
-    , transform = []
-    , tags      = 'DS'.newSet
-    }
+empty xspan yspan = mkImage (Basic EmptyImage (maxSpan [zero, xspan], maxSpan [zero, yspan]))
 
 text :: !FontDef !String -> Image m
-text font str
-  = { content   = Basic (TextImage font str) (textxspan font str, font.FontDef.fontyspan)
-    , attribs   = []
-    , transform = []
-    , tags      = 'DS'.newSet
-    }
+text font str = mkImage (Basic (TextImage font str) (textxspan font str, font.FontDef.fontyspan))
 
 circle :: !Span -> Image m
 circle diameter
-  = { content   = Basic CircleImage (d, d)
-    , attribs   = [ ImageStrokeAttr      {stroke      = toSVGColor "black"}
-                  , ImageStrokeWidthAttr {strokewidth = px 1.0}
-                  , ImageFillAttr        {fill        = toSVGColor "black"}
-                  , ImageFillOpacityAttr {opacity     = 1.0}
-                  ]
-    , transform = []
-    , tags      = 'DS'.newSet
+  = { mkImage (Basic CircleImage (d, d))
+    & attribs = [ ImageStrokeAttr      {stroke      = toSVGColor "black"}
+                , ImageStrokeWidthAttr {strokewidth = px 1.0}
+                , ImageFillAttr        {fill        = toSVGColor "black"}
+                , ImageFillOpacityAttr {opacity     = 1.0}
+                ]
     }
   where
-  d             = maxSpan [zero, diameter]
+  d = maxSpan [zero, diameter]
 
 ellipse :: !Span !Span -> Image m
 ellipse diax diay
-  = { content   = Basic EllipseImage (maxSpan [zero, diax], maxSpan [zero, diay])
-    , attribs   = [ ImageStrokeAttr      {stroke      = toSVGColor "black"}
-                  , ImageStrokeWidthAttr {strokewidth = px 1.0}
-                  , ImageFillAttr        {fill        = toSVGColor "black"}
-                  , ImageFillOpacityAttr {opacity     = 1.0}
-                  ]
-    , transform = []
-    , tags      = 'DS'.newSet
+  = { mkImage (Basic EllipseImage (maxSpan [zero, diax], maxSpan [zero, diay]))
+    & attribs = [ ImageStrokeAttr      {stroke      = toSVGColor "black"}
+                , ImageStrokeWidthAttr {strokewidth = px 1.0}
+                , ImageFillAttr        {fill        = toSVGColor "black"}
+                , ImageFillOpacityAttr {opacity     = 1.0}
+                ]
     }
 
 rect :: !Span !Span -> Image m
 rect xspan yspan
-  = { content   = Basic RectImage (maxSpan [zero, xspan], maxSpan [zero, yspan])
-    , attribs   = [ ImageStrokeAttr      {stroke      = toSVGColor "black"}
-                  , ImageStrokeWidthAttr {strokewidth = px 1.0}
-                  , ImageFillAttr        {fill        = toSVGColor "black"}
-                  , ImageFillOpacityAttr {opacity     = 1.0}
-                  ]
-    , transform = []
-    , tags      = 'DS'.newSet
+  = { mkImage (Basic RectImage (maxSpan [zero, xspan], maxSpan [zero, yspan]))
+    & attribs = [ ImageStrokeAttr      {stroke      = toSVGColor "black"}
+                , ImageStrokeWidthAttr {strokewidth = px 1.0}
+                , ImageFillAttr        {fill        = toSVGColor "black"}
+                , ImageFillOpacityAttr {opacity     = 1.0}
+                ]
     }
 
 xline :: !(Maybe (Markers m)) !Span -> Image m
@@ -164,42 +166,34 @@ yline markers yspan = line markers Slash zero yspan
 
 line :: !(Maybe (Markers m)) !Slash !Span !Span -> Image m
 line markers slash xspan yspan
-  = { content   = Line { lineSpan    = (abs xspan, abs yspan)
-                       , markers     = markers
-                       , lineContent = SimpleLineImage slash
-                       }
-    , attribs   = [ ImageStrokeAttr      {stroke      = toSVGColor "black"}
-                  , ImageStrokeWidthAttr {strokewidth = px 1.0}
-                  , ImageFillAttr        {fill        = toSVGColor "black"}
-                  , ImageFillOpacityAttr {opacity     = 1.0}
-                  ]
-    , transform = []
-    , tags      = 'DS'.newSet
+  = { mkImage (Line { lineSpan    = (abs xspan, abs yspan)
+                    , markers     = markers
+                    , lineContent = SimpleLineImage slash
+                    })
+    & attribs = [ ImageStrokeAttr      {stroke      = toSVGColor "black"}
+                , ImageStrokeWidthAttr {strokewidth = px 1.0}
+                , ImageFillAttr        {fill        = toSVGColor "black"}
+                , ImageFillOpacityAttr {opacity     = 1.0}
+                ]
     }
 
 polygon :: !(Maybe (Markers m)) ![ImageOffset] -> Image m
 polygon markers offsets
-  = { content   = Line { lineSpan    = (maxSpan (map fst offsets), maxSpan (map snd offsets))
-                       , markers     = markers
-                       , lineContent = PolygonImage offsets
-                       }
-    , attribs   = []
-    , transform = []
-    , tags      = 'DS'.newSet
-    }
+  = mkImage (Line { lineSpan    = (maxSpan (map fst offsets), maxSpan (map snd offsets))
+                  , markers     = markers
+                  , lineContent = PolygonImage offsets
+                  })
 
 polyline :: !(Maybe (Markers m)) ![ImageOffset] -> Image m
 polyline markers offsets
-  = { content   = Line { lineSpan    = (maxSpan (map fst offsets), maxSpan (map snd offsets))
-                       , markers     = markers
-                       , lineContent = PolylineImage offsets
-                       }
-    , attribs   = [ ImageFillAttr        {fill        = toSVGColor "none"}
-                  , ImageStrokeAttr      {stroke      = toSVGColor "black"}
-                  , ImageStrokeWidthAttr {strokewidth = px 1.0}
-                  ]
-    , transform = []
-    , tags      = 'DS'.newSet
+  = { mkImage (Line { lineSpan    = (maxSpan (map fst offsets), maxSpan (map snd offsets))
+                    , markers     = markers
+                    , lineContent = PolylineImage offsets
+                    })
+    & attribs = [ ImageFillAttr        {fill        = toSVGColor "none"}
+                , ImageStrokeAttr      {stroke      = toSVGColor "black"}
+                , ImageStrokeWidthAttr {strokewidth = px 1.0}
+                ]
     }
 
 rotate :: !th !(Image m) -> Image m | Angle th
@@ -356,13 +350,9 @@ overlay :: ![ImageAlign] ![ImageOffset] ![Image m] !(Host m) -> Image m
 overlay _ _ [] (Just img) = img
 overlay _ _ [] _          = empty zero zero
 overlay aligns offsets imgs host
-  = { content   = Composite { offsets = take l offsets
-                            , host    = host
-                            , compose = AsOverlay (take l aligns) imgs }
-    , attribs   = []
-    , transform = []
-    , tags      = 'DS'.newSet
-    }
+  = mkImage (Composite { offsets = take l offsets
+                       , host    = host
+                       , compose = AsOverlay (take l aligns) imgs })
   where
   l = length imgs
 
@@ -382,14 +372,10 @@ grid :: !GridDimension !GridLayout ![ImageAlign] ![ImageOffset] ![Image m] !(Hos
 grid _ _ _ _ [] (Just img) = img
 grid _ _ _ _ [] _          = empty zero zero
 grid dimension layout aligns offsets imgs host
-  = { content   = Composite { offsets = take noOfImgs offsets
-                            , host    = host
-                            , compose = AsGrid (cols, rows) (take noOfImgs aligns) imgs`
-                            }
-    , attribs   = []
-    , transform = []
-    , tags      = 'DS'.newSet
-    }
+  = mkImage (Composite { offsets = take noOfImgs offsets
+                       , host    = host
+                       , compose = AsGrid (cols, rows) (take noOfImgs aligns) imgs`
+                       })
   where
   noOfImgs     = length imgs
   (cols, rows) = case dimension of
@@ -415,13 +401,9 @@ grid dimension layout aligns offsets imgs host
 
 collage :: ![ImageOffset] ![Image m] !(Host m) -> Image m
 collage offsets imgs host
-  = { content   = Composite { offsets = take (length imgs) offsets
-                            , host    = host
-                            , compose = AsCollage imgs}
-    , attribs   = []
-    , transform = []
-    , tags      = 'DS'.newSet
-    }
+  = mkImage (Composite { offsets = take (length imgs) offsets
+                       , host    = host
+                       , compose = AsCollage imgs})
 
 instance tuneImage StrokeAttr      where
   tuneImage image=:{Image | attribs} attr = {Image | image & attribs = updateOrAdd sameImageAttr (ImageStrokeAttr      attr) attribs}

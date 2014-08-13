@@ -11,10 +11,11 @@ from StdOverloaded import class zero, class +, class -, class ~, class one, clas
 
 // TODO Add margin and padding?
 :: Image m
-  = { content   :: ImageContent m   // the image elements
-    , attribs   :: [ImageAttr m]    // the image attributes
-    , transform :: [ImageTransform] // [t_1, ..., t_n] transforms the image as t_1 o ... o t_n
-    , tags      :: Set ImageTag     // set of tags
+  = { content   :: ImageContent m           // the image elements
+    , attribs   :: [ImageAttr m]            // the image attributes
+    , transform :: [ImageTransform]         // [t_1, ..., t_n] transforms the image as t_1 o ... o t_n
+    , tags      :: Set ImageTag             // set of tags
+    , margin    :: (Span, Span, Span, Span) // Image margin
     }
 
 :: ImageTransform
@@ -131,6 +132,10 @@ class IsSpan a | zero a & one a & + a & - a & abs a & ~ a & *. a & /. a & maxOf 
 
 minSpan :: ![Span] -> Span // (minimum as) is the minimum of as (zero if as = [])
 maxSpan :: ![Span] -> Span // (maximum as) is the maximum of as (zero if as = [])
+
+marginTRBL :: !Span !Span !Span !Span !(Image m) -> Image m
+marginHV   :: !Span !Span !(Image m) -> Image m
+margin     :: !Span !(Image m) -> Image m
 
 :: FontDef
   = { fontfamily  :: String
