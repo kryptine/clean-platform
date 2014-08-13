@@ -11,32 +11,32 @@ from Data.Set import :: Set
 import qualified Data.Set as DS
 import Text.HTML
 
-isPxSpan :: Span -> Bool
+isPxSpan :: !Span -> Bool
 isPxSpan (PxSpan _) = True
 isPxSpan _          = False
 
-px :: Real -> Span
+px :: !Real -> Span
 px a = PxSpan a
 
-ex :: FontDef -> Span
+ex :: !FontDef -> Span
 ex a = LookupSpan (ExYSpan a)
 
-descent :: FontDef -> Span
+descent :: !FontDef -> Span
 descent a = LookupSpan (DescentYSpan a)
 
-textxspan :: FontDef String -> Span
+textxspan :: !FontDef !String -> Span
 textxspan a b = LookupSpan (TextXSpan a b)
 
-imagexspan :: [ImageTag] -> Span
+imagexspan :: ![ImageTag] -> Span
 imagexspan as = LookupSpan (ImageXSpan ('DS'.fromList as))
 
-imageyspan :: [ImageTag] -> Span
+imageyspan :: ![ImageTag] -> Span
 imageyspan as = LookupSpan (ImageYSpan ('DS'.fromList as))
 
-columnspan :: [ImageTag] Int -> Span
+columnspan :: ![ImageTag] !Int -> Span
 columnspan as a = LookupSpan (ColumnXSpan ('DS'.fromList as) a)
 
-rowspan :: [ImageTag] Int -> Span
+rowspan :: ![ImageTag] !Int -> Span
 rowspan as a = LookupSpan (RowYSpan ('DS'.fromList as) a)
 
 instance zero Span where zero                    = PxSpan zero
@@ -45,18 +45,17 @@ instance +    Span where + (PxSpan a) (PxSpan b) = PxSpan (a + b)
                          + s          t          = AddSpan s t
 instance -    Span where - (PxSpan a) (PxSpan b) = PxSpan (a - b)
                          - s          t          = SubSpan s t
-instance abs  Span where abs (PxSpan  a)         = PxSpan  (abs a)
-                         abs (AddSpan a b)       = AbsSpan (AddSpan a b)
-                         abs (SubSpan a b)       = AbsSpan (SubSpan a b)
-                         abs (MulSpan a k)       = AbsSpan (MulSpan a k)
-                         abs (DivSpan a k)       = AbsSpan (DivSpan a k)
-                         abs span                = span
+instance abs  Span where abs (PxSpan  x)         = PxSpan (abs x)
+                         abs (AbsSpan x)         = AbsSpan x
+                         abs span                = AbsSpan span
 instance ~    Span where ~ s                     = zero - s
+instance *.   Int  where *. l              r     = toInt (toReal l * toReal r)
 instance *.   Real where *. l              r     = l * toReal r
 instance *.   Span where *. (PxSpan  a)    k     = PxSpan    (a * toReal k)
                          *. (MulSpan a k1) k     = MulSpan a (toReal k * k1)
                          *. (DivSpan a k1) k     = MulSpan a (toReal k / k1)
                          *. s              k     = MulSpan s (toReal k)
+instance /.   Int  where /. l              r     = toInt (toReal l / toReal r)
 instance /.   Real where /. l              r     = l / toReal r
 instance /.   Span where /. (PxSpan  a)    k     = PxSpan    (a / toReal k)
                          /. (MulSpan a k1) k     = MulSpan a (k1 / toReal k)
@@ -81,7 +80,7 @@ instance minOf Real where
 instance minOf Int where
   minOf xs = minList xs
 
-minSpan :: [Span] -> Span
+minSpan :: ![Span] -> Span
 minSpan []  = zero
 minSpan [a] = a
 minSpan as
@@ -92,7 +91,7 @@ minSpan as
   (pxs, others) = partition isPxSpan as
   minPxs        = PxSpan (minList [x \\ PxSpan x <- pxs])
 
-maxSpan :: [Span] -> Span
+maxSpan :: ![Span] -> Span
 maxSpan []  = zero
 maxSpan [a] = a
 maxSpan as
@@ -103,7 +102,7 @@ maxSpan as
   (pxs, others) = partition isPxSpan as
   maxPxs        = PxSpan (maxList [x \\ PxSpan x <- pxs])
 
-empty :: Span Span -> Image m
+empty :: !Span !Span -> Image m
 empty xspan yspan
   = { content   = Basic EmptyImage (maxSpan [zero, xspan], maxSpan [zero, yspan])
     , attribs   = []
@@ -111,7 +110,7 @@ empty xspan yspan
     , tags      = 'DS'.newSet
     }
 
-text :: FontDef String -> Image m
+text :: !FontDef !String -> Image m
 text font str
   = { content   = Basic (TextImage font str) (textxspan font str, font.FontDef.fontyspan)
     , attribs   = []
@@ -119,7 +118,7 @@ text font str
     , tags      = 'DS'.newSet
     }
 
-circle :: Span -> Image m
+circle :: !Span -> Image m
 circle diameter
   = { content   = Basic CircleImage (d, d)
     , attribs   = [ ImageStrokeAttr      {stroke      = toSVGColor "black"}
@@ -133,7 +132,7 @@ circle diameter
   where
   d             = maxSpan [zero, diameter]
 
-ellipse :: Span Span -> Image m
+ellipse :: !Span !Span -> Image m
 ellipse diax diay
   = { content   = Basic EllipseImage (maxSpan [zero, diax], maxSpan [zero, diay])
     , attribs   = [ ImageStrokeAttr      {stroke      = toSVGColor "black"}
@@ -145,7 +144,7 @@ ellipse diax diay
     , tags      = 'DS'.newSet
     }
 
-rect :: Span Span -> Image m
+rect :: !Span !Span -> Image m
 rect xspan yspan
   = { content   = Basic RectImage (maxSpan [zero, xspan], maxSpan [zero, yspan])
     , attribs   = [ ImageStrokeAttr      {stroke      = toSVGColor "black"}
@@ -157,13 +156,13 @@ rect xspan yspan
     , tags      = 'DS'.newSet
     }
 
-xline :: (Maybe (Markers m)) Span -> Image m
+xline :: !(Maybe (Markers m)) !Span -> Image m
 xline markers xspan = line markers Slash xspan zero
 
-yline :: (Maybe (Markers m)) Span -> Image m
+yline :: !(Maybe (Markers m)) !Span -> Image m
 yline markers yspan = line markers Slash zero yspan
 
-line :: (Maybe (Markers m)) Slash Span Span -> Image m
+line :: !(Maybe (Markers m)) !Slash !Span !Span -> Image m
 line markers slash xspan yspan
   = { content   = Line { lineSpan    = (abs xspan, abs yspan)
                        , markers     = markers
@@ -178,7 +177,7 @@ line markers slash xspan yspan
     , tags      = 'DS'.newSet
     }
 
-polygon :: (Maybe (Markers m)) [ImageOffset] -> Image m
+polygon :: !(Maybe (Markers m)) ![ImageOffset] -> Image m
 polygon markers offsets
   = { content   = Line { lineSpan    = (maxSpan (map fst offsets), maxSpan (map snd offsets))
                        , markers     = markers
@@ -189,7 +188,7 @@ polygon markers offsets
     , tags      = 'DS'.newSet
     }
 
-polyline :: (Maybe (Markers m)) [ImageOffset] -> Image m
+polyline :: !(Maybe (Markers m)) ![ImageOffset] -> Image m
 polyline markers offsets
   = { content   = Line { lineSpan    = (maxSpan (map fst offsets), maxSpan (map snd offsets))
                        , markers     = markers
@@ -203,7 +202,7 @@ polyline markers offsets
     , tags      = 'DS'.newSet
     }
 
-rotate :: th (Image m) -> Image m | Angle th
+rotate :: !th !(Image m) -> Image m | Angle th
 rotate a image=:{Image | transform = ts}
   | a` == zero = image
   | otherwise  = {Image | image & transform = ts`}
@@ -216,7 +215,7 @@ rotate a image=:{Image | transform = ts}
           ts
             = [RotateImage a` : ts]
 
-fit :: Span Span (Image m) -> Image m
+fit :: !Span !Span !(Image m) -> Image m
 fit xspan yspan image=:{Image | transform = ts}
   = {Image | image & transform = ts`}
   where
@@ -226,7 +225,7 @@ fit xspan yspan image=:{Image | transform = ts}
              [FitImage _ _ : ts] = [FitImage xspan` yspan` : ts]
              ts                  = [FitImage xspan` yspan` : ts]
 
-fitx :: Span (Image m) -> Image m
+fitx :: !Span !(Image m) -> Image m
 fitx xspan image=:{Image | transform = ts}
   = {Image | image & transform = ts`}
   where
@@ -236,7 +235,7 @@ fitx xspan image=:{Image | transform = ts}
              [FitYImage _ : ts] = [FitXImage xspan` : ts]
              ts                 = [FitXImage xspan` : ts]
 
-fity :: Span (Image m) -> Image m
+fity :: !Span !(Image m) -> Image m
 fity yspan image=:{Image | transform = ts}
   = {Image | image & transform = ts`}
   where
@@ -246,7 +245,7 @@ fity yspan image=:{Image | transform = ts}
              [FitYImage _ : ts] = [FitYImage yspan` : ts]
              ts                 = [FitYImage yspan` : ts]
 
-applyTransforms :: [ImageTransform] ImageSpan -> ImageSpan
+applyTransforms :: ![ImageTransform] !ImageSpan -> ImageSpan
 applyTransforms ts sp = foldr f sp ts
   where
   f (RotateImage th)   accSp           = fst (rotatedImageSpanAndOriginOffset th accSp)
@@ -273,10 +272,10 @@ applyTransforms ts sp = foldr f sp ts
 // @return ( (a, a)   The span of the rotated image
 //         , (a, a))  The difference between the transformed top-left
 //         | IsSpan a coordinate and the maximum coordinate
-rotatedImageSpanAndOriginOffset :: th (a, a) -> ((a, a), (a, a)) | Angle th & IsSpan a
+rotatedImageSpanAndOriginOffset :: !th !(a, a) -> ((a, a), (a, a)) | Angle th & IsSpan a
 rotatedImageSpanAndOriginOffset angle (xspan, yspan)
-  = (( abs (maxAllX - minAllX)
-     , abs (maxAllY - minAllY) )
+  = ( ( abs (maxAllX - minAllX)
+      , abs (maxAllY - minAllY))
     , ( maxAllX - fst tTopLeft
       , maxAllY - snd tTopLeft)
     )
@@ -305,7 +304,7 @@ rotatedImageSpanAndOriginOffset angle (xspan, yspan)
 // @param ((a, a) | IsSpan a) (xspan, yspan) The original x and y spans of the
 //                                           non-skewed image
 // @return (a | IsSpan a) The new width of the skewed image
-skewXImageWidth :: th (a, a) -> a | Angle th & IsSpan a
+skewXImageWidth :: !th !(a, a) -> a | Angle th & IsSpan a
 skewXImageWidth angle (xspan, yspan) = xspan + (abs (yspan *. tan (toReal (toRad angle))))
 
 // Skew an image by a given angle. This function is naive as well, for the same
@@ -315,11 +314,11 @@ skewXImageWidth angle (xspan, yspan) = xspan + (abs (yspan *. tan (toReal (toRad
 // @param ((a, a) | IsSpan a) (xspan, yspan) The original x and y spans of the
 //                                           non-skewed image
 // @return (a | IsSpan a) The new height of the skewed image
-skewYImageHeight :: th (a, a) -> a | Angle th & IsSpan a
+skewYImageHeight :: !th !(a, a) -> a | Angle th & IsSpan a
 skewYImageHeight angle (xspan, yspan) = yspan + (abs (xspan *. tan (toReal (toRad (angle)))))
 
 
-skewx :: th (Image m) -> Image m | Angle th
+skewx :: !th !(Image m) -> Image m | Angle th
 skewx xskew image=:{Image | transform = ts}
   | xskew` == zero = image
   | otherwise      = {Image | image & transform = ts`}
@@ -332,7 +331,7 @@ skewx xskew image=:{Image | transform = ts}
              ts
                = [SkewXImage xskew` : ts]
 
-skewy :: th (Image m) -> Image m | Angle th
+skewy :: !th !(Image m) -> Image m | Angle th
 skewy yskew image=:{Image | transform = ts}
   | yskew` == zero = image
   | otherwise      = {Image | image & transform = ts`}
@@ -345,15 +344,15 @@ skewy yskew image=:{Image | transform = ts}
             ts
               = [SkewYImage yskew` : ts]
 
-radian :: Real -> Rad
+radian :: !Real -> Rad
 radian r = Rad r
 
-degree :: Real -> Deg
+degree :: !Real -> Deg
 degree d = Deg d
 
 pi =: 3.14159265359
 
-overlay :: [ImageAlign] [ImageOffset] [Image m] (Host m) -> Image m
+overlay :: ![ImageAlign] ![ImageOffset] ![Image m] !(Host m) -> Image m
 overlay _ _ [] (Just img) = img
 overlay _ _ [] _          = empty zero zero
 overlay aligns offsets imgs host
@@ -367,19 +366,19 @@ overlay aligns offsets imgs host
   where
   l = length imgs
 
-beside :: [YAlign] [ImageOffset] [Image m] (Host m) -> Image m
+beside :: ![YAlign] ![ImageOffset] ![Image m] !(Host m) -> Image m
 beside ylayouts offsets imgs host
-  = grid (Rows 1) (LeftToRight, TopToBottom) (take l [(AtLeft,ylayout) \\ ylayout <- ylayouts]) (take l offsets) imgs host
+  = grid (Rows 1) (LeftToRight, TopToBottom) (take l [(AtLeft, ylayout) \\ ylayout <- ylayouts]) (take l offsets) imgs host
   where
   l = length imgs
 
-above :: [XAlign] [ImageOffset] [Image m] (Host m) -> Image m
+above :: ![XAlign] ![ImageOffset] ![Image m] !(Host m) -> Image m
 above xlayouts offsets imgs host
-  = grid (Columns 1) (LeftToRight, TopToBottom) (take l [(xlayout,AtTop) \\ xlayout <- xlayouts]) (take l offsets) imgs host
+  = grid (Columns 1) (LeftToRight, TopToBottom) (take l [(xlayout, AtTop) \\ xlayout <- xlayouts]) (take l offsets) imgs host
   where
   l = length imgs
 
-grid :: GridDimension GridLayout [ImageAlign] [ImageOffset] [Image m] (Host m) -> Image m
+grid :: !GridDimension !GridLayout ![ImageAlign] ![ImageOffset] ![Image m] !(Host m) -> Image m
 grid _ _ _ _ [] (Just img) = img
 grid _ _ _ _ [] _          = empty zero zero
 grid dimension layout aligns offsets imgs host
@@ -414,7 +413,7 @@ grid dimension layout aligns offsets imgs host
   arrangeLayout (LeftToRight, BottomToTop) xs = reverse xs
   arrangeLayout (RightToLeft, BottomToTop) xs = reverse (map reverse xs)
 
-collage :: [ImageOffset] [Image m] (Host m) -> Image m
+collage :: ![ImageOffset] ![Image m] !(Host m) -> Image m
 collage offsets imgs host
   = { content   = Composite { offsets = take (length imgs) offsets
                             , host    = host
@@ -435,20 +434,20 @@ instance tuneImage OpacityAttr     where
 instance tuneImage OnClickAttr     where
   tuneImage image=:{Image | attribs} attr = {Image | image & attribs = updateOrAdd sameImageAttr (ImageOnClickAttr     attr) attribs}
 
-(<@<) infixl 2 :: (Image m) (attr m) -> Image m | tuneImage attr
+(<@<) infixl 2 :: !(Image m) !(attr m) -> Image m | tuneImage attr
 (<@<) image attr = tuneImage image attr
 
-(>@>) infixr 2 :: (attr m) (Image m) -> Image m | tuneImage attr
+(>@>) infixr 2 :: !(attr m) !(Image m) -> Image m | tuneImage attr
 (>@>) attr image = tuneImage image attr
 
-consNameOf :: (ImageAttr m) -> String
+consNameOf :: !(ImageAttr m) -> String
 consNameOf (ImageStrokeAttr      _) = "ImageStrokeAttr"
 consNameOf (ImageStrokeWidthAttr _) = "ImageStrokeWidthAttr"
 consNameOf (ImageFillAttr        _) = "ImageFillAttr"
 consNameOf (ImageFillOpacityAttr _) = "ImageFillOpacityAttr"
 consNameOf (ImageOnClickAttr     _) = "ImageOnClickAttr"
 
-sameImageAttr :: (ImageAttr m) (ImageAttr m) -> Bool
+sameImageAttr :: !(ImageAttr m) !(ImageAttr m) -> Bool
 sameImageAttr a b = consNameOf a == consNameOf b
 
 instance < (ImageAttr m) where < a b = consNameOf a < consNameOf b
@@ -473,10 +472,10 @@ instance <  ImageTag     where <  (ImageTagInt    n1) (ImageTagInt    n2) = n1 <
                                <  (ImageTagSystem s1) (ImageTagSystem s2) = s1 < s2
                                <  _                   _                   = False
 
-tag :: [ImageTag] (Image m) -> Image m
+tag :: ![ImageTag] !(Image m) -> Image m
 tag ts image=:{Image | tags} = {Image | image & tags = 'DS'.union tags ('DS'.fromList ts)}
 
-tags :: (Image m) -> [ImageTag]
+tags :: !(Image m) -> [ImageTag]
 tags image=:{Image | tags} = 'DS'.toList tags
 
 /** updateOrAdd c x xs = ys:
@@ -484,7 +483,7 @@ tags image=:{Image | tags} = 'DS'.toList tags
       If such an element is not found, then @x is added to @xs.
       @ys is also a sorted list if @c respects the ordering relation.
 */
-updateOrAdd :: (a a -> Bool) a [a] -> [a] | < a
+updateOrAdd :: !(a a -> Bool) !a ![a] -> [a] | < a
 updateOrAdd c x [] = [x]
 updateOrAdd c x yys=:[y:ys]
   | y < x     = [y : updateOrAdd c x ys]
@@ -495,7 +494,7 @@ updateOrAdd c x yys=:[y:ys]
       @xss consists of the subsequent sub-lists of @xs of length @n.
       The length of the last element of @xss can be less than @n.
 */
-chop :: Int [a] -> [[a]]
+chop :: !Int ![a] -> [[a]]
 chop n [] = []
 chop n xs = [firstN : chop n withoutN]
   where

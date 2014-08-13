@@ -99,14 +99,14 @@ from StdOverloaded import class zero, class +, class -, class ~, class one, clas
   | AsCollage                         [Image m]   // AsCollage composes elements in freestyle, framed in optional host
   | AsOverlay            [ImageAlign] [Image m]   // AsOverlay composes elements, framed in optional host or largest spans
 
-px         :: Real           -> Span // (px a) is a pixels
-ex         :: FontDef        -> Span // (ex font) is the ex height (ascent) of font
-descent    :: FontDef        -> Span // (descent font) is the descent height of font
-textxspan  :: FontDef String -> Span // (textxspan font str) is the x-span of str written in font
-imagexspan :: [ImageTag]     -> Span // (imagexspan ts) is x-span of image tagged with superset of ts
-imageyspan :: [ImageTag]     -> Span // (imageyspan ts) is y-span of image tagged with superset of ts
-columnspan :: [ImageTag] Int -> Span // (columnspan ts i) is x-span of column i in grid tagged with superset of ts
-rowspan    :: [ImageTag] Int -> Span // (rowspan ts i) is y-span of row i in grid tagged with superset of ts
+px         :: !Real            -> Span // (px a) is a pixels
+ex         :: !FontDef         -> Span // (ex font) is the ex height (ascent) of font
+descent    :: !FontDef         -> Span // (descent font) is the descent height of font
+textxspan  :: !FontDef !String -> Span // (textxspan font str) is the x-span of str written in font
+imagexspan :: ![ImageTag]      -> Span // (imagexspan ts) is x-span of image tagged with superset of ts
+imageyspan :: ![ImageTag]      -> Span // (imageyspan ts) is y-span of image tagged with superset of ts
+columnspan :: ![ImageTag] !Int -> Span // (columnspan ts i) is x-span of column i in grid tagged with superset of ts
+rowspan    :: ![ImageTag] !Int -> Span // (rowspan ts i) is y-span of row i in grid tagged with superset of ts
 
 class (*.) infixl 7 a :: a n -> a | toReal n
 class (/.) infixl 7 a :: a n -> a | toReal n
@@ -117,8 +117,8 @@ instance +    Span
 instance -    Span
 instance abs  Span
 instance ~    Span
-instance *.   Span, Real
-instance /.   Span, Real
+instance *.   Span, Real, Int
+instance /.   Span, Real, Int
 
 class maxOf a :: [a] -> a
 class minOf a :: [a] -> a
@@ -128,8 +128,8 @@ instance minOf Span, Real, Int
 
 class IsSpan a | zero a & one a & + a & - a & abs a & ~ a & *. a & /. a & maxOf a & minOf a
 
-minSpan :: [Span] -> Span // (minimum as) is the minimum of as (zero if as = [])
-maxSpan :: [Span] -> Span // (maximum as) is the maximum of as (zero if as = [])
+minSpan :: ![Span] -> Span // (minimum as) is the minimum of as (zero if as = [])
+maxSpan :: ![Span] -> Span // (maximum as) is the maximum of as (zero if as = [])
 
 :: FontDef
   = { fontfamily  :: String
@@ -140,42 +140,42 @@ maxSpan :: [Span] -> Span // (maximum as) is the maximum of as (zero if as = [])
     , fontweight  :: String
     }
 
-empty    :: Span Span      -> Image m // (empty a b) is an empty image with x-span a and y-span b
-text     :: FontDef String -> Image m // (text font str) is an image containg str written in font
-circle   :: Span           -> Image m // (circle a) is an image of a circle with diameter a
-ellipse  :: Span Span      -> Image m // (ellipse a b) is an image of an ellipse with x-diameter a and y-diameter b
-rect     :: Span Span      -> Image m // (rect a b) is an image of a rectangle with x-span a and y-span b
+empty    :: !Span !Span      -> Image m // (empty a b) is an empty image with x-span a and y-span b
+text     :: !FontDef !String -> Image m // (text font str) is an image containg str written in font
+circle   :: !Span            -> Image m // (circle a) is an image of a circle with diameter a
+ellipse  :: !Span !Span      -> Image m // (ellipse a b) is an image of an ellipse with x-diameter a and y-diameter b
+rect     :: !Span !Span      -> Image m // (rect a b) is an image of a rectangle with x-span a and y-span b
 
-xline    :: (Maybe (Markers m)) Span            -> Image m // (xline a) is an image of a line with x-span a and y-span zero
-yline    :: (Maybe (Markers m)) Span            -> Image m // (yline a) is an image of a line with y-span a and x-span zero
-line     :: (Maybe (Markers m)) Slash Span Span -> Image m // (line a b) is an image of a line with x-span a and y-span b
-polygon  :: (Maybe (Markers m)) [ImageOffset]   -> Image m // (polygon xs) is an image of a polygon with coordinates xs
-polyline :: (Maybe (Markers m)) [ImageOffset]   -> Image m // (polyline xs) is an image of a polyline with coordinates xs
+xline    :: !(Maybe (Markers m)) !Span              -> Image m // (xline a) is an image of a line with x-span a and y-span zero
+yline    :: !(Maybe (Markers m)) !Span              -> Image m // (yline a) is an image of a line with y-span a and x-span zero
+line     :: !(Maybe (Markers m)) !Slash !Span !Span -> Image m // (line a b) is an image of a line with x-span a and y-span b
+polygon  :: !(Maybe (Markers m)) ![ImageOffset]     -> Image m // (polygon xs) is an image of a polygon with coordinates xs
+polyline :: !(Maybe (Markers m)) ![ImageOffset]     -> Image m // (polyline xs) is an image of a polyline with coordinates xs
 
-rotate  :: th        (Image m) -> Image m | Angle th
-fit     :: Span Span (Image m) -> Image m
-fitx    :: Span      (Image m) -> Image m
-fity    :: Span      (Image m) -> Image m
-skewx   :: th        (Image m) -> Image m | Angle th
-skewy   :: th        (Image m) -> Image m | Angle th
+rotate  :: !th         !(Image m) -> Image m | Angle th
+fit     :: !Span !Span !(Image m) -> Image m
+fitx    :: !Span       !(Image m) -> Image m
+fity    :: !Span       !(Image m) -> Image m
+skewx   :: !th         !(Image m) -> Image m | Angle th
+skewy   :: !th         !(Image m) -> Image m | Angle th
 
-applyTransforms  :: [ImageTransform] ImageSpan -> ImageSpan
-skewXImageWidth  :: th (a, a) -> a | Angle th & IsSpan a
-skewYImageHeight :: th (a, a) -> a | Angle th & IsSpan a
-rotatedImageSpanAndOriginOffset :: th (a, a) -> ((a, a), (a, a)) | Angle th & IsSpan a
+applyTransforms  :: ![ImageTransform] !ImageSpan -> ImageSpan
+skewXImageWidth  :: !th !(a, a) -> a | Angle th & IsSpan a
+skewYImageHeight :: !th !(a, a) -> a | Angle th & IsSpan a
+rotatedImageSpanAndOriginOffset :: !th !(a, a) -> ((a, a), (a, a)) | Angle th & IsSpan a
 
 :: Slash = Slash | Backslash
 
-radian :: Real -> Rad
-degree :: Real -> Deg
+radian :: !Real -> Rad
+degree :: !Real -> Deg
 
 :: Host m :== Maybe (Image m)
 
-overlay ::                          [ImageAlign] [ImageOffset] [Image m] (Host m) -> Image m
-beside  ::                              [YAlign] [ImageOffset] [Image m] (Host m) -> Image m
-above   ::                              [XAlign] [ImageOffset] [Image m] (Host m) -> Image m
-grid    :: GridDimension GridLayout [ImageAlign] [ImageOffset] [Image m] (Host m) -> Image m
-collage ::                                       [ImageOffset] [Image m] (Host m) -> Image m
+overlay ::                            ![ImageAlign] ![ImageOffset] ![Image m] !(Host m) -> Image m
+beside  ::                                ![YAlign] ![ImageOffset] ![Image m] !(Host m) -> Image m
+above   ::                                ![XAlign] ![ImageOffset] ![Image m] !(Host m) -> Image m
+grid    :: !GridDimension !GridLayout ![ImageAlign] ![ImageOffset] ![Image m] !(Host m) -> Image m
+collage ::                                          ![ImageOffset] ![Image m] !(Host m) -> Image m
 
 :: XAlign
   = AtLeft
@@ -204,8 +204,8 @@ collage ::                                       [ImageOffset] [Image m] (Host m
 
 
 class tuneImage attr :: (Image m) (attr m) -> Image m
-(<@<) infixl 2 :: (Image m) (attr m) -> Image m | tuneImage attr
-(>@>) infixr 2 :: (attr m) (Image m) -> Image m | tuneImage attr
+(<@<) infixl 2 :: !(Image m) !(attr m) -> Image m | tuneImage attr
+(>@>) infixr 2 :: !(attr m) !(Image m) -> Image m | tuneImage attr
 
 :: StrokeAttr        m = { stroke      :: SVGColor }
 :: StrokeWidthAttr   m = { strokewidth :: Span     }
@@ -230,8 +230,8 @@ class imageTag a :: a -> ImageTag
 instance imageTag Int
 instance imageTag String
 
-tag  :: [ImageTag] (Image m) -> Image m
-tags :: (Image m) -> [ImageTag]
+tag  :: ![ImageTag] !(Image m) -> Image m
+tags :: !(Image m) -> [ImageTag]
 
 instance == ImageTag
 instance <  ImageTag
@@ -251,3 +251,5 @@ instance toReal Rad
 
 instance Angle Deg
 instance Angle Rad
+
+isPxSpan :: !Span -> Bool
