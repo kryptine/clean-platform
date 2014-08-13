@@ -427,6 +427,10 @@ instance tuneImage StrokeAttr      where
   tuneImage image=:{Image | attribs} attr = {Image | image & attribs = updateOrAdd sameImageAttr (ImageStrokeAttr      attr) attribs}
 instance tuneImage StrokeWidthAttr where
   tuneImage image=:{Image | attribs} attr = {Image | image & attribs = updateOrAdd sameImageAttr (ImageStrokeWidthAttr attr) attribs}
+instance tuneImage XRadiusAttr where
+  tuneImage image=:{Image | attribs} attr = {Image | image & attribs = updateOrAdd sameImageAttr (ImageXRadiusAttr     attr) attribs}
+instance tuneImage YRadiusAttr where
+  tuneImage image=:{Image | attribs} attr = {Image | image & attribs = updateOrAdd sameImageAttr (ImageYRadiusAttr     attr) attribs}
 instance tuneImage FillAttr        where
   tuneImage image=:{Image | attribs} attr = {Image | image & attribs = updateOrAdd sameImageAttr (ImageFillAttr        attr) attribs}
 instance tuneImage OpacityAttr     where
@@ -443,6 +447,8 @@ instance tuneImage OnClickAttr     where
 consNameOf :: !(ImageAttr m) -> String
 consNameOf (ImageStrokeAttr      _) = "ImageStrokeAttr"
 consNameOf (ImageStrokeWidthAttr _) = "ImageStrokeWidthAttr"
+consNameOf (ImageXRadiusAttr     _) = "ImageXRadiusAttr"
+consNameOf (ImageYRadiusAttr     _) = "ImageYRadiusAttr"
 consNameOf (ImageFillAttr        _) = "ImageFillAttr"
 consNameOf (ImageFillOpacityAttr _) = "ImageFillOpacityAttr"
 consNameOf (ImageOnClickAttr     _) = "ImageOnClickAttr"

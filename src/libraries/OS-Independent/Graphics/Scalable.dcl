@@ -9,6 +9,7 @@ from Text.HTML import :: SVGColor
 from Data.Set import :: Set
 from StdOverloaded import class zero, class +, class -, class ~, class one, class abs, class <, class ==, class toReal
 
+// TODO Add margin and padding?
 :: Image m
   = { content   :: ImageContent m   // the image elements
     , attribs   :: [ImageAttr m]    // the image attributes
@@ -197,6 +198,8 @@ collage ::                                          ![ImageOffset] ![Image m] !(
 :: ImageAttr m
   = ImageStrokeAttr        (StrokeAttr      m)
   | ImageStrokeWidthAttr   (StrokeWidthAttr m)
+  | ImageXRadiusAttr       (XRadiusAttr     m)
+  | ImageYRadiusAttr       (YRadiusAttr     m)
   | ImageStrokeOpacityAttr (OpacityAttr     m)
   | ImageFillAttr          (FillAttr        m)
   | ImageFillOpacityAttr   (OpacityAttr     m)
@@ -209,11 +212,13 @@ class tuneImage attr :: (Image m) (attr m) -> Image m
 
 :: StrokeAttr        m = { stroke      :: SVGColor }
 :: StrokeWidthAttr   m = { strokewidth :: Span     }
+:: XRadiusAttr       m = { xradius     :: Span     }
+:: YRadiusAttr       m = { yradius     :: Span     }
 :: FillAttr          m = { fill        :: SVGColor }
 :: OpacityAttr       m = { opacity     :: Real     }
 :: OnClickAttr       m = { onclick     :: (m -> m) }
 
-instance tuneImage StrokeAttr, StrokeWidthAttr, FillAttr, OpacityAttr, OnClickAttr
+instance tuneImage StrokeAttr, StrokeWidthAttr, FillAttr, OpacityAttr, OnClickAttr, XRadiusAttr, YRadiusAttr
 
 class toSVGColor a :: a -> SVGColor
 instance toSVGColor String, RGB
