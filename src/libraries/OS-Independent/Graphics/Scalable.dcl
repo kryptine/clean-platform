@@ -133,9 +133,13 @@ class IsSpan a | zero a & one a & + a & - a & abs a & ~ a & *. a & /. a & maxOf 
 minSpan :: ![Span] -> Span // (minimum as) is the minimum of as (zero if as = [])
 maxSpan :: ![Span] -> Span // (maximum as) is the maximum of as (zero if as = [])
 
-marginTRBL :: !Span !Span !Span !Span !(Image m) -> Image m
-marginHV   :: !Span !Span !(Image m) -> Image m
-margin     :: !Span !(Image m) -> Image m
+class margin a where
+  margin :: !a !(Image m) -> Image m
+
+instance margin Span
+instance margin (Span, Span)
+instance margin (Span, Span, Span)
+instance margin (Span, Span, Span, Span)
 
 :: FontDef
   = { fontfamily  :: String

@@ -111,14 +111,20 @@ mkImage cnt =
   , margin    = (px 0.0, px 0.0, px 0.0, px 0.0)
   }
 
-marginTRBL :: !Span !Span !Span !Span !(Image m) -> Image m
-marginTRBL t r b l im = { im & margin = (t, r, b, l) }
+class margin a where
+  margin :: !a !(Image m) -> Image m
 
-marginHV :: !Span !Span !(Image m) -> Image m
-marginHV h v im = marginTRBL h v h v im
+instance margin Span where
+  margin sp im = margin (sp, sp, sp, sp) im
 
-margin :: !Span !(Image m) -> Image m
-margin m im = marginTRBL m m m m im
+instance margin (Span, Span) where
+  margin (sp1, sp2) im = margin (sp1, sp2, sp1, sp2) im
+
+instance margin (Span, Span, Span) where
+  margin (sp1, sp2, sp3) im = margin (sp1, sp2, sp3, sp2) im
+
+instance margin (Span, Span, Span, Span) where
+  margin sps im = { im & margin = sps }
 
 empty :: !Span !Span -> Image m
 empty xspan yspan = mkImage (Basic EmptyImage (maxSpan [zero, xspan], maxSpan [zero, yspan]))
