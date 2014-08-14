@@ -240,6 +240,7 @@ import StdString, Data.Maybe
 			| XmllangAttr		!String
 			| XmlspaceAttr		!String
 			| XmlnsAttr			!String
+			| XmlnsXlinkAttr	!String
 
 /**
 * This type provides an enumeration of (not yet) all SVG elements.
@@ -287,11 +288,15 @@ import StdString, Data.Maybe
                         | MarkerStartAttr         !String
                         | MarkerMidAttr           !String
                         | MarkerEndAttr           !String
+                        | MarkerHeightAttr        !SVGLength
+                        | MarkerWidthAttr         !SVGLength
                         | OffsetAttr              !String
                         | OrientAttr              !String
 						| PointsAttr              ![(String, String)]
 						| PreserveAspectRatioAttr !(Maybe SVGDefer) !(Maybe SVGAlign) !(Maybe SVGMeetOrSlice)
                         | RAttr                   !SVGLength
+                        | RefXAttr                !SVGLength
+                        | RefYAttr                !SVGLength
 						| RxAttr                  !SVGLength									// negative value is an error
 						| RyAttr                  !SVGLength									// negative value is an error
                         | StopColorAttr           !String

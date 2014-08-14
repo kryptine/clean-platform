@@ -242,6 +242,7 @@ attrSize (VspaceAttr a)			= 10 + (escapedSize a)
 attrSize (WidthAttr a)			=  9 + (escapedSize a)
 attrSize (XmllangAttr a)		= 12 + (escapedSize a)
 attrSize (XmlnsAttr a)			=  9 + (escapedSize a)
+attrSize (XmlnsXlinkAttr a)		= 15 + (escapedSize a)
 attrSize (XmlspaceAttr a)		= 13 + (escapedSize a)
 
 attrsSize :: ![HtmlAttr] -> Int
@@ -488,6 +489,7 @@ serializeAttr (VspaceAttr a) s i		= writeAttr "vspace" a s i
 serializeAttr (WidthAttr a) s i			= writeAttr "width" a s i
 serializeAttr (XmllangAttr a) s i		= writeAttr "xml:lang" a s i
 serializeAttr (XmlnsAttr a) s i			= writeAttr "xmlns" a s i
+serializeAttr (XmlnsXlinkAttr a) s i	= writeAttr "xmlns:xlink" a s i
 serializeAttr (XmlspaceAttr a) s i		= writeAttr "xml:space" a s i
 
 serializeAttrs :: ![HtmlAttr] !*{#Char} !Int -> (!*{#Char}, !Int)
@@ -647,6 +649,8 @@ svgAttrSize (LengthAdjustAttr        adjust)		= 16 + svgLengthAdjustSize adjust
 svgAttrSize (MarkerStartAttr         m)				= 12 + size m
 svgAttrSize (MarkerMidAttr           m)				=  9 + size m
 svgAttrSize (MarkerEndAttr           m)				=  9 + size m
+svgAttrSize (MarkerHeightAttr        m)				= 11 + svgLengthSize m
+svgAttrSize (MarkerWidthAttr         m)				= 11 + svgLengthSize m
 svgAttrSize (OffsetAttr              offset)		= 10 + size offset
 svgAttrSize (OrientAttr              orient)		= 10 + size orient
 svgAttrSize (PointsAttr              points)		= 10 + (foldr (\(x, y) acc -> size x + size y + acc + 1) 0 points + (length points - 1))
@@ -660,6 +664,8 @@ svgAttrSize (PreserveAspectRatioAttr md ma mms)		= 23 + case md of
 													     	Just mos      = 1 + svgMeetOrSliceSize mos
 													     	nothing       = 0
 svgAttrSize (RAttr                   length)		=  5 + svgLengthSize length
+svgAttrSize (RefXAttr                length)		=  9 + svgLengthSize length
+svgAttrSize (RefYAttr                length)		=  9 + svgLengthSize length
 svgAttrSize (RxAttr                  length)		=  6 + svgLengthSize length
 svgAttrSize (RyAttr                  length)		=  6 + svgLengthSize length
 svgAttrSize (StopColorAttr           color)			= 14 + size color
@@ -938,6 +944,8 @@ serializeSVGAttr (LengthAdjustAttr        adjust)    s i = writeAttr "lengthAdju
 serializeSVGAttr (MarkerStartAttr         m)         s i = writeAttr "marker-start"        m s i
 serializeSVGAttr (MarkerMidAttr           m)         s i = writeAttr "marker-mid"          m s i
 serializeSVGAttr (MarkerEndAttr           m)         s i = writeAttr "marker-end"          m s i
+serializeSVGAttr (MarkerHeightAttr        m)         s i = writeAttr "markerHeight"        (toString m) s i
+serializeSVGAttr (MarkerWidthAttr         m)         s i = writeAttr "markerWidth"         (toString m) s i
 serializeSVGAttr (OffsetAttr              offset)    s i = writeAttr "offset"              offset            s i
 serializeSVGAttr (OrientAttr              orient)    s i = writeAttr "orient"              orient            s i
 serializeSVGAttr (PointsAttr              points)    s i = writeAttr "points"              (foldr (+++) "" (intersperse " " (map (\(x, y) -> x +++ "," +++ y) points))) s i
@@ -952,6 +960,8 @@ serializeSVGAttr (PreserveAspectRatioAttr md ma mms) s i = writeAttr "preserveAs
 														                                         Just ms = " " +++ toString ms
 														                                   ) s i
 serializeSVGAttr (RAttr                   length)    s i = writeAttr "r"                   (toString length) s i
+serializeSVGAttr (RefXAttr                length)    s i = writeAttr "refX"                (toString length) s i
+serializeSVGAttr (RefYAttr                length)    s i = writeAttr "refY"                (toString length) s i
 serializeSVGAttr (RxAttr                  length)    s i = writeAttr "rx"                  (toString length) s i
 serializeSVGAttr (RyAttr                  length)    s i = writeAttr "ry"                  (toString length) s i
 serializeSVGAttr (StopColorAttr           color)     s i = writeAttr "stop-color"          color             s i
