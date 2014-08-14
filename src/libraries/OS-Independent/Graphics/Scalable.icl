@@ -135,8 +135,7 @@ text font str = mkImage (Basic (TextImage font str) (textxspan font str, font.Fo
 circle :: !Span -> Image m
 circle diameter
   = { mkImage (Basic CircleImage (d, d))
-    & attribs = [ ImageStrokeAttr      {stroke      = toSVGColor "black"}
-                , ImageStrokeWidthAttr {strokewidth = px 1.0}
+    & attribs = [ ImageStrokeWidthAttr {strokewidth = px 0.0}
                 , ImageFillAttr        {fill        = toSVGColor "black"}
                 , ImageFillOpacityAttr {opacity     = 1.0}
                 ]
@@ -147,8 +146,7 @@ circle diameter
 ellipse :: !Span !Span -> Image m
 ellipse diax diay
   = { mkImage (Basic EllipseImage (maxSpan [zero, diax], maxSpan [zero, diay]))
-    & attribs = [ ImageStrokeAttr      {stroke      = toSVGColor "black"}
-                , ImageStrokeWidthAttr {strokewidth = px 1.0}
+    & attribs = [ ImageStrokeWidthAttr {strokewidth = px 0.0}
                 , ImageFillAttr        {fill        = toSVGColor "black"}
                 , ImageFillOpacityAttr {opacity     = 1.0}
                 ]
@@ -157,8 +155,7 @@ ellipse diax diay
 rect :: !Span !Span -> Image m
 rect xspan yspan
   = { mkImage (Basic RectImage (maxSpan [zero, xspan], maxSpan [zero, yspan]))
-    & attribs = [ ImageStrokeAttr      {stroke      = toSVGColor "black"}
-                , ImageStrokeWidthAttr {strokewidth = px 1.0}
+    & attribs = [ ImageStrokeWidthAttr {strokewidth = px 0.0}
                 , ImageFillAttr        {fill        = toSVGColor "black"}
                 , ImageFillOpacityAttr {opacity     = 1.0}
                 ]
