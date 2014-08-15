@@ -8,8 +8,8 @@ class Monoid a where
   mempty :: a
   mappend :: a a -> a
 
-mconcat        :: .[a] -> a | Monoid a
-(<>) infixr 6  :: a a -> a | Monoid a
+mconcat         :: .[a] -> a | Monoid a
+(<++>) infixr 6 :: a a -> a | Monoid a
 
 instance Monoid [a]
 instance Monoid (a -> b) | Monoid b

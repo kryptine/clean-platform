@@ -14,8 +14,8 @@ class Monoid a where
 mconcat :: .[a] -> a | Monoid a
 mconcat xs = foldr mappend mempty xs
 
-(<>) infixr 6 :: a a -> a | Monoid a
-(<>) ma mb = mappend ma mb
+(<++>) infixr 6 :: a a -> a | Monoid a
+(<++>) ma mb = mappend ma mb
 
 instance Monoid [a] where
   mempty         = []
