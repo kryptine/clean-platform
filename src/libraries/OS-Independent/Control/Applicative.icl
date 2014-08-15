@@ -1,7 +1,41 @@
 implementation module Control.Applicative
 
+import Control.Monad
 import Data.Func, Data.Functor, System.IO, Data.List, Data.Maybe
-import StdFunc
+from Data.Monoid import class Monoid
+import qualified Data.Monoid as DM
+from StdFunc import id, o, flip, const
+
+getConst :: (Const a b) -> a
+getConst (Const x) = x
+
+instance Functor (Const m) where
+    fmap _ (Const v) = Const v
+
+instance Monoid (Const a b) | Monoid a where
+    mempty = Const 'DM'.mempty
+    mappend (Const a) (Const b) = Const ('DM'.mappend a b)
+
+instance Applicative (Const m) | Monoid m where
+    pure _ = Const 'DM'.mempty
+    (<*>) (Const f) (Const v) = Const ('DM'.mappend f v)
+
+unwrapMonad :: (WrappedMonad m a) -> m a
+unwrapMonad (WrapMonad x) = x
+
+instance Functor (WrappedMonad m) | Monad m where
+    fmap f (WrapMonad v) = WrapMonad (liftM f v)
+
+instance Applicative (WrappedMonad m) | Monad m where
+    pure x = WrapMonad (pure x)
+    (<*>) (WrapMonad f) (WrapMonad v) = WrapMonad (ap f v)
+
+instance Monad (WrappedMonad m) | Monad m where
+    (>>=) a f = WrapMonad (unwrapMonad a >>= unwrapMonad o f)
+
+instance Alternative (WrappedMonad m) | MonadPlus m where
+    empty = WrapMonad mzero
+    (<|>) (WrapMonad u) (WrapMonad v) = WrapMonad (mplus u v)
 
 instance Applicative ((->) r) where
   pure x      = const x
