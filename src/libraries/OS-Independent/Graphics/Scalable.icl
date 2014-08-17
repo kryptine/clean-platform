@@ -267,9 +267,7 @@ applyTransforms ts sp = foldr f sp ts
 // @param (th | Angle th)     angle          The angle of rotation
 // @param ((a, a) | IsSpan a) (xspan, yspan) The original x and y spans of the
 //                                           non-rotated image
-// @return ( (a, a)   The span of the rotated image
-//         , (a, a))  The difference between the transformed top-left
-//         | IsSpan a coordinate and the maximum coordinate
+// @return (a, a) | IsSpan a                 The span of the rotated image
 rotatedImageSpanAndOriginOffset :: !th !(a, a) -> (a, a) | Angle th & IsSpan a
 rotatedImageSpanAndOriginOffset angle (xspan, yspan)
   = ( ( abs (maxAllX - minAllX)
