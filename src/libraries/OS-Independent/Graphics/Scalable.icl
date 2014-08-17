@@ -7,7 +7,8 @@ from StdOrdList import minList, maxList
 from StdOverloaded import class toReal
 import Data.List
 import Data.Maybe
-from Data.Set import :: Set
+from Data.Set import :: Set, instance == (Set a), instance < (Set a)
+from StdBool import &&
 import qualified Data.Set as DS
 import Text.HTML
 
@@ -245,7 +246,7 @@ fity yspan image=:{Image | transform = ts}
 applyTransforms :: ![ImageTransform] !ImageSpan -> ImageSpan
 applyTransforms ts sp = foldr f sp ts
   where
-  f (RotateImage th)   accSp           = fst (rotatedImageSpanAndOriginOffset th accSp)
+  f (RotateImage th)   accSp           = (rotatedImageSpanAndOriginOffset th accSp)
   f (SkewXImage th)    accSp=:(_, ysp) = (skewXImageWidth th accSp, ysp)
   f (SkewYImage th)    accSp=:(xsp, _) = (xsp, skewYImageHeight th accSp)
   f (FitImage xsp ysp) _               = (xsp, ysp)
@@ -269,12 +270,10 @@ applyTransforms ts sp = foldr f sp ts
 // @return ( (a, a)   The span of the rotated image
 //         , (a, a))  The difference between the transformed top-left
 //         | IsSpan a coordinate and the maximum coordinate
-rotatedImageSpanAndOriginOffset :: !th !(a, a) -> ((a, a), (a, a)) | Angle th & IsSpan a
+rotatedImageSpanAndOriginOffset :: !th !(a, a) -> (a, a) | Angle th & IsSpan a
 rotatedImageSpanAndOriginOffset angle (xspan, yspan)
   = ( ( abs (maxAllX - minAllX)
       , abs (maxAllY - minAllY))
-    , ( maxAllX - fst tTopLeft
-      , maxAllY - snd tTopLeft)
     )
   where
   cx        = xspan /. 2.0
@@ -349,13 +348,18 @@ degree d = Deg d
 
 pi =: 3.14159265359
 
+mkEdges :: [Edge] -> Set (Set ImageTag, Set ImageTag)
+mkEdges edges = 'DS'.fromList (map (\(xs, ys) -> ('DS'.fromList xs, 'DS'.fromList ys)) edges)
+
 overlay :: ![ImageAlign] ![ImageOffset] ![Image m] !(Host m) -> Image m
 overlay _ _ [] (Just img) = img
 overlay _ _ [] _          = empty zero zero
 overlay aligns offsets imgs host
   = mkImage (Composite { offsets = take l offsets
                        , host    = host
-                       , compose = AsOverlay (take l aligns) imgs })
+                       , compose = AsOverlay (take l aligns) imgs
+                       , edges   = 'DS'.newSet
+                       })
   where
   l = length imgs
 
@@ -378,6 +382,7 @@ grid dimension layout aligns offsets imgs host
   = mkImage (Composite { offsets = take noOfImgs offsets
                        , host    = host
                        , compose = AsGrid (cols, rows) (take noOfImgs aligns) imgs`
+                       , edges   = 'DS'.newSet
                        })
   where
   noOfImgs     = length imgs
@@ -396,7 +401,7 @@ grid dimension layout aligns offsets imgs host
   isRowMajor (Rows _) = True
   isRowMajor _        = False
 
-  arrangeLayout :: GridLayout [[a]] -> [[a]]
+  arrangeLayout :: !GridLayout [[a]] -> [[a]]
   arrangeLayout (LeftToRight, TopToBottom) xs = xs
   arrangeLayout (RightToLeft, TopToBottom) xs = map reverse xs
   arrangeLayout (LeftToRight, BottomToTop) xs = reverse xs
@@ -406,7 +411,13 @@ collage :: ![ImageOffset] ![Image m] !(Host m) -> Image m
 collage offsets imgs host
   = mkImage (Composite { offsets = take (length imgs) offsets
                        , host    = host
-                       , compose = AsCollage imgs})
+                       , compose = AsCollage imgs
+                       , edges   = 'DS'.newSet
+                       })
+
+addEdge :: ![ImageTag] ![ImageTag] !(Image m) -> Image m
+addEdge fromTags toTags img=:{content = Composite c=:{ edges }} = { img & content = Composite {c & edges = 'DS'.insert ('DS'.fromList fromTags, 'DS'.fromList toTags) edges }}
+addEdge fromTags toTags img                                     = img
 
 instance tuneImage StrokeAttr      where
   tuneImage image=:{Image | attribs} attr = {Image | image & attribs = updateOrAdd sameImageAttr (ImageStrokeAttr      attr) attribs}
@@ -462,6 +473,14 @@ instance <  ImageTag     where <  (ImageTagInt    n1) (ImageTagInt    n2) = n1 <
                                <  (ImageTagString _)  (ImageTagSystem _)  = True
                                <  (ImageTagSystem s1) (ImageTagSystem s2) = s1 < s2
                                <  _                   _                   = False
+
+instance < (a, b) | < a & < b where
+  (<) (x1, x2) (y1, y2) = x1 < y1 && x2 < y2
+
+instance == (a, b) | == a & == b where
+  (==) (x1, x2) (y1, y2) = x1 == y1 && x2 == y2
+
+undef = undef
 
 tag :: ![ImageTag] !(Image m) -> Image m
 tag ts image=:{Image | tags} = {Image | image & tags = 'DS'.union tags ('DS'.fromList ts)}

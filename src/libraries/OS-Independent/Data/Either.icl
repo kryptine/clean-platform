@@ -14,8 +14,8 @@ instance Applicative (Either e) where
   (<*>) (Right f) r = fmap f r
 
 instance Monad (Either e) where
-    (>>=) (Left  l) _ = Left l
-    (>>=) (Right r) k = k r
+  bind (Left  l) _ = Left l
+  bind (Right r) k = k r
 
 either :: (a -> c) (b -> c) (Either a b) -> c
 either f _ (Left x)     =  f x

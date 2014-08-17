@@ -10,27 +10,30 @@ from StdFunc              import flip, id, o, const
 from StdInt               import class +, instance + Int
 
 instance Monad ((->) r) where
-  (>>=) ma a2mb = \r -> a2mb (ma r) r
+  bind ma a2mb = \r -> a2mb (ma r) r
 
 instance Monad [] where
-  (>>=) m k = foldr ((++) o k) [] m
+  bind m k = foldr ((++) o k) [] m
 
 instance Monad Maybe where
-  (>>=) (Just x) k  = k x
-  (>>=) Nothing  _  = Nothing
+  bind (Just x) k  = k x
+  bind Nothing  _  = Nothing
 
 instance MonadPlus [] where
-   mzero        = []
-   mplus xs ys  = xs ++ ys
+  mzero        = []
+  mplus xs ys  = xs ++ ys
 
 instance MonadPlus Maybe where
-   mzero = Nothing
+  mzero = Nothing
 
-   mplus Nothing ys  = ys
-   mplus xs      _   = xs
+  mplus Nothing ys  = ys
+  mplus xs      _   = xs
 
 return :: a -> m a | Monad m
 return x = pure x
+
+(>>=) infixl 1 :: (m a) (a -> m b) -> m b | Monad m
+(>>=) ma a2mb = bind ma a2mb
 
 (>>|) infixl 1 :: (m a) (m b) -> m b | Monad m
 (>>|) ma mb = ma >>= \_ -> mb

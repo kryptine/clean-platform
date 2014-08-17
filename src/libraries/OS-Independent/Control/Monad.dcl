@@ -6,7 +6,7 @@ from Data.Maybe           import :: Maybe
 from Data.Void            import :: Void
 
 class Monad m | Applicative m where
-  (>>=) infixl 1 :: (m a) (a -> m b) -> m b
+  bind :: (m a) (a -> m b) -> m b
 
 instance Monad ((->) r)
 
@@ -23,6 +23,7 @@ instance MonadPlus []
 instance MonadPlus Maybe
 
 return            :: a -> m a | Monad m
+(>>=) infixl 1    :: (m a) (a -> m b) -> m b | Monad m
 (>>|) infixl 1    :: (m a) (m b) -> m b | Monad m
 (=<<) infixr 1    :: (a -> m b) (m a) -> m b | Monad m
 sequence          :: .[a b] -> a [b] | Monad a

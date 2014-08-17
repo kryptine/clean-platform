@@ -9,7 +9,6 @@ from Text.HTML import :: SVGColor
 from Data.Set import :: Set
 from StdOverloaded import class zero, class +, class -, class ~, class one, class abs, class <, class ==, class toReal
 
-// TODO Add margin and padding?
 :: Image m
   = { content   :: ImageContent m           // the image elements
     , attribs   :: [ImageAttr m]            // the image attributes
@@ -74,6 +73,8 @@ from StdOverloaded import class zero, class +, class -, class ~, class one, clas
 
 :: ImageSpan :== (Span, Span)
 
+:: Edge :== ([ImageTag], [ImageTag])
+
 :: BasicImage
   = EmptyImage
   | TextImage FontDef String
@@ -85,6 +86,7 @@ from StdOverloaded import class zero, class +, class -, class ~, class one, clas
   = { offsets :: [ImageOffset]
     , host    :: Host m
     , compose :: Compose m
+    , edges   :: Set (Set ImageTag, Set ImageTag)
     }
 
 :: LookupSpan
@@ -138,7 +140,7 @@ class margin a where
 
 instance margin Span                     // Margin is the same span on all sides
 instance margin (Span, Span)             // (h, v) Margin is h on top and bottom and v on left and right
-instance margin (Span, Span, Span)       // (t, v, b) Margin is t on top, v on left and right and b on bottom
+instance margin (Span, Span, Span)       // (t, h, b) Margin is t on top, v on left and right and b on bottom
 instance margin (Span, Span, Span, Span) // (t, r, b, l) Margin is t on top, r on the right, b on the bottom and l on the left
 
 :: FontDef
@@ -172,7 +174,7 @@ skewy   :: !th         !(Image m) -> Image m | Angle th
 applyTransforms  :: ![ImageTransform] !ImageSpan -> ImageSpan
 skewXImageWidth  :: !th !(a, a) -> a | Angle th & IsSpan a
 skewYImageHeight :: !th !(a, a) -> a | Angle th & IsSpan a
-rotatedImageSpanAndOriginOffset :: !th !(a, a) -> ((a, a), (a, a)) | Angle th & IsSpan a
+rotatedImageSpanAndOriginOffset :: !th !(a, a) -> (a, a) | Angle th & IsSpan a
 
 :: Slash = Slash | Backslash
 
@@ -186,6 +188,8 @@ beside  ::                                ![YAlign] ![ImageOffset] ![Image m] !(
 above   ::                                ![XAlign] ![ImageOffset] ![Image m] !(Host m) -> Image m
 grid    :: !GridDimension !GridLayout ![ImageAlign] ![ImageOffset] ![Image m] !(Host m) -> Image m
 collage ::                                          ![ImageOffset] ![Image m] !(Host m) -> Image m
+
+addEdge :: ![ImageTag] ![ImageTag] !(Image m) -> Image m
 
 :: XAlign
   = AtLeft

@@ -26,7 +26,7 @@ instance Functor IO where
   fmap f x = x >>= (lift o f)
 
 instance Monad IO where
-  (>>=) (IO f) a2mb = IO run
+  bind (IO f) a2mb = IO run
     where
       run world
         # (x, world) = f world
