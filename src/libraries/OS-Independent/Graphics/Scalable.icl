@@ -246,7 +246,7 @@ fity yspan image=:{Image | transform = ts}
 applyTransforms :: ![ImageTransform] !ImageSpan -> ImageSpan
 applyTransforms ts sp = foldr f sp ts
   where
-  f (RotateImage th)   accSp           = (rotatedImageSpanAndOriginOffset th accSp)
+  f (RotateImage th)   accSp           = rotatedImageSpan th accSp
   f (SkewXImage th)    accSp=:(_, ysp) = (skewXImageWidth th accSp, ysp)
   f (SkewYImage th)    accSp=:(xsp, _) = (xsp, skewYImageHeight th accSp)
   f (FitImage xsp ysp) _               = (xsp, ysp)
@@ -264,20 +264,18 @@ applyTransforms ts sp = foldr f sp ts
 // resulting bounding box is bigger still, because the new bounding box was
 // rotated.
 //
-// @param (th | Angle th)     angle          The angle of rotation
-// @param ((a, a) | IsSpan a) (xspan, yspan) The original x and y spans of the
-//                                           non-rotated image
-// @return (a, a) | IsSpan a                 The span of the rotated image
-rotatedImageSpanAndOriginOffset :: !th !(a, a) -> (a, a) | Angle th & IsSpan a
-rotatedImageSpanAndOriginOffset angle (xspan, yspan)
-  = ( ( abs (maxAllX - minAllX)
-      , abs (maxAllY - minAllY))
-    )
+// @param th | Angle th      angle          The angle of rotation
+// @param (a, a) | IsSpan a  (xspan, yspan) The original x and y spans of the
+//                                          non-rotated image
+// @return (a, a) | IsSpan a                The span of the rotated image
+rotatedImageSpan :: !th !(a, a) -> (a, a) | Angle th & IsSpan a
+rotatedImageSpan angle (xspan, yspan)
+  = ( abs (maxAllX - minAllX)
+    , abs (maxAllY - minAllY))
   where
   cx        = xspan /. 2.0
   cy        = yspan /. 2.0
-  tTopLeft  = mkTransform zero zero
-  allPoints = [ tTopLeft
+  allPoints = [ mkTransform zero  zero
               , mkTransform xspan zero
               , mkTransform zero  yspan
               , mkTransform xspan yspan ]

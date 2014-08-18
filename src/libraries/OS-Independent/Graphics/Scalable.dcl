@@ -174,7 +174,7 @@ skewy   :: !th         !(Image m) -> Image m | Angle th
 applyTransforms  :: ![ImageTransform] !ImageSpan -> ImageSpan
 skewXImageWidth  :: !th !(a, a) -> a | Angle th & IsSpan a
 skewYImageHeight :: !th !(a, a) -> a | Angle th & IsSpan a
-rotatedImageSpanAndOriginOffset :: !th !(a, a) -> (a, a) | Angle th & IsSpan a
+rotatedImageSpan :: !th !(a, a) -> (a, a) | Angle th & IsSpan a
 
 :: Slash = Slash | Backslash
 
