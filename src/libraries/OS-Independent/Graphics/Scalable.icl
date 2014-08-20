@@ -243,15 +243,18 @@ fity yspan image=:{Image | transform = ts}
              [FitYImage _ : ts] = [FitYImage yspan` : ts]
              ts                 = [FitYImage yspan` : ts]
 
-applyTransforms :: ![ImageTransform] !ImageSpan -> ImageSpan
-applyTransforms ts sp = foldr f sp ts
+applyTransforms :: ![ImageTransform] !ImageSpan -> (ImageSpan, ImageOffset)
+applyTransforms ts sp = foldr f (sp, (px 0.0, px 0.0)) ts
   where
-  f (RotateImage th)   accSp           = rotatedImageSpan th accSp
-  f (SkewXImage th)    accSp=:(_, ysp) = (skewXImageWidth th accSp, ysp)
-  f (SkewYImage th)    accSp=:(xsp, _) = (xsp, skewYImageHeight th accSp)
-  f (FitImage xsp ysp) _               = (xsp, ysp)
-  f (FitXImage sp)     (_, ysp)        = (sp, ysp)
-  f (FitYImage sp)     (xsp, _)        = (xsp, sp)
+  // TODO Accumulate offsets
+  f (RotateImage th)   (accSp          , accOff)
+    # (imSp, offs) = rotatedImageSpan th accSp
+    = (imSp, accOff + offs)
+  f (SkewXImage th)    (accSp=:(_, ysp), accOff) = ((skewXImageWidth th accSp, ysp), accOff)
+  f (SkewYImage th)    (accSp=:(xsp, _), accOff) = ((xsp, skewYImageHeight th accSp), accOff)
+  f (FitImage xsp ysp) (_              , accOff) = ((xsp, ysp), accOff)
+  f (FitXImage sp)     ((_, ysp)       , accOff) = ((sp, ysp),  accOff)
+  f (FitYImage sp)     ((xsp, _)       , accOff) = ((xsp, sp),  accOff)
 
 // Rotates a rectangle by a given angle. Currently, this function is rather
 // naive. It rotates the rectangle (usually the bounding box of a shape) around
@@ -267,11 +270,14 @@ applyTransforms ts sp = foldr f sp ts
 // @param th | Angle th      angle          The angle of rotation
 // @param (a, a) | IsSpan a  (xspan, yspan) The original x and y spans of the
 //                                          non-rotated image
-// @return (a, a) | IsSpan a                The span of the rotated image
-rotatedImageSpan :: !th !(a, a) -> (a, a) | Angle th & IsSpan a
+// @return ((a, a), (a, a)) | IsSpan a      The span of the rotated image and
+//                                          the offset from between the old and
+//                                          new top-left corner of the bounding
+//                                          box
+rotatedImageSpan :: !th !(a, a) -> ((a, a), (a, a)) | Angle th & IsSpan a
 rotatedImageSpan angle (xspan, yspan)
-  = ( abs (maxAllX - minAllX)
-    , abs (maxAllY - minAllY))
+  = ( (abs (maxAllX - minAllX), abs (maxAllY - minAllY))
+    , (zero - minAllX, zero - minAllY))
   where
   cx        = xspan /. 2.0
   cy        = yspan /. 2.0
@@ -286,11 +292,13 @@ rotatedImageSpan angle (xspan, yspan)
   maxAllY   = maxOf allY
   minAllY   = minOf allY
   angle`    = toReal (toRad angle)
-  mkTransform x y = ( ((x - cx) *. cos angle`) - ((y - cy) *. sin angle`)
-                    , ((x - cx) *. sin angle`) + ((y - cy) *. cos angle`))
+  mkTransform x y = ( cx + (x - cx) *. cos angle` + (y - cy) *. sin angle`
+                    , cy - (x - cx) *. sin angle` + (y - cy) *. cos angle`)
 
 // Skew an image by a given angle. This function is naive as well, for the same
 // reasons as the rotation function.
+// TODO : We need to calculate the difference between the original and skewed
+// top-left coordinate here as well, because we need it in grid layouts
 //
 // @param (th | Angle th)     angle          The skew angle
 // @param ((a, a) | IsSpan a) (xspan, yspan) The original x and y spans of the
@@ -301,6 +309,8 @@ skewXImageWidth angle (xspan, yspan) = xspan + (abs (yspan *. tan (toReal (toRad
 
 // Skew an image by a given angle. This function is naive as well, for the same
 // reasons as the rotation function.
+// TODO : We need to calculate the difference between the original and skewed
+// top-left coordinate here as well, because we need it in grid layouts
 //
 // @param (th | Angle th)     angle          The skew angle
 // @param ((a, a) | IsSpan a) (xspan, yspan) The original x and y spans of the
