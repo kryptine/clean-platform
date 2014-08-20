@@ -250,8 +250,12 @@ applyTransforms ts sp = foldr f (sp, (px 0.0, px 0.0)) ts
   f (RotateImage th)   (accSp          , accOff)
     # (imSp, offs) = rotatedImageSpan th accSp
     = (imSp, accOff + offs)
-  f (SkewXImage th)    (accSp=:(_, ysp), accOff) = ((skewXImageWidth th accSp, ysp), accOff)
-  f (SkewYImage th)    (accSp=:(xsp, _), accOff) = ((xsp, skewYImageHeight th accSp), accOff)
+  f (SkewXImage th)    (accSp=:(_, ysp), (xoff, yoff))
+    # (xsp, offs) = skewXImageWidth th accSp
+    = ((xsp, ysp), (xoff + offs, yoff))
+  f (SkewYImage th)    (accSp=:(xsp, _), (xoff, yoff))
+    # (ysp, offs) = skewYImageHeight th accSp
+    = ((xsp, ysp), (xoff, yoff + offs))
   f (FitImage xsp ysp) (_              , accOff) = ((xsp, ysp), accOff)
   f (FitXImage sp)     ((_, ysp)       , accOff) = ((sp, ysp),  accOff)
   f (FitYImage sp)     ((xsp, _)       , accOff) = ((xsp, sp),  accOff)
@@ -303,9 +307,16 @@ rotatedImageSpan angle (xspan, yspan)
 // @param (th | Angle th)     angle          The skew angle
 // @param ((a, a) | IsSpan a) (xspan, yspan) The original x and y spans of the
 //                                           non-skewed image
-// @return (a | IsSpan a) The new width of the skewed image
-skewXImageWidth :: !th !(a, a) -> a | Angle th & IsSpan a
-skewXImageWidth angle (xspan, yspan) = xspan + (abs (yspan *. tan (toReal (toRad angle))))
+// @return ((a, a) | IsSpan a) The new width of the skewed image and possible offset
+skewXImageWidth :: !th !(a, a) -> (a, a) | Angle th & IsSpan a
+skewXImageWidth angle (xspan, yspan) = (newXSpan, mkOffset)
+  where
+  rAngle   = toReal (toRad angle)
+  newXSpan = xspan + (abs (yspan *. tan rAngle))
+  spanDiff = newXSpan - xspan
+  mkOffset
+    | rAngle <= 0.0 = zero - spanDiff
+    | otherwise     = spanDiff
 
 // Skew an image by a given angle. This function is naive as well, for the same
 // reasons as the rotation function.
@@ -315,9 +326,16 @@ skewXImageWidth angle (xspan, yspan) = xspan + (abs (yspan *. tan (toReal (toRad
 // @param (th | Angle th)     angle          The skew angle
 // @param ((a, a) | IsSpan a) (xspan, yspan) The original x and y spans of the
 //                                           non-skewed image
-// @return (a | IsSpan a) The new height of the skewed image
-skewYImageHeight :: !th !(a, a) -> a | Angle th & IsSpan a
-skewYImageHeight angle (xspan, yspan) = yspan + (abs (xspan *. tan (toReal (toRad (angle)))))
+// @return ((a, a) | IsSpan a) The new height of the skewed image and possible offset
+skewYImageHeight :: !th !(a, a) -> (a, a) | Angle th & IsSpan a
+skewYImageHeight angle (xspan, yspan) = (newYSpan, mkOffset)
+  where
+  rAngle   = toReal (toRad angle)
+  newYSpan = yspan + (abs (xspan *. tan rAngle))
+  spanDiff = newYSpan - xspan
+  mkOffset
+    | rAngle <= 0.0 = zero - spanDiff
+    | otherwise     = spanDiff
 
 
 skewx :: !th !(Image m) -> Image m | Angle th
