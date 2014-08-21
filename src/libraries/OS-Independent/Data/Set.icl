@@ -5,6 +5,15 @@ import Data.Maybe
 
 :: Ordering = LT | GT | EQ
 
+product s1 s2 = fold (\x acc -> acc) newSet s1
+
+mapSet :: (a -> b) (Set a) -> Set b | < a & == a & < b & == b
+mapSet f s = fromList (map f (toList s))
+
+mapSetMonotonic :: (a -> b) (Set a) -> Set b
+mapSetMonotonic _ Tip = Tip
+mapSetMonotonic f (Bin n x l r) = Bin n (f x) (mapSetMonotonic f l) (mapSetMonotonic f r)
+
 compare :: a a -> Ordering | < a & == a
 compare x y = if (x<y) LT (if (x>y) GT EQ)
 

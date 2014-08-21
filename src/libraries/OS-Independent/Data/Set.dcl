@@ -124,3 +124,6 @@ toList :: (Set a) -> [a]
 // Create a set from a list of elements.
 fromList :: [a] -> Set a | < a & == a
 
+mapSet :: (a -> b) (Set a) -> Set b | < a & == a & < b & == b
+
+mapSetMonotonic :: (a -> b) (Set a) -> Set b
