@@ -1,11 +1,9 @@
 implementation module Data.Set
 
-import StdClass, StdMisc, StdBool, StdList, StdFunc, StdInt
+import StdClass, StdMisc, StdBool, StdList, StdFunc, StdInt, StdTuple
 import Data.Maybe
 
 :: Ordering = LT | GT | EQ
-
-product s1 s2 = fold (\x acc -> acc) newSet s1
 
 mapSet :: (a -> b) (Set a) -> Set b | < a & == a & < b & == b
 mapSet f s = fromList (map f (toList s))
