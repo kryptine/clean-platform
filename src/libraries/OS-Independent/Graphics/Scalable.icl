@@ -105,11 +105,13 @@ maxSpan as
 
 mkImage :: (ImageContent m) -> Image m
 mkImage cnt =
-  { content   = cnt
-  , attribs   = []
-  , transform = []
-  , tags      = 'DS'.newSet
-  , margin    = (px 0.0, px 0.0, px 0.0, px 0.0)
+  { content    = cnt
+  , attribs    = []
+  , transform  = []
+  , tags       = 'DS'.newSet
+  , margin     = (px 0.0, px 0.0, px 0.0, px 0.0)
+  , offset     = (px 0.0, px 0.0)
+  , connectors = []
   }
 
 class margin a where
@@ -246,7 +248,6 @@ fity yspan image=:{Image | transform = ts}
 applyTransforms :: ![ImageTransform] !ImageSpan -> (ImageSpan, ImageOffset)
 applyTransforms ts sp = foldr f (sp, (px 0.0, px 0.0)) ts
   where
-  // TODO Accumulate offsets
   f (RotateImage th)   (accSp          , accOff)
     # (imSp, offs) = rotatedImageSpan th accSp
     = (imSp, accOff + offs)

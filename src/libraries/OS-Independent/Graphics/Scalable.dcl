@@ -10,11 +10,13 @@ from Data.Set import :: Set
 from StdOverloaded import class zero, class +, class -, class ~, class one, class abs, class <, class ==, class toReal
 
 :: Image m
-  = { content   :: ImageContent m           // the image elements
-    , attribs   :: [ImageAttr m]            // the image attributes
-    , transform :: [ImageTransform]         // [t_1, ..., t_n] transforms the image as t_1 o ... o t_n
-    , tags      :: Set ImageTag             // set of tags
-    , margin    :: (Span, Span, Span, Span) // Image margin
+  = { content    :: ImageContent m           // the image elements
+    , attribs    :: [ImageAttr m]            // the image attributes
+    , transform  :: [ImageTransform]         // [t_1, ..., t_n] transforms the image as t_1 o ... o t_n
+    , tags       :: Set ImageTag             // set of tags
+    , margin     :: (Span, Span, Span, Span) // Image margin
+    , offset     :: ImageOffset              // Image offset after layouting. Is (0, 0) initially
+    , connectors :: [Connector]              // Connector point to which lines may be attached
     }
 
 :: ImageTransform
@@ -72,6 +74,8 @@ from StdOverloaded import class zero, class +, class -, class ~, class one, clas
   | MaxSpan    [Span]     // (MaxSpan as) is maximum span value in as
 
 :: ImageSpan :== (Span, Span)
+
+:: Connector :== (Span, Span)
 
 :: Edge :== ([ImageTag], [ImageTag])
 
