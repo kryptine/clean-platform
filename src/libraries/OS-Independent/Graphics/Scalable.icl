@@ -105,14 +105,15 @@ maxSpan as
 
 mkImage :: (ImageContent m) -> Image m
 mkImage cnt =
-  { content    = cnt
-  , attribs    = []
-  , transform  = []
-  , tags       = 'DS'.newSet
-  , totalSpan  = (px 0.0, px 0.0)
-  , margin     = (px 0.0, px 0.0, px 0.0, px 0.0)
-  , offset     = (px 0.0, px 0.0)
-  , connectors = []
+  { content             = cnt
+  , attribs             = []
+  , transform           = []
+  , tags                = 'DS'.newSet
+  , totalSpan           = (px 0.0, px 0.0)
+  , margin              = (px 0.0, px 0.0, px 0.0, px 0.0)
+  , finalOffset         = (px 0.0, px 0.0)
+  , transformCorrection = (px 0.0, px 0.0)
+  , connectors          = []
   }
 
 class margin a where
