@@ -109,6 +109,7 @@ mkImage cnt =
   , attribs    = []
   , transform  = []
   , tags       = 'DS'.newSet
+  , totalSpan  = (px 0.0, px 0.0)
   , margin     = (px 0.0, px 0.0, px 0.0, px 0.0)
   , offset     = (px 0.0, px 0.0)
   , connectors = []
