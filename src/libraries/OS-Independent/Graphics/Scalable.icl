@@ -379,36 +379,33 @@ mkEdges :: [Edge] -> Set (Set ImageTag, Set ImageTag)
 mkEdges edges = 'DS'.fromList (map (\(xs, ys) -> ('DS'.fromList xs, 'DS'.fromList ys)) edges)
 
 overlay :: ![ImageAlign] ![ImageOffset] ![Image m] !(Host m) -> Image m
-overlay _ _ [] (Just img) = img
-overlay _ _ [] _          = empty zero zero
+overlay _      _       []   (Just img) = img
+overlay _      _       []   _          = empty zero zero
 overlay aligns offsets imgs host
-  = mkImage (Composite { offsets = take l offsets
+  # l = length imgs
+  = mkImage (Composite { offsets = take l (offsets ++ repeat (zero, zero))
                        , host    = host
-                       , compose = AsOverlay (take l aligns) imgs
+                       , compose = AsOverlay (take l (aligns ++ repeat (AtLeft, AtTop))) imgs
                        , edges   = 'DS'.newSet
                        })
-  where
-  l = length imgs
 
 beside :: ![YAlign] ![ImageOffset] ![Image m] !(Host m) -> Image m
 beside ylayouts offsets imgs host
+  # l = length imgs
   = grid (Rows 1) (LeftToRight, TopToBottom) (take l [(AtLeft, ylayout) \\ ylayout <- ylayouts]) (take l offsets) imgs host
-  where
-  l = length imgs
 
 above :: ![XAlign] ![ImageOffset] ![Image m] !(Host m) -> Image m
 above xlayouts offsets imgs host
+  # l = length imgs
   = grid (Columns 1) (LeftToRight, TopToBottom) (take l [(xlayout, AtTop) \\ xlayout <- xlayouts]) (take l offsets) imgs host
-  where
-  l = length imgs
 
 grid :: !GridDimension !GridLayout ![ImageAlign] ![ImageOffset] ![Image m] !(Host m) -> Image m
 grid _ _ _ _ [] (Just img) = img
 grid _ _ _ _ [] _          = empty zero zero
 grid dimension layout aligns offsets imgs host
-  = mkImage (Composite { offsets = take noOfImgs offsets
+  = mkImage (Composite { offsets = take noOfImgs (offsets ++ repeat (zero, zero))
                        , host    = host
-                       , compose = AsGrid (cols, rows) (take noOfImgs aligns) imgs`
+                       , compose = AsGrid (cols, rows) (take noOfImgs (aligns ++ repeat (AtLeft, AtTop))) imgs`
                        , edges   = 'DS'.newSet
                        })
   where
@@ -435,8 +432,10 @@ grid dimension layout aligns offsets imgs host
   arrangeLayout (RightToLeft, BottomToTop) xs = reverse (map reverse xs)
 
 collage :: ![ImageOffset] ![Image m] !(Host m) -> Image m
+collage _       []   (Just img) = img
+collage _       []   _          = empty zero zero
 collage offsets imgs host
-  = mkImage (Composite { offsets = take (length imgs) offsets
+  = mkImage (Composite { offsets = take (length imgs) (offsets ++ repeat (zero, zero))
                        , host    = host
                        , compose = AsCollage imgs
                        , edges   = 'DS'.newSet
