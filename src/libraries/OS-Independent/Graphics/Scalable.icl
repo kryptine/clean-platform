@@ -100,6 +100,7 @@ minSpan as
 maxSpan :: ![Span] -> Span
 maxSpan []  = zero
 maxSpan [a] = a
+maxSpan [PxSpan 0.0:lu=:(LookupSpan (TextXSpan _ _)):xs] = maxSpan [lu:xs]
 maxSpan as
   | isEmpty others = maxPxs
   | isEmpty pxs    = MaxSpan others
