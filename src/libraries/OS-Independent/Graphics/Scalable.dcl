@@ -16,8 +16,7 @@ from StdOverloaded import class zero, class +, class -, class ~, class one, clas
     , tags                :: Set ImageTag             // set of tags
     , totalSpan           :: ImageSpan                // Total image span
     , margin              :: (Span, Span, Span, Span) // Image margin
-    , finalOffset         :: ImageOffset             // Image offset after layouting. Is (0, 0) initially
-    , transformCorrection :: ImageOffset     // Correction required after transformation
+    , transformCorrection :: ImageOffset              // Correction required after transformation
     , connectors          :: [Connector]              // Connector point to which lines may be attached
     }
 

@@ -42,12 +42,12 @@ rowspan as a = LookupSpan (RowYSpan ('DS'.fromList as) a)
 
 instance zero Span where zero                    = PxSpan zero
 instance one  Span where one                     = PxSpan one
-instance +    Span where + (PxSpan 0.0) b                      = b
-                         + a            (PxSpan 0.0)           = a
-                         + (PxSpan a)   (PxSpan b)             = PxSpan (a + b)
-                         + (PxSpan a)   (AddSpan (PxSpan b) c) = AddSpan (PxSpan (a + b)) c
-                         + (AddSpan a   (PxSpan b)) (PxSpan c) = AddSpan a (PxSpan (b + c))
-                         + s            t                      = AddSpan s t
+instance +    Span where + (PxSpan 0.0)           b                      = b
+                         + a                      (PxSpan 0.0)           = a
+                         + (PxSpan a)             (PxSpan b)             = PxSpan (a + b)
+                         + (PxSpan a)             (AddSpan (PxSpan b) c) = AddSpan (PxSpan (a + b)) c
+                         + (AddSpan a (PxSpan b)) (PxSpan c)             = AddSpan a (PxSpan (b + c))
+                         + s                      t                      = AddSpan s t
 instance -    Span where - a          (PxSpan 0.0) = a
                          - (PxSpan a) (PxSpan b)   = PxSpan (a - b)
                          - s          t            = SubSpan s t
@@ -88,25 +88,32 @@ instance minOf Int where
 
 minSpan :: ![Span] -> Span
 minSpan []  = zero
-minSpan [a] = a
-minSpan as
+minSpan [x] = x
+minSpan spans
   | isEmpty others = minPxs
   | isEmpty pxs    = MinSpan others
   | otherwise      = MinSpan [minPxs : others]
   where
-  (pxs, others) = partition isPxSpan as
+  spans`        = flattenMinSpans spans
+  flattenMinSpans []              = []
+  flattenMinSpans [MinSpan os:xs] = flattenMinSpans xs ++ os
+  flattenMinSpans [x:xs]          = [x:flattenMinSpans xs]
+  (pxs, others) = partition isPxSpan spans`
   minPxs        = PxSpan (minList [x \\ PxSpan x <- pxs])
 
 maxSpan :: ![Span] -> Span
 maxSpan []  = zero
-maxSpan [a] = a
-maxSpan [PxSpan 0.0:lu=:(LookupSpan (TextXSpan _ _)):xs] = maxSpan [lu:xs]
-maxSpan as
+maxSpan [x] = x
+maxSpan spans
   | isEmpty others = maxPxs
   | isEmpty pxs    = MaxSpan others
   | otherwise      = MaxSpan [maxPxs : others]
   where
-  (pxs, others) = partition isPxSpan as
+  spans`        = flattenMaxSpans spans
+  flattenMaxSpans []              = []
+  flattenMaxSpans [MaxSpan os:xs] = flattenMaxSpans xs ++ os
+  flattenMaxSpans [x:xs]          = [x:flattenMaxSpans xs]
+  (pxs, others) = partition isPxSpan spans`
   maxPxs        = PxSpan (maxList [x \\ PxSpan x <- pxs])
 
 mkImage :: (ImageContent m) -> Image m
@@ -117,7 +124,6 @@ mkImage cnt =
   , tags                = 'DS'.newSet
   , totalSpan           = (px 0.0, px 0.0)
   , margin              = (px 0.0, px 0.0, px 0.0, px 0.0)
-  , finalOffset         = (px 0.0, px 0.0)
   , transformCorrection = (px 0.0, px 0.0)
   , connectors          = []
   }
