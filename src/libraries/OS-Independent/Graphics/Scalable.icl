@@ -42,15 +42,15 @@ rowspan as a = LookupSpan (RowYSpan ('DS'.fromList as) a)
 
 instance zero Span where zero                    = PxSpan zero
 instance one  Span where one                     = PxSpan one
-instance +    Span where + (PxSpan 0.0)           b                      = b
-                         + a                      (PxSpan 0.0)           = a
+instance +    Span where + (PxSpan 0.0)           b                      = b // Identity
+                         + a                      (PxSpan 0.0)           = a // Identity
                          + (PxSpan a)             (PxSpan b)             = PxSpan (a + b)
-                         + (PxSpan a)             (AddSpan (PxSpan b) c) = AddSpan (PxSpan (a + b)) c
-                         + (PxSpan a)             (AddSpan b (PxSpan c)) = AddSpan (PxSpan (a + c)) b
-                         + (AddSpan a (PxSpan b)) (PxSpan c)             = AddSpan a (PxSpan (b + c))
-                         + (AddSpan (PxSpan a) b) (PxSpan c)             = AddSpan b (PxSpan (a + c))
+                         + (PxSpan a)             (AddSpan (PxSpan b) c) = AddSpan (PxSpan (a + b)) c // Associativity
+                         + (PxSpan a)             (AddSpan b (PxSpan c)) = AddSpan (PxSpan (a + c)) b // Associativity + commutativity
+                         + (AddSpan a (PxSpan b)) (PxSpan c)             = AddSpan a (PxSpan (b + c)) // Associativity
+                         + (AddSpan (PxSpan a) b) (PxSpan c)             = AddSpan b (PxSpan (a + c)) // Associativity + commutativity
                          + s                      t                      = AddSpan s t
-instance -    Span where - a          (PxSpan 0.0) = a
+instance -    Span where - a          (PxSpan 0.0) = a // Identity
                          - (PxSpan a) (PxSpan b)   = PxSpan (a - b)
                          - s          t            = SubSpan s t
 instance abs  Span where abs (PxSpan  x)         = PxSpan (abs x)
@@ -519,8 +519,6 @@ instance < (a, b) | < a & < b where
 
 instance == (a, b) | == a & == b where
   (==) (x1, x2) (y1, y2) = x1 == y1 && x2 == y2
-
-undef = undef
 
 tag :: ![ImageTag] !(Image m) -> Image m
 tag ts image=:{Image | tags} = {Image | image & tags = 'DS'.union tags ('DS'.fromList ts)}
