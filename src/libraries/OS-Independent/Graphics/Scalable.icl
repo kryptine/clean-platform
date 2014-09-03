@@ -609,3 +609,63 @@ instance zero Rad where
 
 instance one Rad where
   one = Rad 1.0
+
+instance == FontDef where
+  (==) fd1 fd2 = fd1.fontfamily  == fd2.fontfamily
+              && fd1.fontyspan   == fd2.fontyspan
+              && fd1.fontstretch == fd2.fontstretch
+              && fd1.fontstyle   == fd2.fontstyle
+              && fd1.fontvariant == fd2.fontvariant
+              && fd1.fontweight  == fd2.fontweight
+
+instance < FontDef where
+  (<) fd1 fd2 = (fd1.fontfamily  == fd2.fontfamily
+              && fd1.fontstretch == fd2.fontstretch
+              && fd1.fontstyle   == fd2.fontstyle
+              && fd1.fontvariant == fd2.fontvariant
+              && fd1.fontweight  == fd2.fontweight)
+              && fd1.fontyspan   <  fd2.fontyspan
+
+instance == Span where
+  (==) (PxSpan     n1   ) (PxSpan     n2   ) = n1   == n2
+  (==) (LookupSpan lu1  ) (LookupSpan lu2  ) = lu1  == lu2
+  (==) (AddSpan    l1 r1) (AddSpan    l2 r2) = l1   == l2 && r1 == r2
+  (==) (SubSpan    l1 r1) (SubSpan    l2 r2) = l1   == l2 && r1 == r2
+  (==) (MulSpan    l1 r1) (MulSpan    l2 r2) = l1   == l2 && r1 == r2
+  (==) (DivSpan    l1 r1) (DivSpan    l2 r2) = l1   == l2 && r1 == r2
+  (==) (AbsSpan    sp1  ) (AbsSpan    sp2  ) = sp1  == sp2
+  (==) (MinSpan    sps1 ) (MinSpan    sps2 ) = sps1 == sps2
+  (==) (MaxSpan    sps1 ) (MaxSpan    sps2 ) = sps1 == sps2
+  (==) _ _ = False
+
+instance < Span where
+  (<) (PxSpan     n1   ) (PxSpan     n2   ) = n1   < n2
+  (<) (LookupSpan lu1  ) (LookupSpan lu2  ) = lu1  < lu2
+  (<) (AddSpan    l1 r1) (AddSpan    l2 r2) = l1   < l2 && r1 < r2
+  (<) (SubSpan    l1 r1) (SubSpan    l2 r2) = l1   < l2 && r1 < r2
+  (<) (MulSpan    l1 r1) (MulSpan    l2 r2) = l1   < l2 && r1 < r2
+  (<) (DivSpan    l1 r1) (DivSpan    l2 r2) = l1   < l2 && r1 < r2
+  (<) (AbsSpan    sp1  ) (AbsSpan    sp2  ) = sp1  < sp2
+  (<) (MinSpan    sps1 ) (MinSpan    sps2 ) = sps1 < sps2
+  (<) (MaxSpan    sps1 ) (MaxSpan    sps2 ) = sps1 < sps2
+  (<) _ _ = False
+
+instance < LookupSpan where
+  (<) (ColumnXSpan  ts1 n1  ) (ColumnXSpan  ts2 n2  ) = ts1 < ts2 && n1 < n2
+  (<) (RowYSpan     ts1 n1  ) (RowYSpan     ts2 n2  ) = ts1 < ts2 && n1 < n2
+  (<) (ImageXSpan   ts1     ) (ImageXSpan   ts2     ) = ts1 < ts2
+  (<) (ImageYSpan   ts1     ) (ImageYSpan   ts2     ) = ts1 < ts2
+  (<) (DescentYSpan fd1     ) (DescentYSpan fd2     ) = fd1 < fd2
+  (<) (ExYSpan      fd1     ) (ExYSpan      fd2     ) = fd1 < fd2
+  (<) (TextXSpan    fd1 str1) (TextXSpan    fd2 str2) = fd1 < fd2 && str1 < str2
+  (<) _ _ = False
+
+instance == LookupSpan where
+  (==) (ColumnXSpan  ts1 n1  ) (ColumnXSpan  ts2 n2  ) = ts1 == ts2 && n1 == n2
+  (==) (RowYSpan     ts1 n1  ) (RowYSpan     ts2 n2  ) = ts1 == ts2 && n1 == n2
+  (==) (ImageXSpan   ts1     ) (ImageXSpan   ts2     ) = ts1 == ts2
+  (==) (ImageYSpan   ts1     ) (ImageYSpan   ts2     ) = ts1 == ts2
+  (==) (DescentYSpan fd1     ) (DescentYSpan fd2     ) = fd1 == fd2
+  (==) (ExYSpan      fd1     ) (ExYSpan      fd2     ) = fd1 == fd2
+  (==) (TextXSpan    fd1 str1) (TextXSpan    fd2 str2) = fd1 == fd2 && str1 == str2
+  (==) _ _ = False
