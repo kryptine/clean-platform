@@ -99,8 +99,6 @@ from StdOverloaded import class zero, class +, class -, class ~, class one, clas
   | RowYSpan     (Set ImageTag) Int // (RowYSpan as a) is y-span of row number a in grid tagged with superset of as
   | ImageXSpan   (Set ImageTag)     // (ImageXSpan as) is x-span of image tagged with superset of as
   | ImageYSpan   (Set ImageTag)     // (ImageYSpan as) is y-span of image tagged with superset of as
-  | DescentYSpan FontDef            // (DescentYSpan a) is descent height of font a
-  | ExYSpan      FontDef            // (ExYSpan a) is ex height of font a
   | TextXSpan    FontDef String     // (TextXSpan a b) is width of text b written in font a
 
 :: Compose m
@@ -109,8 +107,6 @@ from StdOverloaded import class zero, class +, class -, class ~, class one, clas
   | AsOverlay            [ImageAlign] [Image m]   // AsOverlay composes elements, framed in optional host or largest spans
 
 px         :: !Real            -> Span // (px a) is a pixels
-ex         :: !FontDef         -> Span // (ex font) is the ex height (ascent) of font
-descent    :: !FontDef         -> Span // (descent font) is the descent height of font
 textxspan  :: !FontDef !String -> Span // (textxspan font str) is the x-span of str written in font
 imagexspan :: ![ImageTag]      -> Span // (imagexspan ts) is x-span of image tagged with superset of ts
 imageyspan :: ![ImageTag]      -> Span // (imageyspan ts) is y-span of image tagged with superset of ts

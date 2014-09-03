@@ -19,12 +19,6 @@ isPxSpan _          = False
 px :: !Real -> Span
 px a = PxSpan a
 
-ex :: !FontDef -> Span
-ex a = LookupSpan (ExYSpan a)
-
-descent :: !FontDef -> Span
-descent a = LookupSpan (DescentYSpan a)
-
 textxspan :: !FontDef !String -> Span
 textxspan a b = LookupSpan (TextXSpan a b)
 
@@ -655,8 +649,6 @@ instance < LookupSpan where
   (<) (RowYSpan     ts1 n1  ) (RowYSpan     ts2 n2  ) = ts1 < ts2 && n1 < n2
   (<) (ImageXSpan   ts1     ) (ImageXSpan   ts2     ) = ts1 < ts2
   (<) (ImageYSpan   ts1     ) (ImageYSpan   ts2     ) = ts1 < ts2
-  (<) (DescentYSpan fd1     ) (DescentYSpan fd2     ) = fd1 < fd2
-  (<) (ExYSpan      fd1     ) (ExYSpan      fd2     ) = fd1 < fd2
   (<) (TextXSpan    fd1 str1) (TextXSpan    fd2 str2) = fd1 < fd2 && str1 < str2
   (<) _ _ = False
 
@@ -665,7 +657,5 @@ instance == LookupSpan where
   (==) (RowYSpan     ts1 n1  ) (RowYSpan     ts2 n2  ) = ts1 == ts2 && n1 == n2
   (==) (ImageXSpan   ts1     ) (ImageXSpan   ts2     ) = ts1 == ts2
   (==) (ImageYSpan   ts1     ) (ImageYSpan   ts2     ) = ts1 == ts2
-  (==) (DescentYSpan fd1     ) (DescentYSpan fd2     ) = fd1 == fd2
-  (==) (ExYSpan      fd1     ) (ExYSpan      fd2     ) = fd1 == fd2
   (==) (TextXSpan    fd1 str1) (TextXSpan    fd2 str2) = fd1 == fd2 && str1 == str2
   (==) _ _ = False
