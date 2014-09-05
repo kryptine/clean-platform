@@ -255,6 +255,7 @@ import StdString, Data.Maybe
                         | LinearGradientElt ![HtmlAttr] ![SVGAttr] ![SVGElt]
                         | LineElt           ![HtmlAttr] ![SVGAttr]
                         | MarkerElt         ![HtmlAttr] ![SVGAttr] ![SVGElt]
+                        | MaskElt           ![HtmlAttr] ![SVGAttr] ![SVGElt]
                         | PathElt           ![HtmlAttr] ![SVGAttr]
                         | PolygonElt        ![HtmlAttr] ![SVGAttr]
                         | PolylineElt       ![HtmlAttr] ![SVGAttr]
@@ -291,6 +292,7 @@ import StdString, Data.Maybe
                         | MarkerEndAttr           !String
                         | MarkerHeightAttr        !SVGLength
                         | MarkerWidthAttr         !SVGLength
+                        | MaskAttr                !String
                         | OffsetAttr              !String
                         | OrientAttr              !String
 						| PointsAttr              ![(String, String)]
