@@ -270,6 +270,7 @@ import StdString, Data.Maybe
 :: SVGAttr				= AlignmentBaselineAttr   !String
                         | BaseProfileAttr         !String										// necessary?
 						| ContentScriptTypeAttr   !String
+						| ClipPathAttr            !String
 //						| ContentStyleTypeAttr    !String										// deprecated in SVG1.1
 						| CxAttr                  !SVGCoordinate
 						| CyAttr                  !SVGCoordinate

@@ -632,6 +632,7 @@ svgAttrSize :: !SVGAttr -> Int
 svgAttrSize (AlignmentBaselineAttr   bl)	    	= 20 + size bl
 svgAttrSize (BaseProfileAttr         profile)		= 15 + size profile
 svgAttrSize (ContentScriptTypeAttr   type)			= 11 + size type
+svgAttrSize (ClipPathAttr            cp)			= 12 + size cp
 svgAttrSize (CxAttr                  cx)			=  6 + svgLengthSize cx
 svgAttrSize (CyAttr                  cy)			=  6 + svgLengthSize cy
 svgAttrSize (DominantBaselineAttr    dbl)			= 19 + size dbl
@@ -927,6 +928,7 @@ serializeSVGAttr :: !SVGAttr !*{#Char} !Int -> (!*{#Char}, !Int)
 serializeSVGAttr (AlignmentBaselineAttr   bl)        s i = writeAttr "alignment-baseline"  bl               s i
 serializeSVGAttr (BaseProfileAttr         profile)   s i = writeAttr "baseProfile"         profile          s i
 serializeSVGAttr (ContentScriptTypeAttr   type)      s i = writeAttr "contentScriptType"   type             s i
+serializeSVGAttr (ClipPathAttr            cp)        s i = writeAttr "clip-path"           cp               s i
 serializeSVGAttr (CxAttr                  cx)        s i = writeAttr "cx"                  (toString cx)    s i
 serializeSVGAttr (CyAttr                  cy)        s i = writeAttr "cy"                  (toString cy)    s i
 serializeSVGAttr (DominantBaselineAttr    dbl)       s i = writeAttr "dominant-baseline"   dbl              s i
