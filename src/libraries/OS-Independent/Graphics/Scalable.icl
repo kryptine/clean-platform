@@ -11,6 +11,7 @@ from Data.Set import :: Set, instance == (Set a), instance < (Set a)
 from StdBool import &&
 import qualified Data.Set as DS
 import Text.HTML
+from Data.Functor import class Functor (..)
 
 isPxSpan :: !Span -> Bool
 isPxSpan (PxSpan _) = True
@@ -115,6 +116,7 @@ maxSpan spans
 mkImage :: (ImageContent m) -> Image m
 mkImage cnt =
   { content             = cnt
+  , mask                = Nothing
   , attribs             = []
   , transform           = []
   , tags                = 'DS'.newSet
@@ -448,6 +450,15 @@ collage offsets imgs host
                        , compose = AsCollage imgs
                        , edges   = 'DS'.newSet
                        })
+
+(@$) infixr :: !(Image m) !(Image m) -> Image m
+(@$) mask orig = maskWith orig mask
+
+($@) infixl :: !(Image m) !(Image m) -> Image m
+($@) orig mask = maskWith mask orig
+
+maskWith :: !(Image m) !(Image m) -> Image m
+maskWith orig mask = { orig & mask = Just mask }
 
 addEdge :: ![ImageTag] ![ImageTag] !(Image m) -> Image m
 addEdge fromTags toTags img=:{content = Composite c=:{ edges }} = { img & content = Composite {c & edges = 'DS'.insert ('DS'.fromList fromTags, 'DS'.fromList toTags) edges }}

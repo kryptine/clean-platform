@@ -11,6 +11,7 @@ from StdOverloaded import class zero, class +, class -, class ~, class one, clas
 
 :: Image m
   = { content             :: ImageContent m           // the image elements
+    , mask                :: Maybe (Image m)          // the mask image
     , attribs             :: [ImageAttr m]            // the image attributes
     , transform           :: [ImageTransform]         // [t_1, ..., t_n] transforms the image as t_1 o ... o t_n
     , tags                :: Set ImageTag             // set of tags
@@ -190,6 +191,11 @@ above   ::                                ![XAlign] ![ImageOffset] ![Image m] !(
 grid    :: !GridDimension !GridLayout ![ImageAlign] ![ImageOffset] ![Image m] !(Host m) -> Image m
 collage ::                                          ![ImageOffset] ![Image m] !(Host m) -> Image m
 
+(@$) infixr :: !(Image m) !(Image m) -> Image m
+($@) infixl :: !(Image m) !(Image m) -> Image m
+
+maskWith :: !(Image m) !(Image m) -> Image m
+
 addEdge :: ![ImageTag] ![ImageTag] !(Image m) -> Image m
 
 :: XAlign
@@ -218,7 +224,6 @@ addEdge :: ![ImageTag] ![ImageTag] !(Image m) -> Image m
   | ImageFillAttr          (FillAttr        m)
   | ImageFillOpacityAttr   (OpacityAttr     m)
   | ImageOnClickAttr       (OnClickAttr     m)
-
 
 class tuneImage attr :: (Image m) (attr m) -> Image m
 (<@<) infixl 2 :: !(Image m) !(attr m) -> Image m | tuneImage attr
