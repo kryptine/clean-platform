@@ -1,7 +1,7 @@
 definition module Data.Foldable
 
 from Control.Applicative import class Applicative (..), :: Const, class Alternative (..)
-from Control.Monad import class Monad (..), class MonadPlus (..)
+from Control.Monad import class Monad (..), >>=, class MonadPlus (..)
 from Data.Either import :: Either
 from Data.Functor import class Functor (..)
 from Data.Monoid import class Monoid (..)
