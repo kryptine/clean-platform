@@ -1,7 +1,8 @@
 implementation module Internet.HTTP
 
 import StdOverloaded, StdString, StdList, StdArray, StdFile, StdBool
-import Data.Maybe, Data.Map, Data.List, Text, Text.Encodings.UrlEncoding, Text.Encodings.MIME
+import Data.Maybe, Data.List, Text, Text.Encodings.UrlEncoding, Text.Encodings.MIME
+from Data.Map import get, put, :: Map, newMap, fromList, toList
 
 newHTTPRequest :: HTTPRequest
 newHTTPRequest 
