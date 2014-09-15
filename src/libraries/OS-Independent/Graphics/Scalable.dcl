@@ -147,7 +147,7 @@ instance margin (Span, Span, Span, Span) // (t, r, b, l) Margin is t on top, r o
 
 :: FontDef
   = { fontfamily  :: String
-    , fontyspan   :: Span
+    , fontysize   :: Real
     , fontstretch :: String
     , fontstyle   :: String
     , fontvariant :: String

@@ -145,7 +145,7 @@ empty :: !Span !Span -> Image m
 empty xspan yspan = mkImage (Basic EmptyImage (maxSpan [zero, xspan], maxSpan [zero, yspan]))
 
 text :: !FontDef !String -> Image m
-text font str = mkImage (Basic (TextImage font str) (textxspan font str, font.FontDef.fontyspan))
+text font str = mkImage (Basic (TextImage font str) (textxspan font str, px font.FontDef.fontysize))
 
 circle :: !Span -> Image m
 circle diameter
@@ -617,7 +617,7 @@ instance one Rad where
 
 instance == FontDef where
   (==) fd1 fd2 = fd1.fontfamily  == fd2.fontfamily
-              && fd1.fontyspan   == fd2.fontyspan
+              && fd1.fontysize   == fd2.fontysize
               && fd1.fontstretch == fd2.fontstretch
               && fd1.fontstyle   == fd2.fontstyle
               && fd1.fontvariant == fd2.fontvariant
@@ -629,7 +629,7 @@ instance < FontDef where
               && fd1.fontstyle   == fd2.fontstyle
               && fd1.fontvariant == fd2.fontvariant
               && fd1.fontweight  == fd2.fontweight)
-              && fd1.fontyspan   <  fd2.fontyspan
+              && fd1.fontysize   <  fd2.fontysize
 
 instance == Span where
   (==) (PxSpan     n1   ) (PxSpan     n2   ) = n1   == n2
