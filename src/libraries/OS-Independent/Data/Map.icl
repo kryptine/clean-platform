@@ -2252,6 +2252,46 @@ delU k (Bin h nk nv Tip right)            //A node without smaller items
     # (hright, right) = height right
     # h               = hright + 1
     = (mbv, balance nk nv Tip right)
+delU k (Bin h nk nv left Tip)						//A node without larger items
+	| k == nk	= (Just nv, left)						//When found just remove
+	| k < nk	
+		# (mbv,left)		= delU k left
+		# (hleft,left)		= height left
+		# h					= hleft + 1
+		= (mbv, balance nk nv left Tip)
+	| otherwise
+				= (Nothing, Bin h nk nv left Tip)	//Do nothing, k is not in hte mapping
+
+delU k (Bin h nk nv left right)						//A node with both larger and smaller items
+	| k == nk	
+		# (left,k,v)		= takeMax left
+		# (h,left,right)	= parentHeight left right
+		= (Just nv, balance k v left right)	//Replace with the largest of the smaller items and rebalance
+	| k < nk	
+		# (mbv, left)		= delU k left
+		# (h,left,right)	= parentHeight left right
+		= (mbv, balance nk nv left right)
+	| otherwise
+		# (mbv, right)		= delU k right
+		# (h,left,right)	= parentHeight left right
+		= (mbv, balance nk nv left right)
+where
+	//Takes the k and v values from the maximum node in the tree and removes that node
+	takeMax Tip = abort "takeMax of leaf evaluated" 
+	takeMax (Bin _ nk nv left Tip)	= (left, nk, nv)
+	takeMax (Bin _ nk nv left right)
+					# (right,k,v)		= takeMax right
+					# (hleft,left)		= height left
+					# (hright,right)	= height right
+					# h					= (max hleft hright) + 1
+					= (balance nk nv left right, k, v)
+
+	//Determines the height of the parent node of two sub trees
+	parentHeight left right
+		# (hleft,left)		= height left
+		# (hright,right)	= height right
+		# h					= (max hleft hright) + 1
+		= (h, left, right)
 
 height :: !u:(Map k w:v) -> x:(!Int, y:(Map k w:v)), [u y <= w, x <= y, u <= y]
 height Tip                    = (0, Tip)
