@@ -606,25 +606,25 @@ svgEltsSize :: ![SVGElt] -> Int
 svgEltsSize elts = intsum svgEltSize elts
 
 svgEltSize :: !SVGElt -> Int
-svgEltSize (SVGElt      html_attrs svg_attrs elts)	        = 11 + attrsSize html_attrs + svgAttrsSize svg_attrs + svgEltsSize elts
-svgEltSize (ClipPathElt html_attrs svg_attrs elts)	        = 19 + attrsSize html_attrs + svgAttrsSize svg_attrs + svgEltsSize elts
-svgEltSize (CircleElt   html_attrs svg_attrs)		        = 17 + attrsSize html_attrs + svgAttrsSize svg_attrs
-svgEltSize (DefsElt     html_attrs svg_attrs elts)	        = 13 + attrsSize html_attrs + svgAttrsSize svg_attrs + svgEltsSize elts
-svgEltSize (EllipseElt  html_attrs svg_attrs)		        = 19 + attrsSize html_attrs + svgAttrsSize svg_attrs
-svgEltSize (GElt        html_attrs svg_attrs elts)	        =  7 + attrsSize html_attrs + svgAttrsSize svg_attrs + svgEltsSize elts
-svgEltSize (ImageElt    html_attrs svg_attrs elts)	        = 15 + attrsSize html_attrs + svgAttrsSize svg_attrs + svgEltsSize elts
-svgEltSize (LinearGradientElt    html_attrs svg_attrs elts)	= 33 + attrsSize html_attrs + svgAttrsSize svg_attrs + svgEltsSize elts
-svgEltSize (LineElt     html_attrs svg_attrs)				= 13 + attrsSize html_attrs + svgAttrsSize svg_attrs
-svgEltSize (MarkerElt   html_attrs svg_attrs elts)			= 17 + attrsSize html_attrs + svgAttrsSize svg_attrs + svgEltsSize elts
-svgEltSize (MaskElt     html_attrs svg_attrs elts)			= 13 + attrsSize html_attrs + svgAttrsSize svg_attrs + svgEltsSize elts
-svgEltSize (PathElt     html_attrs svg_attrs)				=  7 + attrsSize html_attrs + svgAttrsSize svg_attrs
-svgEltSize (PolygonElt  html_attrs svg_attrs)				= 10 + attrsSize html_attrs + svgAttrsSize svg_attrs
-svgEltSize (PolylineElt html_attrs svg_attrs)				= 11 + attrsSize html_attrs + svgAttrsSize svg_attrs
-svgEltSize (RadialGradientElt    html_attrs svg_attrs elts)	= 33 + attrsSize html_attrs + svgAttrsSize svg_attrs + svgEltsSize elts
-svgEltSize (RectElt     html_attrs svg_attrs)		        = 13 + attrsSize html_attrs + svgAttrsSize svg_attrs
-svgEltSize (StopElt     html_attrs svg_attrs)		        = 13 + attrsSize html_attrs + svgAttrsSize svg_attrs
-svgEltSize (TextElt     html_attrs svg_attrs text)			= 13 + attrsSize html_attrs + svgAttrsSize svg_attrs + size text
-svgEltSize _										        = abort "Text.HTML: svgEltSize applied to unexpected argument.\n"
+svgEltSize (SVGElt            html_attrs svg_attrs elts) = 17 + attrsSize html_attrs + svgAttrsSize svg_attrs + svgEltsSize elts
+svgEltSize (ClipPathElt       html_attrs svg_attrs elts) = 21 + attrsSize html_attrs + svgAttrsSize svg_attrs + svgEltsSize elts
+svgEltSize (CircleElt         html_attrs svg_attrs)      = 11 + attrsSize html_attrs + svgAttrsSize svg_attrs
+svgEltSize (DefsElt           html_attrs svg_attrs elts) = 13 + attrsSize html_attrs + svgAttrsSize svg_attrs + svgEltsSize elts
+svgEltSize (EllipseElt        html_attrs svg_attrs)      = 12 + attrsSize html_attrs + svgAttrsSize svg_attrs
+svgEltSize (GElt              html_attrs svg_attrs elts) =  7 + attrsSize html_attrs + svgAttrsSize svg_attrs + svgEltsSize elts
+svgEltSize (ImageElt          html_attrs svg_attrs elts) = 15 + attrsSize html_attrs + svgAttrsSize svg_attrs + svgEltsSize elts
+svgEltSize (LinearGradientElt html_attrs svg_attrs elts) = 33 + attrsSize html_attrs + svgAttrsSize svg_attrs + svgEltsSize elts
+svgEltSize (LineElt           html_attrs svg_attrs)      =  7 + attrsSize html_attrs + svgAttrsSize svg_attrs
+svgEltSize (MarkerElt         html_attrs svg_attrs elts) = 17 + attrsSize html_attrs + svgAttrsSize svg_attrs + svgEltsSize elts
+svgEltSize (MaskElt           html_attrs svg_attrs elts) = 13 + attrsSize html_attrs + svgAttrsSize svg_attrs + svgEltsSize elts
+svgEltSize (PathElt           html_attrs svg_attrs)      =  7 + attrsSize html_attrs + svgAttrsSize svg_attrs
+svgEltSize (PolygonElt        html_attrs svg_attrs)      = 10 + attrsSize html_attrs + svgAttrsSize svg_attrs
+svgEltSize (PolylineElt       html_attrs svg_attrs)      = 11 + attrsSize html_attrs + svgAttrsSize svg_attrs
+svgEltSize (RadialGradientElt html_attrs svg_attrs elts) = 33 + attrsSize html_attrs + svgAttrsSize svg_attrs + svgEltsSize elts
+svgEltSize (RectElt           html_attrs svg_attrs)      =  7 + attrsSize html_attrs + svgAttrsSize svg_attrs
+svgEltSize (StopElt           html_attrs svg_attrs)      =  7 + attrsSize html_attrs + svgAttrsSize svg_attrs
+svgEltSize (TextElt           html_attrs svg_attrs text) = 13 + attrsSize html_attrs + svgAttrsSize svg_attrs + size text
+svgEltSize _                                             = abort "Text.HTML: svgEltSize applied to unexpected argument.\n"
 
 svgAttrsSize :: ![SVGAttr] -> Int
 svgAttrsSize attrs = intsum svgAttrSize attrs
@@ -903,20 +903,20 @@ serializeSVGElts [x:xs] dest dest_i
 serializeSVGElt :: !SVGElt !*{#Char} !Int -> (!*{#Char}, !Int)
 serializeSVGElt (SVGElt             html_attrs svg_attrs elts) s i = writeSVGTag "svg"              html_attrs svg_attrs elts s i
 serializeSVGElt (ClipPathElt        html_attrs svg_attrs elts) s i = writeSVGTag "clipPath"         html_attrs svg_attrs elts s i
-serializeSVGElt (CircleElt          html_attrs svg_attrs)      s i = writeSVGTag "circle"           html_attrs svg_attrs []   s i
-serializeSVGElt (EllipseElt         html_attrs svg_attrs)      s i = writeSVGTag "ellipse"          html_attrs svg_attrs []   s i
+serializeSVGElt (CircleElt          html_attrs svg_attrs)      s i = writeEmptySVGTag "circle"      html_attrs svg_attrs      s i
+serializeSVGElt (EllipseElt         html_attrs svg_attrs)      s i = writeEmptySVGTag "ellipse"     html_attrs svg_attrs      s i
 serializeSVGElt (DefsElt            html_attrs svg_attrs elts) s i = writeSVGTag "defs"             html_attrs svg_attrs elts s i
 serializeSVGElt (GElt               html_attrs svg_attrs elts) s i = writeSVGTag "g"                html_attrs svg_attrs elts s i
 serializeSVGElt (ImageElt           html_attrs svg_attrs elts) s i = writeSVGTag "image"            html_attrs svg_attrs elts s i
 serializeSVGElt (LinearGradientElt  html_attrs svg_attrs elts) s i = writeSVGTag "linearGradient"   html_attrs svg_attrs elts s i
-serializeSVGElt (LineElt            html_attrs svg_attrs)      s i = writeSVGTag "line"             html_attrs svg_attrs []   s i
+serializeSVGElt (LineElt            html_attrs svg_attrs)      s i = writeEmptySVGTag "line"        html_attrs svg_attrs      s i
 serializeSVGElt (MarkerElt          html_attrs svg_attrs elts) s i = writeSVGTag "marker"           html_attrs svg_attrs elts s i
-serializeSVGElt (PathElt            html_attrs svg_attrs)      s i = writeSVGTag "path"             html_attrs svg_attrs []   s i
-serializeSVGElt (PolygonElt         html_attrs svg_attrs)      s i = writeSVGTag "polygon"          html_attrs svg_attrs []   s i
-serializeSVGElt (PolylineElt        html_attrs svg_attrs)      s i = writeSVGTag "polyline"         html_attrs svg_attrs []   s i
+serializeSVGElt (PathElt            html_attrs svg_attrs)      s i = writeEmptySVGTag "path"        html_attrs svg_attrs      s i
+serializeSVGElt (PolygonElt         html_attrs svg_attrs)      s i = writeEmptySVGTag "polygon"     html_attrs svg_attrs      s i
+serializeSVGElt (PolylineElt        html_attrs svg_attrs)      s i = writeEmptySVGTag "polyline"    html_attrs svg_attrs      s i
 serializeSVGElt (RadialGradientElt  html_attrs svg_attrs elts) s i = writeSVGTag "radialGradient"   html_attrs svg_attrs elts s i
-serializeSVGElt (RectElt            html_attrs svg_attrs)      s i = writeSVGTag "rect"             html_attrs svg_attrs []   s i
-serializeSVGElt (StopElt            html_attrs svg_attrs)      s i = writeSVGTag "stop"             html_attrs svg_attrs []   s i
+serializeSVGElt (RectElt            html_attrs svg_attrs)      s i = writeEmptySVGTag "rect"        html_attrs svg_attrs      s i
+serializeSVGElt (StopElt            html_attrs svg_attrs)      s i = writeEmptySVGTag "stop"        html_attrs svg_attrs      s i
 serializeSVGElt (TextElt            html_attrs svg_attrs text) s i = writeSVGPlainTag "text"        html_attrs svg_attrs text s i
 serializeSVGElt _ _ _                                              = abort "Text.HTML: serializeSVGElt applied to unexpected argument.\n"
 
@@ -1007,6 +1007,19 @@ writeSVGTag name html_attrs svg_attrs elts dest dest_i
 	# dest = {dest & [dest_i + 1] = '/'}
 	# dest_i = dest_i + 2
 	# (dest,dest_i) = copyChars name 0 False dest dest_i
+	# dest = {dest & [dest_i] = '>'}
+	# dest_i = dest_i + 1
+	= (dest,dest_i)
+
+writeEmptySVGTag :: !{#Char} ![HtmlAttr] ![SVGAttr] !*{#Char} !Int -> (!*{#Char},!Int)
+writeEmptySVGTag name html_attrs svg_attrs dest dest_i
+	# dest = {dest & [dest_i] = '<'}
+	# dest_i = dest_i + 1
+	# (dest,dest_i) = copyChars name 0 False dest dest_i
+	# (dest, dest_i) = serializeAttrs html_attrs dest dest_i
+	# (dest, dest_i) = serializeSVGAttrs svg_attrs dest dest_i
+	# dest = {dest & [dest_i] = '/'}
+	# dest_i = dest_i + 1
 	# dest = {dest & [dest_i] = '>'}
 	# dest_i = dest_i + 1
 	= (dest,dest_i)
