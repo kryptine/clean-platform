@@ -598,7 +598,7 @@ instance toString SVGElt
 where
 	toString elt
 		# eltsize	= svgEltSize elt						//Calculate the size of the string we need
-		# eltstring	= createArray eltsize '\0'				//Create an empty buffer
+		# eltstring	= createArray eltsize ' '				//Create an empty buffer
 		# eltstring	= fst (serializeSVGElt elt eltstring 0)	//Serialize the SVG element
 		= eltstring
 
