@@ -12,7 +12,7 @@ from StdOverloaded import class zero, class +, class -, class ~, class one, clas
 :: Image m
   = { content             :: ImageContent m           // the image elements
     , mask                :: Maybe (Image m)          // the mask image
-    , attribs             :: [ImageAttr m]            // the image attributes
+    , attribs             :: Set (ImageAttr m)        // the image attributes
     , transform           :: [ImageTransform]         // [t_1, ..., t_n] transforms the image as t_1 o ... o t_n
     , tags                :: Set ImageTag             // set of tags
     , totalSpan           :: ImageSpan                // Total image span
@@ -224,6 +224,9 @@ addEdge :: ![ImageTag] ![ImageTag] !(Image m) -> Image m
   | ImageFillAttr          (FillAttr        m)
   | ImageFillOpacityAttr   (OpacityAttr     m)
   | ImageOnClickAttr       (OnClickAttr     m)
+
+instance < (ImageAttr m)
+instance == (ImageAttr m)
 
 class tuneImage attr :: (Image m) (attr m) -> Image m
 (<@<) infixl 2 :: !(Image m) !(attr m) -> Image m | tuneImage attr

@@ -117,7 +117,7 @@ mkImage :: (ImageContent m) -> Image m
 mkImage cnt =
   { content             = cnt
   , mask                = Nothing
-  , attribs             = []
+  , attribs             = 'DS'.newSet
   , transform           = []
   , tags                = 'DS'.newSet
   , totalSpan           = (px 0.0, px 0.0)
@@ -150,10 +150,10 @@ text font str = mkImage (Basic (TextImage font str) (textxspan font str, px font
 circle :: !Span -> Image m
 circle diameter
   = { mkImage (Basic CircleImage (d, d))
-    & attribs = [ ImageStrokeWidthAttr {strokewidth = px 0.0}
-                , ImageFillAttr        {fill        = toSVGColor "black"}
-                , ImageFillOpacityAttr {opacity     = 1.0}
-                ]
+    & attribs = 'DS'.fromList [ ImageStrokeWidthAttr {strokewidth = px 0.0}
+                              , ImageFillAttr        {fill        = toSVGColor "black"}
+                              , ImageFillOpacityAttr {opacity     = 1.0}
+                              ]
     }
   where
   d = maxSpan [zero, diameter]
@@ -161,19 +161,19 @@ circle diameter
 ellipse :: !Span !Span -> Image m
 ellipse diax diay
   = { mkImage (Basic EllipseImage (maxSpan [zero, diax], maxSpan [zero, diay]))
-    & attribs = [ ImageStrokeWidthAttr {strokewidth = px 0.0}
-                , ImageFillAttr        {fill        = toSVGColor "black"}
-                , ImageFillOpacityAttr {opacity     = 1.0}
-                ]
+    & attribs = 'DS'.fromList [ ImageStrokeWidthAttr {strokewidth = px 0.0}
+                              , ImageFillAttr        {fill        = toSVGColor "black"}
+                              , ImageFillOpacityAttr {opacity     = 1.0}
+                              ]
     }
 
 rect :: !Span !Span -> Image m
 rect xspan yspan
   = { mkImage (Basic RectImage (maxSpan [zero, xspan], maxSpan [zero, yspan]))
-    & attribs = [ ImageStrokeWidthAttr {strokewidth = px 0.0}
-                , ImageFillAttr        {fill        = toSVGColor "black"}
-                , ImageFillOpacityAttr {opacity     = 1.0}
-                ]
+    & attribs = 'DS'.fromList [ ImageStrokeWidthAttr {strokewidth = px 0.0}
+                              , ImageFillAttr        {fill        = toSVGColor "black"}
+                              , ImageFillOpacityAttr {opacity     = 1.0}
+                              ]
     }
 
 xline :: !(Maybe (Markers m)) !Span -> Image m
@@ -188,11 +188,11 @@ line markers slash xspan yspan
                     , markers     = markers
                     , lineContent = SimpleLineImage slash
                     })
-    & attribs = [ ImageStrokeAttr      {stroke      = toSVGColor "black"}
-                , ImageStrokeWidthAttr {strokewidth = px 1.0}
-                , ImageFillAttr        {fill        = toSVGColor "black"}
-                , ImageFillOpacityAttr {opacity     = 1.0}
-                ]
+    & attribs = 'DS'.fromList [ ImageStrokeAttr      {stroke      = toSVGColor "black"}
+                              , ImageStrokeWidthAttr {strokewidth = px 1.0}
+                              , ImageFillAttr        {fill        = toSVGColor "black"}
+                              , ImageFillOpacityAttr {opacity     = 1.0}
+                              ]
     }
 
 polygon :: !(Maybe (Markers m)) ![ImageOffset] -> Image m
@@ -208,10 +208,10 @@ polyline markers offsets
                     , markers     = markers
                     , lineContent = PolylineImage offsets
                     })
-    & attribs = [ ImageFillAttr        {fill        = toSVGColor "none"}
-                , ImageStrokeAttr      {stroke      = toSVGColor "black"}
-                , ImageStrokeWidthAttr {strokewidth = px 1.0}
-                ]
+    & attribs = 'DS'.fromList [ ImageFillAttr        {fill        = toSVGColor "none"}
+                              , ImageStrokeAttr      {stroke      = toSVGColor "black"}
+                              , ImageStrokeWidthAttr {strokewidth = px 1.0}
+                              ]
     }
 
 rotate :: !th !(Image m) -> Image m | Angle th
@@ -465,19 +465,19 @@ addEdge fromTags toTags img=:{content = Composite c=:{ edges }} = { img & conten
 addEdge fromTags toTags img                                     = img
 
 instance tuneImage StrokeAttr      where
-  tuneImage image=:{Image | attribs} attr = {Image | image & attribs = updateOrAdd sameImageAttr (ImageStrokeAttr      attr) attribs}
+  tuneImage image=:{Image | attribs} attr = {Image | image & attribs = 'DS'.insert (ImageStrokeAttr      attr) attribs}
 instance tuneImage StrokeWidthAttr where
-  tuneImage image=:{Image | attribs} attr = {Image | image & attribs = updateOrAdd sameImageAttr (ImageStrokeWidthAttr attr) attribs}
+  tuneImage image=:{Image | attribs} attr = {Image | image & attribs = 'DS'.insert (ImageStrokeWidthAttr attr) attribs}
 instance tuneImage XRadiusAttr where
-  tuneImage image=:{Image | attribs} attr = {Image | image & attribs = updateOrAdd sameImageAttr (ImageXRadiusAttr     attr) attribs}
+  tuneImage image=:{Image | attribs} attr = {Image | image & attribs = 'DS'.insert (ImageXRadiusAttr     attr) attribs}
 instance tuneImage YRadiusAttr where
-  tuneImage image=:{Image | attribs} attr = {Image | image & attribs = updateOrAdd sameImageAttr (ImageYRadiusAttr     attr) attribs}
+  tuneImage image=:{Image | attribs} attr = {Image | image & attribs = 'DS'.insert (ImageYRadiusAttr     attr) attribs}
 instance tuneImage FillAttr        where
-  tuneImage image=:{Image | attribs} attr = {Image | image & attribs = updateOrAdd sameImageAttr (ImageFillAttr        attr) attribs}
+  tuneImage image=:{Image | attribs} attr = {Image | image & attribs = 'DS'.insert (ImageFillAttr        attr) attribs}
 instance tuneImage OpacityAttr     where
-  tuneImage image=:{Image | attribs} attr = {Image | image & attribs = updateOrAdd sameImageAttr (ImageFillOpacityAttr attr) attribs}
+  tuneImage image=:{Image | attribs} attr = {Image | image & attribs = 'DS'.insert (ImageFillOpacityAttr attr) attribs}
 instance tuneImage OnClickAttr     where
-  tuneImage image=:{Image | attribs} attr = {Image | image & attribs = updateOrAdd sameImageAttr (ImageOnClickAttr     attr) attribs}
+  tuneImage image=:{Image | attribs} attr = {Image | image & attribs = 'DS'.insert (ImageOnClickAttr     attr) attribs}
 
 (<@<) infixl 2 :: !(Image m) !(attr m) -> Image m | tuneImage attr
 (<@<) image attr = tuneImage image attr
@@ -494,11 +494,8 @@ consNameOf (ImageFillAttr        _) = "ImageFillAttr"
 consNameOf (ImageFillOpacityAttr _) = "ImageFillOpacityAttr"
 consNameOf (ImageOnClickAttr     _) = "ImageOnClickAttr"
 
-sameImageAttr :: !(ImageAttr m) !(ImageAttr m) -> Bool
-sameImageAttr a b = consNameOf a == consNameOf b
-
 instance < (ImageAttr m) where < a b = consNameOf a < consNameOf b
-
+instance == (ImageAttr m) where == a b = consNameOf a == consNameOf b
 
 instance toSVGColor String where toSVGColor name = SVGColorText name
 instance toSVGColor RGB    where toSVGColor {RGB | r, g, b} = SVGRGB r g b
