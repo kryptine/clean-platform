@@ -32,6 +32,8 @@ instance Monoid (Map k v) | < k
 
 //Basic functions
 
+null :: (Map k a) -> Bool
+
 /**
 * Create an empty Map
 *
