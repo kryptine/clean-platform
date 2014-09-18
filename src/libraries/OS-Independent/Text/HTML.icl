@@ -911,6 +911,7 @@ serializeSVGElt (ImageElt           html_attrs svg_attrs elts) s i = writeSVGTag
 serializeSVGElt (LinearGradientElt  html_attrs svg_attrs elts) s i = writeSVGTag "linearGradient"   html_attrs svg_attrs elts s i
 serializeSVGElt (LineElt            html_attrs svg_attrs)      s i = writeEmptySVGTag "line"        html_attrs svg_attrs      s i
 serializeSVGElt (MarkerElt          html_attrs svg_attrs elts) s i = writeSVGTag "marker"           html_attrs svg_attrs elts s i
+serializeSVGElt (MaskElt            html_attrs svg_attrs elts) s i = writeSVGTag "mask"             html_attrs svg_attrs elts s i
 serializeSVGElt (PathElt            html_attrs svg_attrs)      s i = writeEmptySVGTag "path"        html_attrs svg_attrs      s i
 serializeSVGElt (PolygonElt         html_attrs svg_attrs)      s i = writeEmptySVGTag "polygon"     html_attrs svg_attrs      s i
 serializeSVGElt (PolylineElt        html_attrs svg_attrs)      s i = writeEmptySVGTag "polyline"    html_attrs svg_attrs      s i
