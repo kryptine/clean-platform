@@ -35,8 +35,12 @@ columnspan as a = LookupSpan (ColumnXSpan ('DS'.fromList as) a)
 rowspan :: ![ImageTag] !Int -> Span
 rowspan as a = LookupSpan (RowYSpan ('DS'.fromList as) a)
 
-instance zero Span where zero                    = PxSpan zero
-instance one  Span where one                     = PxSpan one
+instance zero Span where zero = PxSpan zero
+instance one  Span where one  = PxSpan one
+instance abs  Span where abs (PxSpan  x) = PxSpan (abs x)
+                         abs (AbsSpan x) = AbsSpan x
+                         abs span        = AbsSpan span
+instance ~    Span where ~ s             = zero - s
 instance +    Span where + (PxSpan 0.0)           b                      = b // Identity
                          + a                      (PxSpan 0.0)           = a // Identity
                          + (PxSpan a)             (PxSpan b)             = PxSpan (a + b)
@@ -45,25 +49,36 @@ instance +    Span where + (PxSpan 0.0)           b                      = b // 
                          + (AddSpan a (PxSpan b)) (PxSpan c)             = AddSpan a (PxSpan (b + c)) // Associativity
                          + (AddSpan (PxSpan a) b) (PxSpan c)             = AddSpan b (PxSpan (a + c)) // Associativity + commutativity
                          + s                      t                      = AddSpan s t
-instance -    Span where - a          (PxSpan 0.0) = a // Identity
-                         - (PxSpan a) (PxSpan b)   = PxSpan (a - b)
-                         - s          t            = SubSpan s t
-instance abs  Span where abs (PxSpan  x)         = PxSpan (abs x)
-                         abs (AbsSpan x)         = AbsSpan x
-                         abs span                = AbsSpan span
-instance ~    Span where ~ s                     = zero - s
-instance *.   Int  where *. l              r     = toInt (toReal l * toReal r)
-instance *.   Real where *. l              r     = l * toReal r
-instance *.   Span where *. (PxSpan  a)    k     = PxSpan    (a * toReal k)
-                         *. (MulSpan a k1) k     = MulSpan a (toReal k * k1)
-                         *. (DivSpan a k1) k     = MulSpan a (toReal k / k1)
-                         *. s              k     = MulSpan s (toReal k)
-instance /.   Int  where /. l              r     = toInt (toReal l / toReal r)
-instance /.   Real where /. l              r     = l / toReal r
-instance /.   Span where /. (PxSpan  a)    k     = PxSpan    (a / toReal k)
-                         /. (MulSpan a k1) k     = MulSpan a (k1 / toReal k)
-                         /. (DivSpan a k1) k     = DivSpan a (k1 * toReal k)
-                         /. s              k     = DivSpan s (toReal k)
+instance *    Span where * (PxSpan 0.0)           _                      = PxSpan 0.0
+                         * _                      (PxSpan 0.0)           = PxSpan 0.0
+                         * (PxSpan 1.0)           r                      = r // Identity
+                         * l                      (PxSpan 1.0)           = l // Identity
+                         * (PxSpan a)             (PxSpan b)             = PxSpan (a * b)
+                         * (PxSpan a)             (MulSpan (PxSpan b) c) = MulSpan (PxSpan (a * b)) c // Associativity
+                         * (PxSpan a)             (MulSpan b (PxSpan c)) = MulSpan (PxSpan (a * c)) b // Associativity + commutativity
+                         * (MulSpan a (PxSpan b)) (PxSpan c)             = MulSpan a (PxSpan (b * c)) // Associativity
+                         * (MulSpan (PxSpan a) b) (PxSpan c)             = MulSpan b (PxSpan (a * c)) // Associativity + commutativity
+                         * l                      r                      = MulSpan l r
+instance -    Span where - a            (PxSpan 0.0)  = a // Identity
+                         - (PxSpan a)   (PxSpan b)    = PxSpan (a - b)
+                         - s            t             = SubSpan s t
+instance /    Span where / (PxSpan 0.0) _             = PxSpan 0.0
+                         / _            (PxSpan 0.0)  = PxSpan 0.0 // Division by zero should be undefined, but that would be impractical
+                         / l            (PxSpan 1.0)  = l // Identity
+                         / l            r             = DivSpan l r
+instance *.   Int  where *. l                       r = toInt (toReal l * toReal r)
+instance *.   Real where *. l                       r = l * toReal r
+instance *.   Span where *. (PxSpan  a)             k = PxSpan    (a * toReal k)
+                         *. (MulSpan (PxSpan k1) a) k = MulSpan a (PxSpan (toReal k * k1))
+                         *. (MulSpan a (PxSpan k1)) k = MulSpan a (PxSpan (toReal k * k1))
+                         *. (DivSpan a (PxSpan k1)) k = MulSpan a (PxSpan (toReal k / k1))
+                         *. s                       k = MulSpan s (PxSpan (toReal k))
+instance /.   Int  where /. l                       r = toInt (toReal l / toReal r)
+instance /.   Real where /. l                       r = l / toReal r
+instance /.   Span where /. (PxSpan  a)             k = PxSpan (a / toReal k)
+                         /. (MulSpan a (PxSpan k1)) k = MulSpan a (PxSpan (k1 / toReal k))
+                         /. (DivSpan a (PxSpan k1)) k = DivSpan a (PxSpan (k1 * toReal k))
+                         /. s                       k = DivSpan s (PxSpan (toReal k))
 
 instance maxOf Span where
   maxOf xs = maxSpan xs
@@ -260,18 +275,21 @@ fity yspan image=:{Image | transform = ts}
 applyTransforms :: ![ImageTransform] !ImageSpan -> (ImageSpan, ImageOffset)
 applyTransforms ts sp = foldr f (sp, (px 0.0, px 0.0)) ts
   where
-  f (RotateImage th)   (accSp          , accOff)
+  f (RotateImage th) (accSp, accOff)
     # (imSp, offs) = rotatedImageSpan th accSp
     = (imSp, accOff + offs)
-  f (SkewXImage th)    (accSp=:(_, ysp), (xoff, yoff))
+  f (SkewXImage th) (accSp=:(_, ysp), (xoff, yoff))
     # (xsp, offs) = skewXImageWidth th accSp
     = ((xsp, ysp), (xoff + offs, yoff))
-  f (SkewYImage th)    (accSp=:(xsp, _), (xoff, yoff))
+  f (SkewYImage th) (accSp=:(xsp, _), (xoff, yoff))
     # (ysp, offs) = skewYImageHeight th accSp
     = ((xsp, ysp), (xoff, yoff + offs))
-  f (FitImage xsp ysp) (_              , accOff) = ((xsp, ysp), accOff)
-  f (FitXImage sp)     ((_, ysp)       , accOff) = ((sp, ysp),  accOff)
-  f (FitYImage sp)     ((xsp, _)       , accOff) = ((xsp, sp),  accOff)
+  f (FitImage xsp ysp) (_, accOff)
+    = ((xsp, ysp), accOff)
+  f (FitXImage sp) ((xsp, ysp), accOff)
+    = ((sp, (sp / xsp) * ysp), accOff)
+  f (FitYImage sp) ((xsp, ysp), accOff)
+    = (((sp / ysp) * xsp, sp), accOff)
 
 // Rotates a rectangle by a given angle. Currently, this function is rather
 // naive. It rotates the rectangle (usually the bounding box of a shape) around

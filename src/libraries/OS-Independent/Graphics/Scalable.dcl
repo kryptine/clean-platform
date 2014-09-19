@@ -7,7 +7,7 @@ definition module Graphics.Scalable
 from Data.Maybe import :: Maybe
 from Text.HTML import :: SVGColor
 from Data.Set import :: Set
-from StdOverloaded import class zero, class +, class -, class ~, class one, class abs, class <, class ==, class toReal
+from StdOverloaded import class zero, class +, class -, class ~, class one, class abs, class <, class ==, class toReal, class /, class *
 
 :: Image m
   = { content             :: ImageContent m           // the image elements
@@ -69,8 +69,8 @@ from StdOverloaded import class zero, class +, class -, class ~, class one, clas
   | LookupSpan LookupSpan // (LookupSpan a) needs to be looked up after computing dimensions
   | AddSpan    Span Span  // (AddSpan a b) is span a + span b
   | SubSpan    Span Span  // (SubSpan a b) is span a - span b
-  | MulSpan    Span Real  // (MulSpan a k) is (span a) * k
-  | DivSpan    Span Real  // (DivSpan a k) is (span a) / k
+  | MulSpan    Span Span  // (MulSpan a b) is span a * span k
+  | DivSpan    Span Span  // (DivSpan a b) is span a / span k
   | AbsSpan    Span       // (AbsSpan a)  is absolute value of span a
   | MinSpan    [Span]     // (MinSpan as) is minimum span value in as
   | MaxSpan    [Span]     // (MaxSpan as) is maximum span value in as
@@ -121,6 +121,8 @@ instance zero Span
 instance one  Span
 instance +    Span
 instance -    Span
+instance *    Span
+instance /    Span
 instance abs  Span
 instance ~    Span
 instance *.   Span, Real, Int
