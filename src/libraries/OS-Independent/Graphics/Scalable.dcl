@@ -121,8 +121,6 @@ instance zero Span
 instance one  Span
 instance +    Span
 instance -    Span
-instance *    Span
-instance /    Span
 instance abs  Span
 instance ~    Span
 instance *.   Span, Real, Int
@@ -174,11 +172,6 @@ fitx    :: !Span       !(Image m) -> Image m
 fity    :: !Span       !(Image m) -> Image m
 skewx   :: !th         !(Image m) -> Image m | Angle th
 skewy   :: !th         !(Image m) -> Image m | Angle th
-
-applyTransforms  :: ![ImageTransform] !ImageSpan -> (ImageSpan, ImageOffset)
-skewXImageWidth  :: !th !(a, a) -> (a, a) | Angle th & IsSpan a
-skewYImageHeight :: !th !(a, a) -> (a, a) | Angle th & IsSpan a
-rotatedImageSpan :: !th !(a, a) -> ((a, a), (a, a)) | Angle th & IsSpan a
 
 :: Slash = Slash | Backslash
 
