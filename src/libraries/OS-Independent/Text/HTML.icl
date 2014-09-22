@@ -598,7 +598,7 @@ instance toString SVGElt
 where
 	toString elt
 		# eltsize	= svgEltSize elt						//Calculate the size of the string we need
-		# eltstring	= createArray eltsize '\0'				//Create an empty buffer
+		# eltstring	= createArray eltsize ' '				//Create an empty buffer
 		# eltstring	= fst (serializeSVGElt elt eltstring 0)	//Serialize the SVG element
 		= eltstring
 
@@ -606,7 +606,7 @@ svgEltsSize :: ![SVGElt] -> Int
 svgEltsSize elts = intsum svgEltSize elts
 
 svgEltSize :: !SVGElt -> Int
-svgEltSize (SVGElt            html_attrs svg_attrs elts) = 17 + attrsSize html_attrs + svgAttrsSize svg_attrs + svgEltsSize elts
+svgEltSize (SVGElt            html_attrs svg_attrs elts) = 11 + attrsSize html_attrs + svgAttrsSize svg_attrs + svgEltsSize elts
 svgEltSize (ClipPathElt       html_attrs svg_attrs elts) = 21 + attrsSize html_attrs + svgAttrsSize svg_attrs + svgEltsSize elts
 svgEltSize (CircleElt         html_attrs svg_attrs)      = 11 + attrsSize html_attrs + svgAttrsSize svg_attrs
 svgEltSize (DefsElt           html_attrs svg_attrs elts) = 13 + attrsSize html_attrs + svgAttrsSize svg_attrs + svgEltsSize elts
@@ -623,7 +623,7 @@ svgEltSize (PolylineElt       html_attrs svg_attrs)      = 11 + attrsSize html_a
 svgEltSize (RadialGradientElt html_attrs svg_attrs elts) = 33 + attrsSize html_attrs + svgAttrsSize svg_attrs + svgEltsSize elts
 svgEltSize (RectElt           html_attrs svg_attrs)      =  7 + attrsSize html_attrs + svgAttrsSize svg_attrs
 svgEltSize (StopElt           html_attrs svg_attrs)      =  7 + attrsSize html_attrs + svgAttrsSize svg_attrs
-svgEltSize (TextElt           html_attrs svg_attrs text) = 13 + attrsSize html_attrs + svgAttrsSize svg_attrs + size text
+svgEltSize (TextElt           html_attrs svg_attrs text) = 13 + attrsSize html_attrs + svgAttrsSize svg_attrs + escapedSize text
 svgEltSize _                                             = abort "Text.HTML: svgEltSize applied to unexpected argument.\n"
 
 svgAttrsSize :: ![SVGAttr] -> Int
