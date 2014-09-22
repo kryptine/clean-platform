@@ -598,7 +598,7 @@ instance toString SVGElt
 where
 	toString elt
 		# eltsize	= svgEltSize elt						//Calculate the size of the string we need
-		# eltstring	= createArray eltsize ' '				//Create an empty buffer
+		# eltstring	= createArray eltsize '\0'				//Create an empty buffer
 		# eltstring	= fst (serializeSVGElt elt eltstring 0)	//Serialize the SVG element
 		= eltstring
 
@@ -1034,7 +1034,7 @@ writeSVGPlainTag name html_attrs svg_attrs plain dest dest_i
 	# (dest, dest_i) = serializeSVGAttrs svg_attrs dest dest_i
 	# dest = {dest & [dest_i] = '>'}
 	# dest_i = dest_i + 1
-	# (dest,dest_i) = copyChars plain 0 False dest dest_i
+	# (dest,dest_i) = copyChars plain 0 True dest dest_i
 	# dest = {dest & [dest_i] = '<'}
 	# dest = {dest & [dest_i + 1] = '/'}
 	# dest_i = dest_i + 2
