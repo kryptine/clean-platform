@@ -598,7 +598,7 @@ instance toString SVGElt
 where
 	toString elt
 		# eltsize	= svgEltSize elt						//Calculate the size of the string we need
-		# eltstring	= createArray eltsize ' '				//Create an empty buffer
+		# eltstring	= createArray eltsize '\0'				//Create an empty buffer
 		# eltstring	= fst (serializeSVGElt elt eltstring 0)	//Serialize the SVG element
 		= eltstring
 
@@ -608,9 +608,9 @@ svgEltsSize elts = intsum svgEltSize elts
 svgEltSize :: !SVGElt -> Int
 svgEltSize (SVGElt            html_attrs svg_attrs elts) = 11 + attrsSize html_attrs + svgAttrsSize svg_attrs + svgEltsSize elts
 svgEltSize (ClipPathElt       html_attrs svg_attrs elts) = 21 + attrsSize html_attrs + svgAttrsSize svg_attrs + svgEltsSize elts
-svgEltSize (CircleElt         html_attrs svg_attrs)      = 11 + attrsSize html_attrs + svgAttrsSize svg_attrs
+svgEltSize (CircleElt         html_attrs svg_attrs)      =  9 + attrsSize html_attrs + svgAttrsSize svg_attrs
 svgEltSize (DefsElt           html_attrs svg_attrs elts) = 13 + attrsSize html_attrs + svgAttrsSize svg_attrs + svgEltsSize elts
-svgEltSize (EllipseElt        html_attrs svg_attrs)      = 12 + attrsSize html_attrs + svgAttrsSize svg_attrs
+svgEltSize (EllipseElt        html_attrs svg_attrs)      = 10 + attrsSize html_attrs + svgAttrsSize svg_attrs
 svgEltSize (GElt              html_attrs svg_attrs elts) =  7 + attrsSize html_attrs + svgAttrsSize svg_attrs + svgEltsSize elts
 svgEltSize (ImageElt          html_attrs svg_attrs elts) = 15 + attrsSize html_attrs + svgAttrsSize svg_attrs + svgEltsSize elts
 svgEltSize (LinearGradientElt html_attrs svg_attrs elts) = 33 + attrsSize html_attrs + svgAttrsSize svg_attrs + svgEltsSize elts
