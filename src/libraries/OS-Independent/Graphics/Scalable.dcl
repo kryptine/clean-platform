@@ -132,10 +132,15 @@ class minOf a :: [a] -> a
 instance maxOf Span, Real, Int
 instance minOf Span, Real, Int
 
-class IsSpan a | zero a & one a & + a & - a & abs a & ~ a & *. a & /. a & maxOf a & minOf a
+class IsSpan a | zero a & one a & + a & - a & abs a & ~ a & *. a & /. a & maxOf a & minOf a where
+  toSpan :: a -> Span
 
-minSpan :: ![Span] -> Span // (minimum as) is the minimum of as (zero if as = [])
-maxSpan :: ![Span] -> Span // (maximum as) is the maximum of as (zero if as = [])
+instance IsSpan Int
+instance IsSpan Real
+instance IsSpan Span
+
+minSpan :: ![s] -> Span | IsSpan s // (minimum as) is the minimum of as (zero if as = [])
+maxSpan :: ![s] -> Span | IsSpan s // (maximum as) is the maximum of as (zero if as = [])
 
 class margin a where
   margin :: !a !(Image m) -> Image m
@@ -154,24 +159,24 @@ instance margin (Span, Span, Span, Span) // (t, r, b, l) Margin is t on top, r o
     , fontweight  :: String
     }
 
-empty    :: !Span !Span      -> Image m // (empty a b) is an empty image with x-span a and y-span b
-text     :: !FontDef !String -> Image m // (text font str) is an image containg str written in font
-circle   :: !Span            -> Image m // (circle a) is an image of a circle with diameter a
-ellipse  :: !Span !Span      -> Image m // (ellipse a b) is an image of an ellipse with x-diameter a and y-diameter b
-rect     :: !Span !Span      -> Image m // (rect a b) is an image of a rectangle with x-span a and y-span b
+empty    :: !s !s            -> Image m | IsSpan s // (empty a b) is an empty image with x-span a and y-span b
+text     :: !FontDef !String -> Image m            // (text font str) is an image containg str written in font
+circle   :: !s               -> Image m | IsSpan s // (circle a) is an image of a circle with diameter a
+ellipse  :: !s !s            -> Image m | IsSpan s // (ellipse a b) is an image of an ellipse with x-diameter a and y-diameter b
+rect     :: !s !s            -> Image m | IsSpan s // (rect a b) is an image of a rectangle with x-span a and y-span b
 
-xline    :: !(Maybe (Markers m)) !Span              -> Image m // (xline a) is an image of a line with x-span a and y-span zero
-yline    :: !(Maybe (Markers m)) !Span              -> Image m // (yline a) is an image of a line with y-span a and x-span zero
-line     :: !(Maybe (Markers m)) !Slash !Span !Span -> Image m // (line a b) is an image of a line with x-span a and y-span b
-polygon  :: !(Maybe (Markers m)) ![ImageOffset]     -> Image m // (polygon xs) is an image of a polygon with coordinates xs
-polyline :: !(Maybe (Markers m)) ![ImageOffset]     -> Image m // (polyline xs) is an image of a polyline with coordinates xs
+xline    :: !(Maybe (Markers m)) !s             -> Image m | IsSpan s // (xline a) is an image of a line with x-span a and y-span zero
+yline    :: !(Maybe (Markers m)) !s             -> Image m | IsSpan s // (yline a) is an image of a line with y-span a and x-span zero
+line     :: !(Maybe (Markers m)) !Slash !s !s   -> Image m | IsSpan s // (line a b) is an image of a line with x-span a and y-span b
+polygon  :: !(Maybe (Markers m)) ![ImageOffset] -> Image m // (polygon xs) is an image of a polygon with coordinates xs
+polyline :: !(Maybe (Markers m)) ![ImageOffset] -> Image m // (polyline xs) is an image of a polyline with coordinates xs
 
-rotate  :: !th         !(Image m) -> Image m | Angle th
-fit     :: !Span !Span !(Image m) -> Image m
-fitx    :: !Span       !(Image m) -> Image m
-fity    :: !Span       !(Image m) -> Image m
-skewx   :: !th         !(Image m) -> Image m | Angle th
-skewy   :: !th         !(Image m) -> Image m | Angle th
+rotate  :: !th   !(Image m) -> Image m | Angle th
+fit     :: !s !s !(Image m) -> Image m | IsSpan s
+fitx    :: !s    !(Image m) -> Image m | IsSpan s
+fity    :: !s    !(Image m) -> Image m | IsSpan s
+skewx   :: !th   !(Image m) -> Image m | Angle th
+skewy   :: !th   !(Image m) -> Image m | Angle th
 
 :: Slash = Slash | Backslash
 

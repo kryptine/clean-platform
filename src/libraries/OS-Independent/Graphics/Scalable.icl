@@ -84,30 +84,39 @@ instance minOf Real where
 instance minOf Int where
   minOf xs = minList xs
 
-minSpan :: ![Span] -> Span
+instance IsSpan Int where
+  toSpan n = px (toReal n)
+
+instance IsSpan Real where
+  toSpan n = px n
+
+instance IsSpan Span where
+  toSpan n = n
+
+minSpan :: ![s] -> Span | IsSpan s
 minSpan []  = zero
-minSpan [x] = x
+minSpan [x] = toSpan x
 minSpan spans
   | isEmpty others = minPxs
   | isEmpty pxs    = MinSpan others
   | otherwise      = MinSpan [minPxs : others]
   where
-  spans`        = flattenMinSpans spans
+  spans`        = flattenMinSpans (map toSpan spans)
   flattenMinSpans []              = []
   flattenMinSpans [MinSpan os:xs] = flattenMinSpans xs ++ os
   flattenMinSpans [x:xs]          = [x:flattenMinSpans xs]
   (pxs, others) = partition isPxSpan spans`
   minPxs        = PxSpan (minList [x \\ PxSpan x <- pxs])
 
-maxSpan :: ![Span] -> Span
+maxSpan :: ![s] -> Span | IsSpan s
 maxSpan []  = zero
-maxSpan [x] = x
+maxSpan [x] = toSpan x
 maxSpan spans
   | isEmpty others = maxPxs
   | isEmpty pxs    = MaxSpan others
   | otherwise      = MaxSpan [maxPxs : others]
   where
-  spans`        = flattenMaxSpans spans
+  spans`        = flattenMaxSpans (map toSpan spans)
   flattenMaxSpans []              = []
   flattenMaxSpans [MaxSpan os:xs] = flattenMaxSpans xs ++ os
   flattenMaxSpans [x:xs]          = [x:flattenMaxSpans xs]
@@ -142,13 +151,13 @@ instance margin (Span, Span, Span) where
 instance margin (Span, Span, Span, Span) where
   margin sps im = { im & margin = sps }
 
-empty :: !Span !Span -> Image m
+empty :: !s !s -> Image m | IsSpan s
 empty xspan yspan = mkImage (Basic EmptyImage (maxSpan [zero, xspan], maxSpan [zero, yspan]))
 
 text :: !FontDef !String -> Image m
 text font str = mkImage (Basic (TextImage font str) (textxspan font str, px font.FontDef.fontysize))
 
-circle :: !Span -> Image m
+circle :: !s -> Image m | IsSpan s
 circle diameter
   = { mkImage (Basic CircleImage (d, d))
     & attribs = 'DS'.fromList [ ImageStrokeWidthAttr {strokewidth = px 0.0}
@@ -159,7 +168,7 @@ circle diameter
   where
   d = maxSpan [zero, diameter]
 
-ellipse :: !Span !Span -> Image m
+ellipse :: !s !s -> Image m | IsSpan s
 ellipse diax diay
   = { mkImage (Basic EllipseImage (maxSpan [zero, diax], maxSpan [zero, diay]))
     & attribs = 'DS'.fromList [ ImageStrokeWidthAttr {strokewidth = px 0.0}
@@ -168,7 +177,7 @@ ellipse diax diay
                               ]
     }
 
-rect :: !Span !Span -> Image m
+rect :: !s !s -> Image m | IsSpan s
 rect xspan yspan
   = { mkImage (Basic RectImage (maxSpan [zero, xspan], maxSpan [zero, yspan]))
     & attribs = 'DS'.fromList [ ImageStrokeWidthAttr {strokewidth = px 0.0}
@@ -177,15 +186,15 @@ rect xspan yspan
                               ]
     }
 
-xline :: !(Maybe (Markers m)) !Span -> Image m
+xline :: !(Maybe (Markers m)) !s -> Image m | IsSpan s
 xline markers xspan = line markers Slash xspan zero
 
-yline :: !(Maybe (Markers m)) !Span -> Image m
+yline :: !(Maybe (Markers m)) !s -> Image m | IsSpan s
 yline markers yspan = line markers Slash zero yspan
 
-line :: !(Maybe (Markers m)) !Slash !Span !Span -> Image m
+line :: !(Maybe (Markers m)) !Slash !s !s -> Image m | IsSpan s
 line markers slash xspan yspan
-  = { mkImage (Line { lineSpan    = (abs xspan, abs yspan)
+  = { mkImage (Line { lineSpan    = (abs (toSpan xspan), abs (toSpan yspan))
                     , markers     = markers
                     , lineContent = SimpleLineImage slash
                     })
@@ -228,7 +237,7 @@ rotate a image=:{Image | transform = ts}
           ts
             = [RotateImage a` : ts]
 
-fit :: !Span !Span !(Image m) -> Image m
+fit :: !s !s !(Image m) -> Image m | IsSpan s
 fit xspan yspan image=:{Image | transform = ts}
   = {Image | image & transform = ts`}
   where
@@ -238,21 +247,21 @@ fit xspan yspan image=:{Image | transform = ts}
              [FitImage _ _ : ts] = [FitImage xspan` yspan` : ts]
              ts                  = [FitImage xspan` yspan` : ts]
 
-fitx :: !Span !(Image m) -> Image m
+fitx :: !s !(Image m) -> Image m | IsSpan s
 fitx xspan image=:{Image | transform = ts}
   = {Image | image & transform = ts`}
   where
-  xspan` = maxSpan [zero,xspan]
+  xspan` = maxSpan [zero, xspan]
   ts`    = case ts of
              [FitXImage _ : ts] = [FitXImage xspan` : ts]
              [FitYImage _ : ts] = [FitXImage xspan` : ts]
              ts                 = [FitXImage xspan` : ts]
 
-fity :: !Span !(Image m) -> Image m
+fity :: !s !(Image m) -> Image m | IsSpan s
 fity yspan image=:{Image | transform = ts}
   = {Image | image & transform = ts`}
   where
-  yspan` = maxSpan [zero,yspan]
+  yspan` = maxSpan [zero, yspan]
   ts`    = case ts of
              [FitXImage _ : ts] = [FitYImage yspan` : ts]
              [FitYImage _ : ts] = [FitYImage yspan` : ts]
@@ -297,7 +306,7 @@ mkEdges edges = 'DS'.fromList (map (\(xs, ys) -> ('DS'.fromList xs, 'DS'.fromLis
 
 overlay :: ![ImageAlign] ![ImageOffset] ![Image m] !(Host m) -> Image m
 overlay _      _       []   (Just img) = img
-overlay _      _       []   _          = empty zero zero
+overlay _      _       []   _          = empty 0 0
 overlay aligns offsets imgs host
   # l = length imgs
   = mkImage (Composite { offsets = take l (offsets ++ repeat (zero, zero))
@@ -318,7 +327,7 @@ above xlayouts offsets imgs host
 
 grid :: !GridDimension !GridLayout ![ImageAlign] ![ImageOffset] ![Image m] !(Host m) -> Image m
 grid _ _ _ _ [] (Just img) = img
-grid _ _ _ _ [] _          = empty zero zero
+grid _ _ _ _ [] _          = empty 0 0
 grid dimension layout aligns offsets imgs host
   = mkImage (Composite { offsets = take noOfImgs (offsets ++ repeat (zero, zero))
                        , host    = host
@@ -332,7 +341,7 @@ grid dimension layout aligns offsets imgs host
                                 in (noOfImgs / no` + sign (noOfImgs rem no`), no`)
                    Columns no = let no` = max 1 no
                                 in (no`, noOfImgs / no` + sign (noOfImgs rem no`))
-  imgsComplete = imgs ++ repeatn (cols * rows - noOfImgs) (empty zero zero)
+  imgsComplete = imgs ++ repeatn (cols * rows - noOfImgs) (empty 0 0)
   imgs`        = arrangeLayout layout (if (isRowMajor dimension)
                                          (chop cols imgsComplete)
                                          [map (flip (!!) i) (chop rows imgsComplete) \\ i <- [0 .. rows - 1]]
@@ -350,7 +359,7 @@ grid dimension layout aligns offsets imgs host
 
 collage :: ![ImageOffset] ![Image m] !(Host m) -> Image m
 collage _       []   (Just img) = img
-collage _       []   _          = empty zero zero
+collage _       []   _          = empty 0 0
 collage offsets imgs host
   = mkImage (Composite { offsets = take (length imgs) (offsets ++ repeat (zero, zero))
                        , host    = host
