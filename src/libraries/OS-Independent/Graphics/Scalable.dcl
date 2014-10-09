@@ -226,6 +226,7 @@ addEdge :: ![ImageTag] ![ImageTag] !(Image m) -> Image m
   | ImageFillAttr          (FillAttr        m)
   | ImageFillOpacityAttr   (OpacityAttr     m)
   | ImageOnClickAttr       (OnClickAttr     m)
+  | ImageDashAttr          (DashAttr        m)
 
 instance < (ImageAttr m)
 instance == (ImageAttr m)
@@ -241,8 +242,9 @@ class tuneImage attr :: (Image m) (attr m) -> Image m
 :: FillAttr          m = { fill        :: SVGColor }
 :: OpacityAttr       m = { opacity     :: Real     }
 :: OnClickAttr       m = { onclick     :: (m -> m) }
+:: DashAttr          m = { dash        :: [Int]    }
 
-instance tuneImage StrokeAttr, StrokeWidthAttr, FillAttr, OpacityAttr, OnClickAttr, XRadiusAttr, YRadiusAttr
+instance tuneImage StrokeAttr, StrokeWidthAttr, FillAttr, OpacityAttr, OnClickAttr, XRadiusAttr, YRadiusAttr, DashAttr
 
 class toSVGColor a :: a -> SVGColor
 instance toSVGColor String, RGB
