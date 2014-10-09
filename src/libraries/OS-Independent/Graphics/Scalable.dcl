@@ -285,9 +285,3 @@ isPxSpan :: !Span -> Bool
 
 instance == FontDef
 instance < FontDef
-
-instance == Span
-instance < Span
-
-instance == LookupSpan
-instance < LookupSpan
