@@ -142,14 +142,20 @@ class margin a where
 instance margin Span where
   margin sp im = margin (sp, sp, sp, sp) im
 
-instance margin (Span, Span) where
-  margin (sp1, sp2) im = margin (sp1, sp2, sp1, sp2) im
+instance margin (a, b) | IsSpan a & IsSpan b where
+  margin (sp1, sp2) im = margin (toSpan sp1, toSpan sp2, toSpan sp1, toSpan sp2) im
 
-instance margin (Span, Span, Span) where
-  margin (sp1, sp2, sp3) im = margin (sp1, sp2, sp3, sp2) im
+instance margin (a, b, c) | IsSpan a & IsSpan b & IsSpan c where
+  margin (sp1, sp2, sp3) im = margin (toSpan sp1, toSpan sp2, toSpan sp3, toSpan sp2) im
 
-instance margin (Span, Span, Span, Span) where
-  margin sps im = { im & margin = sps }
+instance margin (a, b, c, d) | IsSpan a & IsSpan b & IsSpan c & IsSpan d where
+  margin (sp1, sp2, sp3, sp4) im = margin (toSpan sp1, toSpan sp2, toSpan sp3, toSpan sp4) im
+
+instance margin Int where
+  margin sp im = margin (toSpan sp) im
+
+instance margin Real where
+  margin sp im = margin (toSpan sp) im
 
 empty :: !s !s -> Image m | IsSpan s
 empty xspan yspan = mkImage (Basic EmptyImage (maxSpan [zero, xspan], maxSpan [zero, yspan]))

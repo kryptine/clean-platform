@@ -145,10 +145,12 @@ maxSpan :: ![s] -> Span | IsSpan s // (maximum as) is the maximum of as (zero if
 class margin a where
   margin :: !a !(Image m) -> Image m
 
-instance margin Span                     // Margin is the same span on all sides
-instance margin (Span, Span)             // (h, v) Margin is h on top and bottom and v on left and right
-instance margin (Span, Span, Span)       // (t, h, b) Margin is t on top, v on left and right and b on bottom
-instance margin (Span, Span, Span, Span) // (t, r, b, l) Margin is t on top, r on the right, b on the bottom and l on the left
+instance margin Span // Margin is the same span on all sides
+instance margin Int  // Margin is the same span on all sides
+instance margin Real // Margin is the same span on all sides
+instance margin (a, b)       | IsSpan a & IsSpan b                       // (h, v) Margin is h on top and bottom and v on left and right
+instance margin (a, b, c)    | IsSpan a & IsSpan b & IsSpan c            // (t, h, b) Margin is t on top, v on left and right and b on bottom
+instance margin (a, b, c, d) | IsSpan a & IsSpan b & IsSpan c & IsSpan d // (t, r, b, l) Margin is t on top, r on the right, b on the bottom and l on the left
 
 :: FontDef
   = { fontfamily  :: String
