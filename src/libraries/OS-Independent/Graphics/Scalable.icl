@@ -149,7 +149,7 @@ instance margin (a, b, c) | IsSpan a & IsSpan b & IsSpan c where
   margin (sp1, sp2, sp3) im = margin (toSpan sp1, toSpan sp2, toSpan sp3, toSpan sp2) im
 
 instance margin (a, b, c, d) | IsSpan a & IsSpan b & IsSpan c & IsSpan d where
-  margin (sp1, sp2, sp3, sp4) im = margin (toSpan sp1, toSpan sp2, toSpan sp3, toSpan sp4) im
+  margin (sp1, sp2, sp3, sp4) im = { im & margin = (toSpan sp1, toSpan sp2, toSpan sp3, toSpan sp4)}
 
 instance margin Int where
   margin sp im = margin (toSpan sp) im
