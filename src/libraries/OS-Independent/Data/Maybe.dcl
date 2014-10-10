@@ -23,7 +23,7 @@ instance Functor Maybe
  * Apply a function to the the contents of a Just value and directly return
  * the result, or return a default value if the argument is a Nothing value.
  */
-maybe :: .b (.a -> .b) !(Maybe .a) -> .b
+maybe :: w:b v:(.a -> w:b) !.(Maybe .a) -> w:b
 
 /**
  * Apply a function to the the contents of a Just value and the state, and

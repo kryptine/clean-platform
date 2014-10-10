@@ -23,7 +23,7 @@ where
 	fmap f Nothing	= Nothing
 	fmap f (Just a)	= Just (f a)
 
-maybe :: .b (.a -> .b) !(Maybe .a) -> .b
+maybe :: w:b v:(.a -> w:b) !.(Maybe .a) -> w:b
 maybe x _ Nothing  = x
 maybe _ f (Just x) = f x
 
