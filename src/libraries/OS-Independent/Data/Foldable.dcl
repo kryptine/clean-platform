@@ -6,7 +6,7 @@ from Data.Either import :: Either
 from Data.Functor import class Functor (..)
 from Data.Monoid import class Monoid (..)
 from Data.Maybe import :: Maybe
-from StdOverloaded import class +, class one, class *, class zero, class <
+from StdOverloaded import class +, class one, class *, class zero, class <, class ==
 from StdClass import class Ord
 from StdFunc import flip
 
