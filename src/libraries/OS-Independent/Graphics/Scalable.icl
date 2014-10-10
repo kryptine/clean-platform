@@ -166,7 +166,8 @@ text font str = mkImage (Basic (TextImage font str) (textxspan font str, px font
 circle :: !s -> Image m | IsSpan s
 circle diameter
   = { mkImage (Basic CircleImage (d, d))
-    & attribs = 'DS'.fromList [ ImageStrokeWidthAttr {strokewidth = px 0.0}
+    & attribs = 'DS'.fromList [ ImageStrokeAttr      {stroke      = toSVGColor "black"}
+                              , ImageStrokeWidthAttr {strokewidth = px 1.0}
                               , ImageFillAttr        {fill        = toSVGColor "black"}
                               , ImageFillOpacityAttr {opacity     = 1.0}
                               ]
@@ -177,7 +178,8 @@ circle diameter
 ellipse :: !s !s -> Image m | IsSpan s
 ellipse diax diay
   = { mkImage (Basic EllipseImage (maxSpan [zero, diax], maxSpan [zero, diay]))
-    & attribs = 'DS'.fromList [ ImageStrokeWidthAttr {strokewidth = px 0.0}
+    & attribs = 'DS'.fromList [ ImageStrokeAttr      {stroke      = toSVGColor "black"}
+                              , ImageStrokeWidthAttr {strokewidth = px 1.0}
                               , ImageFillAttr        {fill        = toSVGColor "black"}
                               , ImageFillOpacityAttr {opacity     = 1.0}
                               ]
@@ -186,7 +188,8 @@ ellipse diax diay
 rect :: !s !s -> Image m | IsSpan s
 rect xspan yspan
   = { mkImage (Basic RectImage (maxSpan [zero, xspan], maxSpan [zero, yspan]))
-    & attribs = 'DS'.fromList [ ImageStrokeWidthAttr {strokewidth = px 0.0}
+    & attribs = 'DS'.fromList [ ImageStrokeAttr      {stroke      = toSVGColor "black"}
+                              , ImageStrokeWidthAttr {strokewidth = px 1.0}
                               , ImageFillAttr        {fill        = toSVGColor "black"}
                               , ImageFillOpacityAttr {opacity     = 1.0}
                               ]
