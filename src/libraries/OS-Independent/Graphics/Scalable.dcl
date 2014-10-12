@@ -7,7 +7,7 @@ definition module Graphics.Scalable
 from Data.Maybe import :: Maybe
 from Text.HTML import :: SVGColor
 from Data.Set import :: Set
-from StdOverloaded import class zero, class +, class -, class ~, class one, class abs, class <, class ==, class toReal, class /, class *
+from StdOverloaded import class zero, class +, class -, class ~, class one, class sign, class abs, class <, class ==, class toReal, class /, class *
 
 :: Image m
   = { content             :: ImageContent m           // the image elements
@@ -228,7 +228,7 @@ addEdge :: ![ImageTag] ![ImageTag] !(Image m) -> Image m
   | ImageOnClickAttr       (OnClickAttr     m)
   | ImageDashAttr          (DashAttr        m)
 
-instance < (ImageAttr m)
+instance <  (ImageAttr m)
 instance == (ImageAttr m)
 
 class tuneImage attr :: (Image m) (attr m) -> Image m
@@ -267,7 +267,7 @@ tags :: !(Image m) -> [ImageTag]
 instance == ImageTag
 instance <  ImageTag
 
-instance + ImageOffset
+instance +  ImageOffset
 
 :: Deg = Deg Real
 :: Rad = Rad Real
@@ -279,9 +279,10 @@ class Angle a where
 
 instance toReal Deg
 instance toReal Rad
-
-instance Angle Deg
-instance Angle Rad
+instance Angle  Deg
+instance Angle  Rad
+instance sign   Deg
+instance sign   Rad
 
 isPxSpan :: !Span -> Bool
 

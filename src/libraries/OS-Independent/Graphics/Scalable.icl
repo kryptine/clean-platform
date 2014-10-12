@@ -513,6 +513,9 @@ instance zero Deg where
 instance one Deg where
   one = Deg 1.0
 
+instance sign Deg where
+  sign (Deg r) = sign r
+
 instance Angle Rad where
   toDeg  (Rad r) = Deg (r / (pi / 180.0))
   toRad  r       = r
@@ -538,6 +541,9 @@ instance zero Rad where
 
 instance one Rad where
   one = Rad 1.0
+
+instance sign Rad where
+  sign (Rad r) = sign r
 
 instance == FontDef where
   (==) fd1 fd2 = fd1.fontfamily  == fd2.fontfamily
