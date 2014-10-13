@@ -376,14 +376,14 @@ collage offsets imgs host
                        , edges   = 'DS'.newSet
                        })
 
-(@$) infixr :: !(Image m) !(Image m) -> Image m
-(@$) mask orig = maskWith orig mask
+(@$) infixr :: !(Mask m) !(Image m) -> Image m
+(@$) mask orig = maskWith mask orig
 
-($@) infixl :: !(Image m) !(Image m) -> Image m
-($@) orig mask = maskWith mask orig
+($@) infixl :: !(Image m) !(Mask m) -> Image m
+($@) orig mask = maskWith orig mask
 
-maskWith :: !(Image m) !(Image m) -> Image m
-maskWith orig mask = { orig & mask = Just mask }
+maskWith :: !(Mask m) !(Image m) -> Image m
+maskWith mask orig = { orig & mask = Just mask }
 
 addEdge :: ![ImageTag] ![ImageTag] !(Image m) -> Image m
 addEdge fromTags toTags img=:{content = Composite c=:{ edges }} = { img & content = Composite {c & edges = 'DS'.insert ('DS'.fromList fromTags, 'DS'.fromList toTags) edges }}

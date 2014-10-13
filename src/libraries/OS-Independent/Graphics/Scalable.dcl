@@ -193,10 +193,12 @@ above   ::                                ![XAlign] ![ImageOffset] ![Image m] !(
 grid    :: !GridDimension !GridLayout ![ImageAlign] ![ImageOffset] ![Image m] !(Host m) -> Image m
 collage ::                                          ![ImageOffset] ![Image m] !(Host m) -> Image m
 
-(@$) infixr :: !(Image m) !(Image m) -> Image m
-($@) infixl :: !(Image m) !(Image m) -> Image m
+:: Mask m :== Image m
 
-maskWith :: !(Image m) !(Image m) -> Image m
+(@$) infixr :: !(Mask  m) !(Image m) -> Image m
+($@) infixl :: !(Image m) !(Mask  m) -> Image m
+
+maskWith :: !(Mask m) !(Image m) -> Image m
 
 addEdge :: ![ImageTag] ![ImageTag] !(Image m) -> Image m
 
