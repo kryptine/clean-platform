@@ -420,6 +420,7 @@ consNameOf (ImageYRadiusAttr     _) = "ImageYRadiusAttr"
 consNameOf (ImageFillAttr        _) = "ImageFillAttr"
 consNameOf (ImageFillOpacityAttr _) = "ImageFillOpacityAttr"
 consNameOf (ImageOnClickAttr     _) = "ImageOnClickAttr"
+consNameOf (ImageDashAttr        _) = "ImageDashAttr"
 
 instance < (ImageAttr m) where < a b = consNameOf a < consNameOf b
 instance == (ImageAttr m) where == a b = consNameOf a == consNameOf b
