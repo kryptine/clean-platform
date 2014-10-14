@@ -18,7 +18,6 @@ from StdOverloaded import class zero, class +, class -, class ~, class one, clas
     , totalSpan           :: ImageSpan                // Total image span
     , margin              :: (Span, Span, Span, Span) // Image margin
     , transformCorrection :: ImageOffset              // Correction required after transformation
-    , connectors          :: [Connector]              // Connector point to which lines may be attached
     }
 
 :: ImageTransform
@@ -79,8 +78,6 @@ from StdOverloaded import class zero, class +, class -, class ~, class one, clas
 
 :: Connector :== (Span, Span)
 
-:: Edge :== ([ImageTag], [ImageTag])
-
 :: BasicImage
   = EmptyImage
   | TextImage FontDef String
@@ -92,7 +89,6 @@ from StdOverloaded import class zero, class +, class -, class ~, class one, clas
   = { offsets :: [ImageOffset]
     , host    :: Host m
     , compose :: Compose m
-    , edges   :: Set (Set ImageTag, Set ImageTag)
     }
 
 :: LookupSpan
@@ -199,8 +195,6 @@ collage ::                                          ![ImageOffset] ![Image m] !(
 ($@) infixl :: !(Image m) !(Mask  m) -> Image m
 
 maskWith :: !(Mask m) !(Image m) -> Image m
-
-addEdge :: ![ImageTag] ![ImageTag] !(Image m) -> Image m
 
 :: XAlign
   = AtLeft

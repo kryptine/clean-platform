@@ -133,7 +133,6 @@ mkImage cnt =
   , totalSpan           = (px 0.0, px 0.0)
   , margin              = (px 0.0, px 0.0, px 0.0, px 0.0)
   , transformCorrection = (px 0.0, px 0.0)
-  , connectors          = []
   }
 
 class margin a where
@@ -310,9 +309,6 @@ degree d = Deg d
 
 pi =: 3.14159265359
 
-mkEdges :: [Edge] -> Set (Set ImageTag, Set ImageTag)
-mkEdges edges = 'DS'.fromList (map (\(xs, ys) -> ('DS'.fromList xs, 'DS'.fromList ys)) edges)
-
 overlay :: ![ImageAlign] ![ImageOffset] ![Image m] !(Host m) -> Image m
 overlay _      _       []   (Just img) = img
 overlay _      _       []   _          = empty 0 0
@@ -321,7 +317,6 @@ overlay aligns offsets imgs host
   = mkImage (Composite { offsets = take l (offsets ++ repeat (zero, zero))
                        , host    = host
                        , compose = AsOverlay (take l (aligns ++ repeat (AtLeft, AtTop))) imgs
-                       , edges   = 'DS'.newSet
                        })
 
 beside :: ![YAlign] ![ImageOffset] ![Image m] !(Host m) -> Image m
@@ -341,7 +336,6 @@ grid dimension layout aligns offsets imgs host
   = mkImage (Composite { offsets = take noOfImgs (offsets ++ repeat (zero, zero))
                        , host    = host
                        , compose = AsGrid (cols, rows) (take noOfImgs (aligns ++ repeat (AtLeft, AtTop))) imgs`
-                       , edges   = 'DS'.newSet
                        })
   where
   noOfImgs     = length imgs
@@ -373,21 +367,16 @@ collage offsets imgs host
   = mkImage (Composite { offsets = take (length imgs) (offsets ++ repeat (zero, zero))
                        , host    = host
                        , compose = AsCollage imgs
-                       , edges   = 'DS'.newSet
                        })
 
 (@$) infixr :: !(Mask m) !(Image m) -> Image m
 (@$) mask orig = maskWith mask orig
 
 ($@) infixl :: !(Image m) !(Mask m) -> Image m
-($@) orig mask = maskWith orig mask
+($@) orig mask = maskWith mask mask
 
 maskWith :: !(Mask m) !(Image m) -> Image m
 maskWith mask orig = { orig & mask = Just mask }
-
-addEdge :: ![ImageTag] ![ImageTag] !(Image m) -> Image m
-addEdge fromTags toTags img=:{content = Composite c=:{ edges }} = { img & content = Composite {c & edges = 'DS'.insert ('DS'.fromList fromTags, 'DS'.fromList toTags) edges }}
-addEdge fromTags toTags img                                     = img
 
 instance tuneImage StrokeAttr      where
   tuneImage image=:{Image | attribs} attr = {Image | image & attribs = 'DS'.insert (ImageStrokeAttr      attr) attribs}
