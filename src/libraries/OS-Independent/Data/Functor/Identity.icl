@@ -17,5 +17,5 @@ instance Applicative Identity where
   (<*>) (Identity f) (Identity x) = Identity (f x)
 
 instance Monad Identity where
-    (>>=) (Identity m) k  = k m
+  bind (Identity m) k  = k m
 

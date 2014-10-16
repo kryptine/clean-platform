@@ -24,7 +24,7 @@ instance Applicative (StateT s m) | Monad m where
   (<*>) sf sa = ap sf sa
 
 instance Monad (StateT s m) | Monad m where
-  (>>=) m k = StateT $ \s -> (runStateT m s >>= \(a, s`) -> runStateT (k a) s`)
+  bind m k = StateT $ \s -> (runStateT m s >>= \(a, s`) -> runStateT (k a) s`)
 
 instance MonadTrans (StateT s) where
   liftT m = StateT $ \s -> m >>= \a -> return (a, s)
