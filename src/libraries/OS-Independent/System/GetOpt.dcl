@@ -36,7 +36,7 @@ over 1100 lines, we need only 195 here, including a 46 line example!
 
 */
 
-import StdEnv, Maybe
+import StdEnv, Data.Maybe
 
 // What to do with options following non-options
 :: ArgOrder a

@@ -1,13 +1,14 @@
-definition module Identity
+definition module Data.Functor.Identity
 
-from Functor import class Functor
-from Monad import class Monad
+from Data.Functor import class Functor
+from Control.Monad import class Monad
+from Control.Applicative import class Applicative
 
 :: Identity a = Identity a
 
-instance Functor Identity
-
-instance Monad Identity
-
 runIdentity :: (Identity .a) -> .a
+
+instance Functor Identity
+instance Applicative Identity
+instance Monad Identity
 

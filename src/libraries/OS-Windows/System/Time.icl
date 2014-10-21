@@ -1,7 +1,7 @@
-implementation module Time
+implementation module System.Time
 
 import StdString, StdArray, StdClass, StdOverloaded, StdInt, StdMisc
-import _Pointer
+import System._Pointer
 
 import code from library "msvcrt.txt"
 

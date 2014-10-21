@@ -1,6 +1,8 @@
-implementation module Trans
+implementation module Control.Monad.Trans
 
-from Monad import class Monad
+from Data.Functor import class Functor
+from Control.Applicative import class Applicative
+from Control.Monad import class Monad
 
 class MonadTrans t where
-  lift :: (m a) -> t m a | Monad m
+  liftT :: (m a) -> t m a | Monad m

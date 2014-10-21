@@ -1,21 +1,40 @@
-implementation module Set
+implementation module Data.Set
 
-import StdClass, StdMisc, StdBool, StdFunc, StdInt
-import Maybe
-
-from StdList import foldl
+import StdClass, StdMisc, StdBool, StdList, StdFunc, StdInt, StdTuple
+import Data.Maybe
 
 :: Ordering = LT | GT | EQ
+
+mapSet :: (a -> b) (Set a) -> Set b | < a & == a & < b & == b
+mapSet f s = fromList (map f (toList s))
+
+mapSetMonotonic :: (a -> b) (Set a) -> Set b
+mapSetMonotonic _ Tip = Tip
+mapSetMonotonic f (Bin n x l r) = Bin n (f x) (mapSetMonotonic f l) (mapSetMonotonic f r)
 
 compare :: a a -> Ordering | < a & == a
 compare x y = if (x<y) LT (if (x>y) GT EQ)
 
-/* 
+/*
  * Sets are size balanced trees.
  * A set of values @a@.
  */
-:: Set a = Tip 
-         | Bin !Int a !(Set a) !(Set a) 
+:: Set a = Tip
+         | Bin !Int a !(Set a) !(Set a)
+
+instance == (Set a) | == a where
+  (==) t1 t2  = (size t1 == size t2) && (toAscList t1 == toAscList t2)
+
+instance < (Set a) | < a where
+  (<) s1 s2 = compare (toAscList s1) (toAscList s2)
+    where
+    compare []     [] = False
+    compare []     _  = True
+    compare [_:_]  [] = False
+    compare [a:as] [b:bs]
+      | a < b     = True
+      | a > b     = False
+      | otherwise = compare as bs
 
 /*--------------------------------------------------------------------
  * Query
@@ -63,7 +82,7 @@ newSet :: Set a
 newSet = empty
 
 // | /O(1)/. Create a singleton set.
-singleton :: a -> Set a
+singleton :: u:a -> w:(Set u:a), [w <= u]
 singleton x 
   = Bin 1 x Tip Tip
 
@@ -74,7 +93,7 @@ singleton x
 // | /O(log n)/. Insert an element in a set.
 // If the set already contains an element equal to the given value,
 // it is replaced with the new value.
-insert :: a (Set a) -> Set a | < a & == a
+insert :: a .(Set a) -> Set a | < a & == a
 insert x t
   = case t of
       Tip -> singleton x
@@ -85,7 +104,7 @@ insert x t
                EQ -> Bin sz x l r
                
 // | /O(log n)/. Delete an element from a set.
-delete :: a (Set a) -> Set a | < a & == a
+delete :: a .(Set a) -> Set a | < a & == a
 delete x t
   = case t of
       Tip -> Tip
@@ -135,13 +154,13 @@ findMax (Bin _ _ _ r)    = findMax r
 findMax Tip              = abort "Set.findMax: empty set has no maximal element"
 
 // | /O(log n)/. Delete the minimal element.
-deleteMin :: (Set a) -> Set a
+deleteMin :: .(Set a) -> Set a
 deleteMin (Bin _ _ Tip r) = r
 deleteMin (Bin _ x l r)   = balance x (deleteMin l) r
 deleteMin Tip             = Tip
 
 // | /O(log n)/. Delete the maximal element.
-deleteMax :: (Set a) -> Set a
+deleteMax :: .(Set a) -> Set a
 deleteMax (Bin _ _ l Tip) = l
 deleteMax (Bin _ x l r)   = balance x l (deleteMax r)
 deleteMax Tip             = Tip
@@ -151,7 +170,7 @@ deleteMax Tip             = Tip
  *--------------------------------------------------------------------*/
  
 // | The union of a list of sets: (@'unions' == 'foldl' 'union' 'empty'@).
-unions :: [Set a] -> Set a | < a & == a
+unions :: u:[v:(Set a)] -> Set a | < a & == a, [u <= v]
 unions ts
   = foldl union empty ts
 
@@ -159,12 +178,12 @@ unions ts
 // equal elements are encountered.
 // The implementation uses the efficient /hedge-union/ algorithm.
 // Hedge-union is more efficient on (bigset `union` smallset).
-union :: (Set a) (Set a) -> Set a | < a & == a
+union :: u:(Set a) u:(Set a) -> Set a | < a & == a
 union Tip t2  = t2
 union t1 Tip  = t1
 union t1 t2 = hedgeUnion (const LT) (const GT) t1 t2
 
-hedgeUnion :: (a -> Ordering) (a -> Ordering) (Set a) (Set a) -> Set a | < a & == a
+hedgeUnion :: (a -> Ordering) (a -> Ordering) u:(Set a) u:(Set a) -> Set a | < a & == a
 hedgeUnion _     _     t1 Tip
   = t1
 hedgeUnion cmplo cmphi Tip (Bin _ x l r)
@@ -264,7 +283,7 @@ partition p (Bin _ x l r)
  *--------------------------------------------------------------------*/
 
 // | /O(n)/. Post-order fold.
-fold :: (a -> b -> b) b (Set a) -> b
+fold :: (a -> .b -> .b) .b .(Set a) -> .b
 fold _ z Tip           = z
 fold f z (Bin _ x l r) = fold f (f x (fold f z r)) l
 
@@ -441,7 +460,7 @@ merge l=:(Bin sizeL x lx rx) r=:(Bin sizeR y ly ry)
  * [glue l r]: glues two trees together.
  * Assumes that [l] and [r] are already balanced with respect to each other.
  *--------------------------------------------------------------------*/
-glue :: (Set a) (Set a) -> Set a
+glue :: .(Set a) .(Set a) -> Set a
 glue Tip r = r
 glue l Tip = l
 glue l r   
@@ -451,7 +470,7 @@ glue l r
 // | /O(log n)/. Delete and find the minimal element.
 // 
 // > deleteFindMin set = (findMin set, deleteMin set)
-deleteFindMin :: (Set a) -> (a,Set a)
+deleteFindMin :: .(Set a) -> (a, Set a)
 deleteFindMin t 
   = case t of
       Bin _ x Tip r -> (x,r)
@@ -461,7 +480,7 @@ deleteFindMin t
 // | /O(log n)/. Delete and find the maximal element.
 // 
 // > deleteFindMax set = (findMax set, deleteMax set)
-deleteFindMax :: (Set a) -> (a,Set a)
+deleteFindMax :: .(Set a) -> (a, Set a)
 deleteFindMax t
   = case t of
       Bin _ x l Tip -> (x,l)
@@ -470,13 +489,13 @@ deleteFindMax t
 
 // | /O(log n)/. Retrieves the minimal key of the set, and the set
 // stripped of that element, or 'Nothing' if passed an empty set.
-minView :: (Set a) -> Maybe (a, Set a)
+minView :: .(Set a) -> .(Maybe (a,Set a))
 minView Tip = Nothing
 minView x = Just (deleteFindMin x)
 
 // | /O(log n)/. Retrieves the maximal key of the set, and the set
 // stripped of that element, or 'Nothing' if passed an empty set.
-maxView :: (Set a) -> Maybe (a, Set a)
+maxView :: .(Set a) -> .(Maybe (a,Set a))
 maxView Tip = Nothing
 maxView x = Just (deleteFindMax x)
 

@@ -1,4 +1,4 @@
-definition module _WinDef
+definition module System._WinDef
 
 :: HANDLE	:== Int
 :: DWORD	:== Int

@@ -1,5 +1,6 @@
-implementation module SHA1
-import StdEnv, Tuple, Text, FilePath, File, Error, Functor
+implementation module Crypto.Hash.SHA1
+import StdEnv
+import Data.Tuple, Text, System.FilePath, System.File, Data.Error, Data.Functor
 /**
 * Simple pure Clean SHA1 implementation.
 * Probably not the fastest, but without any dependencies

@@ -1,4 +1,14 @@
-implementation module Functor
+implementation module Data.Functor
 
-(<$>) infixl 4 :: u:((.a -> .b) -> v:(w:(c .a) -> w:(c .b))) | Functor c, [v <= u]
-(<$>) = fmap
+from StdFunc import o
+import Control.Applicative
+import Control.Monad
+
+instance Functor ((->) r) where
+  fmap f g = \x -> (f o g) x
+
+instance Functor ((,) a) where
+  fmap f (x, y) = (x, f y)
+
+(<$>) infixl 4 :: (a -> b) (f a) -> (f b) | Functor f
+(<$>) f fa = fmap f fa

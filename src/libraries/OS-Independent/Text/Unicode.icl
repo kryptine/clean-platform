@@ -1,7 +1,7 @@
-implementation module Unicode
+implementation module Text.Unicode
 
 import StdArray, StdInt, StdList
-from UChar import :: UChar, instance fromChar UChar
+from Text.Unicode.UChar import :: UChar, instance fromChar UChar
 
 instance fromString UString
 where

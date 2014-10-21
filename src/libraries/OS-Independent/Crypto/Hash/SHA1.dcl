@@ -1,4 +1,4 @@
-definition module SHA1
+definition module Crypto.Hash.SHA1
 /**
 * Simple pure Clean SHA1 implementation.
 * Probably not the fastest, but without any dependencies
@@ -7,9 +7,9 @@ definition module SHA1
 
 from StdString import class toString
 from StdFile import class FileSystem
-from FilePath import :: FilePath
-from Error import :: MaybeError
-from File import :: FileError
+from System.FilePath import :: FilePath
+from Data.Error import :: MaybeError
+from System.File import :: FileError
 
 :: SHA1Digest = SHA1Digest {#Char} // 160 bit (20byte) message digest
 

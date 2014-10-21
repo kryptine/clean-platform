@@ -1,6 +1,7 @@
-implementation module List
+implementation module Data.List
 
-import Maybe, StdTuple, StdBool, StdEnum, StdFunc, StdList, StdOrdList, Functor
+import Data.Maybe, StdTuple, StdBool, StdEnum, StdFunc, StdList, StdOrdList, Data.Functor, GenEq
+from StdMisc import abort
 
 // Haskell Data.List compat
 
@@ -10,13 +11,16 @@ head xs = hd xs
 tail :: !u:[.a] -> u:[.a]
 tail xs = tl xs
 
-null :: ![.a] -> Bool
-null xs = isEmpty xs
+isnull :: ![.a] -> Bool
+isnull xs = isEmpty xs
 
 product :: !.[a] -> a | * , one  a
 product xs = prod xs
 
 // End Haskell Data.List compat
+
+keep :: Int [a] -> [a]
+keep n xs = drop (length xs - n) xs
 
 unzip3 :: ![(.a,.b,.c)] -> ([.a],[.b],[.c])
 unzip3 []        = ([], [], [])
@@ -187,10 +191,10 @@ find p          = listToMaybe o filter p
 
 partition :: (a -> .Bool) .[a] -> (.[a],.[a])
 partition p xs = foldr (select p) ([],[]) xs
-
-select :: .(a -> .Bool) a (u:[a],v:[a]) -> (w:[a],x:[a]), [u <= w,v <= x]
-select p x (ts,fs) | p x       = ([x:ts],fs)
-                   | otherwise = (ts, [x:fs])
+  where select :: .(a -> .Bool) a (u:[a],v:[a]) -> (w:[a],x:[a]), [u <= w,v <= x]
+        select p x t =
+          let (ts,fs) = t
+          in if (p x) ([x:ts],fs) (ts, [x:fs])
 
 elemIndex :: a -> .(.[a] -> .(Maybe Int)) | == a
 elemIndex x     = findIndex (\y -> x==y)
@@ -226,6 +230,19 @@ zipWith :: (.a -> .(.b -> .h)) ![.a] [.b] -> [.h]
 zipWith z [a:as] [b:bs]
                    = [ z a b : zipWith z as bs]
 zipWith _ _ _ = []
+
+zipSt :: (.a -> .(.b -> (.st -> .st))) ![.a] [.b] .st -> .st
+zipSt z [a:as] [b:bs] st
+  # st = z a b st
+  = zipSt z as bs st
+zipSt _ _ _ st = st
+
+zipWithSt :: (.a -> .(.b -> (.st -> .(.h, .st)))) ![.a] [.b] .st -> .([.h], .st)
+zipWithSt z [a:as] [b:bs] st
+  # (x, st)  = z a b st
+  # (xs, st) = zipWithSt z as bs st
+  = ([x : xs], st)
+zipWithSt _ _ _ st = ([], st)
 
 zipWith3 :: (.a -> .(.b -> .(.c -> .h))) ![.a] [.b] [.c] -> [.h]
 zipWith3 z [a:as] [b:bs] [c:cs]
@@ -275,7 +292,10 @@ deleteFirstsBy :: (a -> .(b -> .Bool)) -> u:(v:[b] -> w:(.[a] -> x:[b])), [w <= 
 deleteFirstsBy eq       =  foldl (flip (deleteBy eq))
 
 difference :: u:(v:[a] -> w:(.[a] -> x:[a])) | == a, [w <= u,w v <= x]
-difference                    =  foldl (flip delete)
+difference                    =  differenceBy (==)
+
+differenceBy :: (a -> a -> .Bool) u:[a] .[a] -> v:[a], [u <= v]
+differenceBy eq as bs             =  foldl (flip (deleteBy eq)) as bs
 
 intersect :: u:(.[a] -> v:(.[a] -> .[a])) | == a, [v <= u]
 intersect               =  intersectBy (==)
@@ -291,3 +311,6 @@ union                   = unionBy (==)
 unionBy :: (a -> .(a -> .Bool)) .[a] .[a] -> .[a]
 unionBy eq xs ys        =  xs ++ foldl (flip (deleteBy eq)) (nubBy eq ys) xs
 
+isMemberGen :: !a !.[a] -> Bool | gEq{|*|} a
+isMemberGen x [hd:tl]	= hd === x || isMemberGen x tl
+isMemberGen x []		= False

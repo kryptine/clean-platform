@@ -1,4 +1,4 @@
-definition module OS
+definition module System.OS
 
 OS_NAME :== "Linux (32-bit)"
 OS_PATH_SEPARATOR :== '/'

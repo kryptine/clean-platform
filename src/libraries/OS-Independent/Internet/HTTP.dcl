@@ -1,11 +1,24 @@
-definition module HTTP
+definition module Internet.HTTP
 
 // This library defines HTTP related types and functions
 import StdString
-import Maybe
-from Map import :: Map
+import Data.Maybe
+from Data.Map import :: Map
 
-:: HTTPRequest	= {	req_method		:: 	String					// The HTTP request method (eg. GET, POST, HEAD)
+:: HTTPMethod = HTTP_GET 
+			  | HTTP_HEAD 
+			  | HTTP_PUT 
+			  | HTTP_DELETE 
+			  | HTTP_POST 
+			  | HTTP_OPTIONS
+			  | HTTP_TRACE
+			  | HTTP_CONNECT
+			  | HTTP_CUSTOM !String
+
+instance toString   HTTPMethod
+instance fromString HTTPMethod
+
+:: HTTPRequest	= {	req_method		:: 	HTTPMethod				// The HTTP request method (eg. GET, POST, HEAD)
 				,	req_path		::	String					// The requested location (eg. /foo)
 				,	req_query		::	String					// The query part of a location (eg. ?foo=bar&baz=42)
 				,	req_version		::	String					// The http version (eg. HTTP/1.0 or HTTP/1.1)
@@ -23,7 +36,9 @@ from Map import :: Map
 
 :: HTTPProtocol	= HTTPProtoHTTP | HTTPProtoHTTPS				// The protocol used for a request
 
-:: HTTPResponse	= {	rsp_headers		::	Map String String		// Extra return headers that should be sent (eg. ("Content-Type","text/plain"))
+:: HTTPResponse	= {	rsp_code		::  Int
+				,	rsp_reason		::  String
+				,	rsp_headers		::	[(String,String)]		// Extra return headers that should be sent (eg. ("Content-Type","text/plain"))
 				,	rsp_data		::	String					// The body of the response. (eg. html code or file data)
 				}
 			
@@ -35,8 +50,8 @@ from Map import :: Map
 
 //Construction functions 
 newHTTPRequest	:: HTTPRequest
-newHTTPResponse	:: HTTPResponse
 newHTTPUpload	:: HTTPUpload
+newHTTPResponse :: !Int !String -> HTTPResponse
 
 //String instances
 instance toString HTTPRequest
@@ -45,15 +60,23 @@ instance toString HTTPResponse
 //Server utilities
 parseRequestLine	:: !String																							-> Maybe (!String, !String, !String, !String)
 parseHeader			:: !String																							-> Maybe (!String, !String)
+parseResponse 		:: !String 																							-> Maybe HTTPResponse
 
 //Request utilities
-parseRequest 		::	!HTTPRequest																					-> HTTPRequest
+parseRequest 		:: !HTTPRequest																					-> HTTPRequest
 
-//Generating responses
+//Generating and cheking responses
+okResponse			:: HTTPResponse
+isOkResponse 		:: !HTTPResponse -> Bool
+
+notfoundResponse	:: HTTPResponse
+forbiddenResponse	:: HTTPResponse
+
+errorResponse 		:: !String -> HTTPResponse
+badRequestResponse 	:: !String -> HTTPResponse
+
 staticResponse		:: !HTTPRequest !*World																				-> (!HTTPResponse, !*World)
-notfoundResponse	:: !HTTPRequest !*World 																			-> (!HTTPResponse, !*World)
-forbiddenResponse	:: !HTTPRequest !*World 																			-> (!HTTPResponse, !*World)
 customResponse		:: ![((String -> Bool),(HTTPRequest *World -> (HTTPResponse, *World)))] !Bool !HTTPRequest !*World	-> (!HTTPResponse, !*World)
 
-//Response utilities
-encodeResponse		:: !Bool !HTTPResponse !*World																		-> (!String,!*World)
+
+

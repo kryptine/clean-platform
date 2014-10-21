@@ -1,8 +1,8 @@
-definition module JS
+definition module Text.Unicode.Encodings.JS
 
-import StdClass, Unicode
+import StdClass, Text.Unicode
 
-// encode Unicode String as a JS string literal
+// encode Unicode String as a JS String literal
 
 :: JSLit
 

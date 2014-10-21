@@ -1,9 +1,21 @@
-definition module Either
+definition module Data.Either
 /**
 * This module defines the "Either" type to represent binary choice.
 * Clean's generics define a similar type EITHER, but this should only be
 * used inside generic functions, since most generic functions treat this
 * type in a special way which may lead to strange behavior.
 */
+from Control.Applicative import class Applicative (..)
+from Control.Monad import class Monad (..)
+from Data.Functor import class Functor (..)
 
 :: Either a b = Left a | Right b
+
+instance Functor (Either a)
+
+instance Applicative (Either e)
+
+instance Monad (Either e)
+
+either :: (a -> c) (b -> c) (Either a b) -> c
+

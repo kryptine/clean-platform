@@ -1,4 +1,4 @@
-implementation module File
+implementation module System.File
 
 //StdEnv
 import StdArray
@@ -8,16 +8,16 @@ import StdList
 import StdMisc
 import StdString
 
-import Error
-import Void
-import OSError
-import _Pointer
-import Time
+import Data.Error
+import Data.Void
+import System.OSError
+import System._Pointer
+import System.Time
 import Text
 
 CHUNK_SIZE :== 1024
 
-from _Windows import 
+from System._Windows import 
 	::HANDLE, 
 	:: LPWIN32_FIND_DATA, 
 	WIN32_FIND_DATA_size_bytes, 

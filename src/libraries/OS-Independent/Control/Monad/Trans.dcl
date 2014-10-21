@@ -1,6 +1,8 @@
-definition module Trans
+definition module Control.Monad.Trans
 
-from Monad import class Monad
+from Control.Monad import class Monad
+from Control.Applicative import class Applicative
+from Data.Functor import class Functor
 
 class MonadTrans t where
-  lift :: (m a) -> t m a | Monad m
+  liftT :: (m a) -> t m a | Monad m

@@ -1,7 +1,7 @@
-implementation module RelationalMapping
+implementation module Database.SQL.RelationalMapping
 
 import StdEnv, StdGeneric
-import Maybe, SQL, Text
+import Data.Maybe, Database.SQL, Text
 
 //Wrapper functions
 mapRead :: !ref !*cur -> (!(Maybe MappingError), !(Maybe val), !*cur) | relMap{|*|} ref & relMap{|*|} val & SQLCursor cur & bimap{|*|} cur

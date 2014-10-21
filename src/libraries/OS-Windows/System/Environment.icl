@@ -1,8 +1,8 @@
-implementation module Environment
+implementation module System.Environment
 
 import StdOverloaded, StdInt, StdArray, StdChar, StdString
-import Maybe
-import _Pointer
+import Data.Maybe
+import System._Pointer
 
 MAXBUF :== 32767 //Maximum size for environment variables
 

@@ -1,4 +1,4 @@
-definition module _Pointer
+definition module System._Pointer
 /**
 * Low level reading from and writing to memory using pointers and offsets.
 *

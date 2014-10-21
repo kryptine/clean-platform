@@ -1,5 +1,5 @@
-definition module SharedFile
+definition module DataSources.SharedFile
 
-import FilePath, SharedDataSource
+import System.FilePath, Data.SharedDataSource
 
 sharedFile :: !FilePath !(String -> a) !(a -> String) -> Shared a *World

@@ -1,4 +1,4 @@
-implementation module _Unsafe
+implementation module System._Unsafe
 
 appUnsafe :: !(*World -> *World) !.a -> .a
 appUnsafe f a

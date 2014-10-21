@@ -1,6 +1,6 @@
-implementation module SharedFile
+implementation module DataSources.SharedFile
 
-import _WinBase, _Pointer, StdInt, StdArray, StdBool, StdFunc, FilePath, SharedDataSource
+import System._WinBase, System._Pointer, StdInt, StdArray, StdBool, StdFunc, System.FilePath, Data.SharedDataSource
 import StdMisc
 
 sharedFile :: !FilePath !(String -> a) !(a -> String) -> Shared a *World

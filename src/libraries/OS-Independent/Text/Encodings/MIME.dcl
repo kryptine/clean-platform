@@ -1,4 +1,4 @@
-definition module MIME
+definition module Text.Encodings.MIME
 /**
 * This module provides functions for working with MIME messages and MIME types.
 * 

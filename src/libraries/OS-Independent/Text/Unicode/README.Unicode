@@ -7,5 +7,3 @@ WCsubst.c is generated with:
 where UnicodeData.txt came from
 
     http://www.unicode.org/Public/6.0.0/ucd/UnicodeData.txt
-
-Make by renaming the Makefile32 or Makefile64 for your appropriate platform. Then type make. 

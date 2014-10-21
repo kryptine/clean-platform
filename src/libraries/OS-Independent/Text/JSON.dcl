@@ -1,4 +1,4 @@
-definition module JSON
+definition module Text.JSON
 /*
 * This module provides functions to encode and decode any Clean data type
 * to JSON format. It provides two generic functions JSONEncode and JSONDecode
@@ -8,7 +8,8 @@ definition module JSON
 * For more info about JSON see: http://www.json.org/
 */
 
-import StdGeneric, Maybe, StdString
+import StdGeneric, StdString
+import Data.Maybe
 
 :: JSONNode	= JSONNull
 			| JSONBool !Bool

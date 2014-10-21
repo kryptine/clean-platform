@@ -1,6 +1,6 @@
-definition module PPrint
+definition module Text.PPrint
 
-from Maybe import :: Maybe
+from Data.Maybe import :: Maybe
 
 /*
  * PPrint
@@ -34,9 +34,6 @@ from Maybe import :: Maybe
  * software, even if advised of the possibility of such damage.
  */
 
-/* -----------------------------------------------------------
- * overloading "pretty"
- * ----------------------------------------------------------- */
 class Pretty a where
   pretty        :: a -> Doc
 

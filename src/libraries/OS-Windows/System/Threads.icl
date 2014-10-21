@@ -1,6 +1,6 @@
-implementation module Threads
+implementation module System.Threads
 
-import _WinBase, _Pointer, StdArray, StdInt, StdClass, dynamic_string, _Unsafe, StdMisc
+import System._WinBase, System._Pointer, StdArray, StdInt, StdClass, dynamic_string, System._Unsafe, StdMisc
 foreign export threadFunc
 
 getCurrentThreadId :: !*World -> (!ThreadId, !*World)

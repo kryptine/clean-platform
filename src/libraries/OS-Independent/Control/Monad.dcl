@@ -1,15 +1,12 @@
-definition module Monad
+definition module Control.Monad
 
-from Maybe   import :: Maybe
-from Void import :: Void
+from Control.Applicative  import class Applicative
+from Data.Functor         import class Functor
+from Data.Maybe           import :: Maybe
+from Data.Void            import :: Void
 
-:: IO a = IO (World -> (a, World))
-
-class Monad m where
-    return :: a -> m a
-    (>>=) infixl 1 :: (m a) (a -> m b) -> (m b)
-
-instance Monad IO
+class Monad m | Applicative m where
+  bind :: (m a) (a -> m b) -> m b
 
 instance Monad ((->) r)
 
@@ -18,15 +15,17 @@ instance Monad []
 instance Monad Maybe
 
 class MonadPlus m | Monad m where
-   mzero :: m a
-   mplus :: (m a) (m a) -> m a
+  mzero :: m a
+  mplus :: (m a) (m a) -> m a
 
 instance MonadPlus []
 
 instance MonadPlus Maybe
 
-(>>) infixr 1     :: (a b) (a c) -> a c | Monad a
-(=<<) infixr 1    :: (a -> b c) (b a) -> b c | Monad b
+return            :: a -> m a | Monad m
+(>>=) infixl 1    :: (m a) (a -> m b) -> m b | Monad m
+(>>|) infixl 1    :: (m a) (m b) -> m b | Monad m
+(=<<) infixr 1    :: (a -> m b) (m a) -> m b | Monad m
 sequence          :: .[a b] -> a [b] | Monad a
 sequence_         :: .[a b] -> a Void | Monad a
 mapM              :: (.a -> b c) [.a] -> b [c] | Monad b

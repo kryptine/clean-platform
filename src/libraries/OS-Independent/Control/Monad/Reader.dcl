@@ -1,8 +1,8 @@
-definition module Reader
+definition module Control.Monad.Reader
 
-from Monad import class Monad
-import Identity
-import Trans
+from Control.Monad import class Monad
+import Data.Functor.Identity
+import Control.Monad.Trans
 
 :: ReaderT r m a = ReaderT (r -> m a)
 

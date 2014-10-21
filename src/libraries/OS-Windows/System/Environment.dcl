@@ -1,8 +1,8 @@
-definition module Environment
+definition module System.Environment
 /**
 * Module for accessing environment variables
 */
-import Maybe
+import Data.Maybe
 
 getEnvironmentVariable :: !String !*World -> (Maybe String, *World)
 

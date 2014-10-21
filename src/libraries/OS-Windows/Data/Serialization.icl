@@ -1,4 +1,4 @@
-implementation module Serialization
+implementation module Data.Serialization
 
 import StdEnv
 import StdDynamicLowLevelInterface

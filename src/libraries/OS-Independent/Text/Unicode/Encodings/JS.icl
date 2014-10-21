@@ -1,11 +1,11 @@
-implementation module JS
+implementation module Text.Unicode.Encodings.JS
 
-import StdString, StdOverloaded, StdInt, StdChar, StdBool, StdFunc, StdArray, StdList
-from List import concatMap
+import StdString, StdArray, StdOverloaded, StdInt, StdChar, StdBool, StdFunc
+import Data.List
 
-import Unicode
-from UChar import instance fromInt UChar, instance toInt UChar, instance fromChar UChar
-import qualified UChar
+import Text.Unicode
+from Text.Unicode.UChar import instance fromInt UChar, instance toInt UChar, instance fromChar UChar
+import qualified Text.Unicode.UChar
 
 :: JSLit = JSLit !String
 
@@ -61,7 +61,7 @@ where
 		| cc == fromChar '\'' = ['\\\'']	
 		| cc == fromChar '"'  = ['\\"']	
 		| cc == fromChar '\\' = ['\\\\']	
-		| not ('UChar'.isControl c) && 'UChar'.isAscii c = [fromInt cc]
+		| not ('Text.Unicode.UChar'.isControl c) && 'Text.Unicode.UChar'.isAscii c = [fromInt cc]
 				= toHex cc
 	where
 		c :: UChar

@@ -1,21 +1,21 @@
-definition module SQL
+definition module Database.SQL
 
 // *********************************************************************************************************************
 // Clean Relational Database (SQL) API. v 0.2
 // This module defines a common API for working with relational databases.
 // *********************************************************************************************************************
 
-import StdString, Maybe
+import StdString, Data.Maybe
 
 // *********************************************************************************************************************
 // Basic types
 // *********************************************************************************************************************
 
 :: SQLDatabase =
-	{ host		:: !String
-	, username	:: !String
-	, password	:: !String
-	, database	:: !String
+	{ database	:: !String
+	, host		:: !Maybe String
+	, username	:: !Maybe String
+	, password	:: !Maybe String
 	}
 
 // SQL Statements and queries are just strings
@@ -152,6 +152,13 @@ where
 	fetchAll		:: !*cur									-> (!(Maybe SQLError), ![SQLRow], !*cur)
 	commit			:: !*cur									-> (!(Maybe SQLError), !*cur)
 	rollback		:: !*cur									-> (!(Maybe SQLError), !*cur)
+
+class SQLSchemaCursor cur
+where
+    listTables      :: !*cur                                    -> (!(Maybe SQLError), ![SQLTableName], !*cur)
+    describeTable   :: !SQLTableName !*cur                      -> (!(Maybe SQLError), !(Maybe SQLTable), !*cur)
+    createTable     :: !SQLTable !*cur                          -> (!(Maybe SQLError), !*cur)
+    deleteTable     :: !SQLTableName !*cur                      -> (!(Maybe SQLError), !*cur)
 
 // *********************************************************************************************************************
 // Common class instances

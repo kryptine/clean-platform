@@ -1,6 +1,7 @@
-implementation module SharedDataSource
+implementation module Data.SharedDataSource
 
-import _SharedDataSourceTypes, StdString, StdFunc, Error, StdTuple, Func, Tuple, StdMisc
+import StdString, StdFunc, StdTuple, StdMisc
+import Data._SharedDataSourceTypes, Data.Error, Data.Func, Data.Tuple
 
 createChangeOnWriteSDS ::
 	!String

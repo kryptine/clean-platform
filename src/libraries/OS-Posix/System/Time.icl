@@ -1,7 +1,7 @@
-implementation module Time
+implementation module System.Time
 
 import StdString, StdArray, StdClass, StdOverloaded, StdInt
-import _Pointer
+import System._Pointer
 
 //String buffer size
 MAXBUF :== 256

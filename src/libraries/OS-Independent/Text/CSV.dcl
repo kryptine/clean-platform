@@ -1,8 +1,8 @@
-definition module CSV
+definition module Text.CSV
 /**
 * This module provides functions for reading and writing comma separated vector (CSV) files.
 */
-import StdFile, Maybe
+import StdFile, Data.Maybe
 /**
 * Read a single record from a CSV file
 * A comma ',' is used as field separator, double quotes '"' may be used to enclose fields

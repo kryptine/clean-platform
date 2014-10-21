@@ -1,4 +1,4 @@
-definition module StringAppender
+definition module Text.StringAppender
 
 /**
 * This module provides an iterface for a "string output stream" like
@@ -6,7 +6,7 @@ definition module StringAppender
 */
 
 import StdString
-import Error, File
+import Data.Error, System.File
 
 :: StringAppender
 

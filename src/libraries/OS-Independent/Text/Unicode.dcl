@@ -1,7 +1,7 @@
-definition module Unicode
+definition module Text.Unicode
 
 import StdClass
-from UChar import :: UChar
+from Text.Unicode.UChar import :: UChar
 
 :: UString :== [UChar]
 

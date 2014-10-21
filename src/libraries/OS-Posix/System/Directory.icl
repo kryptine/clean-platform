@@ -1,13 +1,13 @@
-implementation module Directory
+implementation module System.Directory
 
 import StdArray, StdBool, StdClass, StdInt, StdChar, StdString
 
-import Void
-import FilePath
-import OSError
+import Data.Void
+import System.FilePath
+import System.OSError
 
-import _Posix
-import _Pointer
+import System._Posix
+import System._Pointer
 
 createDirectory :: !FilePath !*World -> (!MaybeOSError Void, !*World)
 createDirectory path world

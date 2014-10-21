@@ -1,4 +1,4 @@
-implementation module Random
+implementation module Math.Random
 
 import StdArray, StdBool, StdEnum, StdInt, StdList, StdMisc, StdReal, StdString
 

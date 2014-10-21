@@ -1,9 +1,10 @@
-implementation module MD5
+implementation module Crypto.Hash.MD5
 /**
 * Pure Clean MD5 implementation.
 * Ported from the MD5 implemenation used by the Clean Dynamics system
 */
-import StdEnv, Tuple, Text, FilePath, File, Error, Functor
+import StdEnv
+import Data.Tuple, Text, System.FilePath, System.File, Data.Error, Data.Functor
 
 md5 :: String -> String
 md5 msg = toString (md5StringDigest msg)

@@ -1,13 +1,8 @@
-GCC=gcc -m64
+GCC=gcc -m64 -c
 
-all: clean unicode install
+all: clean unicode
 
 unicode: bsearch.o WCsubst.o
-
-install:
-	mkdir -p "Clean System Files"
-	cp bsearch.o "Clean System Files"
-	cp WCsubst.o "Clean System Files"
 
 clean: 
 	rm -f *.o

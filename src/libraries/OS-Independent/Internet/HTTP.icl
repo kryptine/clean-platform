@@ -1,29 +1,51 @@
-implementation module HTTP
+implementation module Internet.HTTP
 
 import StdOverloaded, StdString, StdList, StdArray, StdFile, StdBool
-import Maybe, Map, Text, UrlEncoding, MIME
+import Data.Maybe, Data.List, Text, Text.Encodings.UrlEncoding, Text.Encodings.MIME
+from Data.Map import get, put, :: Map, newMap, fromList, toList
 
 newHTTPRequest :: HTTPRequest
-newHTTPRequest		= {	req_method		= ""
-					,	req_path		= ""
-					,	req_query		= ""
-					,	req_version		= ""
-					,	req_protocol	= HTTPProtoHTTP
-					,	req_headers		= newMap
-					,	req_data		= ""
-					,	arg_get			= newMap
-					,	arg_post		= newMap
-					,	arg_cookies		= newMap
-					,	arg_uploads		= newMap
-					,	server_name		= ""
-					,	server_port		= 0
-					,	client_name		= ""
-					}
-					
-newHTTPResponse :: HTTPResponse					
-newHTTPResponse		= {	rsp_headers		= newMap
-					,	rsp_data		= ""
-					}
+newHTTPRequest 
+			= {	req_method		= HTTP_GET
+			  ,	req_path		= ""
+			  ,	req_query		= ""
+			  ,	req_version		= ""
+			  ,	req_protocol	= HTTPProtoHTTP
+			  ,	req_headers		= newMap
+			  ,	req_data		= ""
+			  ,	arg_get			= newMap
+			  ,	arg_post		= newMap
+			  ,	arg_cookies		= newMap
+			  ,	arg_uploads		= newMap
+			  ,	server_name		= ""
+			  ,	server_port		= 0
+			  ,	client_name		= ""
+			  }
+		
+newHTTPResponse :: !Int !String -> HTTPResponse
+newHTTPResponse rspcode reason 
+	= {HTTPResponse | rsp_code = rspcode, rsp_reason = reason, rsp_headers = [], rsp_data = toString rspcode +++ " - " +++ reason}
+		
+okResponse :: HTTPResponse
+okResponse = newHTTPResponse 200 "OK" 
+
+notfoundResponse :: HTTPResponse
+notfoundResponse = newHTTPResponse 404 "Not Found"
+
+forbiddenResponse :: HTTPResponse
+forbiddenResponse = newHTTPResponse 403 "Forbidden"
+
+errorResponse :: !String -> HTTPResponse
+errorResponse msg 
+	= {newHTTPResponse 500 "Internal Server Error" & rsp_data = msg}	
+
+badRequestResponse :: !String -> HTTPResponse
+badRequestResponse msg 
+	= {newHTTPResponse 400 "Bad Request" & rsp_data = msg}	
+
+isOkResponse :: !HTTPResponse -> Bool
+isOkResponse {rsp_code = 200} = True
+isOkResponse _ = False
 
 newHTTPUpload :: HTTPUpload
 newHTTPUpload		= {	upl_name		= ""
@@ -32,6 +54,36 @@ newHTTPUpload		= {	upl_name		= ""
 					,	upl_content		= ""
 					}
 
+instance toString HTTPMethod
+where
+	toString HTTP_GET = "GET"
+	toString HTTP_HEAD = "HEAD"
+	toString HTTP_PUT = "PUT"
+	toString HTTP_DELETE = "DELETE"
+	toString HTTP_POST = "POST"
+	toString HTTP_OPTIONS = "OPTIONS"
+	toString HTTP_TRACE = "TRACE"
+	toString HTTP_CONNECT = "CONNECT"
+	toString (HTTP_CUSTOM str) = str
+
+instance fromString HTTPMethod
+where
+	fromString str 
+		= case lookup ustr pairs of
+			(Just method) = method
+						  = HTTP_CUSTOM ustr
+	where
+		ustr = toUpperCase str
+
+		pairs = [("GET", HTTP_GET), 
+				 ("HEAD", HTTP_HEAD),
+				 ("PUT", HTTP_PUT),
+				 ("DELETE", HTTP_DELETE),
+				 ("POST", HTTP_POST),
+				 ("OPTIONS", HTTP_OPTIONS),
+				 ("TRACE", HTTP_TRACE),
+				 ("CONNECT", HTTP_TRACE)]
+			 
 instance toString HTTPRequest
 where
 	toString {	req_method
@@ -49,7 +101,7 @@ where
 			 ,	server_port
 			 ,	client_name
 			 }
-			 = "Method: " +++ req_method +++ "\n" +++
+			 = "Method: " +++ toString req_method +++ "\n" +++
 			   "Path: " +++ req_path +++ "\n" +++
 			   "Query: " +++ req_query +++ "\n" +++
 			   "Version: " +++ req_version +++ "\n" +++
@@ -60,19 +112,19 @@ where
 			   "---Begin data---\n" +++
 			   req_data +++
 			   "--- End data---\n"
-			   
+
 instance toString HTTPResponse
 where
-	toString {	rsp_headers
-			 ,	rsp_data
+	toString { rsp_code
+			 , rsp_reason	
+			 , rsp_headers
+			 , rsp_data
 			 }
-			 = "---Begin headers---\n" +++
-			   (foldr (+++) "" [ n +++ ": " +++ v +++ "\n" \\ (n,v) <- toList rsp_headers]) +++
-			   "---End headers---\n" +++
-			   "---Begin data---\n" +++
-			   rsp_data +++
-			   "--- End data---\n"
-	
+	= join "\r\n" (
+		["HTTP/1.0 " +++ toString rsp_code +++ " " +++ rsp_reason] ++
+		[(n +++ ": " +++ v) \\ (n,v) <- rsp_headers] ++
+		["",rsp_data])
+			   	
 instance toString HTTPProtocol
 where
 	toString HTTPProtoHTTP = "Http"
@@ -95,6 +147,29 @@ parseHeader header
 	# name					= trim (header % (0, index - 1))
 	# value					= trim (header % (index + 1, size header))
 	= Just (name,value)
+
+// TODO: fast solution, needs multipart handling and stuff
+parseResponse :: !String -> Maybe HTTPResponse
+parseResponse rsp | startsWith "HTTP/" rsp
+	| length lines < 4
+		= Nothing
+	| length code_words < 2
+		= Nothing
+	= Just {rsp_code = rsp_code, rsp_reason = rsp_reason, rsp_headers = rsp_headers, rsp_data = rsp_data} 
+where
+	lines 		 = split "\n" rsp
+
+	code_words 	 = split " " (hd lines)
+	rsp_code     = toInt (hd (tl code_words))
+	rsp_reason   = join " " (tl (tl code_words))
+	
+	header_lines = takeWhile ((<>) "\r") (tl lines)
+	rsp_headers	 = map fromJust (filter isJust (map parseHeader header_lines))
+	
+	data_lines	 = tl (dropWhile ((<>) "\r") (tl lines))
+	rsp_data	 = join "\n" data_lines
+	
+parseResponse rsp = Nothing
 
 //Request utilities
 parseRequest 		::	!HTTPRequest																					-> HTTPRequest
@@ -167,9 +242,9 @@ staticResponse req world
 	# filename				= req.req_path % (1, size req.req_path)		//Remove first slash
 	# (type, world)			= fileMimeType filename world
 	# (ok, content, world)	= fileContent filename world
-	| not ok 				= notfoundResponse req world
-							= ({rsp_headers = fromList [("Status","200 OK"),
-											   ("Content-Type", type),
+	| not ok 				= (notfoundResponse, world)
+							= ({okResponse & 
+								rsp_headers = [("Content-Type", type),
 											   ("Content-Length", toString (size content))]
 							   ,rsp_data = content}, world)						
 where
@@ -199,38 +274,11 @@ where
 	fileMimeType "" world = ("application/octet-stream",world)
 	fileMimeType name world = fileMimeType (name % (1, size name)) world
 
-
-notfoundResponse	:: !HTTPRequest !*World 																			-> (!HTTPResponse, !*World)
-notfoundResponse req world = ({rsp_headers = fromList [("Status","404 Not Found")], rsp_data = "404 - Not found"},world)
-
-forbiddenResponse	:: !HTTPRequest !*World 																			-> (!HTTPResponse, !*World)
-forbiddenResponse req world = ({rsp_headers = fromList [("Status","403 Forbidden")], rsp_data = "403 - Forbidden"},world)
-
 customResponse		:: ![((String -> Bool),(HTTPRequest *World -> (HTTPResponse, *World)))] !Bool !HTTPRequest !*World	-> (!HTTPResponse, !*World)
 customResponse [] fallback request world 											//None of the request handlers matched
 	| fallback						= (staticResponse request world)				//Use the static response handler
-									= (notfoundResponse request world)				//Raise an error
+									= (notfoundResponse, world)						//Raise an error
 customResponse [(pred,handler):rest] fallback request world
 	| (pred request.req_path)		= handler request world							//Apply handler function
 									= customResponse rest fallback request world	//Search the rest of the list
 
-
-
-//Response utilities
-encodeResponse		:: !Bool !HTTPResponse !*World																		-> (!String,!*World)
-encodeResponse withreply {rsp_headers = headers, rsp_data = data} world  
-	# reply = if withreply
-			("HTTP/1.0 " +++ (default "200 OK" (get "Status" headers)) +++ "\r\n")
-			("Status: " +++ (default "200 OK" (get "Status" headers)) +++ "\r\n")
-	# reply = reply +++ ("Server: " +++ (default "Clean HTTP tools" (get "Server" headers)) +++ "\r\n")							//Server identifier	
-	# reply = reply +++	("Content-Type: " +++ (default "text/html" (get "Content-Type" headers)) +++ "\r\n")					//Content type header
-	# reply = reply +++	("Content-Length: " +++ (toString (size data)) +++ "\r\n")												//Content length header
-	# reply = reply +++	(foldr (+++) "" [(n +++ ": " +++ v +++ "\r\n") \\ (n,v) <- toList headers | not (skipHeader n)])		//Additional headers
-	# reply = reply +++	("\r\n" +++ data)																						//Separator + data
-	= (reply, world)
-where
-	//Do not add these headers two times
-	default def mbval = case mbval of
-		Nothing	= def
-		(Just val) = val
-	skipHeader s = isMember s ["Status","Date","Server","Content-Type","Content-Length","Last-Modified"]

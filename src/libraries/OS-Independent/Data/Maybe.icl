@@ -1,11 +1,14 @@
-implementation module Maybe 
+implementation module Data.Maybe
 
 import StdBool
 import StdFunc
 import StdMisc
-import Functor
+import Data.Functor
+from GenEq import generic gEq
 
 :: Maybe a = Nothing | Just a
+
+derive gEq Maybe
 
 instance == (Maybe x) | == x where
 	(==) Nothing  maybe	= case maybe of
@@ -20,9 +23,13 @@ where
 	fmap f Nothing	= Nothing
 	fmap f (Just a)	= Just (f a)
 
-maybe :: .b (.a -> .b) !(Maybe .a) -> .b
+maybe :: w:b v:(.a -> w:b) !.(Maybe .a) -> w:b
 maybe x _ Nothing  = x
 maybe _ f (Just x) = f x
+
+maybeSt :: *st (.a *st -> *st) !(Maybe .a) -> *st
+maybeSt st _ Nothing  = st
+maybeSt st f (Just x) = f x st
 
 fromMaybe :: .a !(Maybe .a) -> .a
 fromMaybe x mb = maybe x id mb

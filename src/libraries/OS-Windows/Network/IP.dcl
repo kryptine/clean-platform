@@ -1,9 +1,9 @@
-definition module IP
+definition module Network.IP
 /**
 * Small module which provides basic IP functionality
 */
 import StdString
-import Maybe
+import Data.Maybe
 
 /**
 * Type which represents an IP (v4) address

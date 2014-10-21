@@ -1,7 +1,7 @@
-definition module _Posix
+definition module System._Posix
 
-from _Pointer import :: Pointer
-from Time import :: Tm
+from System._Pointer import :: Pointer
+from System.Time import :: Tm
 
 WNOHANG		:==	0x00000001  
 WUNTRACED	:== 0x00000002

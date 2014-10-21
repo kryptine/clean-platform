@@ -1,9 +1,9 @@
-implementation module MySQL
+implementation module Database.SQL.MySQL
 //MySQL implementation of the Clean SQL database API
 // 
-import SQL
-import StdEnv, Maybe, _Pointer
-import code from library "libmysql.txt"
+import Database.SQL
+import StdEnv, Data.Maybe, System._Pointer, Text
+import Database.SQL._MySQL
 
 //MySQL Does not really need a context
 :: MySQLContext		:== Int
@@ -22,99 +22,6 @@ import code from library "libmysql.txt"
 	, row_lengths	:: !Pointer
 	}
 
-//MySQL C-API Constants and Offsets
-ENUM_FLAG				:== 256
-CLIENT_FOUND_ROWS		:== 2
-
-MYSQL_TYPE_TINY			:== 1
-MYSQL_TYPE_SHORT		:== 2
-MYSQL_TYPE_LONG			:== 3
-MYSQL_TYPE_INT24		:== 9
-MYSQL_TYPE_LONGLONG		:== 8
-MYSQL_TYPE_DECIMAL		:== 0
-MYSQL_TYPE_NEWDECIMAL	:== 246
-MYSQL_TYPE_FLOAT		:== 4
-MYSQL_TYPE_DOUBLE		:== 5
-MYSQL_TYPE_TIMESTAMP	:== 7
-MYSQL_TYPE_DATE			:== 10
-MYSQL_TYPE_TIME			:== 11
-MYSQL_TYPE_DATETIME		:== 12
-MYSQL_TYPE_STRING		:== 254
-MYSQL_TYPE_VAR_STRING	:== 253
-MYSQL_TYPE_BLOB			:== 252
-MYSQL_TYPE_ENUM			:== 247
-
-SIZEOF_MYSQL_FIELD			:== 84
-MYSQL_FIELD_TYPE_OFFSET 	:== 76
-MYSQL_FIELD_FLAGS_OFFSET	:== 64
-
-//MySQL C-API foreign functions
-// libmysql.dll access
-mysql_affected_rows :: !Pointer -> Int
-mysql_affected_rows a0 = code {
-	ccall mysql_affected_rows@4 "PI:I"
-}
-mysql_close :: !Pointer -> Int
-mysql_close a0 = code {
-	ccall mysql_close@4 "PI:I"
-}
-mysql_errno :: !Pointer -> Int
-mysql_errno a0 = code {
-	ccall mysql_errno@4 "PI:I"
-}
-mysql_error :: !Pointer -> Pointer
-mysql_error a0 = code {
-	ccall mysql_error@4 "PI:I"
-}
-mysql_fetch_fields :: !Pointer -> Pointer
-mysql_fetch_fields a0 = code {
-	ccall mysql_fetch_fields@4 "PI:I"
-}
-mysql_fetch_lengths :: !Pointer -> Pointer
-mysql_fetch_lengths a0 = code {
-	ccall mysql_fetch_lengths@4 "PI:I"
-}
-mysql_fetch_row :: !Pointer -> Pointer
-mysql_fetch_row a0 = code {
-	ccall mysql_fetch_row@4 "PI:I"
-}
-mysql_free_result :: !Pointer -> Int
-mysql_free_result a0 = code {
-	ccall mysql_free_result@4 "PI:I"
-}
-mysql_init :: !Int -> Int
-mysql_init a0 = code {
-	ccall mysql_init@4 "PI:I"
-}
-mysql_insert_id :: !Pointer -> Int
-mysql_insert_id a0 = code {
-	ccall mysql_insert_id@4 "PI:I"
-}
-mysql_num_fields :: !Pointer -> Int
-mysql_num_fields a0 = code {
-	ccall mysql_num_fields@4 "PI:I"
-}
-mysql_num_rows :: !Pointer -> Int
-mysql_num_rows a0 = code {
-	ccall mysql_num_rows@4 "PI:I"
-}
-mysql_real_connect :: !Pointer !{#Char} !{#Char} !{#Char} !{#Char} !Int !Int !Int -> Pointer
-mysql_real_connect a0 a1 a2 a3 a4 a5 a6 a7 = code {
-	ccall mysql_real_connect@32 "PIssssIII:I"
-}
-mysql_real_escape_string :: !Pointer !{#Char} !{#Char} !Int -> Int
-mysql_real_escape_string a0 a1 a2 a3 = code {
-	ccall mysql_real_escape_string@16 "PIssI:I"
-}
-mysql_real_query :: !Pointer !{#Char} !Int -> Int
-mysql_real_query a0 a1 a2 = code {
-	ccall mysql_real_query@12 "PIsI:I"
-}
-mysql_store_result :: !Pointer -> Pointer
-mysql_store_result a0 = code {
-	ccall mysql_store_result@4 "PI:I"
-}
-
 instance SQLEnvironment World MySQLContext
 where
 	//Dummy environment
@@ -132,11 +39,12 @@ where
 		# conn_ptr	= mysql_init 0
 		| conn_ptr == 0		= (Just (SQLInterfaceError 1 "Could not initialize a connection"), Nothing, context)
 		//Connect
-		# ok_ptr	= mysql_real_connect conn_ptr (packString host) (packString username) (packString password) (packString database) 0 0 CLIENT_FOUND_ROWS
+		# ok_ptr	= mysql_real_connect conn_ptr (packString (fromMaybe "" host)) (packString (fromMaybe "" username)) (packString (fromMaybe "" password)) (packString database) 0 0 CLIENT_FOUND_ROWS
 		| ok_ptr == 0
 			# errno 	= mysql_errno conn_ptr
 			# errmsg	= derefString (mysql_error conn_ptr)
 			| errno <> errno || errmsg <> errmsg	= undef //Force execution
+			
 			= (Just (SQLDatabaseError errno errmsg), Nothing, context) 
 		//Success
 		= (Nothing, Just {MySQLConnection|conn_ptr = conn_ptr}, context)
@@ -293,10 +201,10 @@ where
 	
 		readField :: !Int !*MySQLCursor -> (!SQLValue, !*MySQLCursor)
 		readField n cursor=:{MySQLCursor|fields_ptr,row_ptr,row_lengths}
-			# cell_ptr			= readInt row_ptr (4 * n)
+			# cell_ptr			= readInt row_ptr ((IF_INT_64_OR_32 8 4) * n)
 			| cell_ptr	== 0
 				= (SQLVNull, cursor)
-			# cell_size			= readInt row_lengths (4 * n)
+			# cell_size			= readInt row_lengths ((IF_INT_64_OR_32 8 4) * n)
 			# data				= {readChar cell_ptr i \\ i <- [0.. cell_size - 1]}
 			# type				= readInt fields_ptr ((SIZEOF_MYSQL_FIELD * n) + MYSQL_FIELD_TYPE_OFFSET)
 			# flags				= readInt fields_ptr ((SIZEOF_MYSQL_FIELD * n) + MYSQL_FIELD_FLAGS_OFFSET)
@@ -346,3 +254,89 @@ where
 
 	rollback :: !*MySQLCursor -> (!(Maybe SQLError), !*MySQLCursor)
 	rollback cursor = (Just SQLNotSupportedError, cursor)
+
+instance SQLSchemaCursor MySQLCursor
+where
+    listTables :: !*MySQLCursor -> (!(Maybe SQLError), ![SQLTableName], !*MySQLCursor)
+    listTables cur
+        # (error, cur)      = execute listTablesStatement [] cur
+        | isJust error      = (error,[],cur)
+        # (error, res, cur) = fetchAll cur
+        | isJust error      = (error,[],cur)
+        = (Nothing, [table \\ [SQLVVarchar table:_] <- res],cur)
+
+    describeTable :: !SQLTableName !*MySQLCursor -> (!(Maybe SQLError), !(Maybe SQLTable), !*MySQLCursor)
+    describeTable name cur
+        # (error, cur)      = execute (describeTableStatement name) [] cur
+        | isJust error      = (error,Nothing,cur)
+        # (error, res, cur) = fetchAll cur
+        | isJust error      = (error,Nothing,cur)
+        # (columns,primaryKey,foreignKeys) = foldr addColumn ([],[],[]) res
+        = (Nothing,Just {SQLTable|name=name,columns=columns,primaryKey=primaryKey,foreignKeys=foreignKeys},cur)
+    where
+        addColumn [SQLVVarchar colName,SQLVText colType,SQLVVarchar nullYesNo,SQLVVarchar key,def,SQLVVarchar extra] (cols,pk,fks)
+            # null = nullYesNo == "YES"
+            # autoIncrement = indexOf "auto_increment" extra >= 0
+            # cols  = [{SQLColumn|name=colName,type=columnTypeFromString colType,null=null,autoIncrement = autoIncrement}:cols]
+            # pk    = if (key == "PRI") [colName:pk] pk
+            = (cols,pk,fks)
+        addColumn row (cols,pk,fks) = (cols,pk,fks)
+
+    createTable :: !SQLTable !*MySQLCursor -> (!(Maybe SQLError), !*MySQLCursor)
+    createTable table cur
+        # (error, cur)      = execute (createTableStatement table) [] cur
+        | isJust error      = (error,cur)
+        = (Nothing,cur)
+
+    deleteTable :: !SQLTableName !*MySQLCursor -> (!(Maybe SQLError), !*MySQLCursor)
+    deleteTable name cur
+        # (error, cur)      = execute (deleteTableStatement name) [] cur
+        | isJust error      = (error,cur)
+        = (Nothing,cur)
+
+listTablesStatement :: SQLStatement
+listTablesStatement = "SHOW TABLES"
+
+describeTableStatement :: SQLTableName -> SQLStatement
+describeTableStatement tablename = "DESCRIBE `" +++tablename +++ "`"
+
+createTableStatement :: SQLTable -> SQLStatement
+createTableStatement {SQLTable|name,columns,primaryKey,foreignKeys}
+    = "CREATE TABLE `" +++ name +++ "` (" +++ join "," (colSQL ++ pkSQL ++ fkSQL) +++ ")"
+where
+    colSQL = [concat (["`",name,"` ",columnTypeToString type]
+                ++ if autoIncrement [" auto_increment"] []
+                ++ if null [] [" NOT NULL"])
+              \\{SQLColumn|name,type,null,autoIncrement}<- columns]
+    pkSQL = case primaryKey of
+        [] = []
+        pk = ["PRIMARY KEY ("+++ join "," ["`"+++col+++"`" \\col <- pk] +++")"]
+
+    fkSQL = case foreignKeys of
+        [] = []
+        fk = ["FOREIGN KEY ("+++ join "," ["`"+++col+++"`" \\col <- fk_cols] +++
+              ") REFERENCES `" +++ fk_table +++ "` ("+++ join "," ["`"+++col+++"`" \\col <- fk_refs] +++ ")"
+             \\ (fk_cols,fk_table,fk_refs) <- fk]
+
+deleteTableStatement :: SQLTableName -> SQLStatement
+deleteTableStatement tablename = "DROP TABLE `" +++ tablename +++ "`"
+
+columnTypeToString :: SQLColumnType -> String
+columnTypeToString (SQLTText) = "TEXT"
+columnTypeToString (SQLTInteger) = "INT"
+columnTypeToString (SQLTReal) = "REAL"
+columnTypeToString (SQLTDate) = "DATE"
+columnTypeToString (SQLTTime) = "TIME"
+columnTypeToString (SQLTDatetime) = "DATETIME"
+columnTypeToString (SQLTEnum options) = "ENUM (" +++ join "," ["'"+++option+++"'" \\ option <- options] +++ ")"
+columnTypeToString _ = "TEXT" //TODO Add all types
+
+columnTypeFromString :: String -> SQLColumnType //TODO Add more column types
+columnTypeFromString "text" = SQLTText
+columnTypeFromString "date" = SQLTDate
+columnTypeFromString "time" = SQLTTime
+columnTypeFromString "datetime" = SQLTDatetime
+columnTypeFromString s
+    | startsWith "int(" s   = SQLTInteger
+                            = SQLTUnknown
+

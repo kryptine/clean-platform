@@ -1,0 +1,14 @@
+GCC=gcc -m32 -c
+
+all: clean unicode
+
+unicode: bsearch.o WCsubst.o
+
+clean: 
+	rm -f *.o
+
+bsearch.o:
+	$(GCC) -c bsearch.c
+
+WCsubst.o:
+	$(GCC) -c WCsubst.c

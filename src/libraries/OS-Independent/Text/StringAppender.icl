@@ -1,7 +1,7 @@
-implementation module StringAppender
+implementation module Text.StringAppender
 
 import StdString, StdArray, StdInt, StdFile, StdList
-import Error, File, Void
+import Data.Error, System.File, Data.Void
 
 :: StringAppender = { elements 		:: [String]
 		 		    , full_length 	:: Int
@@ -39,8 +39,8 @@ where
 		# (error, file) = ferror file
 		| error
 			= (Error IOError, file)
-			= (Ok Void, file)  
-		
+			= (Ok Void, file) 
+
 instance toString StringAppender			   
 where
 	toString appender = concat_rev appender.elements appender.full_length

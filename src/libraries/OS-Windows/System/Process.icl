@@ -1,4 +1,4 @@
-implementation module Process
+implementation module System.Process
 
 //StdEnv
 import StdArray
@@ -9,16 +9,16 @@ import StdList
 import StdString
 
 //Data
-import Void
-import Maybe
-import Either
+import Data.Void
+import Data.Maybe
+import Data.Either
 
 //System
-import FilePath
-import OSError
-import _Pointer
+import System.FilePath
+import System.OSError
+import System._Pointer
 
-import _Windows
+import System._Windows
 
 import Text
 

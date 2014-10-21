@@ -1,26 +1,35 @@
-implementation module State
+implementation module Control.Monad.State
 
-from Func import $
-import Monad
-import Identity
-import Trans
-from Void import :: Void(..)
+from Data.Func import $
+import Control.Monad
+import Data.Functor
+import Control.Applicative
+import Data.Functor.Identity
+import Control.Monad.Trans
+from Data.Void import :: Void(..)
+
 from StdFunc import o
 from StdTuple import fst, snd
-from StdMisc import abort
+from StdMisc import abort, undef
 
 :: StateT s m a = StateT (s -> m (a, s))
 
 :: State s a :== StateT s Identity a
 
+instance Functor (StateT s m) | Monad m where
+  fmap f m = StateT $ \s -> fmap (\ (a, s`) -> (f a, s`)) $ runStateT m s
+
+instance Applicative (StateT s m) | Monad m where
+  pure a = state $ \s -> (a, s)
+  (<*>) sf sa = ap sf sa
+
 instance Monad (StateT s m) | Monad m where
-    return a = state $ \s -> (a, s)
-    (>>=) m k  = StateT $ \s -> (runStateT m s >>= \(a, s`) -> runStateT (k a) s`)
+  bind m k = StateT $ \s -> (runStateT m s >>= \(a, s`) -> runStateT (k a) s`)
 
 instance MonadTrans (StateT s) where
-  lift m = StateT $ \s -> m >>= \a -> return (a, s)
+  liftT m = StateT $ \s -> m >>= \a -> return (a, s)
 
-state :: (a -> .(b,a)) -> .(StateT a c b) | Monad c
+state :: (a -> .(b, a)) -> .(StateT a c b) | Monad c
 state f = StateT (return o f)
 
 get :: .(StateT a b a) | Monad b

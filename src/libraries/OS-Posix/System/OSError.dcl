@@ -1,6 +1,6 @@
-definition module OSError
+definition module System.OSError
 
-import Error
+import Data.Error
 
 :: OSErrorCode :== Int
 :: OSErrorMessage :== String

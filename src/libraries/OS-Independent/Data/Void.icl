@@ -1,1 +1,1 @@
-implementation module Void
+implementation module Data.Void

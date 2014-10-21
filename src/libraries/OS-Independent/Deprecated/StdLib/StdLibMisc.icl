@@ -4,7 +4,7 @@ implementation module StdLibMisc
 //	Clean StdLib library module, version 1.0
 //	********************************************************************************
 
-import StdEnv, Either
+import StdEnv, Data.Either
 
 ::	Time
 	=	{	hours	:: !Int		// hours		(0-23)

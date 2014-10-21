@@ -1,13 +1,16 @@
-definition module Maybe 
+definition module Data.Maybe
 
 from StdOverloaded import class ==(..)
-import Functor
+from Data.Functor import class Functor
+from GenEq import generic gEq
 
 /**
  * The Maybe type represents an optional value by providing a constructor 
  * for no value (Nothing) and a constructor for just a value (Just).
  */
 :: Maybe a = Nothing | Just a
+
+derive gEq Maybe
 
 /** 
  * Equality on Maybes:
@@ -20,7 +23,15 @@ instance Functor Maybe
  * Apply a function to the the contents of a Just value and directly return
  * the result, or return a default value if the argument is a Nothing value.
  */
-maybe :: .b (.a -> .b) !(Maybe .a) -> .b
+maybe :: w:b v:(.a -> w:b) !.(Maybe .a) -> w:b
+
+/**
+ * Apply a function to the the contents of a Just value and the state, and
+ * directly return the result and a new state. Return the state immediately
+ * if the argument is a Nothing value.
+ */
+maybeSt :: *st (.a *st -> *st) !(Maybe .a) -> *st
+
 /**
  * Directly return a Just value or return a default value if the argument is a Nothing value.
  */

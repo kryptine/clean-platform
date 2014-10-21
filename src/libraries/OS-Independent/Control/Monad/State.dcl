@@ -1,14 +1,16 @@
-definition module State
+definition module Control.Monad.State
 
-from Void import :: Void
-from Monad import class Monad
-from Identity import :: Identity
+from Data.Void import :: Void
+from Control.Monad import class Monad
+from Control.Applicative import class Applicative
+from Data.Functor import class Functor
+from Data.Functor.Identity import :: Identity
 
 :: StateT s m a = StateT (s -> m (a, s))
 
 :: State s a :== StateT s Identity a
 
-state       :: (a -> .(b,a)) -> .(StateT a c b) | Monad c
+state       :: (a -> .(b, a)) -> .(StateT a c b) | Monad c
 put         :: a -> .(StateT a b Void) | Monad b
 modify      :: (a -> a) -> .(StateT a b Void) | Monad b
 gets        :: (a -> b) -> .(StateT a c b) | Monad c
@@ -23,4 +25,6 @@ mapState    :: ((a,b) -> .(c,b)) -> .(.(StateT b .Identity a) -> .(StateT b .Ide
 withStateT  :: (a -> a) .(StateT a .b c) -> .(StateT a .b c)
 withState   :: u:((a -> a) -> v:(.(StateT a .b c) -> .(StateT a .b c))), [v <= u]
 
+instance Functor (StateT s m) | Monad m
+instance Applicative (StateT s m) | Monad m
 instance Monad (StateT s m) | Monad m

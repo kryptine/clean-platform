@@ -1,6 +1,6 @@
-definition module _WinBase
+definition module System._WinBase
 
-import _WinDef, StdInt
+import System._WinDef, StdInt
 
 /*
  * Record definitions, size and field offsets

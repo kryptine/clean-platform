@@ -1,2 +1,2 @@
 definition module StdListExtensions
-import List
+import Data.List

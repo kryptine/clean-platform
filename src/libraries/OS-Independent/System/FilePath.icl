@@ -1,13 +1,12 @@
-implementation module FilePath
+implementation module System.FilePath
 
 import StdArray
 import StdList
 import StdTuple
 import StdString
-import FilePath
 
 import Text
-import OS
+import System.OS
 
 pathSeparator :: Char
 pathSeparator = OS_PATH_SEPARATOR
@@ -50,18 +49,19 @@ addTrailingPathSeparator path = if (hasTrailingPathSeparator path) path (path ++
 
 splitFileName  :: !FilePath -> (String, String)
 splitFileName path = 
-	case dropWhile ((==) -1) [lastIndexOf {ps} path \\ ps <- pathSeparators] of
-		[]    -> (path, "")
-		[i:_] -> (subString 0 i path, subString (i+1) (size path - i - 1) path)
+	case lastIndexOf {pathSeparator} path of
+		-1 -> (path, "")
+		i  -> (subString 0 i path, subString (i+1) (size path - i - 1) path)
 
 takeDirectory :: !FilePath -> FilePath
 takeDirectory path = fst (splitFileName path) 
 
 dropDirectory :: !FilePath -> String
-dropDirectory path = 
-	case dropWhile ((==) -1) [lastIndexOf {ps} path \\ ps <- pathSeparators] of
-		[]	  -> path
-		[i:_] -> (subString (i+1) (size path - i - 1) path)
+dropDirectory path =
+	case lastIndexOf {pathSeparator} path of
+		-1	-> path
+		i	-> (subString (i+1) (size path - i - 1) path)
+
 
 takeFileName :: !FilePath -> FilePath
 takeFileName path = snd (splitFileName path) 

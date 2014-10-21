@@ -1,4 +1,4 @@
-implementation module UrlEncoding
+implementation module Text.Encodings.UrlEncoding
 
 import StdChar, StdString, StdList
 import Text

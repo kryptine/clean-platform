@@ -1,8 +1,8 @@
-definition module UChar
+definition module Text.Unicode.UChar
 
 import StdClass
 
-:: UChar
+:: UChar (:== Int)
 
 instance ==	UChar
 instance < UChar

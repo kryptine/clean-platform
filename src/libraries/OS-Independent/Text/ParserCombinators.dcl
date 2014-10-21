@@ -1,4 +1,4 @@
-definition module ParserCombinators
+definition module Text.ParserCombinators
 
 // ****************************************************************************************
 //	Concurrent Clean Standard Library Module
@@ -10,7 +10,7 @@ import StdString, StdOverloaded, StdChar
 :: Parser s r :== [s] -> ParsResult s r
 :: ParsResult s r :== [([s],r)]
 
-:: CParser s r t :== (SucCont s r t) (XorCont s t) (AltCont s t) -> Parser s t
+:: CParser s r t = CParser ((SucCont s r t) (XorCont s t) (AltCont s t) -> Parser s t)
 :: SucCont s r t :== r (XorCont s t) (AltCont s t) -> Parser s t			// internal continuation
 :: XorCont s t   :== (AltCont s t) -> ParsResult s t						// internal continuation
 :: AltCont s t   :== ParsResult s t											// internal continuation

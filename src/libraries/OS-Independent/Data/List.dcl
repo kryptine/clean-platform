@@ -1,12 +1,13 @@
-definition module List
+definition module Data.List
 
-from Functor import class Functor
-from Maybe import :: Maybe
-import StdList
+from Data.Functor import class Functor
+from Data.Maybe import :: Maybe
+import StdList, GenEq
 
 head            :: ![.a] -> .a
 tail            :: !u:[.a] -> u:[.a]
-null            :: ![.a] -> Bool
+isnull          :: ![.a] -> Bool
+keep            :: Int [a] -> [a]
 unzip3          :: ![(.a,.b,.c)] -> ([.a],[.b],[.c])
 unzip4          :: ![(.a,.b,.c,.d)] -> ([.a],[.b],[.c],[.d])
 unzip5          :: ![(.a,.b,.c,.d,.e)] -> ([.a],[.b],[.c],[.d],[.e])
@@ -43,7 +44,6 @@ notElem         :: a .[a] -> .Bool | == a
 lookup          :: a [(a,.b)] -> Maybe .b | == a
 find            :: (a -> .Bool) -> .(.[a] -> .(Maybe a))
 partition       :: (a -> .Bool) .[a] -> (.[a],.[a])
-select          :: .(a -> .Bool) a (u:[a],v:[a]) -> (w:[a],x:[a]), [u <= w,v <= x]
 elemIndex       :: a -> .(.[a] -> .(Maybe Int)) | == a
 elemIndices     :: a -> .(.[a] -> .[Int]) | == a
 findIndex       :: (.a -> .Bool) -> .([.a] -> .(Maybe Int))
@@ -51,7 +51,9 @@ findIndices     :: (.a -> .Bool) [.a] -> .[Int]
 zip3            :: ![.a] [.b] [.c] -> [(.a,.b,.c)]
 zip4            :: ![.a] [.b] [.c] [.d] -> [(.a,.b,.c,.d)]
 zip5            :: ![.a] [.b] [.c] [.d] [.e] -> [(.a,.b,.c,.d,.e)]
+zipSt           :: (.a -> .(.b -> (.st -> .st))) ![.a] [.b] .st -> .st
 zipWith         :: (.a -> .(.b -> .h)) ![.a] [.b] -> [.h]
+zipWithSt       :: (.a -> .(.b -> (.st -> .(.h, .st)))) ![.a] [.b] .st -> .([.h], .st)
 zipWith3        :: (.a -> .(.b -> .(.c -> .h))) ![.a] [.b] [.c] -> [.h]
 zipWith4        :: (.a -> .(.b -> .(.c -> .(.d -> .h)))) ![.a] [.b] [.c] [.d] -> [.h]
 zipWith5        :: (.a -> .(.b -> .(.c -> .(.d -> .(.e -> .h)))))
@@ -63,10 +65,12 @@ delete          :: u:(a -> v:(w:[a] -> x:[a])) | == a, [v <= u,w <= x]
 deleteBy        :: (a -> .(b -> .Bool)) a u:[b] -> v:[b], [u <= v]
 deleteFirstsBy  :: (a -> .(b -> .Bool)) -> u:(v:[b] -> w:(.[a] -> x:[b])), [w <= u,w v <= x]
 difference      :: u:(v:[a] -> w:(.[a] -> x:[a])) | == a, [w <= u,w v <= x]
+differenceBy 	:: (a -> a -> .Bool) u:[a] .[a] -> v:[a], [u <= v]
 intersect       :: u:(.[a] -> v:(.[a] -> .[a])) | == a, [v <= u]
 intersectBy     :: (a -> b -> .Bool) .[a] .[b] -> .[a]
 union           :: u:(.[a] -> v:(.[a] -> .[a])) | == a, [v <= u]
 unionBy         :: (a -> .(a -> .Bool)) .[a] .[a] -> .[a]
 
+isMemberGen :: !a !.[a] -> Bool | gEq{|*|} a
 
 instance Functor []
