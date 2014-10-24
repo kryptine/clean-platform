@@ -208,6 +208,14 @@ rect xspan yspan
                               ]
     }
 
+defaultMarkers :: Markers m
+defaultMarkers
+  = { Markers
+    | markerStart = Nothing
+    , markerMid   = Nothing
+    , markerEnd   = Nothing
+    }
+
 xline :: !(Maybe (Markers m)) !s -> Image m | IsSpan s
 xline markers xspan = line markers Slash xspan zero
 

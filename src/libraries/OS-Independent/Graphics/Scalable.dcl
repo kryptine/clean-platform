@@ -45,6 +45,8 @@ from StdOverloaded import class zero, class +, class -, class ~, class one, clas
     , markerEnd   :: Maybe (Image m)
     }
 
+defaultMarkers :: Markers m
+
 :: LineContent
   = SimpleLineImage Slash
   | PolygonImage    [ImageOffset]
