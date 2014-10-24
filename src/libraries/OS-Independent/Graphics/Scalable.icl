@@ -23,17 +23,31 @@ px a = PxSpan a
 textxspan :: !FontDef !String -> Span
 textxspan a b = LookupSpan (TextXSpan a b)
 
-imagexspan :: ![ImageTag] -> Span
-imagexspan as = LookupSpan (ImageXSpan ('DS'.fromList as))
+imagexspan :: !t -> Span | Tagged t
+imagexspan as = LookupSpan (ImageXSpan ('DS'.fromList (getTags as)))
 
-imageyspan :: ![ImageTag] -> Span
-imageyspan as = LookupSpan (ImageYSpan ('DS'.fromList as))
+imageyspan :: !t -> Span | Tagged t
+imageyspan as = LookupSpan (ImageYSpan ('DS'.fromList (getTags as)))
 
-columnspan :: ![ImageTag] !Int -> Span
-columnspan as a = LookupSpan (ColumnXSpan ('DS'.fromList as) a)
+columnspan :: !t !Int -> Span | Tagged t
+columnspan as a = LookupSpan (ColumnXSpan ('DS'.fromList (getTags as)) a)
 
-rowspan :: ![ImageTag] !Int -> Span
-rowspan as a = LookupSpan (RowYSpan ('DS'.fromList as) a)
+rowspan :: !t !Int -> Span | Tagged t
+rowspan as a = LookupSpan (RowYSpan ('DS'.fromList (getTags as)) a)
+
+class Tagged t where
+  getTags :: t -> [ImageTag]
+
+instance Tagged ImageTag where
+  getTags x = [x]
+
+instance Tagged [ImageTag] where
+  getTags xs = xs
+
+instance Tagged (Image s) where
+  getTags img
+    | 'DS'.null img.tags = abort "Image has no tags"
+    | otherwise          = 'DS'.toList img.tags
 
 instance zero Span where zero = PxSpan zero
 instance one  Span where one  = PxSpan one
@@ -447,8 +461,8 @@ instance < (a, b) | < a & < b where
 instance == (a, b) | == a & == b where
   (==) (x1, x2) (y1, y2) = x1 == y1 && x2 == y2
 
-tag :: ![ImageTag] !(Image m) -> Image m
-tag ts image=:{Image | tags} = {Image | image & tags = 'DS'.union tags ('DS'.fromList ts)}
+tag :: !t !(Image m) -> Image m | Tagged t
+tag ts image=:{Image | tags} = {Image | image & tags = 'DS'.union tags ('DS'.fromList (getTags ts))}
 
 tags :: !(Image m) -> [ImageTag]
 tags image=:{Image | tags} = 'DS'.toList tags

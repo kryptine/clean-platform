@@ -105,10 +105,17 @@ from StdOverloaded import class zero, class +, class -, class ~, class one, clas
 
 px         :: !Real            -> Span // (px a) is a pixels
 textxspan  :: !FontDef !String -> Span // (textxspan font str) is the x-span of str written in font
-imagexspan :: ![ImageTag]      -> Span // (imagexspan ts) is x-span of image tagged with superset of ts
-imageyspan :: ![ImageTag]      -> Span // (imageyspan ts) is y-span of image tagged with superset of ts
-columnspan :: ![ImageTag] !Int -> Span // (columnspan ts i) is x-span of column i in grid tagged with superset of ts
-rowspan    :: ![ImageTag] !Int -> Span // (rowspan ts i) is y-span of row i in grid tagged with superset of ts
+imagexspan :: !t      -> Span | Tagged t // (imagexspan ts) is x-span of image tagged with superset of ts
+imageyspan :: !t      -> Span | Tagged t // (imageyspan ts) is y-span of image tagged with superset of ts
+columnspan :: !t !Int -> Span | Tagged t // (columnspan ts i) is x-span of column i in grid tagged with superset of ts
+rowspan    :: !t !Int -> Span | Tagged t // (rowspan ts i) is y-span of row i in grid tagged with superset of ts
+
+class Tagged t where
+  getTags :: t -> [ImageTag]
+
+instance Tagged ImageTag
+instance Tagged [ImageTag]
+instance Tagged (Image s)
 
 class (*.) infixl 7 a :: a n -> a | toReal n
 class (/.) infixl 7 a :: a n -> a | toReal n
@@ -257,7 +264,7 @@ class imageTag a :: a -> ImageTag
 instance imageTag Int
 instance imageTag String
 
-tag  :: ![ImageTag] !(Image m) -> Image m
+tag  :: !t !(Image m) -> Image m | Tagged t
 tags :: !(Image m) -> [ImageTag]
 
 instance == ImageTag
