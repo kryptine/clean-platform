@@ -215,6 +215,7 @@ line markers slash xspan yspan
 
 polygon :: !(Maybe (Markers m)) ![ImageOffset] -> Image m
 polygon markers offsets
+  # offsets = normalizePolyPoints offsets
   = mkImage (Line { lineSpan    = (maxSpan (map fst offsets), maxSpan (map snd offsets))
                   , markers     = markers
                   , lineContent = PolygonImage offsets
@@ -222,6 +223,7 @@ polygon markers offsets
 
 polyline :: !(Maybe (Markers m)) ![ImageOffset] -> Image m
 polyline markers offsets
+  # offsets = normalizePolyPoints offsets
   = { mkImage (Line { lineSpan    = (maxSpan (map fst offsets), maxSpan (map snd offsets))
                     , markers     = markers
                     , lineContent = PolylineImage offsets
@@ -231,6 +233,12 @@ polyline markers offsets
                               , ImageStrokeWidthAttr {strokewidth = px 1.0}
                               ]
     }
+
+normalizePolyPoints :: ![ImageOffset] -> [ImageOffset]
+normalizePolyPoints offsets
+  # minX = minSpan (map fst offsets)
+  # minY = minSpan (map snd offsets)
+  = foldr (\(x, y) acc -> [(x - minX, y - minY) : acc]) [] offsets
 
 rotate :: !th !(Image m) -> Image m | Angle th
 rotate a image=:{Image | transform = ts}
