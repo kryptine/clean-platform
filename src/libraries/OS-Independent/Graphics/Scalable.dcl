@@ -255,13 +255,6 @@ above   ::                                ![XAlign] ![ImageOffset] ![Image m] !(
 grid    :: !GridDimension !GridLayout ![ImageAlign] ![ImageOffset] ![Image m] !(Host m) -> Image m
 collage ::                                          ![ImageOffset] ![Image m] !(Host m) -> Image m
 
-:: Mask m :== Image m
-
-(@$) infixr :: !(Mask  m) !(Image m) -> Image m
-($@) infixl :: !(Image m) !(Mask  m) -> Image m
-
-maskWith :: !(Mask m) !(Image m) -> Image m
-
 :: XAlign
   = AtLeft
   | AtMiddleX
@@ -305,8 +298,9 @@ class tuneImage attr :: (Image m) (attr m) -> Image m
 :: OpacityAttr       m = { opacity     :: Real     }
 :: OnClickAttr       m = { onclick     :: (m -> m) }
 :: DashAttr          m = { dash        :: [Int]    }
+:: MaskAttr          m = { mask        :: Image m  }
 
-instance tuneImage StrokeAttr, StrokeWidthAttr, FillAttr, OpacityAttr, OnClickAttr, XRadiusAttr, YRadiusAttr, DashAttr
+instance tuneImage StrokeAttr, StrokeWidthAttr, FillAttr, OpacityAttr, OnClickAttr, XRadiusAttr, YRadiusAttr, DashAttr, MaskAttr
 
 class toSVGColor a :: a -> SVGColor
 instance toSVGColor String, RGB

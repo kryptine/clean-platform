@@ -398,15 +398,6 @@ collage offsets imgs host
                        , compose = AsCollage imgs
                        })
 
-(@$) infixr :: !(Mask m) !(Image m) -> Image m
-(@$) mask orig = maskWith mask orig
-
-($@) infixl :: !(Image m) !(Mask m) -> Image m
-($@) orig mask = maskWith mask mask
-
-maskWith :: !(Mask m) !(Image m) -> Image m
-maskWith mask orig = { orig & mask = Just mask }
-
 instance tuneImage StrokeAttr      where
   tuneImage image=:{Image | attribs} attr = {Image | image & attribs = 'DS'.insert (ImageStrokeAttr      attr) attribs}
 instance tuneImage StrokeWidthAttr where
@@ -423,6 +414,8 @@ instance tuneImage OnClickAttr     where
   tuneImage image=:{Image | attribs} attr = {Image | image & attribs = 'DS'.insert (ImageOnClickAttr     attr) attribs}
 instance tuneImage DashAttr        where
   tuneImage image=:{Image | attribs} attr = {Image | image & attribs = 'DS'.insert (ImageDashAttr        attr) attribs}
+instance tuneImage MaskAttr        where
+  tuneImage image                    attr = {Image | image & mask = Just attr.MaskAttr.mask }
 
 (<@<) infixl 2 :: !(Image m) !(attr m) -> Image m | tuneImage attr
 (<@<) image attr = tuneImage image attr
