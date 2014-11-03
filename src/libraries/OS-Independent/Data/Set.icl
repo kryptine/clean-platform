@@ -12,8 +12,8 @@ mapSetMonotonic :: (a -> b) (Set a) -> Set b
 mapSetMonotonic _ Tip = Tip
 mapSetMonotonic f (Bin n x l r) = Bin n (f x) (mapSetMonotonic f l) (mapSetMonotonic f r)
 
-compare :: a a -> Ordering | < a & == a
-compare x y = if (x<y) LT (if (x>y) GT EQ)
+compare :: !a !a -> Ordering | < a & == a
+compare x y = if (x < y) LT (if (x > y) GT EQ)
 
 /*
  * Sets are size balanced trees.
@@ -55,7 +55,7 @@ size t
       Bin sz _ _ _ -> sz
 
 // | /O(log n)/. Is the element in the set?
-member :: a (Set a) -> Bool | < a & == a
+member :: !a (Set a) -> Bool | < a & == a
 member x t
   = case t of
       Tip -> False
@@ -66,7 +66,7 @@ member x t
                EQ -> True    
                
 // | /O(log n)/. Is the element not in the set?
-notMember :: a (Set a) -> Bool | < a & == a
+notMember :: !a (Set a) -> Bool | < a & == a
 notMember x t = not (member x t)
 
 /*--------------------------------------------------------------------
@@ -93,7 +93,7 @@ singleton x
 // | /O(log n)/. Insert an element in a set.
 // If the set already contains an element equal to the given value,
 // it is replaced with the new value.
-insert :: a .(Set a) -> Set a | < a & == a
+insert :: !a .(Set a) -> Set a | < a & == a
 insert x t
   = case t of
       Tip -> singleton x
@@ -104,7 +104,7 @@ insert x t
                EQ -> Bin sz x l r
                
 // | /O(log n)/. Delete an element from a set.
-delete :: a .(Set a) -> Set a | < a & == a
+delete :: !a .(Set a) -> Set a | < a & == a
 delete x t
   = case t of
       Tip -> Tip
@@ -129,13 +129,13 @@ isSubsetOf :: (Set a) (Set a) -> Bool | < a & == a
 isSubsetOf t1 t2
   = (size t1 <= size t2) && (isSubsetOfX t1 t2)
 
-isSubsetOfX :: (Set a) (Set a) -> Bool | < a & == a
+isSubsetOfX :: !(Set a) (Set a) -> Bool | < a & == a
 isSubsetOfX Tip _ = True
 isSubsetOfX _ Tip = False
 isSubsetOfX (Bin _ x l r) t
   = found && isSubsetOfX l lt && isSubsetOfX r gt
 where
-    (lt,found,gt) = splitMember x t
+    (lt, found, gt) = splitMember x t
 
 /*--------------------------------------------------------------------
  * Minimal, Maximal
@@ -366,7 +366,7 @@ filterLt cmp (Bin _ x l r)
 // | /O(log n)/. The expression (@'split' x set@) is a pair @(set1,set2)@
 // where @set1@ comprises the elements of @set@ less than @x@ and @set2@
 // comprises the elements of @set@ greater than @x@.
-split :: a (Set a) -> (Set a,Set a) | < a & == a
+split :: !a (Set a) -> (Set a,Set a) | < a & == a
 split _ Tip = (Tip,Tip)
 split x (Bin _ y l r)
   = case compare x y of
@@ -376,14 +376,14 @@ split x (Bin _ y l r)
 
 // | /O(log n)/. Performs a 'split' but also returns whether the pivot
 // element was found in the original set.
-splitMember :: a (Set a) -> (Set a,Bool,Set a) | < a & == a
-splitMember x t = let (l,m,r) = splitLookup x t in
+splitMember :: !a (Set a) -> (Set a,Bool,Set a) | < a & == a
+splitMember x t = let (l, m, r) = splitLookup x t in
      (l,maybe False (const True) m,r)
 
 // | /O(log n)/. Performs a 'split' but also returns the pivot
 // element that was found in the original set.
-splitLookup :: a (Set a) -> (Set a,Maybe a,Set a) | < a & == a
-splitLookup _ Tip = (Tip,Nothing,Tip)
+splitLookup :: !a (Set a) -> (Set a, Maybe a, Set a) | < a & == a
+splitLookup _ Tip = (Tip, Nothing, Tip)
 splitLookup x (Bin _ y l r)
    = case compare x y of
        LT -> let (lt,found,gt) = splitLookup x l in (lt,found,join y gt r)
@@ -422,7 +422,7 @@ splitLookup x (Bin _ y l r)
 /*--------------------------------------------------------------------
  * Join 
  *--------------------------------------------------------------------*/
-join :: a (Set a) (Set a) -> Set a
+join :: !a (Set a) (Set a) -> Set a
 join x Tip r  = insertMin x r
 join x l Tip  = insertMax x l
 join x l=:(Bin sizeL y ly ry) r=:(Bin sizeR z lz rz)
@@ -431,14 +431,14 @@ join x l=:(Bin sizeL y ly ry) r=:(Bin sizeR z lz rz)
   | otherwise             = bin x l r
 
 // insertMin and insertMax don't perform potentially expensive comparisons.
-insertMax :: a (Set a) -> Set a 
+insertMax :: !a (Set a) -> Set a 
 insertMax x t
   = case t of
       Tip -> singleton x
       Bin _ y l r
           -> balance y l (insertMax x r)
             
-insertMin :: a (Set a) -> Set a 
+insertMin :: !a (Set a) -> Set a 
 insertMin x t
   = case t of
       Tip -> singleton x
@@ -463,28 +463,28 @@ merge l=:(Bin sizeL x lx rx) r=:(Bin sizeR y ly ry)
 glue :: .(Set a) .(Set a) -> Set a
 glue Tip r = r
 glue l Tip = l
-glue l r   
-  | size l > size r = let (m,l`) = deleteFindMax l in balance m l` r
-  			        = let (m,r`) = deleteFindMin r in balance m l r`
+glue l r
+  | size l > size r = let (m, l`) = deleteFindMax l in balance m l` r
+  | otherwise       = let (m, r`) = deleteFindMin r in balance m l r`
 
 // | /O(log n)/. Delete and find the minimal element.
 // 
 // > deleteFindMin set = (findMin set, deleteMin set)
 deleteFindMin :: .(Set a) -> (a, Set a)
-deleteFindMin t 
+deleteFindMin t
   = case t of
-      Bin _ x Tip r -> (x,r)
-      Bin _ x l r   -> let (xm,l`) = deleteFindMin l in (xm,balance x l` r)
+      Bin _ x Tip r -> (x, r)
+      Bin _ x l r   -> let (xm, l`) = deleteFindMin l in (xm, balance x l` r)
       Tip           -> (abort "Set.deleteFindMin: can not return the minimal element of an empty set", Tip)
 
 // | /O(log n)/. Delete and find the maximal element.
-// 
+//
 // > deleteFindMax set = (findMax set, deleteMax set)
 deleteFindMax :: .(Set a) -> (a, Set a)
 deleteFindMax t
   = case t of
-      Bin _ x l Tip -> (x,l)
-      Bin _ x l r   -> let (xm,r`) = deleteFindMax r in (xm,balance x l r`)
+      Bin _ x l Tip -> (x, l)
+      Bin _ x l r   -> let (xm, r`) = deleteFindMax r in (xm, balance x l r`)
       Tip           -> (abort "Set.deleteFindMax: can not return the maximal element of an empty set", Tip)
 
 // | /O(log n)/. Retrieves the minimal key of the set, and the set
@@ -575,14 +575,15 @@ rotateR _ Tip _ = abort "rotateL Tip"
 singleL :: a (Set a) (Set a) -> Set a
 singleL x1 t1 (Bin _ x2 t2 t3)  = bin x2 (bin x1 t1 t2) t3
 singleL _  _  Tip               = abort "singleL"
+
 singleR :: a (Set a) (Set a) -> Set a
 singleR x1 (Bin _ x2 t1 t2) t3  = bin x2 t1 (bin x1 t2 t3)
 singleR _  Tip              _   = abort "singleR"
 
-doubleL :: a (Set a) (Set a) -> Set a
+doubleL :: !a (Set a) (Set a) -> Set a
 doubleL x1 t1 (Bin _ x2 (Bin _ x3 t2 t3) t4) = bin x3 (bin x1 t1 t2) (bin x2 t3 t4)
 doubleL _ _ _ = abort "doubleL"
-doubleR :: a (Set a) (Set a) -> Set a
+doubleR :: !a (Set a) (Set a) -> Set a
 doubleR x1 (Bin _ x2 t1 (Bin _ x3 t2 t3)) t4 = bin x3 (bin x2 t1 t2) (bin x1 t3 t4)
 doubleR _ _ _ = abort "doubleR"
 

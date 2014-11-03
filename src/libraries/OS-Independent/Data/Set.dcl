@@ -52,8 +52,8 @@ null :: (Set a) -> Bool
 // The number of elements in the set.
 size :: (Set a) -> Int
 // Is the element in the set?
-member    :: a (Set a) -> Bool | < a & == a
-notMember :: a (Set a) -> Bool | < a & == a
+member    :: !a (Set a) -> Bool | < a & == a
+notMember :: !a (Set a) -> Bool | < a & == a
 // Is this a subset?
 isSubsetOf :: (Set a) (Set a) -> Bool | < a & == a
 // Is this a proper subset? (ie. a subset but not equal).
@@ -66,9 +66,9 @@ singleton :: u:a -> w:(Set u:a), [w <= u]
 // Insert an element in a set.
 // If the set already contains an element equal to the given value,
 // it is replaced with the new value.
-insert :: a .(Set a) -> Set a | < a & == a
+insert :: !a .(Set a) -> Set a | < a & == a
 // Delete an element from a set.
-delete :: a .(Set a) -> Set a | < a & == a
+delete :: !a .(Set a) -> Set a | < a & == a
 
 // The minimal element of a set.
 findMin :: (Set a) -> a
@@ -111,10 +111,10 @@ partition :: (a -> Bool) (Set a) -> (Set a,Set a) | < a & == a
 // The expression (@'split' x set@) is a pair @(set1,set2)@
 // where @set1@ comprises the elements of @set@ less than @x@ and @set2@
 // comprises the elements of @set@ greater than @x@.
-split :: a (Set a) -> (Set a,Set a) | < a & == a
+split :: !a (Set a) -> (Set a,Set a) | < a & == a
 // Performs a 'split' but also returns whether the pivot
 // element was found in the original set.
-splitMember :: a (Set a) -> (Set a,Bool,Set a) | < a & == a
+splitMember :: !a (Set a) -> (Set a,Bool,Set a) | < a & == a
 
 // | /O(n)/. Post-order fold.
 fold :: (a -> .b -> .b) .b .(Set a) -> .b
