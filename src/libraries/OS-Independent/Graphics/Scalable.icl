@@ -50,7 +50,6 @@ instance Tagged (Image s) where
     | otherwise          = 'DS'.toList img.tags
 
 instance zero Span where zero = PxSpan zero
-instance one  Span where one  = PxSpan one
 instance abs  Span where abs (PxSpan  x) = PxSpan (abs x)
                          abs (AbsSpan x) = AbsSpan x
                          abs span        = AbsSpan span
@@ -530,9 +529,6 @@ instance - Deg where
 instance zero Deg where
   zero = Deg 0.0
 
-instance one Deg where
-  one = Deg 1.0
-
 instance sign Deg where
   sign (Deg r) = sign r
 
@@ -558,9 +554,6 @@ instance - Rad where
 
 instance zero Rad where
   zero = Rad 0.0
-
-instance one Rad where
-  one = Rad 1.0
 
 instance sign Rad where
   sign (Rad r) = sign r

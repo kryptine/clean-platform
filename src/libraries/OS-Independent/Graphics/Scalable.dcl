@@ -7,7 +7,7 @@ definition module Graphics.Scalable
 from Data.Maybe import :: Maybe
 from Text.HTML import :: SVGColor
 from Data.Set import :: Set
-from StdOverloaded import class zero, class +, class -, class ~, class one, class sign, class abs, class <, class ==, class toReal, class /, class *
+from StdOverloaded import class zero, class +, class -, class ~, class sign, class abs, class <, class ==, class toReal, class /, class *
 
 :: Image m
   = { content             :: ImageContent m           // the image elements
@@ -123,7 +123,6 @@ class (*.) infixl 7 a :: a n -> a | toReal n
 class (/.) infixl 7 a :: a n -> a | toReal n
 
 instance zero Span
-instance one  Span
 instance +    Span
 instance -    Span
 instance abs  Span
@@ -131,21 +130,30 @@ instance ~    Span
 instance *.   Span, Real, Int
 instance /.   Span, Real, Int
 
-class maxOf a :: [a] -> a
-class minOf a :: [a] -> a
+class maxOf a :: ![a] -> a
+class minOf a :: ![a] -> a
 
 instance maxOf Span, Real, Int
 instance minOf Span, Real, Int
 
-class IsSpan a | zero a & one a & + a & - a & abs a & ~ a & *. a & /. a & maxOf a & minOf a where
-  toSpan :: a -> Span
+class IsSpan a | zero a & + a & - a & abs a & ~ a & *. a & /. a & maxOf a & minOf a where
+  toSpan :: !a -> Span
 
 instance IsSpan Int
 instance IsSpan Real
 instance IsSpan Span
 
 minSpan :: ![s] -> Span | IsSpan s // (minimum as) is the minimum of as (zero if as = [])
+  special
+  s = Span
+  s = Real
+  s = Int
+
 maxSpan :: ![s] -> Span | IsSpan s // (maximum as) is the maximum of as (zero if as = [])
+  special
+  s = Span
+  s = Real
+  s = Int
 
 class margin a where
   margin :: !a !(Image m) -> Image m
@@ -167,23 +175,72 @@ instance margin (a, b, c, d) | IsSpan a & IsSpan b & IsSpan c & IsSpan d // (t, 
     }
 
 empty    :: !s !s            -> Image m | IsSpan s // (empty a b) is an empty image with x-span a and y-span b
+  special
+  s = Span
+  s = Real
+  s = Int
 text     :: !FontDef !String -> Image m            // (text font str) is an image containg str written in font
 circle   :: !s               -> Image m | IsSpan s // (circle a) is an image of a circle with diameter a
+  special
+  s = Span
+  s = Real
+  s = Int
 ellipse  :: !s !s            -> Image m | IsSpan s // (ellipse a b) is an image of an ellipse with x-diameter a and y-diameter b
+  special
+  s = Span
+  s = Real
+  s = Int
 rect     :: !s !s            -> Image m | IsSpan s // (rect a b) is an image of a rectangle with x-span a and y-span b
+  special
+  s = Span
+  s = Real
+  s = Int
 
 xline    :: !(Maybe (Markers m)) !s             -> Image m | IsSpan s // (xline a) is an image of a line with x-span a and y-span zero
+  special
+  s = Span
+  s = Real
+  s = Int
 yline    :: !(Maybe (Markers m)) !s             -> Image m | IsSpan s // (yline a) is an image of a line with y-span a and x-span zero
+  special
+  s = Span
+  s = Real
+  s = Int
 line     :: !(Maybe (Markers m)) !Slash !s !s   -> Image m | IsSpan s // (line a b) is an image of a line with x-span a and y-span b
+  special
+  s = Span
+  s = Real
+  s = Int
 polygon  :: !(Maybe (Markers m)) ![ImageOffset] -> Image m // (polygon xs) is an image of a polygon with coordinates xs
 polyline :: !(Maybe (Markers m)) ![ImageOffset] -> Image m // (polyline xs) is an image of a polyline with coordinates xs
 
-rotate  :: !th   !(Image m) -> Image m | Angle th
 fit     :: !s !s !(Image m) -> Image m | IsSpan s
+  special
+  s = Span
+  s = Real
+  s = Int
 fitx    :: !s    !(Image m) -> Image m | IsSpan s
+  special
+  s = Span
+  s = Real
+  s = Int
 fity    :: !s    !(Image m) -> Image m | IsSpan s
+  special
+  s = Span
+  s = Real
+  s = Int
+rotate  :: !th   !(Image m) -> Image m | Angle th
+  special
+  th = Deg
+  th = Rad
 skewx   :: !th   !(Image m) -> Image m | Angle th
+  special
+  th = Deg
+  th = Rad
 skewy   :: !th   !(Image m) -> Image m | Angle th
+  special
+  th = Deg
+  th = Rad
 
 :: Slash = Slash | Backslash
 
@@ -288,8 +345,6 @@ instance Angle  Deg
 instance Angle  Rad
 instance sign   Deg
 instance sign   Rad
-
-isPxSpan :: !Span -> Bool
 
 instance == FontDef
 instance < FontDef
