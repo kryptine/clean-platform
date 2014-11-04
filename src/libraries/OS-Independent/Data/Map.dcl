@@ -5,12 +5,16 @@ definition module Data.Map
 * such that lookup, insert and delete operations can be performed in O(log n).
 */
 
-from Data.Maybe		import :: Maybe
+from Data.Maybe		import :: Maybe (..)
 from StdClass		import class Eq, class Ord
 from StdOverloaded	import class ==, class <
+from StdBool        import not
+from StdFunc        import id
 from Text.JSON      import generic JSONEncode, generic JSONDecode, :: JSONNode
 from GenEq import generic gEq
 from Data.Monoid    import class Monoid
+import qualified StdList as SL
+from Data.List import foldr
 
 /**
 * The abstract Map type provides the mapping.
@@ -32,7 +36,11 @@ instance Monoid (Map k v) | < k
 
 //Basic functions
 
-null :: !(Map k a) -> Bool
+//null :: !(Map k a) -> Bool
+//null :: !(Map k a) -> Bool
+null mp :== case mp of
+              Tip -> True
+              _   -> False
 
 /**
 * Create an empty Map
@@ -43,7 +51,10 @@ newMap      :: w:(Map k u:v), [ w <= u]
 
 singleton   :: !k !a -> Map k a
 
-mapSize     :: !(Map k v) -> Int
+//mapSize     :: !(Map k v) -> Int
+mapSize mp :== case mp of
+                 Tip -> 0
+                 (Bin sz _ _ _ _) -> sz
 
 /**
 * Adds or replaces the value for a given key.
@@ -78,14 +89,16 @@ del :: !k !(Map k a) -> Map k a | < k
 delU :: !a !.(Map a b) -> u:(!v:(Maybe b), !Map a b) | == a & < a, [u <= v] // !k !w:(Map k u:v) -> x:(Maybe u:v, !y:(Map k u:v)) | == k & < k, [ w y <= u, x <= y, w <= y]
 
 foldrWithKey :: !(k v u:a -> u:a) !u:a !(Map k v) -> u:a
-foldrNoKey   :: !(v u:a -> u:a) !u:a !(Map k v) -> u:a
+//foldrNoKey   :: !(v u:a -> u:a) !u:a !(Map k v) -> u:a
 foldlWithKey :: !(u:a k v -> u:a) !u:a !(Map k v) -> u:a
-foldlNoKey   :: !(a -> b -> a) !a !(Map c b) -> a
+//foldlNoKey   :: !(a -> b -> a) !a !(Map c b) -> a
 
 filterWithKey :: !(k a -> Bool) !(Map k a) -> Map k a
 
-keys  :: !(Map k a) -> [k]
-elems :: !(Map k a) -> [a]
+//keys  :: !(Map k a) -> [k]
+keys m :== foldrWithKey (\k _ ks -> [k : ks]) [] m
+//elems :: !(Map k a) -> [a]
+elems m :== foldrNoKey (\x xs -> [x:xs]) [] m
 
 //Conversion functions
 
@@ -97,7 +110,8 @@ elems :: !(Map k a) -> [a]
 * @param The original mapping
 * @return A list of key/value tuples in the mapping
 */
-toList :: !(Map k a) -> [(!k, !a)]
+toList m :== toAscList m
+toAscList m :== foldrWithKey (\k x xs -> [(k,x):xs]) [] m
 
 /**
 * Converts a list of key/value tuples to a mapping.
@@ -114,7 +128,7 @@ fromList :: !u:[v:(!a, !b)] -> Map a b | == a & < a, [u <= v]
 * @param The original mapping
 * @return The modified mapping with the added values
 */
-putList :: !u:[v:(!a, !b)] !u:(Map a b) -> Map a b | == a & < a, [u <= v]
+//putList :: !u:[v:(!a, !b)] !u:(Map a b) -> Map a b | == a & < a, [u <= v]
 
 /**
 * Removes the values at given key positions. The mapping itself can be spine unique.
@@ -123,13 +137,15 @@ putList :: !u:[v:(!a, !b)] !u:(Map a b) -> Map a b | == a & < a, [u <= v]
 * @param The original mapping
 * @return The modified mapping with the values/keys removed
 */
-delList :: ![a] !.(Map a b) -> Map a b | == a & < a
+//delList :: ![a] !.(Map a b) -> Map a b | == a & < a
 
 derive JSONEncode Map
 derive JSONDecode Map
 derive gEq Map
 
 member :: !k !(Map k a) -> Bool | < k
+
+notMember k m :== not (member k m)
 
 find :: !k !(Map k a) -> a | < k
 
@@ -143,8 +159,28 @@ findMin :: !(Map k a) -> (!k, !a)
 
 findMax :: !(Map k a) -> (!k, !a)
 
-unions :: ![Map k a] -> Map k a | < k
+//unions :: ![Map k a] -> Map k a | < k
+unions ts :== foldlStrict union newMap ts
 
-unionsWith :: !(a a -> a) ![Map k a] -> Map k a | < k
+//unionsWith :: !(a a -> a) ![Map k a] -> Map k a | < k
+unionsWith f ts :== foldlStrict (unionWith f) newMap ts
+
+unionWith f m1 m2 :== unionWithKey (\_ x y -> f x y) m1 m2
+
+unionWithKey f t1 t2 :== mergeWithKey (\k x1 x2 -> Just (f k x1 x2)) id id t1 t2
 
 union :: !(Map k a) !(Map k a) -> Map k a | < k
+
+mergeWithKey :: !(k a b -> Maybe c) !((Map k a) -> Map k c) !((Map k b) -> Map k c)
+             !(Map k a) !(Map k b) -> Map k c | < k
+
+foldlStrict :: !(a b -> a) !a ![b] -> a
+
+foldrNoKey f x m :== foldrWithKey (\_ v acc -> f v acc) x m
+
+foldlNoKey f x m :== foldlWithKey (\acc _ v -> f acc v) x m
+
+delList xs m :== 'SL'.foldr (\k m -> del k m) m xs
+
+putList xs m :== union (fromList xs) m
+

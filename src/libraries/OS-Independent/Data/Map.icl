@@ -45,9 +45,9 @@ instance Monoid (Map k v) | < k where
 // > Data.Map.null (newMap)           == True
 // > Data.Map.null (singleton 1 'a`) == False
 
-null :: !(Map k a) -> Bool
-null Tip = True
-null _   = False
+//null :: !(Map k a) -> Bool
+//null Tip = True
+//null _   = False
 
 // | /O(1)/. The number of elements in the map.
 //
@@ -55,17 +55,14 @@ null _   = False
 // > mapSize (singleton 1 'a`)                       == 1
 // > mapSize (fromList([(1,'a`), (2,'c'), (3,'b`)])) == 3
 
-mapSize :: !(Map k a) -> Int
-mapSize Tip              = 0
-mapSize (Bin sz _ _ _ _) = sz
+//mapSize :: !(Map k a) -> Int
+//mapSize Tip              = 0
+//mapSize (Bin sz _ _ _ _) = sz
 
 :: LexOrd = LT | GT | EQ
 
-lexOrd :: !a !a -> LexOrd | < a
-lexOrd x y
-  | x < y     = LT
-  | x > y     = GT
-  | otherwise = EQ
+//lexOrd :: !a !a -> LexOrd | < a
+lexOrd x y :== if (x < y) LT (if (x > y) GT EQ)
 
 // | /O(log n)/. Lookup the value at a key in the map.
 //
@@ -118,8 +115,7 @@ member k (Bin _ kx _ l r) = case lexOrd k kx of
 // > notMember 5 (fromList [(5,'a`), (3,'b`)]) == False
 // > notMember 1 (fromList [(5,'a`), (3,'b`)]) == True
 
-notMember :: !k !(Map k a) -> Bool | < k
-notMember k m = not (member k m)
+//notMember :: !k !(Map k a) -> Bool | < k
 
 // | /O(log n)/. Find the value at a key.
 // Calls 'abort` when the element can not be found.
@@ -626,8 +622,7 @@ updateMin f m
 // > updateMax (\ _ -> Nothing)         (fromList [(5,"a"), (3,"b")]) == singleton 3 "b"
 
 updateMax :: !(a -> Maybe a) !(Map k a) -> Map k a
-updateMax f m
-  = updateMaxWithKey (\_ x -> f x) m
+updateMax f m = updateMaxWithKey (\_ x -> f x) m
 
 
 // | /O(log n)/. Update the value at the minimal key.
@@ -710,9 +705,7 @@ first f (x,y) = (f x, y)
 // > unions [(fromList [(5, "A3"), (3, "B3")]), (fromList [(5, "A"), (7, "C")]), (fromList [(5, "a"), (3, "b")])]
 // >     == fromList [(3, "B3"), (5, "A3"), (7, "C")]
 
-unions :: ![Map k a] -> Map k a | < k
-unions ts
-  = foldlStrict union newMap ts
+//unions :: ![Map k a] -> Map k a | < k
 
 // | The union of a list of maps, with a combining operation:
 //   (@'unionsWith' f == 'Prelude.foldl` ('unionWith' f) 'newMap`@).
@@ -720,9 +713,7 @@ unions ts
 // > unionsWith (++) [(fromList [(5, "a"), (3, "b")]), (fromList [(5, "A"), (7, "C")]), (fromList [(5, "A3"), (3, "B3")])]
 // >     == fromList [(3, "bB3"), (5, "aAA3"), (7, "C")]
 
-unionsWith :: !(a a -> a) ![Map k a] -> Map k a | < k
-unionsWith f ts
-  = foldlStrict (unionWith f) newMap ts
+//unionsWith :: !(a a -> a) ![Map k a] -> Map k a | < k
 
 // | /O(n+m)/.
 // The expression (@'union' t1 t2@) takes the left-biased union of @t1@ and @t2@.
@@ -754,9 +745,7 @@ hedgeUnion blo bhi (Bin _ kx x l r) t2 = link kx x (hedgeUnion blo bmi l (trim b
 //
 // > unionWith (++) (fromList [(5, "a"), (3, "b")]) (fromList [(5, "A"), (7, "C")]) == fromList [(3, "b"), (5, "aA"), (7, "C")]
 
-unionWith :: !(a a -> a) !(Map k a) !(Map k a) -> Map k a | < k
-unionWith f m1 m2
-  = unionWithKey (\_ x y -> f x y) m1 m2
+//unionWith :: !(a a -> a) !(Map k a) !(Map k a) -> Map k a | < k
 
 // | /O(n+m)/.
 // Union with a combining function. The implementation uses the efficient /hedge-union/ algorithm.
@@ -764,8 +753,7 @@ unionWith f m1 m2
 // > let f key left_value right_value = (show key) ++ ":" ++ left_value ++ "|" ++ right_value
 // > unionWithKey f (fromList [(5, "a"), (3, "b")]) (fromList [(5, "A"), (7, "C")]) == fromList [(3, "b"), (5, "5:a|A"), (7, "C")]
 
-unionWithKey :: !(k a a -> a) !(Map k a) !(Map k a) -> Map k a | < k
-unionWithKey f t1 t2 = mergeWithKey (\k x1 x2 -> Just (f k x1 x2)) id id t1 t2
+//unionWithKey :: !(k a a -> a) !(Map k a) !(Map k a) -> Map k a | < k
 
 //////////////////////////////////////////////////////////////////////
 //  Difference
@@ -1319,8 +1307,7 @@ foldMapWithKey f (Bin _ k v l r) = mappend (foldMapWithKey f l) (mappend (f k v)
 // > elems (fromList [(5,"a"), (3,"b")]) == ["b","a"]
 // > elems newMap == []
 
-elems :: !(Map k a) -> [a]
-elems m = foldr (\x xs -> [x:xs]) [] m
+//elems :: !(Map k a) -> [a]
 
 // | /O(n)/. Return all keys of the map in ascending order. Subject to list
 // fusion.
@@ -1328,8 +1315,7 @@ elems m = foldr (\x xs -> [x:xs]) [] m
 // > keys (fromList [(5,"a"), (3,"b")]) == [3,5]
 // > keys newMap == []
 
-keys :: !(Map k a) -> [k]
-keys m = foldrWithKey (\k _ ks -> [k : ks]) [] m
+//keys :: !(Map k a) -> [k]
 
 // | /O(n)/. An alias for 'toAscList`. Return all key\/value pairs in the map
 // in ascending key order. Subject to list fusion.
@@ -1423,8 +1409,8 @@ fromList [(kx0, x0) : xs0]
 // > fromListWith (++) [(5,"a"), (5,"b"), (3,"b"), (3,"a"), (5,"a")] == fromList [(3, "ab"), (5, "aba")]
 // > fromListWith (++) [] == newMap
 
-fromListWith :: !(a a -> a) ![(!k, !a)] -> Map k a | < k
-fromListWith f xs = fromListWithKey (\_ x y -> f x y) xs
+//fromListWith :: !(a a -> a) ![(!k, !a)] -> Map k a | < k
+fromListWith f xs :== fromListWithKey (\_ x y -> f x y) xs
 
 // | /O(n*log n)/. Build a map from a list of key\/value pairs with a combining function. See also 'fromAscListWithKey`.
 //
@@ -1442,16 +1428,15 @@ fromListWithKey f xs = foldlStrict ins newMap xs
 // > toList (fromList [(5,"a"), (3,"b")]) == [(3,"b"), (5,"a")]
 // > toList newMap == []
 
-toList :: !(Map k a) -> [(!k, !a)]
-toList m = toAscList m
+//toList :: !(Map k a) -> [(!k, !a)]
+//toList m = toAscList m
 
 // | /O(n)/. Convert the map to a list of key\/value pairs where the keys are
 // in ascending order. Subject to list fusion.
 //
 // > toAscList (fromList [(5,"a"), (3,"b")]) == [(3,"b"), (5,"a")]
 
-toAscList :: !(Map k a) -> [(!k, !a)]
-toAscList m = foldrWithKey (\k x xs -> [(k,x):xs]) [] m
+//toAscList :: !(Map k a) -> [(!k, !a)]
 
 // | /O(n)/. Convert the map to a list of key\/value pairs where the keys
 // are in descending order. Subject to list fusion.
@@ -2173,17 +2158,13 @@ splitRoot (Bin _ k v l r) = [l, singleton k v, r]
 
 
 // BC funs
-putList :: !u:[v:(!a, !b)] !u:(Map a b) -> Map a b | == a & < a, [u <= v]
-putList xs m = union (fromList xs) m
+//putList :: !u:[v:(!a, !b)] !u:(Map a b) -> Map a b | == a & < a, [u <= v]
 
-delList :: ![a] !.(Map a b) -> Map a b | == a & < a
-delList xs m = 'SL'.foldr (\k m -> del k m) m xs
+//delList :: ![a] !.(Map a b) -> Map a b | == a & < a
 
-foldlNoKey :: !(a -> b -> a) !a !(Map c b) -> a
-foldlNoKey f x m = foldlWithKey (\acc _ v -> f acc v) x m
+//foldlNoKey :: !(a -> b -> a) !a !(Map c b) -> a
 
-foldrNoKey :: !(v u:a -> u:a) !u:a !(Map k v) -> u:a
-foldrNoKey f x m = foldrWithKey (\_ v acc -> f v acc) x m
+//foldrNoKey :: !(v u:a -> u:a) !u:a !(Map k v) -> u:a
 
 getU :: !k !w:(Map k v) -> x:(!Maybe v, !y:(Map k v)) | == k & < k, [ x <= y, w <= y]
 getU k Tip = (Nothing, Tip)

@@ -1,7 +1,10 @@
 definition module Data.Set
 
-from StdOverloaded	import class ==, class <
+from StdOverloaded	import class ==, class < (..)
+from StdClass import class Ord (..), <=, >
 from Data.Maybe		import :: Maybe
+from Data.List import foldl, map
+from StdBool import not, &&
 
 // This module is ported from Haskell Data.Set by László Domoszlai. 2013.sep.6
 
@@ -48,16 +51,31 @@ instance == (Set a) | == a
 instance < (Set a) | < a
 
 // Is this the empty set?
-null :: !(Set a) -> Bool
+//null :: !(Set a) -> Bool
+null s :== case s of
+             Tip -> True
+             (Bin sz _ _ _) -> False
+
 // The number of elements in the set.
-size :: !(Set a) -> Int
+//size :: !(Set a) -> Int
+size s :== case s of
+             Tip -> 0
+             (Bin sz _ _ _) -> sz
 // Is the element in the set?
 member    :: !a !(Set a) -> Bool | < a & == a
-notMember :: !a !(Set a) -> Bool | < a & == a
+//notMember :: !a !(Set a) -> Bool | < a & == a
+
+notMember x t :== not (member x t)
+
 // Is this a subset?
-isSubsetOf :: !(Set a) !(Set a) -> Bool | < a & == a
+//isSubsetOf :: !(Set a) !(Set a) -> Bool | < a & == a
+isSubsetOf t1 t2 :== (size t1 <= size t2) && (isSubsetOfX t1 t2)
+
+isSubsetOfX :: !(Set a) !(Set a) -> Bool | < a & == a
+
 // Is this a proper subset? (ie. a subset but not equal).
-isProperSubsetOf :: !(Set a) !(Set a) -> Bool | < a & == a
+//isProperSubsetOf :: !(Set a) !(Set a) -> Bool | < a & == a
+isProperSubsetOf s1 s2 :== (size s1 < size s2) && (isSubsetOf s1 s2)
 
 // The empty set.
 newSet :: Set a
@@ -95,7 +113,9 @@ maxView :: !.(Set a) -> .(Maybe (!a, !Set a))
 // Hedge-union is more efficient on (bigset `union` smallset).
 union :: !u:(Set a) !u:(Set a) -> Set a | < a & == a
 // The union of a list of sets: (@'unions' == 'foldl' 'union' 'empty'@).
-unions :: !u:[v:(Set a)] -> Set a | < a & == a, [u <= v]
+//unions :: !u:[v:(Set a)] -> Set a | < a & == a, [u <= v]
+unions ts :== foldl union newSet ts
+
 // Difference of two sets. 
 difference :: !(Set a) !(Set a) -> Set a | < a & == a
 // The intersection of two sets.
@@ -120,10 +140,15 @@ splitMember :: !a !(Set a) -> (!Set a, !Bool, !Set a) | < a & == a
 fold :: !(a -> .b -> .b) !.b !.(Set a) -> .b
 
 // Convert the set to an ascending list of elements.
-toList :: !(Set a) -> [a]
+//toList :: !(Set a) -> [a]
+toList s :== toAscList s
+
+toAscList t :== fold (\a as -> [a:as]) [] t
+
 // Create a set from a list of elements.
 fromList :: ![a] -> Set a | < a & == a
 
-mapSet :: !(a -> b) !(Set a) -> Set b | < a & == a & < b & == b
+//mapSet :: !(a -> b) !(Set a) -> Set b | < a & == a & < b & == b
+mapSet f s :== fromList (map f (toList s))
 
 mapSetMonotonic :: !(a -> b) !(Set a) -> Set b

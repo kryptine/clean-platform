@@ -3,17 +3,20 @@ implementation module Data.Set
 import StdClass, StdMisc, StdBool, StdList, StdFunc, StdInt, StdTuple
 import Data.Maybe
 
-:: Ordering = LT | GT | EQ
-
-mapSet :: !(a -> b) !(Set a) -> Set b | < a & == a & < b & == b
-mapSet f s = fromList (map f (toList s))
+//mapSet :: !(a -> b) !(Set a) -> Set b | < a & == a & < b & == b
+//mapSet f s = fromList (map f (toList s))
 
 mapSetMonotonic :: !(a -> b) !(Set a) -> Set b
 mapSetMonotonic _ Tip = Tip
 mapSetMonotonic f (Bin n x l r) = Bin n (f x) (mapSetMonotonic f l) (mapSetMonotonic f r)
 
-compare :: !a !a -> Ordering | < a & == a
-compare x y = if (x < y) LT (if (x > y) GT EQ)
+//compare :: !a !a -> Ordering | < a & == a
+//compare x y = if (x < y) LT (if (x > y) GT EQ)
+
+:: Ordering = LT | GT | EQ
+
+compare x y :== if (x < y) LT (if (x > y) GT EQ)
+
 
 /*
  * Sets are size balanced trees.
@@ -23,11 +26,14 @@ compare x y = if (x < y) LT (if (x > y) GT EQ)
          | Bin !Int !a !(Set a) !(Set a)
 
 instance == (Set a) | == a where
+  (==) :: !(Set a) !(Set a) -> Bool | == a
   (==) t1 t2  = (size t1 == size t2) && (toAscList t1 == toAscList t2)
 
 instance < (Set a) | < a where
+  (<) :: !(Set a) !(Set a) -> Bool | < a
   (<) s1 s2 = compare (toAscList s1) (toAscList s2)
     where
+    compare :: ![a] ![a] -> Bool | < a
     compare []     [] = False
     compare []     _  = True
     compare [_:_]  [] = False
@@ -41,14 +47,18 @@ instance < (Set a) | < a where
  *--------------------------------------------------------------------*/
   
 // | /O(1)/. Is this the empty set?
-null :: !(Set a) -> Bool
-null Tip = True
-null (Bin _ _ _ _) = False
+//null :: !(Set a) -> Bool
+//null Tip = True
+//null (Bin _ _ _ _) = False
 
 // | /O(1)/. The number of elements in the set.
-size :: !(Set a) -> Int
-size Tip = 0
-size (Bin sz _ _ _) = sz
+//size s :== case s of
+             //Tip -> 0
+             //(Bin sz _ _ _) -> sz
+// TODO Remove
+//size :: !(Set a) -> Int
+//size Tip = 0
+//size (Bin sz _ _ _) = sz
 
 // | /O(log n)/. Is the element in the set?
 member :: !a !(Set a) -> Bool | < a & == a
@@ -60,19 +70,16 @@ member x (Bin _ y l r) =
             EQ -> True
 
 // | /O(log n)/. Is the element not in the set?
-notMember :: !a !(Set a) -> Bool | < a & == a
-notMember x t = not (member x t)
+//notMember :: !a !(Set a) -> Bool | < a & == a
+//notMember x t = not (member x t)
 
 /*--------------------------------------------------------------------
  * Construction
  *--------------------------------------------------------------------*/
  
 // | /O(1)/. The empty set.
-empty :: Set a
-empty = Tip
-
 newSet :: Set a
-newSet = empty
+newSet = Tip
 
 // | /O(1)/. Create a singleton set.
 singleton :: !u:a -> w:(Set u:a), [w <= u]
@@ -114,13 +121,13 @@ delete x (Bin _ y l r) =
  *--------------------------------------------------------------------*/
 
 // | /O(n+m)/. Is this a proper subset? (ie. a subset but not equal).
-isProperSubsetOf :: !(Set a) !(Set a) -> Bool | < a & == a
-isProperSubsetOf s1 s2 = (size s1 < size s2) && (isSubsetOf s1 s2)
+//isProperSubsetOf :: !(Set a) !(Set a) -> Bool | < a & == a
+//isProperSubsetOf s1 s2 = (size s1 < size s2) && (isSubsetOf s1 s2)
 
 // | /O(n+m)/. Is this a subset?
 // @(s1 `isSubsetOf` s2)@ tells whether @s1@ is a subset of @s2@.
-isSubsetOf :: !(Set a) !(Set a) -> Bool | < a & == a
-isSubsetOf t1 t2 = (size t1 <= size t2) && (isSubsetOfX t1 t2)
+//isSubsetOf :: !(Set a) !(Set a) -> Bool | < a & == a
+//isSubsetOf t1 t2 = (size t1 <= size t2) && (isSubsetOfX t1 t2)
 
 isSubsetOfX :: !(Set a) !(Set a) -> Bool | < a & == a
 isSubsetOfX Tip _ = True
@@ -162,8 +169,8 @@ deleteMax Tip             = Tip
  *--------------------------------------------------------------------*/
  
 // | The union of a list of sets: (@'unions' == 'foldl' 'union' 'empty'@).
-unions :: !u:[v:(Set a)] -> Set a | < a & == a, [u <= v]
-unions ts = foldl union empty ts
+//unions :: !u:[v:(Set a)] -> Set a | < a & == a, [u <= v]
+//unions ts = foldl union newSet ts
 
 // | /O(n+m)/. The union of two sets, preferring the first set when
 // equal elements are encountered.
@@ -181,18 +188,6 @@ hedgeUnion _   _   t1  (Bin _ x Tip Tip) = insertR x t1
 hedgeUnion blo bhi (Bin _ x l r) t2 = link x (hedgeUnion blo bmi l (trim blo bmi t2))
                                              (hedgeUnion bmi bhi r (trim bmi bhi t2))
   where bmi = JustS x
-
-// TODO Remove
-//hedgeUnion :: !(a -> Ordering) !(a -> Ordering) !u:(Set a) !u:(Set a) -> Set a | < a & == a
-//hedgeUnion _     _     t1 Tip
-  //= t1
-//hedgeUnion cmplo cmphi Tip (Bin _ x l r)
-  //= link x (filterGt cmplo l) (filterLt cmphi r)
-//hedgeUnion cmplo cmphi (Bin _ x l r) t2
-  //= link x (hedgeUnion cmplo cmpx l (trim cmplo cmpx t2)) 
-           //(hedgeUnion cmpx cmphi r (trim cmpx cmphi t2))
-  //where
-  //cmpx y  = compare x y
 
 /*--------------------------------------------------------------------
  * Difference
@@ -212,18 +207,6 @@ hedgeDiff blo bhi t (Bin _ x l r) = merge (hedgeDiff blo bmi (trim blo bmi t) l)
                                           (hedgeDiff bmi bhi (trim bmi bhi t) r)
   where bmi = JustS x
 
-// TODO Remove
-//hedgeDiff :: !(a -> Ordering) !(a -> Ordering) !(Set a) !(Set a) -> Set a | < a & == a
-//hedgeDiff _ _ Tip _
-  //= Tip
-//hedgeDiff cmplo cmphi (Bin _ x l r) Tip 
-  //= link x (filterGt cmplo l) (filterLt cmphi r)
-//hedgeDiff cmplo cmphi t (Bin _ x l r) 
-  //= merge (hedgeDiff cmplo cmpx (trim cmplo cmpx t) l) 
-          //(hedgeDiff cmpx cmphi (trim cmpx cmphi t) r)
-//where
-    //cmpx y = compare x y
-
 
 /*--------------------------------------------------------------------
  * Intersection
@@ -231,8 +214,7 @@ hedgeDiff blo bhi t (Bin _ x l r) = merge (hedgeDiff blo bmi (trim blo bmi t) l)
 
 intersections :: ![Set a] -> Set a | < a & == a
 intersections [t] = t
-intersections [t:ts]
-  = foldl intersection t ts
+intersections [t:ts] = foldl intersection t ts
 
 // | /O(n+m)/. The intersection of two sets.
 // Elements of the result come from the first set, so for example
@@ -261,28 +243,6 @@ hedgeInt blo bhi (Bin _ x l r) t2
   = if (member x t2)
       (link x l` r`)
       (merge l` r`)
-
-// TODO Remove
-//intersection :: !(Set a) !(Set a) -> Set a | < a & == a
-//intersection Tip _ = Tip
-//intersection _ Tip = Tip
-//intersection t1=:(Bin s1 x1 l1 r1) t2=:(Bin s2 x2 l2 r2)
-  //| s1 >= s2  = then1
-  //| otherwise = else1
-//where
-	//then1
-      //#! (lt,found,gt) = splitLookup x2 t1
-      //#! tl            = intersection lt l2
-      //#! tr            = intersection gt r2
-	  //= case found of
-		  //(Just x) -> link x tl tr
-		  //Nothing -> merge tl tr
-
-	//else1
-      //#! (lt,found,gt) = splitMember x1 t2
-	  //#! tl            = intersection l1 lt
-	  //#! tr            = intersection r1 gt
-	  //= (if found (link x1 tl tr) (merge tl tr))
 
 /*--------------------------------------------------------------------
  * Filter and partition
@@ -321,16 +281,16 @@ fold f z (Bin _ x l r) = fold f (f x (fold f z r)) l
  *--------------------------------------------------------------------*/
 
 // | /O(n)/. Convert the set to a list of elements.
-toList :: !(Set a) -> [a]
-toList s = toAscList s
+//toList :: !(Set a) -> [a]
+//toList s = toAscList s
 
 // | /O(n)/. Convert the set to an ascending list of elements.
-toAscList :: !(Set a) -> [a]
-toAscList t = fold (\a as -> [a:as]) [] t
+//toAscList :: !(Set a) -> [a]
+//toAscList t = fold (\a as -> [a:as]) [] t
 
 // | /O(n*log n)/. Create a set from a list of elements.
 fromList :: ![a] -> Set a | < a & == a
-fromList xs = foldl ins empty xs
+fromList xs = foldl ins newSet xs
   where
   ins t x = insert x t
 
@@ -358,16 +318,6 @@ fromList xs = foldl ins empty xs
   values between the range [lo] to [hi]. The returned tree is either
   empty or the key of the root is between @lo@ and @hi@.
 --------------------------------------------------------------------*/
-
-// TODO remove
-//trim :: !(a -> Ordering) !(a -> Ordering) !(Set a) -> Set a
-//trim _     _     Tip = Tip
-//trim cmplo cmphi t=:(Bin _ x l r)
-  //= case cmplo x of
-      //LT -> case cmphi x of
-              //GT -> t
-              //_  -> trim cmplo cmphi l
-      //_  -> trim cmplo cmphi r
 
 trim :: !(MaybeS a) !(MaybeS a) !(Set a) -> Set a | < a & == a
 trim NothingS   NothingS   t = t
@@ -399,24 +349,6 @@ filterGt (JustS b) t = filter` b t
                                EQ -> r
                                GT -> filter` b` r
 
-// TODO Remove
-//filterGt :: !(a -> Ordering) !(Set a) -> Set a
-//filterGt _ Tip = Tip
-//filterGt cmp (Bin _ x l r)
-  //= case cmp x of
-      //LT -> join x (filterGt cmp l) r
-      //GT -> filterGt cmp r
-      //EQ -> r
-
-// TODO Remove
-//filterLt :: !(a -> Ordering) !(Set a) -> Set a
-//filterLt _ Tip = Tip
-//filterLt cmp (Bin _ x l r)
-  //= case cmp x of
-      //LT -> filterLt cmp l
-      //GT -> join x l (filterLt cmp r)
-      //EQ -> l
-
 filterLt :: !(MaybeS a) !(Set a) -> Set a | < a & == a
 filterLt NothingS t = t
 filterLt (JustS b) t = filter` b t
@@ -438,8 +370,8 @@ split _ Tip = (Tip,Tip)
 split x (Bin _ y l r)
   = case compare x y of
       LT
-        #! (lt,gt) = split x l
-        = (lt,link y gt r)
+        #! (lt, gt) = split x l
+        = (lt, link y gt r)
       GT
         #! (lt,gt) = split x r
         = (link y l lt,gt)
@@ -451,37 +383,16 @@ split x (Bin _ y l r)
 splitMember :: !a !(Set a) -> (!Set a, !Bool, !Set a) | < a & == a
 splitMember _ Tip = (Tip, False, Tip)
 splitMember x (Bin _ y l r)
-   = case compare x y of
-       LT
-         #! (lt, found, gt) = splitMember x l
-         = (lt, found, link y gt r)
-       GT
-         #! (lt, found, gt) = splitMember x r
-         = (link y l lt, found, gt)
-       EQ
-         = (l, True, r)
+  = case compare x y of
+      LT
+        #! (lt, found, gt) = splitMember x l
+        = (lt, found, link y gt r)
+      GT
+        #! (lt, found, gt) = splitMember x r
+        = (link y l lt, found, gt)
+      EQ
+        = (l, True, r)
 
-// TODO Remove
-//splitMember :: !a !(Set a) -> (!Set a, !Bool, !Set a) | < a & == a
-//splitMember x t
-  //#! (l, m, r) = splitLookup x t
-  //= (l,maybe False (const True) m,r)
-
-// | /O(log n)/. Performs a 'split' but also returns the pivot
-// element that was found in the original set.
-// TODO Remove
-//splitLookup :: !a !(Set a) -> (!Set a, !Maybe a, !Set a) | < a & == a
-//splitLookup _ Tip = (Tip, Nothing, Tip)
-//splitLookup x (Bin _ y l r)
-   //= case compare x y of
-       //LT
-         //#! (lt,found,gt) = splitLookup x l
-         //= (lt,found,link y gt r)
-       //GT
-         //#! (lt,found,gt) = splitLookup x r
-         //= (link y l lt,found,gt)
-       //EQ
-         //= (l,Just y,r)
 
 /*--------------------------------------------------------------------
   Utility functions that maintain the balance properties of the tree.
@@ -640,14 +551,13 @@ ratio :== 2
 
 balance :: !a !(Set a) !(Set a) -> Set a
 balance x l r
+  #! sizeL = size l
+  #! sizeR = size r
+  #! sizeX = sizeL + sizeR + 1
   | sizeL + sizeR <= 1    = Bin sizeX x l r
   | sizeR >= delta*sizeL  = rotateL x l r
   | sizeL >= delta*sizeR  = rotateR x l r
   | otherwise             = Bin sizeX x l r
-  where
-    sizeL = size l
-    sizeR = size r
-    sizeX = sizeL + sizeR + 1
 
 // Functions balanceL and balanceR are specialised versions of balance.
 // balanceL only checks whether the left subtree is too big,
@@ -734,5 +644,5 @@ doubleR _ _ _ = abort "doubleR"
 /*--------------------------------------------------------------------
  * The bin constructor maintains the size of the tree
  *--------------------------------------------------------------------*/
-bin :: !a !(Set a) !(Set a) -> Set a
-bin x l r = Bin (size l + size r + 1) x l r
+//bin :: !a !(Set a) !(Set a) -> Set a
+bin x l r :== Bin (size l + size r + 1) x l r
