@@ -174,6 +174,8 @@ instance margin (a, b, c, d) | IsSpan a & IsSpan b & IsSpan c & IsSpan d // (t, 
     , fontweight  :: String
     }
 
+normalFontDef :: !String !Real -> FontDef			// (normalFontDef family size) sets all other fields to "normal"
+
 empty    :: !s !s            -> Image m | IsSpan s // (empty a b) is an empty image with x-span a and y-span b
   special
   s = Span

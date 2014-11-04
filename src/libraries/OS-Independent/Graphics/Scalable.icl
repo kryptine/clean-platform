@@ -566,3 +566,8 @@ instance < FontDef where
               && fd1.fontvariant == fd2.fontvariant
               && fd1.fontweight  == fd2.fontweight)
               && fd1.fontysize   <  fd2.fontysize
+
+normalFontDef :: !String !Real -> FontDef			// (normalFontDef family size) sets all other fields to "normal"
+normalFontDef family size
+	= {fontfamily = family, fontysize = size, fontstretch = "normal", fontstyle = "normal", fontvariant = "normal", fontweight = "normal"}
+
