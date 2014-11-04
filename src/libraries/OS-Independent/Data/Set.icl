@@ -96,8 +96,8 @@ insert :: !a !.(Set a) -> Set a | < a & == a
 insert x Tip = singleton x
 insert x (Bin sz y l r) =
   case compare x y of
-    LT -> balance y (insert x l) r
-    GT -> balance y l (insert x r)
+    LT -> balanceL y (insert x l) r
+    GT -> balanceR y l (insert x r)
     EQ -> Bin sz x l r
 
 insertR :: !a !(Set a) -> Set a | < a & == a
@@ -112,8 +112,8 @@ delete :: !a !.(Set a) -> Set a | < a & == a
 delete x Tip = Tip
 delete x (Bin _ y l r) =
   case compare x y of
-    LT -> balance y (delete x l) r
-    GT -> balance y l (delete x r)
+    LT -> balanceR y (delete x l) r
+    GT -> balanceL y l (delete x r)
     EQ -> glue l r
 
 /*--------------------------------------------------------------------
@@ -155,13 +155,13 @@ findMax Tip              = abort "Set.findMax: empty set has no maximal element"
 // | /O(log n)/. Delete the minimal element.
 deleteMin :: !.(Set a) -> Set a
 deleteMin (Bin _ _ Tip r) = r
-deleteMin (Bin _ x l r)   = balance x (deleteMin l) r
+deleteMin (Bin _ x l r)   = balanceR x (deleteMin l) r
 deleteMin Tip             = Tip
 
 // | /O(log n)/. Delete the maximal element.
 deleteMax :: !.(Set a) -> Set a
 deleteMax (Bin _ _ l Tip) = l
-deleteMax (Bin _ x l r)   = balance x l (deleteMax r)
+deleteMax (Bin _ x l r)   = balanceL x l (deleteMax r)
 deleteMax Tip             = Tip
 
 /*--------------------------------------------------------------------
@@ -261,11 +261,10 @@ filter p (Bin _ x l r)
 partition :: !(a -> Bool) !(Set a) -> (!Set a, !Set a) | < a & == a
 partition _ Tip = (Tip,Tip)
 partition p (Bin _ x l r)
+  #! (l1,l2) = partition p l
+  #! (r1,r2) = partition p r
   | p x       = (link x l1 r1,merge l2 r2)
   | otherwise = (merge l1 r1,link x l2 r2)
-  where
-    (l1,l2) = partition p l
-    (r1,r2) = partition p r
 
 /*--------------------------------------------------------------------
  * Fold
@@ -430,18 +429,18 @@ link :: !a !(Set a) !(Set a) -> Set a
 link x Tip r  = insertMin x r
 link x l Tip  = insertMax x l
 link x l=:(Bin sizeL y ly ry) r=:(Bin sizeR z lz rz)
-  | delta*sizeL <= sizeR  = balance z (link x l lz) rz
-  | delta*sizeR <= sizeL  = balance y ly (link x ry r)
-  | otherwise             = bin x l r
+  | delta*sizeL < sizeR  = balanceL z (link x l lz) rz
+  | delta*sizeR < sizeL  = balanceR y ly (link x ry r)
+  | otherwise            = bin x l r
 
 // insertMin and insertMax don't perform potentially expensive comparisons.
 insertMax :: !a !(Set a) -> Set a
 insertMax x Tip = singleton x
-insertMax x (Bin _ y l r) = balance y l (insertMax x r)
+insertMax x (Bin _ y l r) = balanceR y l (insertMax x r)
 
 insertMin :: !a !(Set a) -> Set a
 insertMin x Tip = singleton x
-insertMin x (Bin _ y l r) = balance y (insertMin x l) r
+insertMin x (Bin _ y l r) = balanceL y (insertMin x l) r
          
 /*--------------------------------------------------------------------
  * [merge l r]: merges two trees.
@@ -450,9 +449,9 @@ merge :: !(Set a) !(Set a) -> Set a
 merge Tip r   = r
 merge l Tip   = l
 merge l=:(Bin sizeL x lx rx) r=:(Bin sizeR y ly ry)
-  | delta*sizeL <= sizeR = balance y (merge l ly) ry
-  | delta*sizeR <= sizeL = balance x lx (merge rx r)
-  | otherwise            = glue l r
+  | delta*sizeL < sizeR = balanceL y (merge l ly) ry
+  | delta*sizeR < sizeL = balanceR x lx (merge rx r)
+  | otherwise           = glue l r
 
 /*--------------------------------------------------------------------
  * [glue l r]: glues two trees together.
@@ -464,10 +463,10 @@ glue l Tip = l
 glue l r
   | size l > size r
       #! (m, l`) = deleteFindMax l
-      = balance m l` r
+      = balanceR m l` r
   | otherwise
       #! (m, r`) = deleteFindMin r
-      = balance m l r`
+      = balanceL m l r`
 
 // | /O(log n)/. Delete and find the minimal element.
 // 
@@ -476,7 +475,7 @@ deleteFindMin :: !.(Set a) -> (!a, !Set a)
 deleteFindMin (Bin _ x Tip r) = (x, r)
 deleteFindMin (Bin _ x l r)
   #! (xm, l`) = deleteFindMin l
-  = (xm, balance x l` r)
+  = (xm, balanceR x l` r)
 deleteFindMin Tip = (abort "Set.deleteFindMin: can not return the minimal element of an empty set", Tip)
 
 // | /O(log n)/. Delete and find the maximal element.
@@ -486,7 +485,7 @@ deleteFindMax :: !.(Set a) -> (!a, !Set a)
 deleteFindMax (Bin _ x l Tip ) = (x, l)
 deleteFindMax (Bin _ x l r)
   #! (xm, r`) = deleteFindMax r
-  = (xm, balance x l r`)
+  = (xm, balanceL x l r`)
 deleteFindMax Tip = (abort "Set.deleteFindMax: can not return the maximal element of an empty set", Tip)
 
 // | /O(log n)/. Retrieves the minimal key of the set, and the set
@@ -548,16 +547,6 @@ maxView x = Just (deleteFindMax x)
 --------------------------------------------------------------------*/
 delta :== 4
 ratio :== 2
-
-balance :: !a !(Set a) !(Set a) -> Set a
-balance x l r
-  #! sizeL = size l
-  #! sizeR = size r
-  #! sizeX = sizeL + sizeR + 1
-  | sizeL + sizeR <= 1    = Bin sizeX x l r
-  | sizeR >= delta*sizeL  = rotateL x l r
-  | sizeL >= delta*sizeR  = rotateR x l r
-  | otherwise             = Bin sizeX x l r
 
 // Functions balanceL and balanceR are specialised versions of balance.
 // balanceL only checks whether the left subtree is too big,
