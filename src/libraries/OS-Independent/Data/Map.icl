@@ -27,7 +27,7 @@ import Control.Monad
 // | A Map from keys @k@ to values @a@.
 
 :: Map k a
-  = Bin !Size !k a !(Map k a) !(Map k a)
+  = Bin !Size !k !a !(Map k a) !(Map k a)
   | Tip
 
 :: Size   :== Int
@@ -1002,13 +1002,13 @@ isProperSubmapOfBy f t1 t2
 // > filter (< "a") (fromList [(5,"a"), (3,"b")]) == newMap
 
 filter :: !(a -> Bool) !(Map k a) -> Map k a
-filter p m
-  = filterWithKey (\_ x -> p x) m
+filter p m = filterWithKey (\_ x -> p x) m
 
 // | /O(n)/. Filter all keys\/values that satisfy the predicate.
 //
 // > filterWithKey (\k _ -> k > 4) (fromList [(5,"a"), (3,"b")]) == singleton 5 "a"
 
+// TODO : Optimize?
 filterWithKey :: !(k a -> Bool) !(Map k a) -> Map k a
 filterWithKey _ Tip = Tip
 filterWithKey p (Bin _ kx x l r)
@@ -1754,8 +1754,12 @@ glue :: !(Map k a) !(Map k a) -> Map k a
 glue Tip r = r
 glue l Tip = l
 glue l r
-  | mapSize l > mapSize r = let ((km,m),l`) = deleteFindMax l in balanceR km m l` r
-  | otherwise       = let ((km,m),r`) = deleteFindMin r in balanceL km m l r`
+  | mapSize l > mapSize r
+      #! ((km, m), l`) = deleteFindMax l
+      = balanceR km m l` r
+  | otherwise
+      #! ((km, m), r`) = deleteFindMin r
+      = balanceL km m l r`
 
 
 // | /O(log n)/. Delete and find the minimal element.
@@ -1766,9 +1770,13 @@ glue l r
 deleteFindMin :: !(Map k a) -> (!(!k, !a), !Map k a)
 deleteFindMin t
   = case t of
-      Bin _ k x Tip r -> ((k,x),r)
-      Bin _ k x l r   -> let (km,l`) = deleteFindMin l in (km,balanceR k x l` r)
-      Tip             -> (abort "Map.deleteFindMin: can not return the minimal element of an newMap map", Tip)
+      Bin _ k x Tip r
+        = ((k, x), r)
+      Bin _ k x l r
+        #! (km,l`) = deleteFindMin l
+        = (km, balanceR k x l` r)
+      Tip
+        = (abort "Map.deleteFindMin: can not return the minimal element of an newMap map", Tip)
 
 // | /O(log n)/. Delete and find the maximal element.
 //
@@ -1778,9 +1786,13 @@ deleteFindMin t
 deleteFindMax :: !(Map k a) -> (!(!k, !a), !Map k a)
 deleteFindMax t
   = case t of
-      Bin _ k x l Tip -> ((k, x), l)
-      Bin _ k x l r   -> let (km,r`) = deleteFindMax r in (km,balanceL k x l r`)
-      Tip             -> (abort "Map.deleteFindMax: can not return the maximal element of an newMap map", Tip)
+      Bin _ k x l Tip
+        = ((k, x), l)
+      Bin _ k x l r
+        #! (km,r`) = deleteFindMax r
+        = (km, balanceL k x l r`)
+      Tip
+        = (abort "Map.deleteFindMax: can not return the maximal element of an newMap map", Tip)
 
 
 ////////////////////////////////////////////////////////////////////

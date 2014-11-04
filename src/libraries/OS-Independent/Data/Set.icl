@@ -20,7 +20,7 @@ compare x y = if (x < y) LT (if (x > y) GT EQ)
  * A set of values @a@.
  */
 :: Set a = Tip
-         | Bin !Int a !(Set a) !(Set a)
+         | Bin !Int !a !(Set a) !(Set a)
 
 instance == (Set a) | == a where
   (==) t1 t2  = (size t1 == size t2) && (toAscList t1 == toAscList t2)
@@ -92,6 +92,13 @@ insert x (Bin sz y l r) =
     LT -> balance y (insert x l) r
     GT -> balance y l (insert x r)
     EQ -> Bin sz x l r
+
+insertR :: !a !(Set a) -> Set a | < a & == a
+insertR x Tip = singleton x
+insertR x t=:(Bin _ y l r) = case compare x y of
+        LT -> balanceL y (insertR x l) r
+        GT -> balanceR y l (insertR x r)
+        EQ -> t
 
 // | /O(log n)/. Delete an element from a set.
 delete :: !a !.(Set a) -> Set a | < a & == a
@@ -165,18 +172,27 @@ unions ts = foldl union empty ts
 union :: !u:(Set a) !u:(Set a) -> Set a | < a & == a
 union Tip t2  = t2
 union t1 Tip  = t1
-union t1 t2 = hedgeUnion (const LT) (const GT) t1 t2
+union t1 t2 = hedgeUnion NothingS NothingS t1 t2
 
-hedgeUnion :: !(a -> Ordering) !(a -> Ordering) !u:(Set a) !u:(Set a) -> Set a | < a & == a
-hedgeUnion _     _     t1 Tip
-  = t1
-hedgeUnion cmplo cmphi Tip (Bin _ x l r)
-  = join x (filterGt cmplo l) (filterLt cmphi r)
-hedgeUnion cmplo cmphi (Bin _ x l r) t2
-  = join x (hedgeUnion cmplo cmpx l (trim cmplo cmpx t2)) 
-           (hedgeUnion cmpx cmphi r (trim cmpx cmphi t2))
-  where
-  cmpx y  = compare x y
+hedgeUnion :: !(MaybeS a) !(MaybeS a) !(Set a) !(Set a) -> Set a | < a & == a
+hedgeUnion _   _   t1  Tip = t1
+hedgeUnion blo bhi Tip (Bin _ x l r) = link x (filterGt blo l) (filterLt bhi r)
+hedgeUnion _   _   t1  (Bin _ x Tip Tip) = insertR x t1
+hedgeUnion blo bhi (Bin _ x l r) t2 = link x (hedgeUnion blo bmi l (trim blo bmi t2))
+                                             (hedgeUnion bmi bhi r (trim bmi bhi t2))
+  where bmi = JustS x
+
+// TODO Remove
+//hedgeUnion :: !(a -> Ordering) !(a -> Ordering) !u:(Set a) !u:(Set a) -> Set a | < a & == a
+//hedgeUnion _     _     t1 Tip
+  //= t1
+//hedgeUnion cmplo cmphi Tip (Bin _ x l r)
+  //= link x (filterGt cmplo l) (filterLt cmphi r)
+//hedgeUnion cmplo cmphi (Bin _ x l r) t2
+  //= link x (hedgeUnion cmplo cmpx l (trim cmplo cmpx t2)) 
+           //(hedgeUnion cmpx cmphi r (trim cmpx cmphi t2))
+  //where
+  //cmpx y  = compare x y
 
 /*--------------------------------------------------------------------
  * Difference
@@ -187,18 +203,26 @@ hedgeUnion cmplo cmphi (Bin _ x l r) t2
 difference :: !(Set a) !(Set a) -> Set a | < a & == a
 difference Tip _   = Tip
 difference t1 Tip  = t1
-difference t1 t2   = hedgeDiff (const LT) (const GT) t1 t2
+difference t1 t2   = hedgeDiff NothingS NothingS t1 t2
 
-hedgeDiff :: !(a -> Ordering) !(a -> Ordering) !(Set a) !(Set a) -> Set a | < a & == a
-hedgeDiff _ _ Tip _
-  = Tip
-hedgeDiff cmplo cmphi (Bin _ x l r) Tip 
-  = join x (filterGt cmplo l) (filterLt cmphi r)
-hedgeDiff cmplo cmphi t (Bin _ x l r) 
-  = merge (hedgeDiff cmplo cmpx (trim cmplo cmpx t) l) 
-          (hedgeDiff cmpx cmphi (trim cmpx cmphi t) r)
-where
-    cmpx y = compare x y
+hedgeDiff :: !(MaybeS a) !(MaybeS a) !(Set a) !(Set a) -> Set a | < a & == a
+hedgeDiff _   _   Tip           _ = Tip
+hedgeDiff blo bhi (Bin _ x l r) Tip = link x (filterGt blo l) (filterLt bhi r)
+hedgeDiff blo bhi t (Bin _ x l r) = merge (hedgeDiff blo bmi (trim blo bmi t) l)
+                                          (hedgeDiff bmi bhi (trim bmi bhi t) r)
+  where bmi = JustS x
+
+// TODO Remove
+//hedgeDiff :: !(a -> Ordering) !(a -> Ordering) !(Set a) !(Set a) -> Set a | < a & == a
+//hedgeDiff _ _ Tip _
+  //= Tip
+//hedgeDiff cmplo cmphi (Bin _ x l r) Tip 
+  //= link x (filterGt cmplo l) (filterLt cmphi r)
+//hedgeDiff cmplo cmphi t (Bin _ x l r) 
+  //= merge (hedgeDiff cmplo cmpx (trim cmplo cmpx t) l) 
+          //(hedgeDiff cmpx cmphi (trim cmpx cmphi t) r)
+//where
+    //cmpx y = compare x y
 
 
 /*--------------------------------------------------------------------
@@ -221,26 +245,44 @@ intersections [t:ts]
 // >               S.singleton B `S.intersection` S.singleton A)
 //
 // prints @(fromList [A],fromList [B])@.
+
 intersection :: !(Set a) !(Set a) -> Set a | < a & == a
 intersection Tip _ = Tip
 intersection _ Tip = Tip
-intersection t1=:(Bin s1 x1 l1 r1) t2=:(Bin s2 x2 l2 r2)
-  | s1 >= s2  = then1
-  | otherwise = else1
-where
-	then1
-      #! (lt,found,gt) = splitLookup x2 t1
-      #! tl            = intersection lt l2
-      #! tr            = intersection gt r2
-	  = case found of
-		  (Just x) -> join x tl tr
-		  Nothing -> merge tl tr
+intersection t1 t2 = hedgeInt NothingS NothingS t1 t2
 
-	else1
-      #! (lt,found,gt) = splitMember x1 t2
-	  #! tl            = intersection l1 lt
-	  #! tr            = intersection r1 gt
-	  = (if found (join x1 tl tr) (merge tl tr))
+hedgeInt :: !(MaybeS a) !(MaybeS a) !(Set a) !(Set a) -> Set a | < a & == a
+hedgeInt _ _ _   Tip = Tip
+hedgeInt _ _ Tip _   = Tip
+hedgeInt blo bhi (Bin _ x l r) t2
+  #! bmi = JustS x
+  #! l` = hedgeInt blo bmi l (trim blo bmi t2)
+  #! r` = hedgeInt bmi bhi r (trim bmi bhi t2)
+  = if (member x t2)
+      (link x l` r`)
+      (merge l` r`)
+
+// TODO Remove
+//intersection :: !(Set a) !(Set a) -> Set a | < a & == a
+//intersection Tip _ = Tip
+//intersection _ Tip = Tip
+//intersection t1=:(Bin s1 x1 l1 r1) t2=:(Bin s2 x2 l2 r2)
+  //| s1 >= s2  = then1
+  //| otherwise = else1
+//where
+	//then1
+      //#! (lt,found,gt) = splitLookup x2 t1
+      //#! tl            = intersection lt l2
+      //#! tr            = intersection gt r2
+	  //= case found of
+		  //(Just x) -> link x tl tr
+		  //Nothing -> merge tl tr
+
+	//else1
+      //#! (lt,found,gt) = splitMember x1 t2
+	  //#! tl            = intersection l1 lt
+	  //#! tr            = intersection r1 gt
+	  //= (if found (link x1 tl tr) (merge tl tr))
 
 /*--------------------------------------------------------------------
  * Filter and partition
@@ -250,7 +292,7 @@ where
 filter :: !(a -> Bool) !(Set a) -> Set a | < a & == a
 filter _ Tip = Tip
 filter p (Bin _ x l r)
-  | p x       = join x (filter p l) (filter p r)
+  | p x       = link x (filter p l) (filter p r)
   | otherwise = merge (filter p l) (filter p r)
 
 // | /O(n)/. Partition the set into two sets, one with all elements that satisfy
@@ -259,8 +301,8 @@ filter p (Bin _ x l r)
 partition :: !(a -> Bool) !(Set a) -> (!Set a, !Set a) | < a & == a
 partition _ Tip = (Tip,Tip)
 partition p (Bin _ x l r)
-  | p x       = (join x l1 r1,merge l2 r2)
-  | otherwise = (merge l1 r1,join x l2 r2)
+  | p x       = (link x l1 r1,merge l2 r2)
+  | otherwise = (merge l1 r1,link x l2 r2)
   where
     (l1,l2) = partition p l
     (r1,r2) = partition p r
@@ -309,39 +351,80 @@ fromList xs = foldl ins empty xs
                         was found in the tree.
 --------------------------------------------------------------------*/
 
+:: MaybeS a = NothingS | JustS !a
+
 /*--------------------------------------------------------------------
   [trim lo hi t] trims away all subtrees that surely contain no
   values between the range [lo] to [hi]. The returned tree is either
   empty or the key of the root is between @lo@ and @hi@.
 --------------------------------------------------------------------*/
-trim :: !(a -> Ordering) !(a -> Ordering) !(Set a) -> Set a
-trim _     _     Tip = Tip
-trim cmplo cmphi t=:(Bin _ x l r)
-  = case cmplo x of
-      LT -> case cmphi x of
-              GT -> t
-              _  -> trim cmplo cmphi l
-      _  -> trim cmplo cmphi r
+
+// TODO remove
+//trim :: !(a -> Ordering) !(a -> Ordering) !(Set a) -> Set a
+//trim _     _     Tip = Tip
+//trim cmplo cmphi t=:(Bin _ x l r)
+  //= case cmplo x of
+      //LT -> case cmphi x of
+              //GT -> t
+              //_  -> trim cmplo cmphi l
+      //_  -> trim cmplo cmphi r
+
+trim :: !(MaybeS a) !(MaybeS a) !(Set a) -> Set a | < a & == a
+trim NothingS   NothingS   t = t
+trim (JustS lx) NothingS   t = greater lx t
+  where
+  greater lo (Bin _ x _ r) | x <= lo = greater lo r
+  greater _  t` = t`
+trim NothingS   (JustS hx) t = lesser hx t
+  where
+  lesser  hi (Bin _ x l _) | x >= hi = lesser  hi l
+  lesser  _  t` = t`
+trim (JustS lx) (JustS hx) t = middle lx hx t
+  where
+  middle lo hi (Bin _ x _ r) | x <= lo = middle lo hi r
+  middle lo hi (Bin _ x l _) | x >= hi = middle lo hi l
+  middle _  _  t` = t`
 
 /*--------------------------------------------------------------------
  * [filterGt x t] filter all values >[x] from tree [t]
  * [filterLt x t] filter all values <[x] from tree [t]
  *--------------------------------------------------------------------*/
-filterGt :: !(a -> Ordering) !(Set a) -> Set a
-filterGt _ Tip = Tip
-filterGt cmp (Bin _ x l r)
-  = case cmp x of
-      LT -> join x (filterGt cmp l) r
-      GT -> filterGt cmp r
-      EQ -> r
 
-filterLt :: !(a -> Ordering) !(Set a) -> Set a
-filterLt _ Tip = Tip
-filterLt cmp (Bin _ x l r)
-  = case cmp x of
-      LT -> filterLt cmp l
-      GT -> join x l (filterLt cmp r)
-      EQ -> l
+filterGt :: !(MaybeS a) !(Set a) -> Set a | < a & == a
+filterGt NothingS t = t
+filterGt (JustS b) t = filter` b t
+  where filter` _   Tip = Tip
+        filter` b` (Bin _ x l r) =
+          case compare b` x of LT -> link x (filter` b` l) r
+                               EQ -> r
+                               GT -> filter` b` r
+
+// TODO Remove
+//filterGt :: !(a -> Ordering) !(Set a) -> Set a
+//filterGt _ Tip = Tip
+//filterGt cmp (Bin _ x l r)
+  //= case cmp x of
+      //LT -> join x (filterGt cmp l) r
+      //GT -> filterGt cmp r
+      //EQ -> r
+
+// TODO Remove
+//filterLt :: !(a -> Ordering) !(Set a) -> Set a
+//filterLt _ Tip = Tip
+//filterLt cmp (Bin _ x l r)
+  //= case cmp x of
+      //LT -> filterLt cmp l
+      //GT -> join x l (filterLt cmp r)
+      //EQ -> l
+
+filterLt :: !(MaybeS a) !(Set a) -> Set a | < a & == a
+filterLt NothingS t = t
+filterLt (JustS b) t = filter` b t
+  where filter` _   Tip = Tip
+        filter` b` (Bin _ x l r) =
+          case compare x b` of LT -> link x l (filter` b` r)
+                               EQ -> l
+                               GT -> filter` b` l
 
 /*--------------------------------------------------------------------
  * Split
@@ -354,25 +437,51 @@ split :: !a !(Set a) -> (!Set a, !Set a) | < a & == a
 split _ Tip = (Tip,Tip)
 split x (Bin _ y l r)
   = case compare x y of
-      LT -> let (lt,gt) = split x l in (lt,join y gt r)
-      GT -> let (lt,gt) = split x r in (join y l lt,gt)
-      EQ -> (l,r)
+      LT
+        #! (lt,gt) = split x l
+        = (lt,link y gt r)
+      GT
+        #! (lt,gt) = split x r
+        = (link y l lt,gt)
+      EQ
+        = (l,r)
 
 // | /O(log n)/. Performs a 'split' but also returns whether the pivot
 // element was found in the original set.
 splitMember :: !a !(Set a) -> (!Set a, !Bool, !Set a) | < a & == a
-splitMember x t = let (l, m, r) = splitLookup x t in
-     (l,maybe False (const True) m,r)
+splitMember _ Tip = (Tip, False, Tip)
+splitMember x (Bin _ y l r)
+   = case compare x y of
+       LT
+         #! (lt, found, gt) = splitMember x l
+         = (lt, found, link y gt r)
+       GT
+         #! (lt, found, gt) = splitMember x r
+         = (link y l lt, found, gt)
+       EQ
+         = (l, True, r)
+
+// TODO Remove
+//splitMember :: !a !(Set a) -> (!Set a, !Bool, !Set a) | < a & == a
+//splitMember x t
+  //#! (l, m, r) = splitLookup x t
+  //= (l,maybe False (const True) m,r)
 
 // | /O(log n)/. Performs a 'split' but also returns the pivot
 // element that was found in the original set.
-splitLookup :: !a !(Set a) -> (!Set a, !Maybe a, !Set a) | < a & == a
-splitLookup _ Tip = (Tip, Nothing, Tip)
-splitLookup x (Bin _ y l r)
-   = case compare x y of
-       LT -> let (lt,found,gt) = splitLookup x l in (lt,found,join y gt r)
-       GT -> let (lt,found,gt) = splitLookup x r in (join y l lt,found,gt)
-       EQ -> (l,Just y,r)
+// TODO Remove
+//splitLookup :: !a !(Set a) -> (!Set a, !Maybe a, !Set a) | < a & == a
+//splitLookup _ Tip = (Tip, Nothing, Tip)
+//splitLookup x (Bin _ y l r)
+   //= case compare x y of
+       //LT
+         //#! (lt,found,gt) = splitLookup x l
+         //= (lt,found,link y gt r)
+       //GT
+         //#! (lt,found,gt) = splitLookup x r
+         //= (link y l lt,found,gt)
+       //EQ
+         //= (l,Just y,r)
 
 /*--------------------------------------------------------------------
   Utility functions that maintain the balance properties of the tree.
@@ -406,12 +515,12 @@ splitLookup x (Bin _ y l r)
 /*--------------------------------------------------------------------
  * Join 
  *--------------------------------------------------------------------*/
-join :: !a !(Set a) !(Set a) -> Set a
-join x Tip r  = insertMin x r
-join x l Tip  = insertMax x l
-join x l=:(Bin sizeL y ly ry) r=:(Bin sizeR z lz rz)
-  | delta*sizeL <= sizeR  = balance z (join x l lz) rz
-  | delta*sizeR <= sizeL  = balance y ly (join x ry r)
+link :: !a !(Set a) !(Set a) -> Set a
+link x Tip r  = insertMin x r
+link x l Tip  = insertMax x l
+link x l=:(Bin sizeL y ly ry) r=:(Bin sizeR z lz rz)
+  | delta*sizeL <= sizeR  = balance z (link x l lz) rz
+  | delta*sizeR <= sizeL  = balance y ly (link x ry r)
   | otherwise             = bin x l r
 
 // insertMin and insertMax don't perform potentially expensive comparisons.
@@ -539,6 +648,58 @@ balance x l r
     sizeL = size l
     sizeR = size r
     sizeX = sizeL + sizeR + 1
+
+// Functions balanceL and balanceR are specialised versions of balance.
+// balanceL only checks whether the left subtree is too big,
+// balanceR only checks whether the right subtree is too big.
+
+// balanceL is called when left subtree might have been inserted to or when
+// right subtree might have been deleted from.
+balanceL :: !a !(Set a) !(Set a) -> Set a
+balanceL x l r = case r of
+  Tip -> case l of
+           Tip -> Bin 1 x Tip Tip
+           (Bin _ _ Tip Tip) -> Bin 2 x l Tip
+           (Bin _ lx Tip (Bin _ lrx _ _)) -> Bin 3 lrx (Bin 1 lx Tip Tip) (Bin 1 x Tip Tip)
+           (Bin _ lx ll=:(Bin _ _ _ _) Tip) -> Bin 3 lx ll (Bin 1 x Tip Tip)
+           (Bin ls lx ll=:(Bin lls _ _ _) lr=:(Bin lrs lrx lrl lrr))
+             | lrs < ratio*lls -> Bin (1+ls) lx ll (Bin (1+lrs) x lr Tip)
+             | otherwise -> Bin (1+ls) lrx (Bin (1+lls+size lrl) lx ll lrl) (Bin (1+size lrr) x lrr Tip)
+
+  (Bin rs _ _ _) -> case l of
+           Tip -> Bin (1+rs) x Tip r
+
+           (Bin ls lx ll lr)
+              | ls > delta*rs  -> case (ll, lr) of
+                   (Bin lls _ _ _, Bin lrs lrx lrl lrr)
+                     | lrs < ratio*lls -> Bin (1+ls+rs) lx ll (Bin (1+rs+lrs) x lr r)
+                     | otherwise -> Bin (1+ls+rs) lrx (Bin (1+lls+size lrl) lx ll lrl) (Bin (1+rs+size lrr) x lrr r)
+                   (_, _) -> abort "Failure in Data.Map.balanceL"
+              | otherwise -> Bin (1+ls+rs) x l r
+
+// balanceR is called when right subtree might have been inserted to or when
+// left subtree might have been deleted from.
+balanceR :: !a !(Set a) !(Set a) -> Set a
+balanceR x l r = case l of
+  Tip -> case r of
+           Tip -> Bin 1 x Tip Tip
+           (Bin _ _ Tip Tip) -> Bin 2 x Tip r
+           (Bin _ rx Tip rr=:(Bin _ _ _ _)) -> Bin 3 rx (Bin 1 x Tip Tip) rr
+           (Bin _ rx (Bin _ rlx _ _) Tip) -> Bin 3 rlx (Bin 1 x Tip Tip) (Bin 1 rx Tip Tip)
+           (Bin rs rx rl=:(Bin rls rlx rll rlr) rr=:(Bin rrs _ _ _))
+             | rls < ratio*rrs -> Bin (1+rs) rx (Bin (1+rls) x Tip rl) rr
+             | otherwise -> Bin (1+rs) rlx (Bin (1+size rll) x Tip rll) (Bin (1+rrs+size rlr) rx rlr rr)
+
+  (Bin ls _ _ _) -> case r of
+           Tip -> Bin (1+ls) x l Tip
+
+           (Bin rs rx rl rr)
+              | rs > delta*ls  -> case (rl, rr) of
+                   (Bin rls rlx rll rlr, Bin rrs _ _ _)
+                     | rls < ratio*rrs -> Bin (1+ls+rs) rx (Bin (1+ls+rls) x l rl) rr
+                     | otherwise -> Bin (1+ls+rs) rlx (Bin (1+ls+size rll) x l rll) (Bin (1+rrs+size rlr) rx rlr rr)
+                   (_, _) -> abort "Failure in Data.Map.balanceR"
+              | otherwise -> Bin (1+ls+rs) x l r
 
 // rotate
 rotateL :: !a !(Set a) !(Set a) -> Set a

@@ -41,7 +41,7 @@ from Data.Maybe		import :: Maybe
  *---------------------------------------------------------------------------*/
 
 :: Set a = Tip
-         | Bin !Int a !(Set a) !(Set a)
+         | Bin !Int !a !(Set a) !(Set a)
 
 instance == (Set a) | == a
 

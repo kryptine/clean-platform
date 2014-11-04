@@ -23,7 +23,7 @@ from Data.Monoid    import class Monoid
             //| MNode !(Map k v) !k !Int v !(Map k v)
 
 :: Map k a
-  = Bin !Size !k a !(Map k a) !(Map k a)
+  = Bin !Size !k !a !(Map k a) !(Map k a)
   | Tip
 
 :: Size   :== Int
