@@ -92,33 +92,39 @@ minSpan :: ![Span] -> Span
 minSpan []  = zero
 minSpan [x] = toSpan x
 minSpan spans
-  | isEmpty others = minPxs
+  #! spans`        = flattenMinSpans spans
+  #! (pxs, others) = partition isPxSpan spans`
+  | isEmpty others = minPxs pxs
   | isEmpty pxs    = MinSpan others
-  | otherwise      = MinSpan [minPxs : others]
+  | otherwise      = MinSpan [minPxs pxs : others]
   where
-  spans`        = flattenMinSpans spans
+  minPxs :: ![Span] -> Span
+  minPxs pxs = PxSpan (minList [x \\ PxSpan x <- pxs])
+
+  flattenMinSpans :: ![Span] -> [Span]
   flattenMinSpans []              = []
   flattenMinSpans [MinSpan os:xs] = flattenMinSpans xs ++ os
   flattenMinSpans [x:xs]          = [x:flattenMinSpans xs]
-  (pxs, others) = partition isPxSpan spans`
-  minPxs        = PxSpan (minList [x \\ PxSpan x <- pxs])
 
 maxSpan :: ![Span] -> Span
 maxSpan []  = zero
 maxSpan [x] = toSpan x
 maxSpan spans
-  | isEmpty others = maxPxs
+  #! spans`        = flattenMaxSpans spans
+  #! (pxs, others) = partition isPxSpan spans`
+  | isEmpty others = maxPxs pxs
   | isEmpty pxs    = MaxSpan others
-  | otherwise      = MaxSpan [maxPxs : others]
+  | otherwise      = MaxSpan [maxPxs pxs : others]
   where
-  spans`        = flattenMaxSpans spans
+  maxPxs :: ![Span] -> Span
+  maxPxs pxs = PxSpan (maxList [x \\ PxSpan x <- pxs])
+
+  flattenMaxSpans :: ![Span] -> [Span]
   flattenMaxSpans []              = []
   flattenMaxSpans [MaxSpan os:xs] = flattenMaxSpans xs ++ os
   flattenMaxSpans [x:xs]          = [x:flattenMaxSpans xs]
-  (pxs, others) = partition isPxSpan spans`
-  maxPxs        = PxSpan (maxList [x \\ PxSpan x <- pxs])
 
-mkImage :: (ImageContent m) -> Image m
+mkImage :: !(ImageContent m) -> Image m
 mkImage cnt =
   { content             = cnt
   , mask                = Nothing
@@ -212,7 +218,7 @@ line markers slash xspan yspan
 
 polygon :: !(Maybe (Markers m)) ![ImageOffset] -> Image m
 polygon markers offsets
-  # offsets = normalizePolyPoints offsets
+  #! offsets = normalizePolyPoints offsets
   = mkImage (Line { lineSpan    = (maxSpan (map fst offsets), maxSpan (map snd offsets))
                   , markers     = markers
                   , lineContent = PolygonImage offsets
@@ -220,7 +226,7 @@ polygon markers offsets
 
 polyline :: !(Maybe (Markers m)) ![ImageOffset] -> Image m
 polyline markers offsets
-  # offsets = normalizePolyPoints offsets
+  #! offsets = normalizePolyPoints offsets
   = { mkImage (Line { lineSpan    = (maxSpan (map fst offsets), maxSpan (map snd offsets))
                     , markers     = markers
                     , lineContent = PolylineImage offsets
@@ -233,78 +239,76 @@ polyline markers offsets
 
 normalizePolyPoints :: ![ImageOffset] -> [ImageOffset]
 normalizePolyPoints offsets
-  # minX = minSpan (map fst offsets)
-  # minY = minSpan (map snd offsets)
+  #! minX = minSpan (map fst offsets)
+  #! minY = minSpan (map snd offsets)
   = foldr (\(x, y) acc -> [(x - minX, y - minY) : acc]) [] offsets
 
 rotate :: !Angle !(Image m) -> Image m
 rotate a image=:{Image | transform = ts}
+  #! a` = normalize a
   | a` == deg 0.0 = image
-  | otherwise     = {Image | image & transform = ts`}
-  where
-  a`  = normalize a
-  ts` = case ts of
-          [RotateImage angle : ts]
-            # a` = normalize (deg (toDeg angle + toDeg a))
-            = if (a` == deg 0.0) ts [RotateImage a` : ts]
-          ts
-            = [RotateImage a` : ts]
+  | otherwise
+      #! ts` = case ts of
+                 [RotateImage angle : ts]
+                   # a` = normalize (deg (toDeg angle + toDeg a))
+                   = if (a` == deg 0.0) ts [RotateImage a` : ts]
+                 ts
+                   = [RotateImage a` : ts]
+      = {Image | image & transform = ts`}
 
 fit :: !Span !Span !(Image m) -> Image m
 fit xspan yspan image=:{Image | transform = ts}
+  #! xspan` = maxSpan [zero, xspan]
+  #! yspan` = maxSpan [zero, yspan]
+  #! ts`    = case ts of
+                [FitImage _ _ : ts] = [FitImage xspan` yspan` : ts]
+                ts                  = [FitImage xspan` yspan` : ts]
   = {Image | image & transform = ts`}
-  where
-  xspan` = maxSpan [zero, xspan]
-  yspan` = maxSpan [zero, yspan]
-  ts`    = case ts of
-             [FitImage _ _ : ts] = [FitImage xspan` yspan` : ts]
-             ts                  = [FitImage xspan` yspan` : ts]
 
 fitx :: !Span !(Image m) -> Image m
 fitx xspan image=:{Image | transform = ts}
+  #! xspan` = maxSpan [zero, xspan]
+  #! ts`    = case ts of
+                [FitXImage _ : ts] = [FitXImage xspan` : ts]
+                [FitYImage _ : ts] = [FitXImage xspan` : ts]
+                ts                 = [FitXImage xspan` : ts]
   = {Image | image & transform = ts`}
-  where
-  xspan` = maxSpan [zero, xspan]
-  ts`    = case ts of
-             [FitXImage _ : ts] = [FitXImage xspan` : ts]
-             [FitYImage _ : ts] = [FitXImage xspan` : ts]
-             ts                 = [FitXImage xspan` : ts]
 
 fity :: !Span !(Image m) -> Image m
 fity yspan image=:{Image | transform = ts}
+  #! yspan` = maxSpan [zero, yspan]
+  #! ts`    = case ts of
+                [FitXImage _ : ts] = [FitYImage yspan` : ts]
+                [FitYImage _ : ts] = [FitYImage yspan` : ts]
+                ts                 = [FitYImage yspan` : ts]
   = {Image | image & transform = ts`}
-  where
-  yspan` = maxSpan [zero, yspan]
-  ts`    = case ts of
-             [FitXImage _ : ts] = [FitYImage yspan` : ts]
-             [FitYImage _ : ts] = [FitYImage yspan` : ts]
-             ts                 = [FitYImage yspan` : ts]
 
 skewx :: !Angle !(Image m) -> Image m
 skewx xskew image=:{Image | transform = ts}
+  #! xskew` = normalize xskew
   | toDeg xskew` == 0.0 = image
-  | otherwise           = {Image | image & transform = ts`}
-  where
-  xskew` = normalize xskew
-  ts`    = case ts of
-             [SkewXImage a : ts]
-               # a` = normalize (deg (toDeg a + toDeg xskew))
-               = if (toDeg a` == 0.0) ts [SkewXImage a` : ts]
-             ts
-               = [SkewXImage xskew` : ts]
+  | otherwise
+      #! ts` = case ts of
+                 [SkewXImage a : ts]
+                   #! a` = normalize (deg (toDeg a + toDeg xskew))
+                   = if (toDeg a` == 0.0) ts [SkewXImage a` : ts]
+                 ts
+                   = [SkewXImage xskew` : ts]
+
+      = {Image | image & transform = ts`}
 
 skewy :: !Angle !(Image m) -> Image m
 skewy yskew image=:{Image | transform = ts}
+  #! yskew` = normalize yskew
   | toDeg yskew` == 0.0 = image
-  | otherwise           = {Image | image & transform = ts`}
-  where
-  yskew` = normalize yskew
-  ts`    = case ts of
-            [SkewYImage a : ts]
-              # a` = normalize (deg (toDeg a + toDeg yskew))
-              = if (toDeg a` == 0.0) ts [SkewYImage a` : ts]
-            ts
-              = [SkewYImage yskew` : ts]
+  | otherwise
+      #! ts` = case ts of
+                 [SkewYImage a : ts]
+                   # a` = normalize (deg (toDeg a + toDeg yskew))
+                   = if (toDeg a` == 0.0) ts [SkewYImage a` : ts]
+                 ts
+                   = [SkewYImage yskew` : ts]
+      = {Image | image & transform = ts`}
 
 rad :: !Real -> Angle
 rad r = Rad r
@@ -318,7 +322,7 @@ overlay :: ![ImageAlign] ![ImageOffset] ![Image m] !(Host m) -> Image m
 overlay _      _       []   (Just img) = img
 overlay _      _       []   _          = empty (px 0.0) (px 0.0)
 overlay aligns offsets imgs host
-  # l = length imgs
+  #! l = length imgs
   = mkImage (Composite { offsets = take l (offsets ++ repeat (zero, zero))
                        , host    = host
                        , compose = AsOverlay (take l (aligns ++ repeat (AtLeft, AtTop))) imgs
@@ -326,40 +330,41 @@ overlay aligns offsets imgs host
 
 beside :: ![YAlign] ![ImageOffset] ![Image m] !(Host m) -> Image m
 beside ylayouts offsets imgs host
-  # l = length imgs
+  #! l = length imgs
   = grid (Rows 1) (LeftToRight, TopToBottom) (take l [(AtLeft, ylayout) \\ ylayout <- ylayouts]) (take l offsets) imgs host
 
 above :: ![XAlign] ![ImageOffset] ![Image m] !(Host m) -> Image m
 above xlayouts offsets imgs host
-  # l = length imgs
+  #! l = length imgs
   = grid (Columns 1) (LeftToRight, TopToBottom) (take l [(xlayout, AtTop) \\ xlayout <- xlayouts]) (take l offsets) imgs host
 
 grid :: !GridDimension !GridLayout ![ImageAlign] ![ImageOffset] ![Image m] !(Host m) -> Image m
 grid _ _ _ _ [] (Just img) = img
 grid _ _ _ _ [] _          = empty (px 0.0) (px 0.0)
 grid dimension layout aligns offsets imgs host
+  #! noOfImgs     = length imgs
+  #! (cols, rows) = case dimension of
+                      Rows no
+                        #! no` = max 1 no
+                        = (noOfImgs / no` + sign (noOfImgs rem no`), no`)
+                      Columns no
+                        #! no` = max 1 no
+                        = (no`, noOfImgs / no` + sign (noOfImgs rem no`))
+  #! imgsComplete = imgs ++ repeatn (cols * rows - noOfImgs) (empty (px 0.0) (px 0.0))
+  #! imgs`        = arrangeLayout layout (if (isRowMajor dimension)
+                                            (chop cols imgsComplete)
+                                            [map (flip (!!) i) (chop rows imgsComplete) \\ i <- [0 .. rows - 1]]
+                                         )
   = mkImage (Composite { offsets = take noOfImgs (offsets ++ repeat (zero, zero))
                        , host    = host
                        , compose = AsGrid (cols, rows) (take noOfImgs (aligns ++ repeat (AtLeft, AtTop))) imgs`
                        })
   where
-  noOfImgs     = length imgs
-  (cols, rows) = case dimension of
-                   Rows    no = let no` = max 1 no
-                                in (noOfImgs / no` + sign (noOfImgs rem no`), no`)
-                   Columns no = let no` = max 1 no
-                                in (no`, noOfImgs / no` + sign (noOfImgs rem no`))
-  imgsComplete = imgs ++ repeatn (cols * rows - noOfImgs) (empty (px 0.0) (px 0.0))
-  imgs`        = arrangeLayout layout (if (isRowMajor dimension)
-                                         (chop cols imgsComplete)
-                                         [map (flip (!!) i) (chop rows imgsComplete) \\ i <- [0 .. rows - 1]]
-                                      )
-
-  isRowMajor :: GridDimension -> Bool
+  isRowMajor :: !GridDimension -> Bool
   isRowMajor (Rows _) = True
   isRowMajor _        = False
 
-  arrangeLayout :: !GridLayout [[a]] -> [[a]]
+  arrangeLayout :: !GridLayout ![[a]] -> [[a]]
   arrangeLayout (LeftToRight, TopToBottom) xs = xs
   arrangeLayout (RightToLeft, TopToBottom) xs = map reverse xs
   arrangeLayout (LeftToRight, BottomToTop) xs = reverse xs
@@ -458,9 +463,9 @@ updateOrAdd c x yys=:[y:ys]
 */
 chop :: !Int ![a] -> [[a]]
 chop n [] = []
-chop n xs = [firstN : chop n withoutN]
-  where
-  (firstN, withoutN) = splitAt n xs
+chop n xs
+  #! (firstN, withoutN) = splitAt n xs
+  = [firstN : chop n withoutN]
 
 instance + ImageOffset where
   (+) :: !ImageOffset !ImageOffset -> ImageOffset
@@ -476,13 +481,14 @@ toRad (Rad r) = r
 
 normalize :: !Angle -> Angle
 normalize a
+  #! a`    = toDeg a
+  #! absa` = abs a`
   | absa` <= 360.0 = Deg a`
-  | a`    >  0.0   = Deg (a` - d)
-  | otherwise      = Deg (a` + d)
+  | a`    >  0.0   = Deg (a` - d absa`)
+  | otherwise      = Deg (a` + d absa`)
   where
-  a`    = toDeg a
-  absa` = abs a`
-  d     = toReal (entier (absa` / 360.0)) * 360.0
+  d :: !Real -> Real
+  d absa` = toReal (entier (absa` / 360.0)) * 360.0
 
 instance == Angle where
   (==) :: !Angle !Angle -> Bool
@@ -527,7 +533,7 @@ instance < FontDef where
               && fd1.fontweight  == fd2.fontweight)
               && fd1.fontysize   <  fd2.fontysize
 
-normalFontDef :: !String !Real -> FontDef			// (normalFontDef family size) sets all other fields to "normal"
+normalFontDef :: !String !Real -> FontDef // (normalFontDef family size) sets all other fields to "normal"
 normalFontDef family size
-	= {fontfamily = family, fontysize = size, fontstretch = "normal", fontstyle = "normal", fontvariant = "normal", fontweight = "normal"}
+  = {fontfamily = family, fontysize = size, fontstretch = "normal", fontstyle = "normal", fontvariant = "normal", fontweight = "normal"}
 
