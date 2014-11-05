@@ -267,7 +267,7 @@ instance +  ImageOffset
 
 toDeg :: !Angle -> Real
 toRad :: !Angle -> Real
-normalize :: !Angle -> !Angle
+normalize :: !Angle -> Angle
 
 instance == Angle
 instance < Angle
