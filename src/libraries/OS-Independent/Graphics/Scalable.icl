@@ -471,6 +471,10 @@ instance + ImageOffset where
   (+) :: !ImageOffset !ImageOffset -> ImageOffset
   (+) (xal1, yal1) (xal2, yal2) = (xal1 + xal2, yal1 + yal2)
 
+:: Angle
+  = Deg !Real
+  | Rad !Real
+
 toDeg :: !Angle -> Real
 toDeg (Deg r) = r
 toDeg (Rad r) = r / (pi / 180.0)

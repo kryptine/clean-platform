@@ -262,8 +262,6 @@ instance <  ImageTag
 instance +  ImageOffset
 
 :: Angle
-  = Deg !Real
-  | Rad !Real
 
 toDeg :: !Angle -> Real
 toRad :: !Angle -> Real
