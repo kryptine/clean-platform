@@ -12,6 +12,7 @@ from StdBool import &&
 import qualified Data.Set as DS
 import Text.HTML
 from Data.Functor import class Functor (..)
+import GenLexOrd
 
 isPxSpan :: !Span -> Bool
 isPxSpan (PxSpan _) = True
@@ -521,21 +522,16 @@ instance sign Angle where
 
 instance == FontDef where
   (==) :: !FontDef !FontDef -> Bool
-  (==) fd1 fd2 = fd1.fontfamily  == fd2.fontfamily
-              && fd1.fontysize   == fd2.fontysize
-              && fd1.fontstretch == fd2.fontstretch
-              && fd1.fontstyle   == fd2.fontstyle
-              && fd1.fontvariant == fd2.fontvariant
-              && fd1.fontweight  == fd2.fontweight
+  (==) fd1 fd2 = fd1 === fd2
 
 instance < FontDef where
   (<) :: !FontDef !FontDef -> Bool
-  (<) fd1 fd2 = (fd1.fontfamily  == fd2.fontfamily
-              && fd1.fontstretch == fd2.fontstretch
-              && fd1.fontstyle   == fd2.fontstyle
-              && fd1.fontvariant == fd2.fontvariant
-              && fd1.fontweight  == fd2.fontweight)
-              && fd1.fontysize   <  fd2.fontysize
+  (<) fd1 fd2 = case fd1 =?= fd2 of
+                  LT -> True
+                  _  -> False
+
+derive gEq FontDef
+derive gLexOrd FontDef
 
 normalFontDef :: !String !Real -> FontDef // (normalFontDef family size) sets all other fields to "normal"
 normalFontDef family size
