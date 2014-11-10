@@ -15,7 +15,8 @@ from StdOverloaded import class zero, class +, class -, class ~, class sign, cla
     , attribs             :: !Set (ImageAttr m)        // the image attributes
     , transform           :: ![ImageTransform]         // [t_1, ..., t_n] transforms the image as t_1 o ... o t_n
     , tags                :: !Set ImageTag             // set of tags
-    , totalSpan           :: !ImageSpan                // Total image span
+    , totalSpanPreTrans   :: !ImageSpan                // Total image span before transformations
+    , totalSpanPostTrans  :: !ImageSpan                // Total image span after transformations
     , margin              :: !(Span, Span, Span, Span) // Image margin
     , transformCorrection :: !ImageOffset              // Correction required after transformation
     }
