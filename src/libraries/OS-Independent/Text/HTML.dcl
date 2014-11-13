@@ -314,6 +314,7 @@ import StdString, Data.Maybe
 						| StrokeWidthAttr         !SVGStrokeWidth
 						| TextAnchorAttr          !String										// {start,middle,end,inherit}
 						| TextLengthAttr          !SVGLength
+						| TextRenderingAttr       !String
 						| TransformAttr			  ![SVGTransform]
 						| VersionAttr             !String										// "1.1" for SVG1.1
 						| ViewBoxAttr             !SVGNumber !SVGNumber !SVGNumber !SVGNumber	// <min-x> <min-y> <width> <height>
