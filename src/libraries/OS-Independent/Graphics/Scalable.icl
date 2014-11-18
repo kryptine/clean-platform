@@ -96,18 +96,9 @@ instance /.   Span where /. (PxSpan  a)             k = PxSpan (a / toReal k)
                          /. (DivSpan a (PxSpan k1)) k = DivSpan a (PxSpan (k1 * toReal k))
                          /. s                       k = DivSpan s (PxSpan (toReal k))
 
-instance ToSpan Int where
-  toSpan n = px (toReal n)
-
-instance ToSpan Real where
-  toSpan n = px n
-
-instance ToSpan Span where
-  toSpan n = n
-
 minSpan :: ![Span] -> Span
 minSpan []  = zero
-minSpan [x] = toSpan x
+minSpan [x] = x
 minSpan spans
   #! spans`        = flattenMinSpans spans []
   #! (pxs, others) = partition isPxSpan spans`
@@ -125,7 +116,7 @@ minSpan spans
 
 maxSpan :: ![Span] -> Span
 maxSpan []  = zero
-maxSpan [x] = toSpan x
+maxSpan [x] = x
 maxSpan spans
   #! spans`        = flattenMaxSpans spans []
   #! (pxs, others) = partition isPxSpan spans`
@@ -222,7 +213,7 @@ yline markers yspan = line markers Slash zero yspan
 
 line :: !(Maybe (Markers m)) !Slash !Span !Span -> Image m
 line markers slash xspan yspan
-  = { mkImage (Line { lineSpan    = (abs (toSpan xspan), abs (toSpan yspan))
+  = { mkImage (Line { lineSpan    = (abs xspan, abs yspan)
                     , markers     = markers
                     , lineContent = SimpleLineImage slash
                     })

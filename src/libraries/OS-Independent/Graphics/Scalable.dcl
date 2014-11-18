@@ -131,13 +131,6 @@ instance ~    Span
 instance *.   Span, Real, Int
 instance /.   Span, Real, Int
 
-class ToSpan a where
-  toSpan :: !a -> Span
-
-instance ToSpan Int
-instance ToSpan Real
-instance ToSpan Span
-
 minSpan :: ![Span] -> Span // (minimum as) is the minimum of as (zero if as = [])
 
 maxSpan :: ![Span] -> Span // (maximum as) is the maximum of as (zero if as = [])
