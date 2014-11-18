@@ -177,6 +177,7 @@ text font str = mkImage (Basic (TextImage font str) (textxspan font str, px font
 
 circle :: !Span -> Image m
 circle diameter
+  #! d = maxSpan [zero, diameter]
   = { mkImage (Basic CircleImage (d, d))
     & attribs = 'DS'.fromList [ ImageStrokeAttr      {stroke      = toSVGColor "black"}
                               , ImageStrokeWidthAttr {strokewidth = px 1.0}
@@ -184,8 +185,6 @@ circle diameter
                               , ImageFillOpacityAttr {opacity     = 1.0}
                               ]
     }
-  where
-  d = maxSpan [zero, diameter]
 
 ellipse :: !Span !Span -> Image m
 ellipse diax diay
