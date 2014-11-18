@@ -109,7 +109,7 @@ minSpan :: ![Span] -> Span
 minSpan []  = zero
 minSpan [x] = toSpan x
 minSpan spans
-  #! spans`        = flattenMinSpans spans
+  #! spans`        = flattenMinSpans spans []
   #! (pxs, others) = partition isPxSpan spans`
   | isEmpty others = minPxs pxs
   | isEmpty pxs    = MinSpan others
@@ -118,16 +118,16 @@ minSpan spans
   minPxs :: ![Span] -> Span
   minPxs pxs = PxSpan (minList [x \\ PxSpan x <- pxs])
 
-  flattenMinSpans :: ![Span] -> [Span]
-  flattenMinSpans []              = []
-  flattenMinSpans [MinSpan os:xs] = flattenMinSpans xs ++ os
-  flattenMinSpans [x:xs]          = [x:flattenMinSpans xs]
+  flattenMinSpans :: ![Span] ![Span] -> [Span]
+  flattenMinSpans []              acc = acc
+  flattenMinSpans [MinSpan os:xs] acc = flattenMinSpans xs (os ++ acc)
+  flattenMinSpans [x:xs]          acc = flattenMinSpans xs [x:acc]
 
 maxSpan :: ![Span] -> Span
 maxSpan []  = zero
 maxSpan [x] = toSpan x
 maxSpan spans
-  #! spans`        = flattenMaxSpans spans
+  #! spans`        = flattenMaxSpans spans []
   #! (pxs, others) = partition isPxSpan spans`
   | isEmpty others = maxPxs pxs
   | isEmpty pxs    = MaxSpan others
@@ -136,10 +136,10 @@ maxSpan spans
   maxPxs :: ![Span] -> Span
   maxPxs pxs = PxSpan (maxList [x \\ PxSpan x <- pxs])
 
-  flattenMaxSpans :: ![Span] -> [Span]
-  flattenMaxSpans []              = []
-  flattenMaxSpans [MaxSpan os:xs] = flattenMaxSpans xs ++ os
-  flattenMaxSpans [x:xs]          = [x:flattenMaxSpans xs]
+  flattenMaxSpans :: ![Span] ![Span] -> [Span]
+  flattenMaxSpans []              acc = acc
+  flattenMaxSpans [MaxSpan os:xs] acc = flattenMaxSpans xs (os ++ acc)
+  flattenMaxSpans [x:xs]          acc = flattenMaxSpans xs [x:acc]
 
 mkImage :: !(ImageContent m) -> Image m
 mkImage cnt =
