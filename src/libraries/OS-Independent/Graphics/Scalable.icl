@@ -51,9 +51,11 @@ instance Tagged (Image s) where
     | otherwise          = 'DS'.toList img.tags
 
 instance zero Span where zero = PxSpan zero
-instance abs  Span where abs (PxSpan  x) = PxSpan (abs x)
-                         abs (AbsSpan x) = AbsSpan x
-                         abs span        = AbsSpan span
+instance abs  Span where abs (PxSpan  x)  = PxSpan (abs x)
+                         abs (AbsSpan x)  = AbsSpan x
+                         abs (MaxSpan xs) = MaxSpan (map abs xs)
+                         abs (MinSpan xs) = MinSpan (map abs xs)
+                         abs span         = AbsSpan span
 instance ~    Span where ~ s             = zero - s
 instance +    Span where + (PxSpan 0.0)           b                      = b // Identity
                          + a                      (PxSpan 0.0)           = a // Identity
@@ -62,10 +64,24 @@ instance +    Span where + (PxSpan 0.0)           b                      = b // 
                          + (PxSpan a)             (AddSpan b (PxSpan c)) = AddSpan (PxSpan (a + c)) b // Associativity + commutativity
                          + (AddSpan a (PxSpan b)) (PxSpan c)             = AddSpan a (PxSpan (b + c)) // Associativity
                          + (AddSpan (PxSpan a) b) (PxSpan c)             = AddSpan b (PxSpan (a + c)) // Associativity + commutativity
+                         // TODO a (PxSpan b) ?
+                         + (SubSpan (PxSpan a) b) (PxSpan c)             = SubSpan (PxSpan (a + c)) b
+                         // TODO b (PxSpan c) ?
+                         + (PxSpan a)             (SubSpan (PxSpan b) c) = SubSpan (PxSpan (a + b)) c
+                         + (DivSpan a (PxSpan b)) (DivSpan c (PxSpan d))
+                            | b == d = DivSpan (a + c) (PxSpan b)
+                         + ps=:(PxSpan _)         (MaxSpan xs)           = MaxSpan (map (\x -> x + ps) xs)
+                         + (MaxSpan xs)           ps=:(PxSpan _)         = MaxSpan (map (\x -> x + ps) xs)
                          + s                      t                      = AddSpan s t
-instance -    Span where - a            (PxSpan 0.0)  = a // Identity
-                         - (PxSpan a)   (PxSpan b)    = PxSpan (a - b)
-                         - s            t             = SubSpan s t
+instance -    Span where - a                      (PxSpan 0.0)           = a // Identity
+                         - (PxSpan a)             (PxSpan b)             = PxSpan (a - b)
+                         - (AddSpan a (PxSpan b)) (PxSpan c)             = AddSpan a (PxSpan (b - c))
+                         - (AddSpan (PxSpan a) b) (PxSpan c)             = AddSpan (PxSpan (a - c)) b
+                         - (DivSpan a (PxSpan b)) (DivSpan c (PxSpan d))
+                            | b == d = DivSpan (a - c) (PxSpan b)
+                         - ps=:(PxSpan _)         (MaxSpan xs)           = MaxSpan (map (\x -> x - ps) xs)
+                         - (MaxSpan xs)           ps=:(PxSpan _)         = MaxSpan (map (\x -> x - ps) xs)
+                         - s                      t                      = SubSpan s t
 instance *.   Int  where *. l                       r = toInt (toReal l * toReal r)
 instance *.   Real where *. l                       r = l * toReal r
 instance *.   Span where *. (PxSpan  a)             k = PxSpan    (a * toReal k)
