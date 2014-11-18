@@ -53,8 +53,8 @@ instance Tagged (Image s) where
 instance zero Span where zero = PxSpan zero
 instance abs  Span where abs (PxSpan  x)  = PxSpan (abs x)
                          abs (AbsSpan x)  = AbsSpan x
-                         abs (MaxSpan xs) = MaxSpan (map abs xs)
-                         abs (MinSpan xs) = MinSpan (map abs xs)
+                         abs (MaxSpan xs) = MaxSpan (strictTRMap abs xs)
+                         abs (MinSpan xs) = MinSpan (strictTRMap abs xs)
                          abs span         = AbsSpan span
 instance ~    Span where ~ s             = zero - s
 instance +    Span where + (PxSpan 0.0)              b                         = b // Identity
@@ -78,8 +78,6 @@ instance +    Span where + (PxSpan 0.0)              b                         =
                             | a == d = MulSpan (PxSpan a) (b + c)
                          + (MulSpan a (PxSpan b))    (MulSpan c (PxSpan d))
                             | b == d = MulSpan (PxSpan b) (a + c)
-                         + ps=:(PxSpan _)            (MaxSpan xs)              = MaxSpan (map (\x -> x + ps) xs)
-                         + (MaxSpan xs)              ps=:(PxSpan _)            = MaxSpan (map (\x -> x + ps) xs)
                          + s                         t                         = AddSpan s t
 instance -    Span where - a                      (PxSpan 0.0)           = a // Identity
                          - (PxSpan a)             (PxSpan b)             = PxSpan (a - b)
@@ -89,8 +87,6 @@ instance -    Span where - a                      (PxSpan 0.0)           = a // 
                          - (PxSpan c)             (AddSpan (PxSpan a) b) = SubSpan (PxSpan (c - a)) b
                          - (DivSpan a (PxSpan b)) (DivSpan c (PxSpan d))
                             | b == d = DivSpan (a - c) (PxSpan b)
-                         - ps=:(PxSpan _)         (MaxSpan xs)           = MaxSpan (map (\x -> x - ps) xs)
-                         - (MaxSpan xs)           ps=:(PxSpan _)         = MaxSpan (map (\x -> x - ps) xs)
                          - s                      t                      = SubSpan s t
 instance *.   Int  where *. l                       r = toInt (toReal l * toReal r)
 instance *.   Real where *. l                       r = l * toReal r
@@ -98,13 +94,34 @@ instance *.   Span where *. (PxSpan  a)             k = PxSpan    (a * toReal k)
                          *. (MulSpan (PxSpan k1) a) k = MulSpan a (PxSpan (toReal k * k1))
                          *. (MulSpan a (PxSpan k1)) k = MulSpan a (PxSpan (toReal k * k1))
                          *. (DivSpan a (PxSpan k1)) k = MulSpan a (PxSpan (toReal k / k1))
+                         *. (MaxSpan xs)            k = MaxSpan (strictTRMap (\x -> x *. k) xs)
+                         *. (MinSpan xs)            k = MinSpan (strictTRMap (\x -> x *. k) xs)
                          *. s                       k = MulSpan s (PxSpan (toReal k))
 instance /.   Int  where /. l                       r = toInt (toReal l / toReal r)
 instance /.   Real where /. l                       r = l / toReal r
 instance /.   Span where /. (PxSpan  a)             k = PxSpan (a / toReal k)
                          /. (MulSpan a (PxSpan k1)) k = MulSpan a (PxSpan (k1 / toReal k))
                          /. (DivSpan a (PxSpan k1)) k = DivSpan a (PxSpan (k1 * toReal k))
+                         /. (MaxSpan xs)            k = MaxSpan (strictTRMap (\x -> x /. k) xs)
+                         /. (MinSpan xs)            k = MinSpan (strictTRMap (\x -> x /. k) xs)
                          /. s                       k = DivSpan s (PxSpan (toReal k))
+
+strictTRMapRev :: !(a -> b) ![a] -> [b]
+strictTRMapRev f xs = strictTRMapAcc f xs []
+
+strictTRMapAcc :: !(a -> b) ![a] ![b] -> [b]
+strictTRMapAcc f []     acc = acc
+strictTRMapAcc f [x:xs] acc = strictTRMapAcc f xs [f x : acc]
+
+strictTRMap :: !(a -> b) ![a] -> [b]
+strictTRMap f xs = reverseTR (strictTRMapAcc f xs [])
+
+reverseTR :: ![a] -> [a]
+reverseTR xs = rev` xs []
+  where
+  rev` :: ![a] ![a] -> [a]
+  rev` [] acc = acc
+  rev` [x:xs] acc = rev` xs [x:acc]
 
 minSpan :: ![Span] -> Span
 minSpan []  = zero
@@ -237,7 +254,7 @@ line markers slash xspan yspan
 polygon :: !(Maybe (Markers m)) ![ImageOffset] -> Image m
 polygon markers offsets
   #! offsets = normalizePolyPoints offsets
-  = mkImage (Line { lineSpan    = (maxSpan (map fst offsets), maxSpan (map snd offsets))
+  = mkImage (Line { lineSpan    = (maxSpan (strictTRMap fst offsets), maxSpan (strictTRMap snd offsets))
                   , markers     = markers
                   , lineContent = PolygonImage offsets
                   })
@@ -245,7 +262,7 @@ polygon markers offsets
 polyline :: !(Maybe (Markers m)) ![ImageOffset] -> Image m
 polyline markers offsets
   #! offsets = normalizePolyPoints offsets
-  = { mkImage (Line { lineSpan    = (maxSpan (map fst offsets), maxSpan (map snd offsets))
+  = { mkImage (Line { lineSpan    = (maxSpan (strictTRMap fst offsets), maxSpan (strictTRMap snd offsets))
                     , markers     = markers
                     , lineContent = PolylineImage offsets
                     })
@@ -257,8 +274,8 @@ polyline markers offsets
 
 normalizePolyPoints :: ![ImageOffset] -> [ImageOffset]
 normalizePolyPoints offsets
-  #! minX = minSpan (map fst offsets)
-  #! minY = minSpan (map snd offsets)
+  #! minX = minSpan (strictTRMap fst offsets)
+  #! minY = minSpan (strictTRMap snd offsets)
   = foldr (\(x, y) acc -> [(x - minX, y - minY) : acc]) [] offsets
 
 rotate :: !Angle !(Image m) -> Image m
@@ -371,7 +388,7 @@ grid dimension layout aligns offsets imgs host
   #! imgsComplete = imgs ++ repeatn (cols * rows - noOfImgs) (empty (px 0.0) (px 0.0))
   #! imgs`        = arrangeLayout layout (if (isRowMajor dimension)
                                             (chop cols imgsComplete)
-                                            [map (flip (!!) i) (chop rows imgsComplete) \\ i <- [0 .. rows - 1]]
+                                            [strictTRMap (flip (!!) i) (chop rows imgsComplete) \\ i <- [0 .. rows - 1]]
                                          )
   = mkImage (Composite { offsets = take noOfImgs (offsets ++ repeat (zero, zero))
                        , host    = host
@@ -384,9 +401,9 @@ grid dimension layout aligns offsets imgs host
 
   arrangeLayout :: !GridLayout ![[a]] -> [[a]]
   arrangeLayout (LeftToRight, TopToBottom) xs = xs
-  arrangeLayout (RightToLeft, TopToBottom) xs = map reverse xs
-  arrangeLayout (LeftToRight, BottomToTop) xs = reverse xs
-  arrangeLayout (RightToLeft, BottomToTop) xs = reverse (map reverse xs)
+  arrangeLayout (RightToLeft, TopToBottom) xs = strictTRMap reverseTR xs
+  arrangeLayout (LeftToRight, BottomToTop) xs = reverseTR xs
+  arrangeLayout (RightToLeft, BottomToTop) xs = strictTRMapRev reverseTR xs
 
 collage :: ![ImageOffset] ![Image m] !(Host m) -> Image m
 collage _       []   (Just img) = img
