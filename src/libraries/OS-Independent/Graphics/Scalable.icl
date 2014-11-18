@@ -100,11 +100,11 @@ minSpan :: ![Span] -> Span
 minSpan []  = zero
 minSpan [x] = x
 minSpan spans
-  #! spans`        = flattenMinSpans spans []
-  #! (pxs, others) = partition isPxSpan spans`
-  | isEmpty others = minPxs pxs
-  | isEmpty pxs    = MinSpan others
-  | otherwise      = MinSpan [minPxs pxs : others]
+  #! spans` = flattenMinSpans spans []
+  = case partition isPxSpan spans` of
+      (pxs, [])     -> minPxs pxs
+      ([], others)  -> MinSpan others
+      (pxs, others) -> MinSpan [minPxs pxs : others]
   where
   minPxs :: ![Span] -> Span
   minPxs pxs = PxSpan (minList [x \\ PxSpan x <- pxs])
@@ -118,11 +118,11 @@ maxSpan :: ![Span] -> Span
 maxSpan []  = zero
 maxSpan [x] = x
 maxSpan spans
-  #! spans`        = flattenMaxSpans spans []
-  #! (pxs, others) = partition isPxSpan spans`
-  | isEmpty others = maxPxs pxs
-  | isEmpty pxs    = MaxSpan others
-  | otherwise      = MaxSpan [maxPxs pxs : others]
+  #! spans` = flattenMaxSpans spans []
+  = case partition isPxSpan spans` of
+      (pxs, [])     -> maxPxs pxs
+      ([], others)  -> MaxSpan others
+      (pxs, others) -> MaxSpan [maxPxs pxs : others]
   where
   maxPxs :: ![Span] -> Span
   maxPxs pxs = PxSpan (maxList [x \\ PxSpan x <- pxs])
