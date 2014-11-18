@@ -78,6 +78,8 @@ instance +    Span where + (PxSpan 0.0)              b                         =
                             | a == d = MulSpan (PxSpan a) (b + c)
                          + (MulSpan a (PxSpan b))    (MulSpan c (PxSpan d))
                             | b == d = MulSpan (PxSpan b) (a + c)
+                         + l=:(PxSpan _)             (MaxSpan xs)              = MaxSpan (strictTRMap (\x -> x + l) xs)
+                         + (MaxSpan xs)              r=:(PxSpan _)             = MaxSpan (strictTRMap (\x -> x + r) xs)
                          + s                         t                         = AddSpan s t
 instance -    Span where - a                      (PxSpan 0.0)           = a // Identity
                          - (PxSpan a)             (PxSpan b)             = PxSpan (a - b)
@@ -87,6 +89,7 @@ instance -    Span where - a                      (PxSpan 0.0)           = a // 
                          - (PxSpan c)             (AddSpan (PxSpan a) b) = SubSpan (PxSpan (c - a)) b
                          - (DivSpan a (PxSpan b)) (DivSpan c (PxSpan d))
                             | b == d = DivSpan (a - c) (PxSpan b)
+                         - (MaxSpan xs)           r=:(PxSpan _)          = MaxSpan (strictTRMap (\x -> x - r) xs)
                          - s                      t                      = SubSpan s t
 instance *.   Int  where *. l                       r = toInt (toReal l * toReal r)
 instance *.   Real where *. l                       r = l * toReal r
