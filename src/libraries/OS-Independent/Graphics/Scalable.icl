@@ -463,18 +463,6 @@ instance == (a, b) | == a & == b where
 tag :: !t !(Image m) -> Image m | Tagged t
 tag ts image=:{Image | tags} = {Image | image & tags = 'DS'.union tags ('DS'.fromList (getTags ts))}
 
-/** updateOrAdd c x xs = ys:
-      @xs must be a sorted list. @ys replaces the first element y in @xs for which (@c @x y) is valid with @x.
-      If such an element is not found, then @x is added to @xs.
-      @ys is also a sorted list if @c respects the ordering relation.
-*/
-updateOrAdd :: !(a a -> Bool) !a ![a] -> [a] | < a
-updateOrAdd c x [] = [x]
-updateOrAdd c x yys=:[y:ys]
-  | y < x     = [y : updateOrAdd c x ys]
-  | c x y     = [x : ys]
-  | otherwise = [x : yys]
-
 /** chop n xs = xss:
       @xss consists of the subsequent sub-lists of @xs of length @n.
       The length of the last element of @xss can be less than @n.
