@@ -10,8 +10,9 @@ from Graphics.Scalable.Internal import :: Image, :: ImageTag, :: Span,
   :: YRadiusAttr {..}, :: FillAttr {..}, :: OpacityAttr {..},
   :: OnClickAttr {..}, :: DashAttr {..}, :: MaskAttr {..}, :: Slash,
   :: ImageAlign, :: XAlign (..), :: YAlign (..), :: Host, :: GridLayout,
-  :: GridDimension, :: GridXLayout, :: GridYLayout,  class /. (..),
-  class *. (..), instance *. Span, instance /. Span, instance + Span,
+  :: GridXLayout (..), :: GridYLayout (..), :: GridDimension, :: GridXLayout,
+  :: GridYLayout, :: GridDimension (..), class /. (..), class *. (..),
+  instance *. Span, instance /. Span, instance + Span,
   instance - Span, instance zero Span, instance ~ Span
 from StdOverloaded import class zero, class +, class -, class ~, class sign,
   class abs, class <, class ==, class toReal, class /, class *
