@@ -13,7 +13,8 @@ from Graphics.Scalable.Internal import :: Image, :: ImageTag, :: Span,
   :: GridDimension, :: GridXLayout, :: GridYLayout,  class /. (..),
   class *. (..), instance *. Span, instance /. Span, instance + Span,
   instance - Span, instance zero Span, instance ~ Span
-from StdOverloaded import class zero, class +, class -, class ~, class sign, class abs, class <, class ==, class toReal, class /, class *
+from StdOverloaded import class zero, class +, class -, class ~, class sign,
+  class abs, class <, class ==, class toReal, class /, class *
 from Data.Maybe import :: Maybe
 from Text.HTML import :: SVGColor
 from Data.Set import :: Set
@@ -84,7 +85,8 @@ class tuneImage attr :: (Image m) (attr m) -> Image m
 (<@<) infixl 2 :: !(Image m) !(attr m) -> Image m | tuneImage attr
 (>@>) infixr 2 :: !(attr m) !(Image m) -> Image m | tuneImage attr
 
-instance tuneImage StrokeAttr, StrokeWidthAttr, FillAttr, OpacityAttr, OnClickAttr, XRadiusAttr, YRadiusAttr, DashAttr, MaskAttr
+instance tuneImage StrokeAttr, StrokeWidthAttr, FillAttr, OpacityAttr,
+  OnClickAttr, XRadiusAttr, YRadiusAttr, DashAttr, MaskAttr
 
 class toSVGColor a :: a -> SVGColor
 instance toSVGColor String, RGB
