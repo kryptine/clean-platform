@@ -1,5 +1,6 @@
 implementation module Graphics.Scalable
 
+import Graphics.Scalable.Internal
 from StdMisc import abort
 from StdFunc import flip
 from StdTuple import fst, snd
@@ -49,82 +50,6 @@ instance Tagged (Image s) where
   getTags img
     | 'DS'.null img.tags = abort "Image has no tags"
     | otherwise          = 'DS'.toList img.tags
-
-instance zero Span where zero = PxSpan zero
-instance abs  Span where abs (PxSpan  x)  = PxSpan (abs x)
-                         abs (AbsSpan x)  = AbsSpan x
-                         abs (MaxSpan xs) = MaxSpan (strictTRMap abs xs)
-                         abs (MinSpan xs) = MinSpan (strictTRMap abs xs)
-                         abs span         = AbsSpan span
-instance ~    Span where ~ s             = zero - s
-instance +    Span where + (PxSpan 0.0)              b                         = b // Identity
-                         + a                         (PxSpan 0.0)              = a // Identity
-                         + (PxSpan a)                (PxSpan b)                = PxSpan (a + b)
-                         + (PxSpan a)                (AddSpan (PxSpan b) c)    = AddSpan (PxSpan (a + b)) c // Associativity
-                         + (PxSpan a)                (AddSpan b (PxSpan c))    = AddSpan (PxSpan (a + c)) b // Associativity + commutativity
-                         + (AddSpan a (PxSpan b))    (PxSpan c)                = AddSpan a (PxSpan (b + c)) // Associativity
-                         + (AddSpan (PxSpan a) b)    (PxSpan c)                = AddSpan b (PxSpan (a + c)) // Associativity + commutativity
-                         + (SubSpan a b=:(PxSpan _)) c=:(PxSpan _)             = SubSpan (a + c) b
-                         + (SubSpan (PxSpan a) b)    (PxSpan c)                = SubSpan (PxSpan (a + c)) b
-                         + a=:(PxSpan _)             (SubSpan b c=:(PxSpan _)) = SubSpan (a + b) c
-                         + (PxSpan a)                (SubSpan (PxSpan b) c)    = SubSpan (PxSpan (a + b)) c
-                         + (DivSpan a (PxSpan b))    (DivSpan c (PxSpan d))
-                            | b == d = DivSpan (a + c) (PxSpan b)
-                         + (MulSpan (PxSpan a) b)    (MulSpan (PxSpan c) d)
-                            | a == c = MulSpan (PxSpan a) (b + d)
-                         + (MulSpan a (PxSpan b))    (MulSpan (PxSpan c) d)
-                            | b == c = MulSpan (PxSpan b) (a + d)
-                         + (MulSpan (PxSpan a) b)    (MulSpan c (PxSpan d))
-                            | a == d = MulSpan (PxSpan a) (b + c)
-                         + (MulSpan a (PxSpan b))    (MulSpan c (PxSpan d))
-                            | b == d = MulSpan (PxSpan b) (a + c)
-                         + l=:(PxSpan _)             (MaxSpan xs)              = MaxSpan (strictTRMap (\x -> x + l) xs)
-                         + (MaxSpan xs)              r=:(PxSpan _)             = MaxSpan (strictTRMap (\x -> x + r) xs)
-                         + s                         t                         = AddSpan s t
-instance -    Span where - a                      (PxSpan 0.0)           = a // Identity
-                         - (PxSpan a)             (PxSpan b)             = PxSpan (a - b)
-                         - (AddSpan a (PxSpan b)) (PxSpan c)             = AddSpan a (PxSpan (b - c))
-                         - (AddSpan (PxSpan a) b) (PxSpan c)             = AddSpan (PxSpan (a - c)) b
-                         - (PxSpan c)             (AddSpan a (PxSpan b)) = SubSpan (PxSpan (c - b)) a
-                         - (PxSpan c)             (AddSpan (PxSpan a) b) = SubSpan (PxSpan (c - a)) b
-                         - (DivSpan a (PxSpan b)) (DivSpan c (PxSpan d))
-                            | b == d = DivSpan (a - c) (PxSpan b)
-                         - (MaxSpan xs)           r=:(PxSpan _)          = MaxSpan (strictTRMap (\x -> x - r) xs)
-                         - s                      t                      = SubSpan s t
-instance *.   Int  where *. l                       r = toInt (toReal l * toReal r)
-instance *.   Real where *. l                       r = l * toReal r
-instance *.   Span where *. (PxSpan  a)             k = PxSpan    (a * toReal k)
-                         *. (MulSpan (PxSpan k1) a) k = MulSpan a (PxSpan (toReal k * k1))
-                         *. (MulSpan a (PxSpan k1)) k = MulSpan a (PxSpan (toReal k * k1))
-                         *. (DivSpan a (PxSpan k1)) k = MulSpan a (PxSpan (toReal k / k1))
-                         *. (MaxSpan xs)            k = MaxSpan (strictTRMap (\x -> x *. k) xs)
-                         *. (MinSpan xs)            k = MinSpan (strictTRMap (\x -> x *. k) xs)
-                         *. s                       k = MulSpan s (PxSpan (toReal k))
-instance /.   Int  where /. l                       r = toInt (toReal l / toReal r)
-instance /.   Real where /. l                       r = l / toReal r
-instance /.   Span where /. (PxSpan  a)             k = PxSpan (a / toReal k)
-                         /. (MulSpan a (PxSpan k1)) k = MulSpan a (PxSpan (k1 / toReal k))
-                         /. (DivSpan a (PxSpan k1)) k = DivSpan a (PxSpan (k1 * toReal k))
-                         /. (MaxSpan xs)            k = MaxSpan (strictTRMap (\x -> x /. k) xs)
-                         /. (MinSpan xs)            k = MinSpan (strictTRMap (\x -> x /. k) xs)
-                         /. s                       k = DivSpan s (PxSpan (toReal k))
-
-strictTRMapRev :: !(a -> b) ![a] -> [b]
-strictTRMapRev f xs = strictTRMapAcc f xs []
-
-strictTRMapAcc :: !(a -> b) ![a] ![b] -> [b]
-strictTRMapAcc f []     acc = acc
-strictTRMapAcc f [x:xs] acc = strictTRMapAcc f xs [f x : acc]
-
-strictTRMap :: !(a -> b) ![a] -> [b]
-strictTRMap f xs = reverseTR (strictTRMapAcc f xs [])
-
-reverseTR :: ![a] -> [a]
-reverseTR xs = rev` xs []
-  where
-  rev` :: ![a] ![a] -> [a]
-  rev` [] acc = acc
-  rev` [x:xs] acc = rev` xs [x:acc]
 
 minSpan :: ![Span] -> Span
 minSpan []  = zero
@@ -496,10 +421,6 @@ chop n xs
 instance + ImageOffset where
   (+) :: !ImageOffset !ImageOffset -> ImageOffset
   (+) (xal1, yal1) (xal2, yal2) = (xal1 + xal2, yal1 + yal2)
-
-:: Angle
-  = Deg !Real
-  | Rad !Real
 
 toDeg :: !Angle -> Real
 toDeg (Deg r) = r
