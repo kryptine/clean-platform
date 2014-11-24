@@ -160,8 +160,8 @@ from StdOverloaded import class zero, class +, class -, class ~, class sign, cla
 
 :: Slash = Slash | Backslash
 
-class (*.) infixl 7 a :: a n -> a | toReal n
-class (/.) infixl 7 a :: a n -> a | toReal n
+class (*.) infixl 7 a :: !a !n -> a | toReal n
+class (/.) infixl 7 a :: !a !n -> a | toReal n
 
 instance zero Span
 instance +    Span
