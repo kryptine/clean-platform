@@ -6,15 +6,15 @@ from Data.Set import :: Set
 from StdOverloaded import class zero, class +, class -, class ~, class sign, class abs, class <, class ==, class toReal, class /, class *
 
 :: Image m
-  = { content             :: !ImageContent m           // the image elements
-    , mask                :: !Maybe (Image m)          // the mask image
-    , attribs             :: !Set (ImageAttr m)        // the image attributes
-    , transform           :: ![ImageTransform]         // [t_1, ..., t_n] transforms the image as t_1 o ... o t_n
-    , tags                :: !Set ImageTag             // set of tags
-    , totalSpanPreTrans   :: !ImageSpan                // Total image span before transformations
-    , totalSpanPostTrans  :: !ImageSpan                // Total image span after transformations
-    , margin              :: !(Span, Span, Span, Span) // Image margin
-    , transformCorrection :: !ImageOffset              // Correction required after transformation
+  = { content             :: !ImageContent m               // the image elements
+    , mask                :: !Maybe (Image m)              // the mask image
+    , attribs             :: !Set (ImageAttr m)            // the image attributes
+    , transform           :: ![ImageTransform]             // [t_1, ..., t_n] transforms the image as t_1 o ... o t_n
+    , tags                :: !Set ImageTag                 // set of tags
+    , totalSpanPreTrans   :: !ImageSpan                    // Total image span before transformations
+    , totalSpanPostTrans  :: !ImageSpan                    // Total image span after transformations
+    , margin              :: !(!Span, !Span, !Span, !Span) // Image margin
+    , transformCorrection :: !ImageOffset                  // Correction required after transformation
     }
 
 :: ImageTransform
@@ -71,9 +71,9 @@ from StdOverloaded import class zero, class +, class -, class ~, class sign, cla
   | MinSpan    ![Span]     // (MinSpan as) is minimum span value in as
   | MaxSpan    ![Span]     // (MaxSpan as) is maximum span value in as
 
-:: ImageSpan :== (Span, Span)
+:: ImageSpan :== (!Span, !Span)
 
-:: Connector :== (Span, Span)
+:: Connector :== (!Span, !Span)
 
 :: BasicImage
   = EmptyImage
@@ -105,9 +105,9 @@ from StdOverloaded import class zero, class +, class -, class ~, class sign, cla
   | TextXSpan    !FontDef !String     // (TextXSpan a b) is width of text b written in font a
 
 :: Compose m
-  = AsGrid    !(Int, Int) ![ImageAlign] ![[Image m]] // (AsGrid (noOfCols, noOfRows) alignments) composes elements in rows, using alignments per image
-  | AsCollage                           ![Image m]   // AsCollage composes elements in freestyle, framed in optional host
-  | AsOverlay             ![ImageAlign] ![Image m]   // AsOverlay composes elements, framed in optional host or largest spans
+  = AsGrid    !(!Int, !Int) ![ImageAlign] ![[Image m]] // (AsGrid (noOfCols, noOfRows) alignments) composes elements in rows, using alignments per image
+  | AsCollage                             ![Image m]   // AsCollage composes elements in freestyle, framed in optional host
+  | AsOverlay               ![ImageAlign] ![Image m]   // AsOverlay composes elements, framed in optional host or largest spans
 
 :: ImageAttr m
   = ImageStrokeAttr        !(StrokeAttr      m)
