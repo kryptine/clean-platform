@@ -28,7 +28,7 @@ columnspan :: !ImageTag !Int   -> Span // (columnspan ts i) is x-span of column 
 rowspan    :: !ImageTag !Int   -> Span // (rowspan ts i) is y-span of row i in grid tagged with superset of ts
 
 class Tagged t where
-  getTags :: t -> [ImageTag]
+  getTags :: !t -> [ImageTag]
 
 instance Tagged ImageTag
 instance Tagged [ImageTag]
@@ -42,9 +42,9 @@ class margin a where
   margin :: !a !(Image m) -> Image m
 
 instance margin Span                     // Margin is the same span on all sides
-instance margin (Span, Span)             // (h, v) Margin is h on top and bottom and v on left and right
-instance margin (Span, Span, Span)       // (t, h, b) Margin is t on top, v on left and right and b on bottom
-instance margin (Span, Span, Span, Span) // (t, r, b, l) Margin is t on top, r on the right, b on the bottom and l on the left
+instance margin (!Span, !Span)             // (h, v) Margin is h on top and bottom and v on left and right
+instance margin (!Span, !Span, !Span)       // (t, h, b) Margin is t on top, v on left and right and b on bottom
+instance margin (!Span, !Span, !Span, !Span) // (t, r, b, l) Margin is t on top, r on the right, b on the bottom and l on the left
 
 normalFontDef  :: !String !Real    -> FontDef // (normalFontDef family size) sets all other fields to "normal"
 
@@ -82,20 +82,20 @@ collage ::                                          ![ImageOffset] ![Image m] !(
 instance <  (ImageAttr m)
 instance == (ImageAttr m)
 
-class tuneImage attr :: (Image m) (attr m) -> Image m
+class tuneImage attr :: !(Image m) !(attr m) -> Image m
 (<@<) infixl 2 :: !(Image m) !(attr m) -> Image m | tuneImage attr
 (>@>) infixr 2 :: !(attr m) !(Image m) -> Image m | tuneImage attr
 
 instance tuneImage StrokeAttr, StrokeWidthAttr, FillAttr, OpacityAttr,
   OnClickAttr, XRadiusAttr, YRadiusAttr, DashAttr, MaskAttr
 
-class toSVGColor a :: a -> SVGColor
+class toSVGColor a :: !a -> SVGColor
 instance toSVGColor String, RGB
 instance zero RGB
 
 :: RGB = { r :: !Int, g :: !Int, b :: !Int }
 
-class imageTag a :: a -> ImageTag
+class imageTag a :: !a -> ImageTag
 instance imageTag Int
 instance imageTag String
 

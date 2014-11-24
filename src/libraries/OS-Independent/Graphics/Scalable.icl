@@ -37,9 +37,6 @@ columnspan t a = LookupSpan (ColumnXSpan t a)
 rowspan :: !ImageTag !Int -> Span
 rowspan t a = LookupSpan (RowYSpan t a)
 
-class Tagged t where
-  getTags :: t -> [ImageTag]
-
 instance Tagged ImageTag where
   getTags x = [x]
 
@@ -106,13 +103,13 @@ class margin a where
 instance margin Span where
   margin sp im = margin (sp, sp, sp, sp) im
 
-instance margin (Span, Span) where
+instance margin (!Span, !Span) where
   margin (sp1, sp2) im = margin (sp1, sp2, sp1, sp2) im
 
-instance margin (Span, Span, Span) where
+instance margin (!Span, !Span, !Span) where
   margin (sp1, sp2, sp3) im = margin (sp1, sp2, sp3, sp2) im
 
-instance margin (Span, Span, Span, Span) where
+instance margin (!Span, !Span, !Span, !Span) where
   margin (sp1, sp2, sp3, sp4) im = { im & margin = (sp1, sp2, sp3, sp4)}
 
 empty :: !Span !Span -> Image m
