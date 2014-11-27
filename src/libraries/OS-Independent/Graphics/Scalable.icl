@@ -37,17 +37,6 @@ columnspan t a = LookupSpan (ColumnXSpan t a)
 rowspan :: !ImageTag !Int -> Span
 rowspan t a = LookupSpan (RowYSpan t a)
 
-instance Tagged ImageTag where
-  getTags x = [x]
-
-instance Tagged [ImageTag] where
-  getTags xs = xs
-
-instance Tagged (Image s) where
-  getTags img
-    | 'DS'.null img.tags = abort "Image has no tags"
-    | otherwise          = 'DS'.toList img.tags
-
 minSpan :: ![Span] -> Span
 minSpan []  = zero
 minSpan [x] = x
@@ -196,6 +185,25 @@ polyline markers offsets
                               , ImageStrokeWidthAttr {strokewidth = px 1.0}
                               ]
     }
+
+path :: !(Maybe (Markers m)) ![Bezier] -> Image m
+path markers beziers
+  //#! offsets = normalizePolyPoints offsets
+  = { mkImage (Line { lineSpan    = (zero, zero)
+                    , markers     = markers
+                    , lineContent = PathImage beziers
+                    })
+    & attribs = 'DS'.fromList [ ImageFillAttr        {fill        = toSVGColor "none"}
+                              , ImageStrokeAttr      {stroke      = toSVGColor "black"}
+                              , ImageStrokeWidthAttr {strokewidth = px 1.0}
+                              ]
+    }
+
+bezier2 :: !ControlPoint !Span !Span -> Bezier
+bezier2 cp s1 s2 = Bezier2 cp s1 s2
+
+bezier3 :: !ControlPoint !ControlPoint !Span !Span -> Bezier
+bezier3 cp1 cp2 s1 s2 = Bezier3 cp1 cp2 s1 s2
 
 normalizePolyPoints :: ![ImageOffset] -> [ImageOffset]
 normalizePolyPoints offsets
@@ -383,8 +391,10 @@ instance toSVGColor RGB    where toSVGColor {RGB | r, g, b} = SVGRGB r g b
 instance zero RGB where
   zero = { r = 0, g = 0, b = 0 }
 
-instance imageTag Int    where imageTag n = ImageTagInt n
-instance imageTag String where imageTag s = ImageTagString s
+instance imageTag Int      where imageTag n = ImageTagInt n
+instance imageTag String   where imageTag s = ImageTagString s
+instance imageTag ImageTag where imageTag n = n
+
 instance == ImageTag     where == (ImageTagInt    n1) (ImageTagInt    n2) = n1 == n2
                                == (ImageTagString s1) (ImageTagString s2) = s1 == s2
                                == (ImageTagSystem s1) (ImageTagSystem s2) = s1 == s2
@@ -402,8 +412,8 @@ instance < (a, b) | < a & < b where
 instance == (a, b) | == a & == b where
   (==) (x1, x2) (y1, y2) = x1 == y1 && x2 == y2
 
-tag :: !t !(Image m) -> Image m | Tagged t
-tag ts image=:{Image | tags} = {Image | image & tags = 'DS'.union tags ('DS'.fromList (getTags ts))}
+tag :: !t !(Image m) -> Image m | imageTag t
+tag t image=:{Image | tags} = {Image | image & tags = 'DS'.insert (imageTag t) tags}
 
 /** chop n xs = xss:
       @xss consists of the subsequent sub-lists of @xs of length @n.

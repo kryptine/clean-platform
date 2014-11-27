@@ -46,19 +46,13 @@ from StdOverloaded import class zero, class +, class -, class ~, class sign, cla
   = SimpleLineImage !Slash
   | PolygonImage    ![ImageOffset]
   | PolylineImage   ![ImageOffset]
-  //| PathImage       [PathSegment]
+  | PathImage       ![Bezier]
 
-//:: PathSegment
-  //= MMoveTo                       ImageOffset
-  //| LLineTo                       ImageOffset
-  //| HHorizontalLineTo             Span
-  //| VVerticalLineTo               Span
-  //| CCurveTo                      ImageOffset ImageOffset ImageOffset
-  //| SSmoothCurveTo                ImageOffset ImageOffset
-  //| QQuadraticBezierCurve         ImageOffset ImageOffset
-  //| TSmoothQuadraticBezierCurveTo ImageOffset
-  //| AEllipticalArc                ImageSpan Deg Bool Bool ImageOffset
-  //| ZClosePath
+:: ControlPoint :== (!Span, !Span)
+
+:: Bezier
+  = Bezier2 !ControlPoint !Span !Span
+  | Bezier3 !ControlPoint !ControlPoint !Span Span
 
 :: Span
   = PxSpan     !Real       // (PxSpan a) is a pixels
@@ -72,8 +66,6 @@ from StdOverloaded import class zero, class +, class -, class ~, class sign, cla
   | MaxSpan    ![Span]     // (MaxSpan as) is maximum span value in as
 
 :: ImageSpan :== (!Span, !Span)
-
-:: Connector :== (!Span, !Span)
 
 :: BasicImage
   = EmptyImage

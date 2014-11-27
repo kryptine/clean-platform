@@ -7,7 +7,8 @@ definition module Graphics.Scalable
 from Graphics.Scalable.Internal import :: Image, :: ImageTag, :: Span,
   :: FontDef {..}, :: ImageOffset, :: Angle, :: Markers {..}, :: ImageAttr,
   :: StrokeAttr {..}, :: StrokeWidthAttr {..}, :: XRadiusAttr {..},
-  :: YRadiusAttr {..}, :: FillAttr {..}, :: OpacityAttr {..},
+  :: YRadiusAttr {..}, :: FillAttr {..}, :: OpacityAttr {..}, :: Bezier (..),
+  :: ControlPoint,
   :: OnClickAttr {..}, :: DashAttr {..}, :: MaskAttr {..}, :: Slash,
   :: ImageAlign, :: XAlign (..), :: YAlign (..), :: Host, :: GridLayout,
   :: GridXLayout (..), :: GridYLayout (..), :: GridDimension, :: GridXLayout,
@@ -26,13 +27,6 @@ imagexspan :: !ImageTag        -> Span // (imagexspan ts) is x-span of image tag
 imageyspan :: !ImageTag        -> Span // (imageyspan ts) is y-span of image tagged with superset of ts
 columnspan :: !ImageTag !Int   -> Span // (columnspan ts i) is x-span of column i in grid tagged with superset of ts
 rowspan    :: !ImageTag !Int   -> Span // (rowspan ts i) is y-span of row i in grid tagged with superset of ts
-
-class Tagged t where
-  getTags :: !t -> [ImageTag]
-
-instance Tagged ImageTag
-instance Tagged [ImageTag]
-instance Tagged (Image s)
 
 minSpan :: ![Span] -> Span // (minimum as) is the minimum of as (zero if as = [])
 
@@ -61,6 +55,10 @@ yline    :: !(Maybe (Markers m)) !Span              -> Image m // (yline a) is a
 line     :: !(Maybe (Markers m)) !Slash !Span !Span -> Image m // (line a b) is an image of a line with x-span a and y-span b
 polygon  :: !(Maybe (Markers m)) ![ImageOffset]     -> Image m // (polygon xs) is an image of a polygon with coordinates xs
 polyline :: !(Maybe (Markers m)) ![ImageOffset]     -> Image m // (polyline xs) is an image of a polyline with coordinates xs
+path     :: !(Maybe (Markers m)) ![Bezier]          -> Image m
+
+bezier2  :: !ControlPoint               !Span !Span -> Bezier
+bezier3  :: !ControlPoint !ControlPoint !Span !Span -> Bezier
 
 fit     :: !Span !Span !(Image m) -> Image m
 fitx    :: !Span       !(Image m) -> Image m
@@ -98,8 +96,9 @@ instance zero RGB
 class imageTag a :: !a -> ImageTag
 instance imageTag Int
 instance imageTag String
+instance imageTag ImageTag
 
-tag :: !t !(Image m) -> Image m | Tagged t
+tag :: !t !(Image m) -> Image m | imageTag t
 
 instance == ImageTag
 instance <  ImageTag
