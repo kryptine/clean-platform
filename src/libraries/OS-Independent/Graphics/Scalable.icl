@@ -186,25 +186,6 @@ polyline markers offsets
                               ]
     }
 
-path :: !(Maybe (Markers m)) ![Bezier] -> Image m
-path markers beziers
-  //#! offsets = normalizePolyPoints offsets
-  = { mkImage (Line { lineSpan    = (zero, zero)
-                    , markers     = markers
-                    , lineContent = PathImage beziers
-                    })
-    & attribs = 'DS'.fromList [ ImageFillAttr        {fill        = toSVGColor "none"}
-                              , ImageStrokeAttr      {stroke      = toSVGColor "black"}
-                              , ImageStrokeWidthAttr {strokewidth = px 1.0}
-                              ]
-    }
-
-bezier2 :: !ControlPoint !Span !Span -> Bezier
-bezier2 cp s1 s2 = Bezier2 cp s1 s2
-
-bezier3 :: !ControlPoint !ControlPoint !Span !Span -> Bezier
-bezier3 cp1 cp2 s1 s2 = Bezier3 cp1 cp2 s1 s2
-
 normalizePolyPoints :: ![ImageOffset] -> [ImageOffset]
 normalizePolyPoints offsets
   #! minX = minSpan (strictTRMap fst offsets)

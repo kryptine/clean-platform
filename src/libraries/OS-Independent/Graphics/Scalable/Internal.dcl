@@ -46,13 +46,6 @@ from StdOverloaded import class zero, class +, class -, class ~, class sign, cla
   = SimpleLineImage !Slash
   | PolygonImage    ![ImageOffset]
   | PolylineImage   ![ImageOffset]
-  | PathImage       ![Bezier]
-
-:: ControlPoint :== (!Span, !Span)
-
-:: Bezier
-  = Bezier2 !ControlPoint !Span !Span
-  | Bezier3 !ControlPoint !ControlPoint !Span Span
 
 :: Span
   = PxSpan     !Real       // (PxSpan a) is a pixels

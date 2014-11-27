@@ -7,8 +7,7 @@ definition module Graphics.Scalable
 from Graphics.Scalable.Internal import :: Image, :: ImageTag, :: Span,
   :: FontDef {..}, :: ImageOffset, :: Angle, :: Markers {..}, :: ImageAttr,
   :: StrokeAttr {..}, :: StrokeWidthAttr {..}, :: XRadiusAttr {..},
-  :: YRadiusAttr {..}, :: FillAttr {..}, :: OpacityAttr {..}, :: Bezier (..),
-  :: ControlPoint,
+  :: YRadiusAttr {..}, :: FillAttr {..}, :: OpacityAttr {..},
   :: OnClickAttr {..}, :: DashAttr {..}, :: MaskAttr {..}, :: Slash,
   :: ImageAlign, :: XAlign (..), :: YAlign (..), :: Host, :: GridLayout,
   :: GridXLayout (..), :: GridYLayout (..), :: GridDimension, :: GridXLayout,
@@ -55,10 +54,6 @@ yline    :: !(Maybe (Markers m)) !Span              -> Image m // (yline a) is a
 line     :: !(Maybe (Markers m)) !Slash !Span !Span -> Image m // (line a b) is an image of a line with x-span a and y-span b
 polygon  :: !(Maybe (Markers m)) ![ImageOffset]     -> Image m // (polygon xs) is an image of a polygon with coordinates xs
 polyline :: !(Maybe (Markers m)) ![ImageOffset]     -> Image m // (polyline xs) is an image of a polyline with coordinates xs
-path     :: !(Maybe (Markers m)) ![Bezier]          -> Image m
-
-bezier2  :: !ControlPoint               !Span !Span -> Bezier
-bezier3  :: !ControlPoint !ControlPoint !Span !Span -> Bezier
 
 fit     :: !Span !Span !(Image m) -> Image m
 fitx    :: !Span       !(Image m) -> Image m
