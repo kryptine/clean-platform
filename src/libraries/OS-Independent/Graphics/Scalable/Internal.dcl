@@ -77,8 +77,7 @@ from StdOverloaded import class zero, class +, class -, class ~, class sign, cla
     }
 
 :: CompositeImage m
-  = { offsets :: ![ImageOffset]
-    , host    :: !Host m
+  = { host    :: !Host m
     , compose :: !Compose m
     }
 
@@ -90,9 +89,9 @@ from StdOverloaded import class zero, class +, class -, class ~, class sign, cla
   | TextXSpan    !FontDef !String     // (TextXSpan a b) is width of text b written in font a
 
 :: Compose m
-  = AsGrid    !(!Int, !Int) ![[ImageAlign]] ![[Image m]] // (AsGrid (noOfCols, noOfRows) alignments) composes elements in rows, using alignments per image
-  | AsCollage                               ![Image m]   // AsCollage composes elements in freestyle, framed in optional host
-  | AsOverlay               ![ImageAlign]   ![Image m]   // AsOverlay composes elements, framed in optional host or largest spans
+  = AsGrid    !(!Int, !Int) ![[ImageOffset]] ![[ImageAlign]] ![[Image m]] // (AsGrid (noOfCols, noOfRows) alignments) composes elements in rows, using alignments per image
+  | AsCollage               ![ImageOffset]                   ![Image m]   // AsCollage composes elements in freestyle, framed in optional host
+  | AsOverlay               ![ImageOffset]   ![ImageAlign]   ![Image m]   // AsOverlay composes elements, framed in optional host or largest spans
 
 :: ImageAttr m
   = ImageStrokeAttr        !(StrokeAttr      m)

@@ -271,10 +271,11 @@ overlay :: ![ImageAlign] ![ImageOffset] ![Image m] !(Host m) -> Image m
 overlay _      _       []   (Just img) = img
 overlay _      _       []   _          = empty (px 0.0) (px 0.0)
 overlay aligns offsets imgs host
-  #! l = length imgs
-  = mkImage (Composite { offsets = take l (offsets ++ repeat (zero, zero))
-                       , host    = host
-                       , compose = AsOverlay (take l (aligns ++ repeat (AtLeft, AtTop))) imgs
+  #! l        = length imgs
+  #! offsets` = take l (offsets ++ repeat (zero, zero))
+  #! aligns`  = take l (aligns ++ repeat (AtLeft, AtTop))
+  = mkImage (Composite { host    = host
+                       , compose = AsOverlay offsets` aligns` imgs
                        })
 
 beside :: ![YAlign] ![ImageOffset] ![Image m] !(Host m) -> Image m
@@ -313,9 +314,15 @@ grid dimension layout aligns offsets imgs host
                  _
                    #! choppedRows = chop rows alignsComplete
                    = arrangeLayout layout [strictTRMap (flip (!!) i) choppedRows \\ i <- [0 .. rows - 1]]
-  = mkImage (Composite { offsets = take noOfImgs (offsets ++ repeat (zero, zero))
-                       , host    = host
-                       , compose = AsGrid (cols, rows) aligns` imgs`
+  #! offsetsComplete = take noOfImgs (offsets ++ repeat (zero, zero))
+  #! offsets` = case isRowMajor dimension of
+                  True
+                    = arrangeLayout layout (chop cols offsetsComplete)
+                  _
+                    #! choppedRows = chop rows offsetsComplete
+                    = arrangeLayout layout [strictTRMap (flip (!!) i) choppedRows \\ i <- [0 .. rows - 1]]
+  = mkImage (Composite { host    = host
+                       , compose = AsGrid (cols, rows) offsets` aligns` imgs`
                        })
   where
   isRowMajor :: !GridDimension -> Bool
@@ -332,9 +339,9 @@ collage :: ![ImageOffset] ![Image m] !(Host m) -> Image m
 collage _       []   (Just img) = img
 collage _       []   _          = empty (px 0.0) (px 0.0)
 collage offsets imgs host
-  = mkImage (Composite { offsets = take (length imgs) (offsets ++ repeat (zero, zero))
-                       , host    = host
-                       , compose = AsCollage imgs
+  #! offsets` = take (length imgs) (offsets ++ repeat (zero, zero))
+  = mkImage (Composite { host    = host
+                       , compose = AsCollage offsets` imgs
                        })
 
 instance tuneImage StrokeAttr      where
