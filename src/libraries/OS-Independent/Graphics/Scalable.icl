@@ -306,9 +306,16 @@ grid dimension layout aligns offsets imgs host
                 _
                   #! choppedRows = chop rows imgsComplete
                   = arrangeLayout layout [strictTRMap (flip (!!) i) choppedRows \\ i <- [0 .. rows - 1]]
+  #! alignsComplete = take noOfImgs (aligns ++ repeat (AtLeft, AtTop))
+  #! aligns` = case isRowMajor dimension of
+                 True
+                   = arrangeLayout layout (chop cols alignsComplete)
+                 _
+                   #! choppedRows = chop rows alignsComplete
+                   = arrangeLayout layout [strictTRMap (flip (!!) i) choppedRows \\ i <- [0 .. rows - 1]]
   = mkImage (Composite { offsets = take noOfImgs (offsets ++ repeat (zero, zero))
                        , host    = host
-                       , compose = AsGrid (cols, rows) (take noOfImgs (aligns ++ repeat (AtLeft, AtTop))) imgs`
+                       , compose = AsGrid (cols, rows) aligns` imgs`
                        })
   where
   isRowMajor :: !GridDimension -> Bool
