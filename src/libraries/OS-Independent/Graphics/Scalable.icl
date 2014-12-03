@@ -300,10 +300,12 @@ grid dimension layout aligns offsets imgs host
                         #! no` = max 1 no
                         = (no`, noOfImgs / no` + sign (noOfImgs rem no`))
   #! imgsComplete = imgs ++ repeatn (cols * rows - noOfImgs) (empty (px 0.0) (px 0.0))
-  #! imgs`        = arrangeLayout layout (if (isRowMajor dimension)
-                                            (chop cols imgsComplete)
-                                            [strictTRMap (flip (!!) i) (chop rows imgsComplete) \\ i <- [0 .. rows - 1]]
-                                         )
+  #! imgs` = case isRowMajor dimension of
+                True
+                  = arrangeLayout layout (chop cols imgsComplete)
+                _
+                  #! choppedRows = chop rows imgsComplete
+                  = arrangeLayout layout [strictTRMap (flip (!!) i) choppedRows \\ i <- [0 .. rows - 1]]
   = mkImage (Composite { offsets = take noOfImgs (offsets ++ repeat (zero, zero))
                        , host    = host
                        , compose = AsGrid (cols, rows) (take noOfImgs (aligns ++ repeat (AtLeft, AtTop))) imgs`
