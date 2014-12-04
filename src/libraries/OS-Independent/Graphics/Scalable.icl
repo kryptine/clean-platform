@@ -300,29 +300,27 @@ grid dimension layout aligns offsets imgs host
                       Columns no
                         #! no` = max 1 no
                         = (no`, noOfImgs / no` + sign (noOfImgs rem no`))
-  #! imgsComplete = imgs ++ repeatn (cols * rows - noOfImgs) (empty (px 0.0) (px 0.0))
-  #! imgs` = case isRowMajor dimension of
-                True
-                  = arrangeLayout layout (chop cols imgsComplete)
-                _
-                  #! choppedRows = chop rows imgsComplete
-                  = arrangeLayout layout [strictTRMap (flip (!!) i) choppedRows \\ i <- [0 .. rows - 1]]
-  #! alignsComplete = take noOfImgs (aligns ++ repeat (AtLeft, AtTop))
-  #! aligns` = case isRowMajor dimension of
-                 True
-                   = arrangeLayout layout (chop cols alignsComplete)
-                 _
-                   #! choppedRows = chop rows alignsComplete
-                   = arrangeLayout layout [strictTRMap (flip (!!) i) choppedRows \\ i <- [0 .. rows - 1]]
+  #! imgsComplete    = imgs ++ repeatn (cols * rows - noOfImgs) (empty (px 0.0) (px 0.0))
+  #! alignsComplete  = take noOfImgs (aligns ++ repeat (AtLeft, AtTop))
   #! offsetsComplete = take noOfImgs (offsets ++ repeat (zero, zero))
-  #! offsets` = case isRowMajor dimension of
-                  True
-                    = arrangeLayout layout (chop cols offsetsComplete)
-                  _
-                    #! choppedRows = chop rows offsetsComplete
-                    = arrangeLayout layout [strictTRMap (flip (!!) i) choppedRows \\ i <- [0 .. rows - 1]]
+  #! (imgs`, aligns`, offsets`) = case isRowMajor dimension of
+                                    True
+                                      = ( chop cols imgsComplete
+                                        , chop cols alignsComplete
+                                        , chop cols offsetsComplete )
+                                    _
+                                      #! choppedRowImages  = chop rows imgsComplete
+                                      #! choppedRowAligns  = chop rows alignsComplete
+                                      #! choppedRowOffsets = chop rows offsetsComplete
+                                      = let mapFlip :: !Int ![[a]] -> [a]
+                                            mapFlip i xs = strictTRMap (flip (!!) i) xs
+                                        in  ( [mapFlip i choppedRowImages  \\ i <- [0 .. rows - 1]]
+                                            , [mapFlip i choppedRowAligns  \\ i <- [0 .. rows - 1]]
+                                            , [mapFlip i choppedRowOffsets \\ i <- [0 .. rows - 1]] )
   = mkImage (Composite { host    = host
-                       , compose = AsGrid (cols, rows) offsets` aligns` imgs`
+                       , compose = AsGrid (cols, rows) (arrangeLayout layout offsets`)
+                                                       (arrangeLayout layout aligns`)
+                                                       (arrangeLayout layout imgs`)
                        })
   where
   isRowMajor :: !GridDimension -> Bool
