@@ -24,6 +24,8 @@ from StdOverloaded import class zero, class +, class -, class ~, class sign, cla
   | FitImage    !Span !Span
   | FitXImage   !Span
   | FitYImage   !Span
+  | FlipXImage
+  | FlipYImage
 
 :: ImageContent m
   = Basic     !BasicImage !ImageSpan

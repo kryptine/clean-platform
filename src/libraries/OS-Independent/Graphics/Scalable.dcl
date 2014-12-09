@@ -55,13 +55,15 @@ line     :: !(Maybe (Markers m)) !Slash !Span !Span -> Image m // (line a b) is 
 polygon  :: !(Maybe (Markers m)) ![ImageOffset]     -> Image m // (polygon xs) is an image of a polygon with coordinates xs
 polyline :: !(Maybe (Markers m)) ![ImageOffset]     -> Image m // (polyline xs) is an image of a polyline with coordinates xs
 
-fit     :: !Span !Span !(Image m) -> Image m
-fitx    :: !Span       !(Image m) -> Image m
-fity    :: !Span       !(Image m) -> Image m
+fit      :: !Span !Span !(Image m) -> Image m
+fitx     :: !Span       !(Image m) -> Image m
+fity     :: !Span       !(Image m) -> Image m
 
-rotate  :: !Angle !(Image m) -> Image m
-skewx   :: !Angle !(Image m) -> Image m
-skewy   :: !Angle !(Image m) -> Image m
+rotate   :: !Angle !(Image m) -> Image m
+flipx    :: !(Image m) -> Image m
+flipy    :: !(Image m) -> Image m
+skewx    :: !Angle !(Image m) -> Image m
+skewy    :: !Angle !(Image m) -> Image m
 
 rad :: !Real -> Angle
 deg :: !Real -> Angle

@@ -205,6 +205,12 @@ rotate a image=:{Image | transform = ts}
                    = [RotateImage a` : ts]
       = {Image | image & transform = ts`}
 
+flipx :: !(Image m) -> Image m
+flipx image = { Image | image & transform = [FlipXImage : image.transform] }
+
+flipy :: !(Image m) -> Image m
+flipy image = { Image | image & transform = [FlipYImage : image.transform] }
+
 fit :: !Span !Span !(Image m) -> Image m
 fit xspan yspan image=:{Image | transform = ts}
   #! xspan` = maxSpan [zero, xspan]
