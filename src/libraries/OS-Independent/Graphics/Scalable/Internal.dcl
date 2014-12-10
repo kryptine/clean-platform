@@ -115,6 +115,7 @@ from StdOverloaded import class zero, class +, class -, class ~, class sign, cla
 :: OnClickAttr     m = { onclick     :: !(m -> m) }
 :: DashAttr        m = { dash        :: ![Int]    }
 :: MaskAttr        m = { mask        :: !Image m  }
+:: NilAttr         m = NilAttr
 
 :: ImageTag
   = ImageTagInt    !Int

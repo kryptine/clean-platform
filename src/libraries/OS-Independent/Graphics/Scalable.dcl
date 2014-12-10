@@ -7,7 +7,7 @@ definition module Graphics.Scalable
 from Graphics.Scalable.Internal import :: Image, :: ImageTag, :: Span,
   :: FontDef {..}, :: ImageOffset, :: Angle, :: Markers {..}, :: ImageAttr,
   :: StrokeAttr {..}, :: StrokeWidthAttr {..}, :: XRadiusAttr {..},
-  :: YRadiusAttr {..}, :: FillAttr {..}, :: OpacityAttr {..},
+  :: YRadiusAttr {..}, :: FillAttr {..}, :: OpacityAttr {..}, :: NilAttr (..),
   :: OnClickAttr {..}, :: DashAttr {..}, :: MaskAttr {..}, :: Slash,
   :: ImageAlign, :: XAlign (..), :: YAlign (..), :: Host, :: GridLayout,
   :: GridXLayout (..), :: GridYLayout (..), :: GridDimension, :: GridXLayout,
@@ -82,7 +82,7 @@ class tuneImage attr :: !(Image m) !(attr m) -> Image m
 (>@>) infixr 2 :: !(attr m) !(Image m) -> Image m | tuneImage attr
 
 instance tuneImage StrokeAttr, StrokeWidthAttr, FillAttr, OpacityAttr,
-  OnClickAttr, XRadiusAttr, YRadiusAttr, DashAttr, MaskAttr
+  OnClickAttr, XRadiusAttr, YRadiusAttr, DashAttr, MaskAttr, NilAttr
 
 class toSVGColor a :: !a -> SVGColor
 instance toSVGColor String, RGB

@@ -366,6 +366,8 @@ instance tuneImage DashAttr        where
   tuneImage image=:{Image | attribs} attr = {Image | image & attribs = 'DS'.insert (ImageDashAttr        attr) attribs}
 instance tuneImage MaskAttr        where
   tuneImage image                    attr = {Image | image & mask = Just attr.MaskAttr.mask }
+instance tuneImage NilAttr         where
+  tuneImage image                    _    = image
 
 (<@<) infixl 2 :: !(Image m) !(attr m) -> Image m | tuneImage attr
 (<@<) image attr = tuneImage image attr
