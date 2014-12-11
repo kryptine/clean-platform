@@ -45,3 +45,8 @@ waitForProcess :: !ProcessHandle !*World -> (MaybeOSError Int, *World)
 * @return Exit code of the process
 */
 callProcess :: !FilePath ![String] !(Maybe String) !*World -> (MaybeOSError Int, *World)
+
+/**
+ * Dummy function to be API-compatible with the Posix module
+ */
+exit		:: !Int !*World -> (.a,!*World)

@@ -2,6 +2,7 @@ definition module System.Process
 
 import Data.Void, Data.Maybe, Data.Either
 import System.OSError, System.FilePath
+from System._Posix import exit
 
 /*
 Not yet implemented:
