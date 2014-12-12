@@ -298,31 +298,34 @@ grid :: !GridDimension !GridLayout ![ImageAlign] ![ImageOffset] ![Image m] !(Hos
 grid _ _ _ _ [] (Just img) = img
 grid _ _ _ _ [] _          = empty (px 0.0) (px 0.0)
 grid dimension layout aligns offsets imgs host
-  #! noOfImgs     = length imgs
-  #! (cols, rows) = case dimension of
-                      Rows no
-                        #! no` = max 1 no
-                        = (noOfImgs / no` + sign (noOfImgs rem no`), no`)
-                      Columns no
-                        #! no` = max 1 no
-                        = (no`, noOfImgs / no` + sign (noOfImgs rem no`))
-  #! imgsComplete    = imgs ++ repeatn (cols * rows - noOfImgs) (empty (px 0.0) (px 0.0))
-  #! alignsComplete  = take noOfImgs (aligns ++ repeat (AtLeft, AtTop))
-  #! offsetsComplete = take noOfImgs (offsets ++ repeat (zero, zero))
-  #! (imgs`, aligns`, offsets`) = case isRowMajor dimension of
-                                    True
-                                      = ( chop cols imgsComplete
-                                        , chop cols alignsComplete
-                                        , chop cols offsetsComplete )
-                                    _
-                                      #! choppedRowImages  = chop rows imgsComplete
-                                      #! choppedRowAligns  = chop rows alignsComplete
-                                      #! choppedRowOffsets = chop rows offsetsComplete
-                                      = let mapFlip :: !Int ![[a]] -> [a]
-                                            mapFlip i xs = strictTRMap (flip (!!) i) xs
-                                        in  ( [mapFlip i choppedRowImages  \\ i <- [0 .. rows - 1]]
-                                            , [mapFlip i choppedRowAligns  \\ i <- [0 .. rows - 1]]
-                                            , [mapFlip i choppedRowOffsets \\ i <- [0 .. rows - 1]] )
+  #! noOfImgs        = length imgs
+  #! (cols, rows)    = case dimension of
+                         Rows no
+                           #! no` = max 1 no
+                           = (noOfImgs / no` + sign (noOfImgs rem no`), no`)
+                         Columns no
+                           #! no` = max 1 no
+                           = (no`, noOfImgs / no` + sign (noOfImgs rem no`))
+  #! numCells        = cols * rows
+  #! imgsComplete    = take numCells (imgs ++ repeat (empty (px 0.0) (px 0.0)))
+  #! alignsComplete  = take numCells (aligns ++ repeat (AtLeft, AtTop))
+  #! offsetsComplete = take numCells (offsets ++ repeat (zero, zero))
+  #! (  imgs`
+      , aligns`
+      , offsets`)    = case isRowMajor dimension of
+                         True
+                           = ( chop cols imgsComplete
+                             , chop cols alignsComplete
+                             , chop cols offsetsComplete )
+                         _
+                           #! choppedRowImages  = chop rows imgsComplete
+                           #! choppedRowAligns  = chop rows alignsComplete
+                           #! choppedRowOffsets = chop rows offsetsComplete
+                           = let mapFlip :: !Int ![[a]] -> [a]
+                                 mapFlip i xss = strictTRMap (flip (!!) i) xss
+                             in  ( [mapFlip i choppedRowImages  \\ i <- [0 .. rows - 1]]
+                                 , [mapFlip i choppedRowAligns  \\ i <- [0 .. rows - 1]]
+                                 , [mapFlip i choppedRowOffsets \\ i <- [0 .. rows - 1]] )
   = mkImage (Composite { host    = host
                        , compose = AsGrid (cols, rows) (arrangeLayout layout offsets`)
                                                        (arrangeLayout layout aligns`)
