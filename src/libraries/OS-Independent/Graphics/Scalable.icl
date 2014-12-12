@@ -312,20 +312,13 @@ grid dimension layout aligns offsets imgs host
   #! offsetsComplete = take numCells (offsets ++ repeat (zero, zero))
   #! (  imgs`
       , aligns`
-      , offsets`)    = case isRowMajor dimension of
-                         True
-                           = ( chop cols imgsComplete
-                             , chop cols alignsComplete
-                             , chop cols offsetsComplete )
-                         _
-                           #! choppedRowImages  = chop rows imgsComplete
-                           #! choppedRowAligns  = chop rows alignsComplete
-                           #! choppedRowOffsets = chop rows offsetsComplete
-                           = let mapFlip :: !Int ![[a]] -> [a]
-                                 mapFlip i xss = strictTRMap (flip (!!) i) xss
-                             in  ( [mapFlip i choppedRowImages  \\ i <- [0 .. rows - 1]]
-                                 , [mapFlip i choppedRowAligns  \\ i <- [0 .. rows - 1]]
-                                 , [mapFlip i choppedRowOffsets \\ i <- [0 .. rows - 1]] )
+      , offsets`)    = if (isRowMajor dimension)
+                         ( chop cols imgsComplete
+                         , chop cols alignsComplete
+                         , chop cols offsetsComplete )
+                         ( transpose (chop rows imgsComplete)
+                         , transpose (chop rows alignsComplete)
+                         , transpose (chop rows offsetsComplete) )
   = mkImage (Composite { host    = host
                        , compose = AsGrid (cols, rows) (arrangeLayout layout offsets`)
                                                        (arrangeLayout layout aligns`)
