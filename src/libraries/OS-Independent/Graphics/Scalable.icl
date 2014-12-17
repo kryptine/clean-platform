@@ -381,6 +381,11 @@ consNameOf (ImageYRadiusAttr     _) = "ImageYRadiusAttr"
 consNameOf (ImageFillAttr        _) = "ImageFillAttr"
 consNameOf (ImageFillOpacityAttr _) = "ImageFillOpacityAttr"
 consNameOf (ImageOnClickAttr     _) = "ImageOnClickAttr"
+consNameOf (ImageOnDragStartAttr _) = "ImageOnDragStartAttr"
+consNameOf (ImageOnDragEndAttr   _) = "ImageOnDragEndAttr"
+consNameOf (ImageOnDragEnterAttr _) = "ImageOnDragEnterAttr"
+consNameOf (ImageOnDragLeaveAttr _) = "ImageOnDragLeaveAttr"
+consNameOf (ImageOnDragOverAttr  _) = "ImageOnDragOverAttr"
 consNameOf (ImageDashAttr        _) = "ImageDashAttr"
 
 instance < (ImageAttr m) where < a b = consNameOf a < consNameOf b

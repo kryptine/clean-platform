@@ -103,8 +103,13 @@ from StdOverloaded import class zero, class +, class -, class ~, class sign, cla
   | ImageStrokeOpacityAttr !(OpacityAttr     m)
   | ImageFillAttr          !(FillAttr        m)
   | ImageFillOpacityAttr   !(OpacityAttr     m)
-  | ImageOnClickAttr       !(OnClickAttr     m)
   | ImageDashAttr          !(DashAttr        m)
+  | ImageOnClickAttr       !(OnClickAttr     m)
+  | ImageOnDragStartAttr   !(OnDragStartAttr m)
+  | ImageOnDragEndAttr     !(OnDragEndAttr   m)
+  | ImageOnDragEnterAttr   !(OnDragEnterAttr m)
+  | ImageOnDragLeaveAttr   !(OnDragLeaveAttr m)
+  | ImageOnDragOverAttr    !(OnDragOverAttr  m)
 
 :: StrokeAttr      m = { stroke      :: !SVGColor }
 :: StrokeWidthAttr m = { strokewidth :: !Span     }
@@ -113,6 +118,11 @@ from StdOverloaded import class zero, class +, class -, class ~, class sign, cla
 :: FillAttr        m = { fill        :: !SVGColor }
 :: OpacityAttr     m = { opacity     :: !Real     }
 :: OnClickAttr     m = { onclick     :: !(m -> m) }
+:: OnDragStartAttr m = { ondragstart :: !(m -> m) }
+:: OnDragEndAttr   m = { ondragend   :: !(m -> m) }
+:: OnDragEnterAttr m = { ondragenter :: !(m -> m) }
+:: OnDragLeaveAttr m = { ondragleave :: !(m -> m) }
+:: OnDragOverAttr  m = { ondragover  :: !(m -> m) }
 :: DashAttr        m = { dash        :: ![Int]    }
 :: MaskAttr        m = { mask        :: !Image m  }
 
