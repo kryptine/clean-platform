@@ -356,12 +356,22 @@ instance tuneImage FillAttr        where
   tuneImage image=:{Image | attribs} attr = {Image | image & attribs = 'DS'.insert (ImageFillAttr        attr) attribs}
 instance tuneImage OpacityAttr     where
   tuneImage image=:{Image | attribs} attr = {Image | image & attribs = 'DS'.insert (ImageFillOpacityAttr attr) attribs}
-instance tuneImage OnClickAttr     where
-  tuneImage image=:{Image | attribs} attr = {Image | image & attribs = 'DS'.insert (ImageOnClickAttr     attr) attribs}
 instance tuneImage DashAttr        where
   tuneImage image=:{Image | attribs} attr = {Image | image & attribs = 'DS'.insert (ImageDashAttr        attr) attribs}
 instance tuneImage MaskAttr        where
   tuneImage image                    attr = {Image | image & mask = Just attr.MaskAttr.mask }
+instance tuneImage OnClickAttr     where
+  tuneImage image=:{Image | attribs} attr = {Image | image & attribs = 'DS'.insert (ImageOnClickAttr     attr) attribs}
+instance tuneImage OnDragStartAttr where
+  tuneImage image=:{Image | attribs} attr = {Image | image & attribs = 'DS'.insert (ImageOnDragStartAttr attr) attribs}
+instance tuneImage OnDragEndAttr   where
+  tuneImage image=:{Image | attribs} attr = {Image | image & attribs = 'DS'.insert (ImageOnDragEndAttr   attr) attribs}
+instance tuneImage OnDragEnterAttr where
+  tuneImage image=:{Image | attribs} attr = {Image | image & attribs = 'DS'.insert (ImageOnDragEndAttr   attr) attribs}
+instance tuneImage OnDragLeaveAttr where
+  tuneImage image=:{Image | attribs} attr = {Image | image & attribs = 'DS'.insert (ImageOnDragLeaveAttr attr) attribs}
+instance tuneImage OnDragOverAttr  where
+  tuneImage image=:{Image | attribs} attr = {Image | image & attribs = 'DS'.insert (ImageOnDragOverAttr  attr) attribs}
 
 (<@<) infixl 2 :: !(Image m) !(attr m) -> Image m | tuneImage attr
 (<@<) image attr = tuneImage image attr

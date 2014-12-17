@@ -86,7 +86,9 @@ class tuneImage attr :: !(Image m) !(attr m) -> Image m
 tuneIf :: !Bool !(Image m) !(attr m) -> Image m | tuneImage attr
 
 instance tuneImage StrokeAttr, StrokeWidthAttr, FillAttr, OpacityAttr,
-  OnClickAttr, XRadiusAttr, YRadiusAttr, DashAttr, MaskAttr
+  OnClickAttr, OnDragStartAttr, OnDragEndAttr, OnDragEnterAttr,
+  OnDragLeaveAttr, OnDragOverAttr, XRadiusAttr, YRadiusAttr, DashAttr,
+  MaskAttr
 
 class toSVGColor a :: !a -> SVGColor
 instance toSVGColor String, RGB
