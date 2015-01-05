@@ -8,14 +8,15 @@ from Graphics.Scalable.Internal import :: Image, :: ImageTag, :: Span,
   :: FontDef {..}, :: ImageOffset, :: Angle, :: Markers {..}, :: ImageAttr,
   :: StrokeAttr {..}, :: StrokeWidthAttr {..}, :: XRadiusAttr {..},
   :: YRadiusAttr {..}, :: FillAttr {..}, :: OpacityAttr {..},
-  :: OnClickAttr {..}, :: OnDragStartAttr {..}, :: OnDragEndAttr {..},
-  :: OnDragEnterAttr {..}, :: OnDragLeaveAttr {..}, :: OnDragOverAttr {..},
-  :: DashAttr {..}, :: MaskAttr {..}, :: Slash,
-  :: ImageAlign, :: XAlign (..), :: YAlign (..), :: Host, :: GridLayout,
-  :: GridXLayout (..), :: GridYLayout (..), :: GridDimension, :: GridXLayout,
-  :: GridYLayout, :: GridDimension (..), class /. (..), class *. (..),
-  instance *. Span, instance /. Span, instance + Span,
-  instance - Span, instance zero Span, instance ~ Span
+  :: OnClickAttr {..}, :: OnMouseDownAttr {..}, :: OnMouseUpAttr {..},
+  :: OnMouseOverAttr {..}, :: OnMouseMoveAttr {..}, :: OnMouseOutAttr {..},
+  :: OnDragStartAttr {..}, :: OnDragEndAttr {..}, :: OnDragEnterAttr {..},
+  :: OnDragLeaveAttr {..}, :: OnDragOverAttr {..}, :: DashAttr {..},
+  :: MaskAttr {..}, :: Slash, :: ImageAlign, :: XAlign (..), :: YAlign (..),
+  :: Host, :: GridLayout, :: GridXLayout (..), :: GridYLayout (..),
+  :: GridDimension, :: GridXLayout, :: GridYLayout, :: GridDimension (..),
+  class /. (..), class *. (..), instance *. Span, instance /. Span,
+  instance + Span, instance - Span, instance zero Span, instance ~ Span
 from StdOverloaded import class zero, class +, class -, class ~, class sign,
   class abs, class <, class ==, class toReal, class /, class *
 from Data.Maybe import :: Maybe
@@ -86,9 +87,10 @@ class tuneImage attr :: !(Image m) !(attr m) -> Image m
 tuneIf :: !Bool !(Image m) !(attr m) -> Image m | tuneImage attr
 
 instance tuneImage StrokeAttr, StrokeWidthAttr, FillAttr, OpacityAttr,
-  OnClickAttr, OnDragStartAttr, OnDragEndAttr, OnDragEnterAttr,
-  OnDragLeaveAttr, OnDragOverAttr, XRadiusAttr, YRadiusAttr, DashAttr,
-  MaskAttr
+  OnClickAttr, OnMouseDownAttr, OnMouseUpAttr, OnMouseOverAttr,
+  OnMouseMoveAttr, OnMouseOutAttr, OnDragStartAttr, OnDragEndAttr,
+  OnDragEnterAttr, OnDragLeaveAttr, OnDragOverAttr, XRadiusAttr, YRadiusAttr,
+  DashAttr, MaskAttr
 
 class toSVGColor a :: !a -> SVGColor
 instance toSVGColor String, RGB

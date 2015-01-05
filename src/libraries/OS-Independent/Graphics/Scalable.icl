@@ -362,6 +362,16 @@ instance tuneImage MaskAttr        where
   tuneImage image                    attr = {Image | image & mask = Just attr.MaskAttr.mask }
 instance tuneImage OnClickAttr     where
   tuneImage image=:{Image | attribs} attr = {Image | image & attribs = 'DS'.insert (ImageOnClickAttr     attr) attribs}
+instance tuneImage OnMouseDownAttr where
+  tuneImage image=:{Image | attribs} attr = {Image | image & attribs = 'DS'.insert (ImageOnMouseDownAttr attr) attribs}
+instance tuneImage OnMouseUpAttr   where
+  tuneImage image=:{Image | attribs} attr = {Image | image & attribs = 'DS'.insert (ImageOnMouseUpAttr   attr) attribs}
+instance tuneImage OnMouseOverAttr where
+  tuneImage image=:{Image | attribs} attr = {Image | image & attribs = 'DS'.insert (ImageOnMouseOverAttr attr) attribs}
+instance tuneImage OnMouseMoveAttr where
+  tuneImage image=:{Image | attribs} attr = {Image | image & attribs = 'DS'.insert (ImageOnMouseMoveAttr attr) attribs}
+instance tuneImage OnMouseOutAttr  where
+  tuneImage image=:{Image | attribs} attr = {Image | image & attribs = 'DS'.insert (ImageOnMouseOutAttr  attr) attribs}
 instance tuneImage OnDragStartAttr where
   tuneImage image=:{Image | attribs} attr = {Image | image & attribs = 'DS'.insert (ImageOnDragStartAttr attr) attribs}
 instance tuneImage OnDragEndAttr   where
@@ -391,6 +401,11 @@ consNameOf (ImageYRadiusAttr     _) = "ImageYRadiusAttr"
 consNameOf (ImageFillAttr        _) = "ImageFillAttr"
 consNameOf (ImageFillOpacityAttr _) = "ImageFillOpacityAttr"
 consNameOf (ImageOnClickAttr     _) = "ImageOnClickAttr"
+consNameOf (ImageOnMouseDownAttr _) = "ImageOnMouseDownAttr"
+consNameOf (ImageOnMouseUpAttr   _) = "ImageOnMouseUpAttr"
+consNameOf (ImageOnMouseOverAttr _) = "ImageOnMouseOverAttr"
+consNameOf (ImageOnMouseMoveAttr _) = "ImageOnMouseMoveAttr"
+consNameOf (ImageOnMouseOutAttr  _) = "ImageOnMouseOutAttr"
 consNameOf (ImageOnDragStartAttr _) = "ImageOnDragStartAttr"
 consNameOf (ImageOnDragEndAttr   _) = "ImageOnDragEndAttr"
 consNameOf (ImageOnDragEnterAttr _) = "ImageOnDragEnterAttr"
