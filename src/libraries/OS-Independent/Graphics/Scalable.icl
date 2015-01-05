@@ -367,7 +367,7 @@ instance tuneImage OnDragStartAttr where
 instance tuneImage OnDragEndAttr   where
   tuneImage image=:{Image | attribs} attr = {Image | image & attribs = 'DS'.insert (ImageOnDragEndAttr   attr) attribs}
 instance tuneImage OnDragEnterAttr where
-  tuneImage image=:{Image | attribs} attr = {Image | image & attribs = 'DS'.insert (ImageOnDragEndAttr   attr) attribs}
+  tuneImage image=:{Image | attribs} attr = {Image | image & attribs = 'DS'.insert (ImageOnDragEnterAttr attr) attribs}
 instance tuneImage OnDragLeaveAttr where
   tuneImage image=:{Image | attribs} attr = {Image | image & attribs = 'DS'.insert (ImageOnDragLeaveAttr attr) attribs}
 instance tuneImage OnDragOverAttr  where
