@@ -77,4 +77,5 @@ callProcess path args mCurrentDirectory world
 		
 exit		:: !Int !*World -> (.a,!*World)
 exit _ world = (undef, world)
-  where undef = undef
+
+undef = undef
