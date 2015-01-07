@@ -75,6 +75,6 @@ callProcess path args mCurrentDirectory world
 		Error e		= (Error e,world)
 		Ok handle	= waitForProcess handle world
 		
-exit		:: !Int !*World -> (!.a,!*World)
+exit		:: !Int !*World -> (.a,!*World)
 exit _ world = (undef, world)
   where undef = undef
