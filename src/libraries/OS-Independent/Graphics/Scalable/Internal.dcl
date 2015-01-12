@@ -110,11 +110,6 @@ from StdOverloaded import class zero, class +, class -, class ~, class sign, cla
   | ImageOnMouseOverAttr   !(OnMouseOverAttr m)
   | ImageOnMouseMoveAttr   !(OnMouseMoveAttr m)
   | ImageOnMouseOutAttr    !(OnMouseOutAttr  m)
-  | ImageOnDragStartAttr   !(OnDragStartAttr m)
-  | ImageOnDragEndAttr     !(OnDragEndAttr   m)
-  | ImageOnDragEnterAttr   !(OnDragEnterAttr m)
-  | ImageOnDragLeaveAttr   !(OnDragLeaveAttr m)
-  | ImageOnDragOverAttr    !(OnDragOverAttr  m)
 
 :: StrokeAttr      m = { stroke      :: !SVGColor }
 :: StrokeWidthAttr m = { strokewidth :: !Span     }
@@ -128,11 +123,6 @@ from StdOverloaded import class zero, class +, class -, class ~, class sign, cla
 :: OnMouseOverAttr m = { onmouseover :: !(m -> m) }
 :: OnMouseMoveAttr m = { onmousemove :: !(m -> m) }
 :: OnMouseOutAttr  m = { onmouseout  :: !(m -> m) }
-:: OnDragStartAttr m = { ondragstart :: !(m -> m) }
-:: OnDragEndAttr   m = { ondragend   :: !(m -> m) }
-:: OnDragEnterAttr m = { ondragenter :: !(m -> m) }
-:: OnDragLeaveAttr m = { ondragleave :: !(m -> m) }
-:: OnDragOverAttr  m = { ondragover  :: !(m -> m) }
 :: DashAttr        m = { dash        :: ![Int]    }
 :: MaskAttr        m = { mask        :: !Image m  }
 

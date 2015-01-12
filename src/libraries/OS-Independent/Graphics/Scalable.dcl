@@ -10,8 +10,7 @@ from Graphics.Scalable.Internal import :: Image, :: ImageTag, :: Span,
   :: YRadiusAttr {..}, :: FillAttr {..}, :: OpacityAttr {..},
   :: OnClickAttr {..}, :: OnMouseDownAttr {..}, :: OnMouseUpAttr {..},
   :: OnMouseOverAttr {..}, :: OnMouseMoveAttr {..}, :: OnMouseOutAttr {..},
-  :: OnDragStartAttr {..}, :: OnDragEndAttr {..}, :: OnDragEnterAttr {..},
-  :: OnDragLeaveAttr {..}, :: OnDragOverAttr {..}, :: DashAttr {..},
+  :: DashAttr {..},
   :: MaskAttr {..}, :: Slash, :: ImageAlign, :: XAlign (..), :: YAlign (..),
   :: Host, :: GridLayout, :: GridXLayout (..), :: GridYLayout (..),
   :: GridDimension, :: GridXLayout, :: GridYLayout, :: GridDimension (..),
@@ -88,9 +87,7 @@ tuneIf :: !Bool !(Image m) !(attr m) -> Image m | tuneImage attr
 
 instance tuneImage StrokeAttr, StrokeWidthAttr, FillAttr, OpacityAttr,
   OnClickAttr, OnMouseDownAttr, OnMouseUpAttr, OnMouseOverAttr,
-  OnMouseMoveAttr, OnMouseOutAttr, OnDragStartAttr, OnDragEndAttr,
-  OnDragEnterAttr, OnDragLeaveAttr, OnDragOverAttr, XRadiusAttr, YRadiusAttr,
-  DashAttr, MaskAttr
+  OnMouseMoveAttr, OnMouseOutAttr, XRadiusAttr, YRadiusAttr, DashAttr, MaskAttr
 
 class toSVGColor a :: !a -> SVGColor
 instance toSVGColor String, RGB

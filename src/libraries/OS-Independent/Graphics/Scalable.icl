@@ -372,16 +372,6 @@ instance tuneImage OnMouseMoveAttr where
   tuneImage image=:{Image | attribs} attr = {Image | image & attribs = 'DS'.insert (ImageOnMouseMoveAttr attr) attribs}
 instance tuneImage OnMouseOutAttr  where
   tuneImage image=:{Image | attribs} attr = {Image | image & attribs = 'DS'.insert (ImageOnMouseOutAttr  attr) attribs}
-instance tuneImage OnDragStartAttr where
-  tuneImage image=:{Image | attribs} attr = {Image | image & attribs = 'DS'.insert (ImageOnDragStartAttr attr) attribs}
-instance tuneImage OnDragEndAttr   where
-  tuneImage image=:{Image | attribs} attr = {Image | image & attribs = 'DS'.insert (ImageOnDragEndAttr   attr) attribs}
-instance tuneImage OnDragEnterAttr where
-  tuneImage image=:{Image | attribs} attr = {Image | image & attribs = 'DS'.insert (ImageOnDragEnterAttr attr) attribs}
-instance tuneImage OnDragLeaveAttr where
-  tuneImage image=:{Image | attribs} attr = {Image | image & attribs = 'DS'.insert (ImageOnDragLeaveAttr attr) attribs}
-instance tuneImage OnDragOverAttr  where
-  tuneImage image=:{Image | attribs} attr = {Image | image & attribs = 'DS'.insert (ImageOnDragOverAttr  attr) attribs}
 
 (<@<) infixl 2 :: !(Image m) !(attr m) -> Image m | tuneImage attr
 (<@<) image attr = tuneImage image attr
@@ -406,11 +396,6 @@ consNameOf (ImageOnMouseUpAttr   _) = "ImageOnMouseUpAttr"
 consNameOf (ImageOnMouseOverAttr _) = "ImageOnMouseOverAttr"
 consNameOf (ImageOnMouseMoveAttr _) = "ImageOnMouseMoveAttr"
 consNameOf (ImageOnMouseOutAttr  _) = "ImageOnMouseOutAttr"
-consNameOf (ImageOnDragStartAttr _) = "ImageOnDragStartAttr"
-consNameOf (ImageOnDragEndAttr   _) = "ImageOnDragEndAttr"
-consNameOf (ImageOnDragEnterAttr _) = "ImageOnDragEnterAttr"
-consNameOf (ImageOnDragLeaveAttr _) = "ImageOnDragLeaveAttr"
-consNameOf (ImageOnDragOverAttr  _) = "ImageOnDragOverAttr"
 consNameOf (ImageDashAttr        _) = "ImageDashAttr"
 
 instance < (ImageAttr m) where < a b = consNameOf a < consNameOf b
