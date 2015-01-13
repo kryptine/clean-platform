@@ -15,6 +15,7 @@ from GenEq import generic gEq
 from Data.Monoid    import class Monoid
 import qualified StdList as SL
 from Data.List import foldr
+from Data.Functor import class Functor (..)
 
 /**
 * The abstract Map type provides the mapping.
@@ -184,3 +185,4 @@ delList xs m :== 'SL'.foldr (\k m -> del k m) m xs
 
 putList xs m :== union (fromList xs) m
 
+instance Functor (Map k)
