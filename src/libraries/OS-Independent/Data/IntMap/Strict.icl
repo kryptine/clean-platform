@@ -4,11 +4,22 @@ implementation module Data.IntMap.Strict
 
 from StdFunc import o, id, const
 from StdMisc import abort
-from StdInt import class < (..), instance < Int, instance == Int
+from StdInt import class < (..), instance < Int, instance == Int, class + (..), instance + Int
 from StdList import foldl
 import Data.Maybe
 import Data.Either
 from Data.IntMap.Base import :: IntMap (..), :: Prefix, :: Mask, nomatch, bin, empty, link, zero, mergeWithKey`, foldrWithKey, fromDistinctAscList
+from Text.JSON import generic JSONEncode, generic JSONDecode, :: JSONNode
+
+foldr :: !(a b -> b) !b !(IntMap a) -> b
+foldr f z t =
+  case t of Bin _ m l r | m < 0 -> go (go z l) r // put negative numbers before
+                        | otherwise -> go (go z r) l
+            _ -> go z t
+  where
+  go z` Nil           = z`
+  go z` (Tip _ x)     = f x z`
+  go z` (Bin _ _ l r) = go (go z` r) l
 
 // | /O(min(n,W))/. The expression @('findWithDefault' def k map)@
 // returns the value at key @k@ or returns @def@ when the key is not an
@@ -26,12 +37,68 @@ findWithDefault def k (Tip kx x)
   | otherwise = def
 findWithDefault def _ _ = def
 
+get :: !Int !(IntMap a) -> Maybe a
+get k m = lookup k m
+
+lookup :: !Int !(IntMap a) -> Maybe a
+lookup k (Bin p m l r)
+  | nomatch k p m = Nothing
+  | zero k m  = lookup k l
+  | otherwise = lookup k r
+lookup k (Tip kx x)
+  | k == kx   = Just x
+  | otherwise = Nothing
+lookup k Nil = Nothing
+
+find :: !Int !(IntMap a) -> a
+find k (Bin p m l r)
+  | nomatch k p m = not_found k
+  | zero k m  = find k l
+  | otherwise = find k r
+find k (Tip kx x)
+  | k == kx   = x
+  | otherwise = not_found k
+find k Nil = not_found k
+
+del :: !Int !(IntMap a) -> IntMap a
+del k m = delete k m
+
+delete :: !Int !(IntMap a) -> IntMap a
+delete k t =
+  case t of
+    Bin p m l r
+      | nomatch k p m -> t
+      | zero k m      -> bin p m (delete k l) r
+      | otherwise     -> bin p m l (delete k r)
+    Tip ky _
+      | k==ky         -> Nil
+      | otherwise     -> t
+    Nil -> Nil
+
+not_found k = abort ("IntMap.!: key is not an element of the map")
 // | /O(1)/. A map of one element.
 //
 // > singleton 1 'a'        == fromList [(1, 'a')]
 // > size (singleton 1 'a') == 1
 singleton :: !Int !a -> IntMap a
 singleton k x = Tip k x
+
+mapSize :: !(IntMap a) -> Int
+mapSize m = size m
+
+size :: !(IntMap a) -> Int
+size t
+  = case t of
+      Bin _ _ l r -> size l + size r
+      Tip _ _ -> 1
+      Nil     -> 0
+
+newMap :: w:(IntMap u:v), [ w <= u]
+newMap = Nil
+
+null :: !(IntMap a) -> Bool
+null Nil = True
+null _   = False
 
 // | /O(min(n,W))/. Insert a new key\/value pair in the map.
 // If the key is already present in the map, the associated value is
@@ -52,6 +119,23 @@ insert k x t =
       | k == ky         -> Tip k x
       | otherwise     -> link k (Tip k x) ky t
     Nil -> Tip k x
+
+put :: !Int !a !(IntMap a) -> IntMap a
+put k v m = insert k v m
+
+member :: !Int !(IntMap a) -> Bool
+member k (Bin p m l r)
+  | nomatch k p m = False
+  | zero k m  = member k l
+  | otherwise = member k r
+member k (Tip kx _) = k == kx
+member k Nil = False
+
+elems :: !(IntMap a) -> [a]
+elems m = foldr (\x xs -> [x:xs]) [] m
+
+keys  :: !(IntMap a) -> [Int]
+keys m = foldrWithKey (\k _ ks -> [k : ks]) [] m
 
 // right-biased insertion, used by 'union'
 // | /O(min(n,W))/. Insert with a combining function.
@@ -228,7 +312,7 @@ alter f k t =
 // > unionsWith (++) [(fromList [(5, "a"), (3, "b")]), (fromList [(5, "A"), (7, "C")]), (fromList [(5, "A3"), (3, "B3")])]
 // >     == fromList [(3, "bB3"), (5, "aAA3"), (7, "C")]
 unionsWith :: !(a a -> a) ![IntMap a] -> IntMap a
-unionsWith f ts = foldl (unionWith f) empty ts // TODO Strict foldl
+unionsWith f ts = foldlStrict (unionWith f) empty ts
 
 // | /O(n+m)/. The union with a combining function.
 //
@@ -522,7 +606,7 @@ mapEitherWithKey _ Nil = (Nil, Nil)
 // > fromList [(5,"c"), (3,"b"), (5, "a")] == fromList [(5,"a"), (3,"b")]
 fromList :: ![(!Int, !a)] -> IntMap a
 fromList xs
-  = foldl ins empty xs // TODO Strict foldl
+  = foldlStrict ins empty xs
   where
   ins t (k,x) = insert k x t
 
@@ -538,7 +622,7 @@ fromListWith f xs = fromListWithKey (\_ x y -> f x y) xs
 // > fromListWith (++) [(5,"a"), (5,"b"), (3,"b"), (3,"a"), (5,"a")] == fromList [(3, "ab"), (5, "aba")]
 // > fromListWith (++) [] == empty
 fromListWithKey :: !(Int a a -> a) ![(!Int, !a)] -> IntMap a
-fromListWithKey f xs = foldl ins empty xs // TODO Strict foldl
+fromListWithKey f xs = foldlStrict ins empty xs
   where
   ins t (k,x) = insertWithKey f k x t
 
@@ -602,3 +686,18 @@ fromAscListWithKey f [x0 : xs0] = fromDistinctAscList (combineEq x0 xs0)
               //p = mask px m
 
 //:: Stack a = Push !Prefix !(IntMap a) !(Stack a) | Nada
+
+instance Functor IntMap where
+  fmap _ Nil       = Nil
+  fmap f (Tip n x) = Tip n (f x)
+  fmap f (Bin p m l r) = Bin p m (fmap f l) (fmap f r)
+
+derive JSONEncode IntMap
+derive JSONDecode IntMap
+derive gEq IntMap
+
+foldlStrict :: !(a b -> a) !a ![b] -> a
+foldlStrict f acc [] = acc
+foldlStrict f acc [x:xs]
+  #! z` = f acc x
+  = foldlStrict f z` xs

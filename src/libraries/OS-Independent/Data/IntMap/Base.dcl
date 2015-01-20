@@ -31,3 +31,7 @@ mergeWithKey` :: !(Prefix Mask (IntMap c) (IntMap c) -> IntMap c)
 foldrWithKey :: !(Int a b -> b) !b !(IntMap a) -> b
 
 fromDistinctAscList :: ![(!Int, !a)] -> IntMap a
+
+union :: (IntMap a) (IntMap a) -> IntMap a
+
+unions :: [IntMap a] -> IntMap a

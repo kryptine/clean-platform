@@ -1440,7 +1440,7 @@ toDescList m = foldlWithKey (\xs k x -> [(k,x):xs]) [] m
 // > fromList [(5,"c"), (3,"b"), (5, "a")] == fromList [(5,"a"), (3,"b")]
 fromList :: [(Int,a)] -> IntMap a
 fromList xs
-  = 'SL'.foldl ins empty xs // TODO Strict foldl
+  = foldlStrict ins empty xs
   where
     ins t (k,x)  = insert k x t
 
@@ -1448,20 +1448,20 @@ fromList xs
 //
 // > fromListWith (++) [(5,"a"), (5,"b"), (3,"b"), (3,"a"), (5,"c")] == fromList [(3, "ab"), (5, "cba")]
 // > fromListWith (++) [] == empty
-//fromListWith :: (a a -> a) [(Int,a)] -> IntMap a
-//fromListWith f xs
-  //= fromListWithKey (\_ x y -> f x y) xs
+fromListWith :: (a a -> a) [(Int,a)] -> IntMap a
+fromListWith f xs
+  = fromListWithKey (\_ x y -> f x y) xs
 
 //// | /O(n*min(n,W))/. Build a map from a list of key\/value pairs with a combining function. See also fromAscListWithKey'.
 ////
 //// > let f key new_value old_value = (show key) ++ ":" ++ new_value ++ "|" ++ old_value
 //// > fromListWithKey f [(5,"a"), (5,"b"), (3,"b"), (3,"a"), (5,"c")] == fromList [(3, "3:a|b"), (5, "5:c|5:b|a")]
 //// > fromListWithKey f [] == empty
-//fromListWithKey :: (Int a a -> a) [(Int,a)] -> IntMap a
-//fromListWithKey f xs
-  //= foldl ins empty xs // TODO Strict foldl
-  //where
-    //ins t (k,x) = insertWithKey f k x t
+fromListWithKey :: (Int a a -> a) [(Int,a)] -> IntMap a
+fromListWithKey f xs
+  = foldlStrict ins empty xs
+  where
+    ins t (k,x) = insertWithKey f k x t
 
 // | /O(n)/. Build a map from a list of key\/value pairs where
 // the keys are in ascending order.
@@ -1593,3 +1593,9 @@ highestBitMask x0
         x4 -> case (x4 bitor (x4 >> 16)) of
          x5 -> case (x5 bitor (x5 >> 32)) of   // for 64 bit platforms
           x6 -> (x6 bitxor (x6 >> 1))
+
+foldlStrict :: !(a b -> a) !a ![b] -> a
+foldlStrict f acc [] = acc
+foldlStrict f acc [x:xs]
+  #! z` = f acc x
+  = foldlStrict f z` xs
