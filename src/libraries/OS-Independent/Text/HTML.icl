@@ -1070,7 +1070,7 @@ writeBrowserFriendlySVGTag tag hattrs sattrs elts = "<" +++ tag +++ " " +++ inte
 writeBrowserFriendlyTextSVGTag :: !String ![HtmlAttr] ![SVGAttr] !String -> String
 writeBrowserFriendlyTextSVGTag tag hattrs sattrs str = "<" +++ tag +++ " " +++ intersperseSpace (map browserFriendlyHTMLAttrToString hattrs)
                                                                            +++ intersperseSpace (map browserFriendlySVGAttrToString sattrs) +++ ">"
-                                                           +++ str
+                                                           +++ escapeStr str
                                                    +++ "</" +++ tag +++ ">"
 
 writeBrowserFriendlyEmptySVGTag :: !String ![HtmlAttr] ![SVGAttr] -> String
@@ -1293,6 +1293,11 @@ browserFriendlyHTMLAttrToString (XmlnsAttr a)      = writeBrowserFriendlyAttr "x
 browserFriendlyHTMLAttrToString (XmlnsXlinkAttr a)  = writeBrowserFriendlyAttr "xmlns:xlink" a
 browserFriendlyHTMLAttrToString (XmlspaceAttr a)    = writeBrowserFriendlyAttr "xml:space" a
 
-
 escapeStr :: !String -> String
-escapeStr str = str // TODO
+escapeStr str
+  #! origSz = size str
+  #! escdSz = escapedSize str
+  | origSz == escdSz = str
+  | otherwise
+      #! (str, _) = copyChars str 0 True (createArray escdSz '\0') 0
+      = str
