@@ -10,6 +10,7 @@ instance Text String
 	concat :: ![String] -> String
 	concat xs = concat` xs (createArray (foldl (\s a -> s+size a) 0 xs) '\0') 0
 		where
+        concat` :: ![String] !*String !Int -> *String
 		concat` []     dst _		= dst
 		concat` [x:xs] dst offset	= concat` xs (copyChars offset 0 (size x) x dst) (offset + size x)
 
@@ -84,40 +85,37 @@ instance Text String
 
     startsWith :: !String !String -> Bool
 	startsWith needle haystack
+		#! s_needle = size needle
 		= s_needle <= size haystack && needle == haystack%(0,s_needle-1)
-	where
-		s_needle	= size needle
 
     endsWith :: !String !String -> Bool
 	endsWith needle haystack
+		#! s_needle   = size needle
+		#! s_haystack = size haystack
 		= s_needle <= s_haystack && needle == haystack%(s_haystack-s_needle,s_haystack-1)
-	where
-		s_needle	= size needle
-		s_haystack	= size haystack
 
     subString :: !Int !Int !String -> String
 	subString start len haystack = haystack % (start, start + len - 1)
 
 	replaceSubString :: !String !String !String -> String
 	replaceSubString needle replacement haystack
-		| index == -1	= haystack
-		| otherwise		= start +++ replacement +++ (replaceSubString needle replacement end)
-			where
-			index	= indexOf needle haystack
-			start	= subString 0 index haystack
-			end		= subString (index + size needle) (size haystack) haystack
-    
+		#! index = indexOf needle haystack
+		| index == -1 = haystack
+		| otherwise
+			#! start = subString 0 index haystack
+			#! end   = subString (index + size needle) (size haystack) haystack
+			= start +++ replacement +++ (replaceSubString needle replacement end)
+
     trim :: !String -> String
 	trim s = ltrim (rtrim s)
 
 	ltrim :: !String -> String
 	ltrim s
-		| non_space_index == 0
-						= s
-						= s%(non_space_index,size_s-1)
+		#! non_space_index     = non_space_left 0
+		| non_space_index == 0 = s
+		| otherwise            = s%(non_space_index,size_s-1)
 	where
-		size_s			= size s
-		non_space_index	= non_space_left 0
+		size_s = size s
 		
 		non_space_left :: !Int -> Int
 		non_space_left i
@@ -126,12 +124,12 @@ instance Text String
 
 	rtrim :: !String -> String
 	rtrim s
+		#! non_space_index	= non_space_right (size_s-1)
 		| non_space_index == size_s-1
 						= s
 						= s%(0,non_space_index)
 	where
 		size_s			= size s
-		non_space_index	= non_space_right (size_s-1)
 		
 		non_space_right :: !Int -> Int
 		non_space_right i
@@ -140,11 +138,13 @@ instance Text String
 
 	lpad :: !String !Int !Char -> String
 	lpad s w  c
-		= let boundary = w - size s in {if (i < boundary) c s.[i - boundary] \\ i <- [0.. w - 1]}
+		#! boundary = w - size s
+        = {if (i < boundary) c s.[i - boundary] \\ i <- [0.. w - 1]}
 	
 	rpad :: !String !Int !Char -> String
     rpad s w c
-    	= let boundary = size s in {if (i < boundary) s.[i] c \\ i <- [0.. w - 1]}
+    	#! boundary = size s
+        = {if (i < boundary) s.[i] c \\ i <- [0.. w - 1]}
 
     toLowerCase :: !String -> String
 	toLowerCase s = {toLower c \\ c <-: s}
