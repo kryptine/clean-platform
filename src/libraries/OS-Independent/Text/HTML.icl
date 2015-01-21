@@ -9,15 +9,15 @@ from Data.List import intersperse
 instance toString HtmlTag
 where
 	toString tag
-		# tagsize = tagSize tag								//Calculate the size of the string we need
-		# tagstring = createArray tagsize '\0'				//Create an empty buffer
-		# tagstring = fst (serializeTag tag tagstring 0)	//Serialize the html tree
+		#! tagsize   = tagSize tag							//Calculate the size of the string we need
+		#! tagstring = createArray tagsize '\0'				//Create an empty buffer
+		#! tagstring = fst (serializeTag tag tagstring 0)	//Serialize the html tree
 		= tagstring
 
 //Calculate the size (in chars) that the tag will be when
 //serialize to a string.
 
-tagSize :: HtmlTag -> Int
+tagSize :: !HtmlTag -> Int
 tagSize (Text t)			= escapedSize t
 tagSize (Html t)			= size t
 tagSize (ATag a t)			=  7 + (attrsSize a) + (tagsSize t) 
@@ -121,7 +121,7 @@ tagsSize :: ![HtmlTag] -> Int
 tagsSize tags = intsum tagSize tags
 
 //Calculates the number of chars this attribute will take once serialized
-attrSize :: HtmlAttr -> Int
+attrSize :: !HtmlAttr -> Int
 attrSize (AbbrAttr a)			=  8 + (escapedSize a)
 attrSize (AcceptAttr a)			= 10 + (escapedSize a)
 attrSize (AcceptcharsetAttr a)	= 18 + (escapedSize a)
@@ -252,12 +252,13 @@ attrsSize attrs = intsum attrSize attrs
 escapedSize :: !{#Char} -> Int
 escapedSize s = escapedSize` s (size s) 0
 where
-	escapedSize` s n i
-		| i == n = 0
-		| s.[i] == '<' = 4 + escapedSize` s n (i + 1)
-		| s.[i] == '>' = 4 + escapedSize` s n (i + 1)
-		| s.[i] == '&' = 5 + escapedSize` s n (i + 1)
-		| otherwise = 1 + escapedSize` s n (i + 1)
+  escapedSize` :: !{#Char} !Int !Int -> Int
+  escapedSize` s n i
+    | i == n = 0
+    | s.[i] == '<' = 4 + escapedSize` s n (i + 1)
+    | s.[i] == '>' = 4 + escapedSize` s n (i + 1)
+    | s.[i] == '&' = 5 + escapedSize` s n (i + 1)
+    | otherwise = 1 + escapedSize` s n (i + 1)
 
 serializeTag :: !HtmlTag !*{#Char} !Int -> (!*{#Char}, !Int)
 serializeTag (Text t) s i				= copyChars t 0 True s i
@@ -364,7 +365,7 @@ serializeTag (VarTag a t) s i			= writeTag "var" a t s i
 serializeTags :: ![HtmlTag] !*{#Char} !Int -> (!*{#Char}, !Int)
 serializeTags [] dest dest_i = (dest,dest_i)
 serializeTags [x:xs] dest dest_i
-	# (dest, dest_i) = serializeTag x dest dest_i
+	#! (dest, dest_i) = serializeTag x dest dest_i
 	= serializeTags xs dest dest_i
 
 serializeAttr :: !HtmlAttr !*{#Char} !Int -> (!*{#Char}, !Int)
@@ -494,7 +495,7 @@ serializeAttr (XmlspaceAttr a) s i		= writeAttr "xml:space" a s i
 serializeAttrs :: ![HtmlAttr] !*{#Char} !Int -> (!*{#Char}, !Int)
 serializeAttrs [] dest dest_i = (dest, dest_i)
 serializeAttrs [x:xs] dest dest_i
-	# (dest, dest_i) = serializeAttr x dest dest_i
+	#! (dest, dest_i) = serializeAttr x dest dest_i
 	= serializeAttrs xs dest dest_i
 
 copyChars :: !{#Char} !Int !Bool !*{#Char} !Int -> (!*{#Char},!Int)
@@ -502,69 +503,69 @@ copyChars src src_i escape dest dest_i
 	| src_i == (size src) = (dest, dest_i)
 	| otherwise	
 		| escape && (src.[src_i] == '<')
-			# dest = {dest & [dest_i] = '&', [dest_i + 1] = 'l', [dest_i + 2] = 't', [dest_i + 3] = ';'}
+			#! dest = {dest & [dest_i] = '&', [dest_i + 1] = 'l', [dest_i + 2] = 't', [dest_i + 3] = ';'}
 			= copyChars src (src_i + 1) escape dest (dest_i + 4)
 		| escape && (src.[src_i] == '>')
-			# dest = {dest & [dest_i] = '&', [dest_i + 1] = 'g', [dest_i + 2] = 't', [dest_i + 3] = ';'}
+			#! dest = {dest & [dest_i] = '&', [dest_i + 1] = 'g', [dest_i + 2] = 't', [dest_i + 3] = ';'}
 			= copyChars src (src_i + 1) escape dest (dest_i + 4)
 		| escape && (src.[src_i] == '&')
-			# dest = {dest & [dest_i] = '&', [dest_i + 1] = 'a', [dest_i + 2] = 'm', [dest_i + 3] = 'p', [dest_i + 4] = ';'}
+			#! dest = {dest & [dest_i] = '&', [dest_i + 1] = 'a', [dest_i + 2] = 'm', [dest_i + 3] = 'p', [dest_i + 4] = ';'}
 			= copyChars src (src_i + 1) escape dest (dest_i + 5)
 		| otherwise
-			# dest = {dest & [dest_i] = src.[src_i]}
+			#! dest = {dest & [dest_i] = src.[src_i]}
 			= copyChars src (src_i + 1) escape dest (dest_i + 1)
 
-writeTag :: !{#Char} [HtmlAttr] [HtmlTag] !*{#Char} !Int -> (!*{#Char},!Int)
+writeTag :: !{#Char} ![HtmlAttr] ![HtmlTag] !*{#Char} !Int -> (!*{#Char},!Int)
 writeTag name attrs tags dest dest_i
-	# dest = {dest & [dest_i] = '<'}
-	# dest_i = dest_i + 1
-	# (dest,dest_i) = copyChars name 0 False dest dest_i
-	# (dest, dest_i) = serializeAttrs attrs dest dest_i
-	# dest = {dest & [dest_i] = '>'}
-	# dest_i = dest_i + 1
-	# (dest, dest_i) = serializeTags tags dest dest_i
-	# dest = {dest & [dest_i] = '<'}
-	# dest = {dest & [dest_i + 1] = '/'}
-	# dest_i = dest_i + 2
-	# (dest,dest_i) = copyChars name 0 False dest dest_i
-	# dest = {dest & [dest_i] = '>'}
-	# dest_i = dest_i + 1
+	#! dest = {dest & [dest_i] = '<'}
+	#! dest_i = dest_i + 1
+	#! (dest,dest_i) = copyChars name 0 False dest dest_i
+	#! (dest, dest_i) = serializeAttrs attrs dest dest_i
+	#! dest = {dest & [dest_i] = '>'}
+	#! dest_i = dest_i + 1
+	#! (dest, dest_i) = serializeTags tags dest dest_i
+	#! dest = {dest & [dest_i] = '<'}
+	#! dest = {dest & [dest_i + 1] = '/'}
+	#! dest_i = dest_i + 2
+	#! (dest,dest_i) = copyChars name 0 False dest dest_i
+	#! dest = {dest & [dest_i] = '>'}
+	#! dest_i = dest_i + 1
 	= (dest,dest_i)
 
-writeEmptyTag :: !{#Char} [HtmlAttr] !*{#Char} !Int -> (!*{#Char},!Int)
+writeEmptyTag :: !{#Char} ![HtmlAttr] !*{#Char} !Int -> (!*{#Char},!Int)
 writeEmptyTag name attrs dest dest_i
-	# dest = {dest & [dest_i] = '<'}
-	# dest_i = dest_i + 1
-	# (dest,dest_i) = copyChars name 0 False dest dest_i
-	# (dest, dest_i) = serializeAttrs attrs dest dest_i
-	# dest = {dest & [dest_i] = '/'}
-	# dest_i = dest_i + 1
-	# dest = {dest & [dest_i] = '>'}
-	# dest_i = dest_i + 1
+	#! dest = {dest & [dest_i] = '<'}
+	#! dest_i = dest_i + 1
+	#! (dest,dest_i) = copyChars name 0 False dest dest_i
+	#! (dest, dest_i) = serializeAttrs attrs dest dest_i
+	#! dest = {dest & [dest_i] = '/'}
+	#! dest_i = dest_i + 1
+	#! dest = {dest & [dest_i] = '>'}
+	#! dest_i = dest_i + 1
 	= (dest,dest_i)
 
-writeRootTag :: [HtmlAttr] [HtmlTag] !*{#Char} !Int -> (!*{#Char},!Int)
+writeRootTag :: ![HtmlAttr] ![HtmlTag] !*{#Char} !Int -> (!*{#Char},!Int)
 writeRootTag attrs tags dest dest_i
-	# (dest,dest_i) = copyChars "<html" 0 False dest dest_i
-	# (dest, dest_i) = serializeAttrs attrs dest dest_i
-	# dest = {dest & [dest_i] = '>'}
-	# dest_i = dest_i + 1
-	# (dest, dest_i) = serializeTags tags dest dest_i
-	# (dest, dest_i) = copyChars "</html>" 0 False dest dest_i
+	#! (dest,dest_i) = copyChars "<html" 0 False dest dest_i
+	#! (dest, dest_i) = serializeAttrs attrs dest dest_i
+	#! dest = {dest & [dest_i] = '>'}
+	#! dest_i = dest_i + 1
+	#! (dest, dest_i) = serializeTags tags dest dest_i
+	#! (dest, dest_i) = copyChars "</html>" 0 False dest dest_i
 	= (dest,dest_i)
 
 writeAttr :: !{#Char} !{#Char} !*{#Char} !Int -> (!*{#Char},!Int)
 writeAttr name value dest dest_i
-	# dest = {dest & [dest_i] = ' '}
-	# dest_i = dest_i + 1
-	# (dest,dest_i) = copyChars name 0 False dest dest_i
-	# dest = {dest & [dest_i] = '='}
-	# dest_i = dest_i + 1
-	# dest = {dest & [dest_i] = '"'}
-	# dest_i = dest_i + 1
-	# (dest,dest_i) = copyChars value 0 True dest dest_i
-	# dest = {dest & [dest_i] = '"'}
-	# dest_i = dest_i + 1
+	#! dest = {dest & [dest_i] = ' '}
+	#! dest_i = dest_i + 1
+	#! (dest,dest_i) = copyChars name 0 False dest dest_i
+	#! dest = {dest & [dest_i] = '='}
+	#! dest_i = dest_i + 1
+	#! dest = {dest & [dest_i] = '"'}
+	#! dest_i = dest_i + 1
+	#! (dest,dest_i) = copyChars value 0 True dest dest_i
+	#! dest = {dest & [dest_i] = '"'}
+	#! dest_i = dest_i + 1
 	= (dest,dest_i)
 
 class html a 
@@ -596,9 +597,9 @@ where
 instance toString SVGElt
 where
 	toString elt
-		# eltsize	= svgEltSize elt						//Calculate the size of the string we need
-		# eltstring	= createArray eltsize '\0'				//Create an empty buffer
-		# eltstring	= fst (serializeSVGElt elt eltstring 0)	//Serialize the SVG element
+		#! eltsize	= svgEltSize elt						//Calculate the size of the string we need
+		#! eltstring	= createArray eltsize '\0'				//Create an empty buffer
+		#! eltstring	= fst (serializeSVGElt elt eltstring 0)	//Serialize the SVG element
 		= eltstring
 
 svgEltsSize :: ![SVGElt] -> Int
@@ -897,7 +898,7 @@ instance toString SVGZoomAndPan where
 serializeSVGElts :: ![SVGElt] !*{#Char} !Int -> (!*{#Char},!Int)
 serializeSVGElts [] dest dest_i = (dest, dest_i)
 serializeSVGElts [x:xs] dest dest_i
-	# (dest, dest_i) = serializeSVGElt x dest dest_i
+	#! (dest, dest_i) = serializeSVGElt x dest dest_i
 	= serializeSVGElts xs dest dest_i
 
 serializeSVGElt :: !SVGElt !*{#Char} !Int -> (!*{#Char}, !Int)
@@ -924,7 +925,7 @@ serializeSVGElt _ _ _                                              = abort "Text
 serializeSVGAttrs :: ![SVGAttr] !*{#Char} !Int -> (!*{#Char}, !Int)
 serializeSVGAttrs [] dest dest_i = (dest, dest_i)
 serializeSVGAttrs [x:xs] dest dest_i
-	# (dest, dest_i) = serializeSVGAttr x dest dest_i
+	#! (dest, dest_i) = serializeSVGAttr x dest dest_i
 	= serializeSVGAttrs xs dest dest_i
 
 serializeSVGAttr :: !SVGAttr !*{#Char} !Int -> (!*{#Char}, !Int)
@@ -997,51 +998,51 @@ serializeSVGAttr (ZoomAndPanAttr          zap)       s i = writeAttr "zoomAndPan
 
 writeSVGTag :: !{#Char} ![HtmlAttr] ![SVGAttr] ![SVGElt] !*{#Char} !Int -> (!*{#Char},!Int)
 writeSVGTag name html_attrs svg_attrs elts dest dest_i
-	# dest = {dest & [dest_i] = '<'}
-	# dest_i = dest_i + 1
-	# (dest,dest_i) = copyChars name 0 False dest dest_i
-	# (dest, dest_i) = serializeAttrs html_attrs dest dest_i
-	# (dest, dest_i) = serializeSVGAttrs svg_attrs dest dest_i
-	# dest = {dest & [dest_i] = '>'}
-	# dest_i = dest_i + 1
-	# (dest, dest_i) = serializeSVGElts elts dest dest_i
-	# dest = {dest & [dest_i] = '<'}
-	# dest = {dest & [dest_i + 1] = '/'}
-	# dest_i = dest_i + 2
-	# (dest,dest_i) = copyChars name 0 False dest dest_i
-	# dest = {dest & [dest_i] = '>'}
-	# dest_i = dest_i + 1
+	#! dest = {dest & [dest_i] = '<'}
+	#! dest_i = dest_i + 1
+	#! (dest,dest_i) = copyChars name 0 False dest dest_i
+	#! (dest, dest_i) = serializeAttrs html_attrs dest dest_i
+	#! (dest, dest_i) = serializeSVGAttrs svg_attrs dest dest_i
+	#! dest = {dest & [dest_i] = '>'}
+	#! dest_i = dest_i + 1
+	#! (dest, dest_i) = serializeSVGElts elts dest dest_i
+	#! dest = {dest & [dest_i] = '<'}
+	#! dest = {dest & [dest_i + 1] = '/'}
+	#! dest_i = dest_i + 2
+	#! (dest,dest_i) = copyChars name 0 False dest dest_i
+	#! dest = {dest & [dest_i] = '>'}
+	#! dest_i = dest_i + 1
 	= (dest,dest_i)
 
 writeEmptySVGTag :: !{#Char} ![HtmlAttr] ![SVGAttr] !*{#Char} !Int -> (!*{#Char},!Int)
 writeEmptySVGTag name html_attrs svg_attrs dest dest_i
-	# dest = {dest & [dest_i] = '<'}
-	# dest_i = dest_i + 1
-	# (dest,dest_i) = copyChars name 0 False dest dest_i
-	# (dest, dest_i) = serializeAttrs html_attrs dest dest_i
-	# (dest, dest_i) = serializeSVGAttrs svg_attrs dest dest_i
-	# dest = {dest & [dest_i] = '/'}
-	# dest_i = dest_i + 1
-	# dest = {dest & [dest_i] = '>'}
-	# dest_i = dest_i + 1
+	#! dest = {dest & [dest_i] = '<'}
+	#! dest_i = dest_i + 1
+	#! (dest,dest_i) = copyChars name 0 False dest dest_i
+	#! (dest, dest_i) = serializeAttrs html_attrs dest dest_i
+	#! (dest, dest_i) = serializeSVGAttrs svg_attrs dest dest_i
+	#! dest = {dest & [dest_i] = '/'}
+	#! dest_i = dest_i + 1
+	#! dest = {dest & [dest_i] = '>'}
+	#! dest_i = dest_i + 1
 	= (dest,dest_i)
 
 writeSVGPlainTag :: !{#Char} ![HtmlAttr] ![SVGAttr] !{#Char} !*{#Char} !Int -> (!*{#Char},!Int)
 writeSVGPlainTag name html_attrs svg_attrs plain dest dest_i
-	# dest = {dest & [dest_i] = '<'}
-	# dest_i = dest_i + 1
-	# (dest,dest_i) = copyChars name 0 False dest dest_i
-	# (dest, dest_i) = serializeAttrs html_attrs dest dest_i
-	# (dest, dest_i) = serializeSVGAttrs svg_attrs dest dest_i
-	# dest = {dest & [dest_i] = '>'}
-	# dest_i = dest_i + 1
-	# (dest,dest_i) = copyChars plain 0 True dest dest_i
-	# dest = {dest & [dest_i] = '<'}
-	# dest = {dest & [dest_i + 1] = '/'}
-	# dest_i = dest_i + 2
-	# (dest,dest_i) = copyChars name 0 False dest dest_i
-	# dest = {dest & [dest_i] = '>'}
-	# dest_i = dest_i + 1
+	#! dest = {dest & [dest_i] = '<'}
+	#! dest_i = dest_i + 1
+	#! (dest,dest_i) = copyChars name 0 False dest dest_i
+	#! (dest, dest_i) = serializeAttrs html_attrs dest dest_i
+	#! (dest, dest_i) = serializeSVGAttrs svg_attrs dest dest_i
+	#! dest = {dest & [dest_i] = '>'}
+	#! dest_i = dest_i + 1
+	#! (dest,dest_i) = copyChars plain 0 True dest dest_i
+	#! dest = {dest & [dest_i] = '<'}
+	#! dest = {dest & [dest_i + 1] = '/'}
+	#! dest_i = dest_i + 2
+	#! (dest,dest_i) = copyChars name 0 False dest dest_i
+	#! dest = {dest & [dest_i] = '>'}
+	#! dest_i = dest_i + 1
 	= (dest,dest_i)
 
 glue_list :: !String ![String] -> String
