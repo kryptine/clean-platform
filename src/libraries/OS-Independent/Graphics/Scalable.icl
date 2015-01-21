@@ -13,7 +13,6 @@ from StdBool import &&, ||
 import qualified Data.Set as DS
 import Text.HTML
 from Data.Functor import class Functor (..)
-import GenLexOrd
 
 isPxSpan :: !Span -> Bool
 isPxSpan (PxSpan _) = True
