@@ -160,15 +160,13 @@ findMin :: !(Map k a) -> (!k, !a)
 
 findMax :: !(Map k a) -> (!k, !a)
 
-//unions :: ![Map k a] -> Map k a | < k
-unions ts :== foldlStrict union newMap ts
+unions :: ![Map k a] -> Map k a | < k
 
-//unionsWith :: !(a a -> a) ![Map k a] -> Map k a | < k
-unionsWith f ts :== foldlStrict (unionWith f) newMap ts
+unionsWith :: !(a a -> a) ![Map k a] -> Map k a | < k
 
-unionWith f m1 m2 :== unionWithKey (\_ x y -> f x y) m1 m2
+unionWith :: !(a a -> a) !(Map k a) !(Map k a) -> Map k a | < k
 
-unionWithKey f t1 t2 :== mergeWithKey (\k x1 x2 -> Just (f k x1 x2)) id id t1 t2
+unionWithKey :: !(k a a -> a) !(Map k a) !(Map k a) -> Map k a | < k
 
 union :: !(Map k a) !(Map k a) -> Map k a | < k
 

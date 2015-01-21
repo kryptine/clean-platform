@@ -728,6 +728,18 @@ union Tip t2  = t2
 union t1 Tip  = t1
 union t1 t2 = hedgeUnion Nothing Nothing t1 t2
 
+unions :: ![Map k a] -> Map k a | < k
+unions ts = foldlStrict union newMap ts
+
+unionsWith :: !(a a -> a) ![Map k a] -> Map k a | < k
+unionsWith f ts = foldlStrict (unionWith f) newMap ts
+
+unionWith :: !(a a -> a) !(Map k a) !(Map k a) -> Map k a | < k
+unionWith f m1 m2 = unionWithKey (\_ x y -> f x y) m1 m2
+
+unionWithKey :: !(k a a -> a) !(Map k a) !(Map k a) -> Map k a | < k
+unionWithKey f t1 t2 = mergeWithKey (\k x1 x2 -> Just (f k x1 x2)) id id t1 t2
+
 // left-biased hedge union
 hedgeUnion :: !(Maybe a) !(Maybe a) !(Map a b) !(Map a b) -> Map a b | < a
 hedgeUnion _   _   t1  Tip = t1
