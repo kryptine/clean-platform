@@ -20,18 +20,16 @@ nomatch :: !Int !Prefix !Mask -> Bool
 
 empty :: IntMap a
 
-link :: !Prefix !(IntMap a) !Prefix !(IntMap a) -> IntMap a
-
-zero :: !Int !Mask -> Bool
-
-mergeWithKey` :: !(Prefix Mask (IntMap c) (IntMap c) -> IntMap c)
-                 !((IntMap a) (IntMap b) -> IntMap c) !((IntMap a) -> IntMap c)
-                 !((IntMap b) -> IntMap c) !(IntMap a) !(IntMap b) -> IntMap c
-
-foldrWithKey :: !(Int a b -> b) !b !(IntMap a) -> b
+foldrWithKey :: (Int a b -> b) b (IntMap a) -> b
 
 fromDistinctAscList :: ![(!Int, !a)] -> IntMap a
 
 union :: (IntMap a) (IntMap a) -> IntMap a
 
 unions :: [IntMap a] -> IntMap a
+
+mask :: !Int !Mask -> Prefix
+
+shorter :: !Mask !Mask -> Bool
+
+branchMask :: !Prefix !Prefix -> Mask

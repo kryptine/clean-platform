@@ -4,11 +4,11 @@ implementation module Data.IntMap.Strict
 
 from StdFunc import o, id, const
 from StdMisc import abort
-from StdInt import class < (..), instance < Int, instance == Int, class + (..), instance + Int
+from StdInt import class < (..), instance < Int, instance == Int, class + (..), instance + Int, bitand
 from StdList import foldl
 import Data.Maybe
 import Data.Either
-from Data.IntMap.Base import :: IntMap (..), :: Prefix, :: Mask, nomatch, bin, empty, link, zero, mergeWithKey`, foldrWithKey, fromDistinctAscList
+from Data.IntMap.Base import :: IntMap (..), :: Prefix, :: Mask, nomatch, bin, empty, fromDistinctAscList, mask, shorter, branchMask
 from Text.JSON import generic JSONEncode, generic JSONDecode, :: JSONNode
 
 foldr :: !(a b -> b) !b !(IntMap a) -> b
@@ -136,6 +136,23 @@ elems m = foldr (\x xs -> [x:xs]) [] m
 
 keys  :: !(IntMap a) -> [Int]
 keys m = foldrWithKey (\k _ ks -> [k : ks]) [] m
+
+union :: !(IntMap a) !(IntMap a) -> IntMap a
+union m1 m2 = mergeWithKey` Bin const id id m1 m2
+
+unions :: ![IntMap a] -> IntMap a
+unions xs = foldlStrict union empty xs
+
+foldrWithKey :: !(Int a b -> b) !b !(IntMap a) -> b
+foldrWithKey f z t =
+  case t of Bin _ m l r | m < 0 -> go f (go f z l) r // put negative numbers before
+                        | otherwise -> go f (go f z r) l
+            _ -> go f z t
+  where
+  go :: !(Int a b -> b) !b !(IntMap a) -> b
+  go _ z` Nil           = z`
+  go f z` (Tip kx x)    = f kx x z`
+  go f z` (Bin _ _ l r) = go f (go f z` r) l
 
 // right-biased insertion, used by 'union'
 // | /O(min(n,W))/. Insert with a combining function.
@@ -701,3 +718,74 @@ foldlStrict f acc [] = acc
 foldlStrict f acc [x:xs]
   #! z` = f acc x
   = foldlStrict f z` xs
+
+zero :: !Int !Mask -> Bool
+zero i m = (i bitand m) == 0
+
+link :: !Prefix !(IntMap a) !Prefix !(IntMap a) -> IntMap a
+link p1 t1 p2 t2
+  #! m = branchMask p1 p2
+  #! p = mask p1 m
+  | zero p1 m = Bin p m t1 t2
+  | otherwise = Bin p m t2 t1
+
+mergeWithKey` :: !(Prefix Mask (IntMap c) (IntMap c) -> IntMap c)
+                 !((IntMap a) (IntMap b) -> IntMap c) !((IntMap a) -> IntMap c)
+                 !((IntMap b) -> IntMap c) !(IntMap a) !(IntMap b) -> IntMap c
+mergeWithKey` bin` f g1 g2 t1=:(Bin p1 m1 l1 r1) t2=:(Bin p2 m2 l2 r2)
+  | shorter m1 m2  = merge1 bin` f g1 g2 t1 p1 m1 l1 r1 t2 p2
+  | shorter m2 m1  = merge2 bin` f g1 g2 t1 p1 t2 p2 m2 l2 r2
+  | p1 == p2       = bin` p1 m1 (mergeWithKey` bin` f g1 g2 l1 l2) (mergeWithKey` bin` f g1 g2 r1 r2)
+  | otherwise      = maybe_link p1 (g1 t1) p2 (g2 t2)
+  where
+    merge1 :: !(Int Int (IntMap a) (IntMap a) -> IntMap a)
+              !((IntMap b) (IntMap c) -> IntMap a) !((IntMap b) -> IntMap a)
+              !((IntMap c) -> IntMap a) !(IntMap b) !Int !Int !(IntMap b)
+              !(IntMap b) !(IntMap c) !Int -> IntMap a
+    merge1 bin` f g1 g2 t1 p1 m1 l1 r1 t2 p2
+      | nomatch p2 p1 m1  = maybe_link p1 (g1 t1) p2 (g2 t2)
+      | zero p2 m1        = bin` p1 m1 (mergeWithKey` bin` f g1 g2 l1 t2) (g1 r1)
+      | otherwise         = bin` p1 m1 (g1 l1) (mergeWithKey` bin` f g1 g2 r1 t2)
+    merge2 :: !(Int Int (IntMap a) (IntMap a) -> IntMap a)
+              !((IntMap b) (IntMap c) -> IntMap a) !((IntMap b) -> IntMap a)
+              !((IntMap c) -> IntMap a) !(IntMap b) !Int !(IntMap c) !Int !Int
+              !(IntMap c) !(IntMap c) -> IntMap a
+    merge2 bin` f g1 g2 t1 p1 t2 p2 m2 l2 r2
+      | nomatch p1 p2 m2  = maybe_link p1 (g1 t1) p2 (g2 t2)
+      | zero p1 m2        = bin` p2 m2 (mergeWithKey` bin` f g1 g2 t1 l2) (g2 r2)
+      | otherwise         = bin` p2 m2 (g2 l2) (mergeWithKey` bin` f g1 g2 t1 r2)
+
+mergeWithKey` bin` f g1 g2 t1`=:(Bin _ _ _ _) t2`=:(Tip k2` _) = merge bin` f g1 g2 t2` k2` t1`
+  where
+  merge :: !(Int Int (IntMap a) (IntMap a) -> IntMap a) !((IntMap b) c -> IntMap a)
+           !((IntMap b) -> IntMap a) !(c -> IntMap a) !c !Int !(IntMap b) -> IntMap a
+  merge bin` f g1 g2 t2 k2 t1=:(Bin p1 m1 l1 r1)
+    | nomatch k2 p1 m1 = maybe_link p1 (g1 t1) k2 (g2 t2)
+    | zero k2 m1 = bin` p1 m1 (merge bin` f g1 g2 t2 k2 l1) (g1 r1)
+    | otherwise  = bin` p1 m1 (g1 l1) (merge bin` f g1 g2 t2 k2 r1)
+  merge bin` f g1 g2 t2 k2 t1=:(Tip k1 _)
+    | k1 == k2 = f t1 t2
+    | otherwise = maybe_link k1 (g1 t1) k2 (g2 t2)
+  merge bin` f g1 g2 t2 _  Nil = g2 t2
+
+mergeWithKey` bin` f g1 g2 t1=:(Bin _ _ _ _) Nil = g1 t1
+
+mergeWithKey` bin` f g1 g2 t1`=:(Tip k1` _) t2` = merge bin` f g1 g2 t1` k1` t2`
+  where
+  merge :: !(Int Int (IntMap a) (IntMap a) -> IntMap a) !(b (IntMap c) -> IntMap a)
+           !(b -> IntMap a) !((IntMap c) -> IntMap a) !b !Int !(IntMap c) -> IntMap a
+  merge bin` f g1 g2 t1 k1 t2=:(Bin p2 m2 l2 r2)
+    | nomatch k1 p2 m2 = maybe_link k1 (g1 t1) p2 (g2 t2)
+    | zero k1 m2 = bin` p2 m2 (merge bin` f g1 g2 t1 k1 l2) (g2 r2)
+    | otherwise  = bin` p2 m2 (g2 l2) (merge bin` f g1 g2 t1 k1 r2)
+  merge bin` f g1 g2 t1 k1 t2=:(Tip k2 _)
+    | k1 == k2 = f t1 t2
+    | otherwise = maybe_link k1 (g1 t1) k2 (g2 t2)
+  merge bin` f g1 g2 t1 _  Nil = g1 t1
+
+mergeWithKey` bin` f g1 g2 Nil t2 = g2 t2
+
+maybe_link :: !Int !(IntMap a) !Int !(IntMap a) -> IntMap a
+maybe_link _ Nil _ t2 = t2
+maybe_link _ t1 _ Nil = t1
+maybe_link p1 t1 p2 t2 = link p1 t1 p2 t2

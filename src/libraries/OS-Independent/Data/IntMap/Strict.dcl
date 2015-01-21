@@ -11,7 +11,7 @@ from Data.Monoid    import class Monoid
 import qualified StdList as SL
 from Data.List import foldr
 from Data.Functor import class Functor (..)
-from Data.IntMap.Base import :: IntMap (..), :: Mask, :: Prefix, union, unions, foldrWithKey
+from Data.IntMap.Base import :: IntMap (..), :: Mask, :: Prefix
 
 null :: !(IntMap a) -> Bool
 
@@ -79,5 +79,10 @@ mergeWithKey :: !(Int a b -> Maybe c) !((IntMap a) -> IntMap c) !((IntMap b) -> 
 
 foldlStrict :: !(a b -> a) !a ![b] -> a
 
+foldrWithKey :: !(Int a b -> b) !b !(IntMap a) -> b
+
+union :: !(IntMap a) !(IntMap a) -> IntMap a
+
+unions :: ![IntMap a] -> IntMap a
 
 instance Functor IntMap

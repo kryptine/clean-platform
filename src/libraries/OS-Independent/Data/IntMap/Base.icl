@@ -506,14 +506,14 @@ alter f k t =
 // > unions [(fromList [(5, "A3"), (3, "B3")]), (fromList [(5, "A"), (7, "C")]), (fromList [(5, "a"), (3, "b")])]
 // >     == fromList [(3, "B3"), (5, "A3"), (7, "C")]
 unions :: [IntMap a] -> IntMap a
-unions xs = 'SL'.foldl union empty xs // TODO Strict foldl
+unions xs = foldlStrict union empty xs
 
 // | The union of a list of maps, with a combining operation.
 //
 // > unionsWith (++) [(fromList [(5, "a"), (3, "b")]), (fromList [(5, "A"), (7, "C")]), (fromList [(5, "A3"), (3, "B3")])]
 // >     == fromList [(3, "bB3"), (5, "aAA3"), (7, "C")]
 unionsWith :: (a a -> a) [IntMap a] -> IntMap a
-unionsWith f ts = 'SL'.foldl (unionWith f) empty ts // TODO Strict foldl
+unionsWith f ts = foldlStrict (unionWith f) empty ts
 
 // | /O(n+m)/. The (left-biased) union of two maps.
 // It prefers the first map when duplicate keys are encountered,
@@ -637,9 +637,9 @@ mergeWithKey f g1 g2 m1 m2 = mergeWithKey` bin combine g1 g2 m1 m2
 //
 // * mergeWithKey' is given an equivalent of bin. The reason is that in union*,
 //   Bin constructor can be used, because we know both subtrees are nonempty.
-mergeWithKey` :: !(Prefix Mask (IntMap c) (IntMap c) -> IntMap c)
-                 !((IntMap a) (IntMap b) -> IntMap c) !((IntMap a) -> IntMap c)
-                 !((IntMap b) -> IntMap c) !(IntMap a) !(IntMap b) -> IntMap c
+mergeWithKey` :: (Prefix Mask (IntMap c) (IntMap c) -> IntMap c)
+                 ((IntMap a) (IntMap b) -> IntMap c) ((IntMap a) -> IntMap c)
+                 ((IntMap b) -> IntMap c) (IntMap a) (IntMap b) -> IntMap c
 mergeWithKey` bin` f g1 g2 m1 m2 = go m1 m2
   where
     go t1=:(Bin p1 m1 l1 r1) t2=:(Bin p2 m2 l2 r2)
@@ -1222,14 +1222,14 @@ foldr f z t =
 // function is strict in the starting value.
 foldr` :: (a b -> b) b (IntMap a) -> b
 foldr` f z t =
-  case t of Bin _ m l r | m < 0 -> go (go z l) r // put negative numbers before
-                        | otherwise -> go (go z r) l
-            _ -> go z t
+  case t of Bin _ m l r | m < 0 -> go f (go f z l) r // put negative numbers before
+                        | otherwise -> go f (go f z r) l
+            _ -> go f z t
   where
-    // TODO Type with 1st argument strict
-    go z` Nil           = z`
-    go z` (Tip _ x)     = f x z`
-    go z` (Bin _ _ l r) = go (go z` r) l
+  go :: (a b -> b) !b (IntMap a) -> b
+  go _ z` Nil           = z`
+  go f z` (Tip _ x)     = f x z`
+  go f z` (Bin _ _ l r) = go f (go f z` r) l
 
 // | /O(n)/. Fold the values in the map using the given left-associative
 // binary operator, such that @'foldl' f z == 'Prelude.foldl' f z . 'elems'@.
@@ -1255,14 +1255,14 @@ foldl f z t =
 // function is strict in the starting value.
 foldl` :: (a b -> a) a (IntMap b) -> a
 foldl` f z t =
-  case t of Bin _ m l r | m < 0 -> go (go z r) l // put negative numbers before
-                        | otherwise -> go (go z l) r
-            _ -> go z t
+  case t of Bin _ m l r | m < 0 -> go f (go f z r) l // put negative numbers before
+                        | otherwise -> go f (go f z l) r
+            _ -> go f z t
   where
-    // TODO Type with 1st argument strict
-    go z` Nil           = z`
-    go z` (Tip _ x)     = f z` x
-    go z` (Bin _ _ l r) = go (go z` l) r
+  go :: (a b -> a) !a (IntMap b) -> a
+  go _ z` Nil           = z`
+  go f z` (Tip _ x)     = f z` x
+  go f z` (Bin _ _ l r) = go f (go f z` l) r
 
 // | /O(n)/. Fold the keys and values in the map using the given right-associative
 // binary operator, such that
@@ -1274,7 +1274,7 @@ foldl` f z t =
 //
 // > let f k a result = result ++ "(" ++ (show k) ++ ":" ++ a ++ ")"
 // > foldrWithKey f "Map: " (fromList [(5,"a"), (3,"b")]) == "Map: (5:a)(3:b)"
-foldrWithKey :: !(Int a b -> b) !b !(IntMap a) -> b
+foldrWithKey :: (Int a b -> b) b (IntMap a) -> b
 foldrWithKey f z t =
   case t of Bin _ m l r | m < 0 -> go (go z l) r // put negative numbers before
                         | otherwise -> go (go z r) l
@@ -1289,14 +1289,14 @@ foldrWithKey f z t =
 // function is strict in the starting value.
 foldrWithKey` :: (Int a b -> b) b (IntMap a) -> b
 foldrWithKey` f z t =
-  case t of Bin _ m l r | m < 0 -> go (go z l) r // put negative numbers before
-                        | otherwise -> go (go z r) l
-            _ -> go z t
+  case t of Bin _ m l r | m < 0 -> go f (go f z l) r // put negative numbers before
+                        | otherwise -> go f (go f z r) l
+            _ -> go f z t
   where
-    // TODO Type with 1st argument strict
-    go z` Nil           = z`
-    go z` (Tip kx x)    = f kx x z`
-    go z` (Bin _ _ l r) = go (go z` r) l
+  go :: (Int a b -> b) !b (IntMap a) -> b
+  go _ z` Nil           = z`
+  go f z` (Tip kx x)    = f kx x z`
+  go f z` (Bin _ _ l r) = go f (go f z` r) l
 
 // | /O(n)/. Fold the keys and values in the map using the given left-associative
 // binary operator, such that
@@ -1323,14 +1323,14 @@ foldlWithKey f z t =
 // function is strict in the starting value.
 foldlWithKey` :: (a Int b -> a) a (IntMap b) -> a
 foldlWithKey` f z t =
-  case t of Bin _ m l r | m < 0 -> go (go z r) l // put negative numbers before
-                        | otherwise -> go (go z l) r
-            _ -> go z t
+  case t of Bin _ m l r | m < 0 -> go f (go f z r) l // put negative numbers before
+                        | otherwise -> go f (go f z l) r
+            _ -> go f z t
   where
-    // TODO Type with 1st argument strict
-    go z` Nil           = z`
-    go z` (Tip kx x)    = f z` kx x
-    go z` (Bin _ _ l r) = go (go z` l) r
+  go :: (a Int b -> a) !a (IntMap b) -> a
+  go f z` Nil           = z`
+  go f z` (Tip kx x)    = f z` kx x
+  go f z` (Bin _ _ l r) = go f (go f z` l) r
 
 // | /O(n)/. Fold the keys and values in the map using the given monoid, such that
 //
@@ -1550,7 +1550,7 @@ nequal _   _   = True
 instance Functor IntMap where
     fmap f xs = map f xs
 
-link :: !Prefix !(IntMap a) !Prefix !(IntMap a) -> IntMap a
+link :: Prefix (IntMap a) Prefix (IntMap a) -> IntMap a
 link p1 t1 p2 t2
   | zero p1 m = Bin p m t1 t2
   | otherwise = Bin p m t2 t1
@@ -1563,7 +1563,7 @@ bin _ _ l Nil = l
 bin _ _ Nil r = r
 bin p m l r   = Bin p m l r
 
-zero :: !Int !Mask -> Bool
+zero :: Int Mask -> Bool
 zero i m = (i bitand m) == 0
 
 nomatch :: !Int !Prefix !Mask -> Bool
@@ -1578,10 +1578,10 @@ mask i m = maskW i m
 maskW :: !Int !Int -> Prefix
 maskW i m = i bitand (bitnot (m - 1) bitxor m)
 
-shorter :: Mask Mask -> Bool
+shorter :: !Mask !Mask -> Bool
 shorter m1 m2 = m1 > m2
 
-branchMask :: Prefix Prefix -> Mask
+branchMask :: !Prefix !Prefix -> Mask
 branchMask p1 p2 = highestBitMask (p1 bitxor p2)
 
 highestBitMask :: !Int -> Int
