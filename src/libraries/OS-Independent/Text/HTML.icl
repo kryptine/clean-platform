@@ -500,20 +500,25 @@ serializeAttrs [x:xs] dest dest_i
 
 copyChars :: !{#Char} !Int !Bool !*{#Char} !Int -> (!*{#Char},!Int)
 copyChars src src_i escape dest dest_i
-	| src_i == (size src) = (dest, dest_i)
+	| src_i == size src = (dest, dest_i)
 	| otherwise	
-		| escape && (src.[src_i] == '<')
-			#! dest = {dest & [dest_i] = '&', [dest_i + 1] = 'l', [dest_i + 2] = 't', [dest_i + 3] = ';'}
-			= copyChars src (src_i + 1) escape dest (dest_i + 4)
-		| escape && (src.[src_i] == '>')
-			#! dest = {dest & [dest_i] = '&', [dest_i + 1] = 'g', [dest_i + 2] = 't', [dest_i + 3] = ';'}
-			= copyChars src (src_i + 1) escape dest (dest_i + 4)
-		| escape && (src.[src_i] == '&')
-			#! dest = {dest & [dest_i] = '&', [dest_i + 1] = 'a', [dest_i + 2] = 'm', [dest_i + 3] = 'p', [dest_i + 4] = ';'}
-			= copyChars src (src_i + 1) escape dest (dest_i + 5)
-		| otherwise
-			#! dest = {dest & [dest_i] = src.[src_i]}
-			= copyChars src (src_i + 1) escape dest (dest_i + 1)
+		#! src_src_i = src.[src_i]
+		| not escape
+				#! dest = {dest & [dest_i] = src_src_i}
+				= copyChars src (src_i + 1) escape dest (dest_i + 1)
+		| otherwise	
+			| src_src_i == '<'
+				#! dest = {dest & [dest_i] = '&', [dest_i + 1] = 'l', [dest_i + 2] = 't', [dest_i + 3] = ';'}
+				= copyChars src (src_i + 1) escape dest (dest_i + 4)
+			| src_src_i == '>'
+				#! dest = {dest & [dest_i] = '&', [dest_i + 1] = 'g', [dest_i + 2] = 't', [dest_i + 3] = ';'}
+				= copyChars src (src_i + 1) escape dest (dest_i + 4)
+			| src_src_i == '&'
+				#! dest = {dest & [dest_i] = '&', [dest_i + 1] = 'a', [dest_i + 2] = 'm', [dest_i + 3] = 'p', [dest_i + 4] = ';'}
+				= copyChars src (src_i + 1) escape dest (dest_i + 5)
+			| otherwise
+				#! dest = {dest & [dest_i] = src_src_i}
+				= copyChars src (src_i + 1) escape dest (dest_i + 1)
 
 writeTag :: !{#Char} ![HtmlAttr] ![HtmlTag] !*{#Char} !Int -> (!*{#Char},!Int)
 writeTag name attrs tags dest dest_i
