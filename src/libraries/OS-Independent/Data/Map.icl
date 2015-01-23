@@ -106,10 +106,11 @@ get k (Bin _ kx x l r) = if (k < kx)
 // > member 1 (fromList [(5,'a`), (3,'b`)]) == False
 member :: !k !(Map k a) -> Bool | < k
 member _ Tip              = False
-member k (Bin _ kx _ l r) = case lexOrd k kx of
-                              LT -> member k l
-                              GT -> member k r
-                              EQ -> True
+member k (Bin _ kx _ l r) = if (k < kx)
+                              (member k l)
+                              (if (k > kx)
+                                 (member k r)
+                                 True)
 
 // | /O(log n)/. Is the key not a member of the map? See also 'member`.
 //
@@ -122,10 +123,11 @@ member k (Bin _ kx _ l r) = case lexOrd k kx of
 // Calls 'abort` when the element can not be found.
 find :: !k !(Map k a) -> a | < k
 find _ Tip              = abort "Map.!: given key is not an element in the map"
-find k (Bin _ kx x l r) = case lexOrd k kx of
-                            LT -> find k l
-                            GT -> find k r
-                            EQ -> x
+find k (Bin _ kx x l r) = if (k < kx)
+                              (find k l)
+                              (if (k > kx)
+                                 (find k r)
+                                 x)
 
 // | /O(log n)/. The expression @('findWithDefault` def k map)@ returns
 // the value at key @k@ or returns default value @def@
@@ -135,10 +137,11 @@ find k (Bin _ kx x l r) = case lexOrd k kx of
 // > findWithDefault 'x` 5 (fromList [(5,'a`), (3,'b`)]) == 'a`
 findWithDefault :: !a !k !(Map k a) -> a | < k
 findWithDefault def _ Tip              = def
-findWithDefault def k (Bin _ kx x l r) = case lexOrd k kx of
-                                           LT -> findWithDefault def k l
-                                           GT -> findWithDefault def k r
-                                           EQ -> x
+findWithDefault def k (Bin _ kx x l r) = if (k < kx)
+                                           (findWithDefault def k l)
+                                           (if (k > kx)
+                                              (findWithDefault def k r)
+                                              x)
 
 // | /O(log n)/. Find largest key smaller than the given one and return the
 // corresponding (key, value) pair.
@@ -191,17 +194,19 @@ getLE k m = goNothing k m
   where
   goNothing :: !k !(Map k v) -> Maybe (!k, !v) | < k
   goNothing _ Tip              = Nothing
-  goNothing k (Bin _ kx x l r) = case lexOrd k kx of
-                                   LT -> goNothing k l
-                                   EQ -> Just (kx, x)
-                                   GT -> goJust k kx x r
+  goNothing k (Bin _ kx x l r) = if (k < kx)
+                                   (goNothing k l)
+                                   (if (k > kx)
+                                      (goJust k kx x r)
+                                      (Just (kx, x)))
 
   goJust :: !k !k !v !(Map k v) -> Maybe (!k, !v) | < k
   goJust _ kx` x` Tip              = Just (kx`, x`)
-  goJust k kx` x` (Bin _ kx x l r) = case lexOrd k kx of
-                                       LT -> goJust k kx` x` l
-                                       EQ -> Just (kx, x)
-                                       GT -> goJust k kx x r
+  goJust k kx` x` (Bin _ kx x l r) = if (k < kx)
+                                       (goJust k kx` x` l)
+                                       (if (k > kx)
+                                          (goJust k kx x r)
+                                          (Just (kx, x)))
 
 // | /O(log n)/. Find smallest key greater or equal to the given one and return
 // the corresponding (key, value) pair.
@@ -259,12 +264,13 @@ singleton k x = Bin 1 k x Tip Tip
 
 // See Note: Type of local 'go' function
 put :: !k !a !(Map k a) -> Map k a | < k
-put kx x Tip = singleton kx x
+put kx x Tip               = singleton kx x
 put kx x (Bin sz ky y l r) =
-        case lexOrd kx ky of
-          LT -> balanceL ky y (put kx x l) r
-          GT -> balanceR ky y l (put kx x r)
-          EQ -> Bin sz kx x l r
+  if (kx < ky)
+    (balanceL ky y (put kx x l) r)
+    (if (kx > ky)
+       (balanceR ky y l (put kx x r))
+       (Bin sz kx x l r))
 
 // Insert a new key and value in the map if it is not already present.
 // Used by `union`.
@@ -273,10 +279,11 @@ put kx x (Bin sz ky y l r) =
 putR :: !k !a !(Map k a) -> Map k a | < k
 putR kx x Tip = singleton kx x
 putR kx x t=:(Bin _ ky y l r) =
-        case lexOrd kx ky of
-            LT -> balanceL ky y (putR kx x l) r
-            GT -> balanceR ky y l (putR kx x r)
-            EQ -> t
+  if (kx < ky)
+    (balanceL ky y (putR kx x l) r)
+    (if (kx > ky)
+       (balanceR ky y l (putR kx x r))
+       t)
 
 // | /O(log n)/. Insert with a function, combining new value and old value.
 // @'putWith' f key value mp@
@@ -307,38 +314,12 @@ putWith f k v m = putWithKey (\_ x` y` -> f x` y`) k v m
 putWithKey :: !(k a a -> a) !k !a !(Map k a) -> Map k a | < k
 putWithKey _ kx x Tip = singleton kx x
 putWithKey f kx x (Bin sy ky y l r) =
-        case lexOrd kx ky of
-            LT -> balanceL ky y (putWithKey f kx x l) r
-            GT -> balanceR ky y l (putWithKey f kx x r)
-            EQ -> Bin sy kx (f kx x y) l r
+  if (kx < ky)
+    (balanceL ky y (putWithKey f kx x l) r)
+    (if (kx > ky)
+       (balanceR ky y l (putWithKey f kx x r))
+       (Bin sy kx (f kx x y) l r))
 
-// | /O(log n)/. Combines put operation with old value retrieval.
-// The expression (@'putLookupWithKey` f k x map@)
-// is a pair where the first element is equal to (@'get' k map@)
-// and the second element equal to (@'putWithKey` f k x map@).
-//
-// > let f key new_value old_value = (show key) ++ ":" ++ new_value ++ "|" ++ old_value
-// > putLookupWithKey f 5 "xxx" (fromList [(5,"a"), (3,"b")]) == (Just "a", fromList [(3, "b"), (5, "5:xxx|a")])
-// > putLookupWithKey f 7 "xxx" (fromList [(5,"a"), (3,"b")]) == (Nothing,  fromList [(3, "b"), (5, "a"), (7, "xxx")])
-// > putLookupWithKey f 5 "xxx" newMap                         == (Nothing,  singleton 5 "xxx")
-//
-// This is how to define @putLookup@ using @putLookupWithKey@:
-//
-// > let putLookup kx x t = putLookupWithKey (\_ a _ -> a) kx x t
-// > putLookup 5 "x" (fromList [(5,"a"), (3,"b")]) == (Just "a", fromList [(3, "b"), (5, "x")])
-// > putLookup 7 "x" (fromList [(5,"a"), (3,"b")]) == (Nothing,  fromList [(3, "b"), (5, "a"), (7, "x")])
-
-// See Note: Type of local 'go' function
-putLookupWithKey :: !(k a a -> a) !k !a !(Map k a)
-                 -> (!Maybe a, !Map k a) | < k
-putLookupWithKey _ kx x Tip = (Nothing, singleton kx x)
-putLookupWithKey f kx x (Bin sy ky y l r) =
-        case lexOrd kx ky of
-            LT -> let (found, l`) = putLookupWithKey f kx x l
-                  in (found, balanceL ky y l` r)
-            GT -> let (found, r`) = putLookupWithKey f kx x r
-                  in (found, balanceR ky y l r`)
-            EQ -> (Just y, Bin sy kx (f kx x y) l r)
 
 //////////////////////////////////////////////////////////////////////
 //  Deletion
@@ -354,10 +335,11 @@ putLookupWithKey f kx x (Bin sy ky y l r) =
 del :: !k !(Map k a) -> Map k a | < k
 del _ Tip = Tip
 del k (Bin _ kx x l r) =
-        case lexOrd k kx of
-            LT -> balanceR kx x (del k l) r
-            GT -> balanceL kx x l (del k r)
-            EQ -> glue l r
+  if (k < kx)
+    (balanceR kx x (del k l) r)
+    (if (k > kx)
+       (balanceL kx x l (del k r))
+       (glue l r))
 
 // | /O(log n)/. Update a value at a specific key with the result of the provided function.
 // When the key is not
@@ -407,12 +389,13 @@ update f k m = updateWithKey (\_ x -> f x) k m
 updateWithKey :: !(k a -> Maybe a) !k !(Map k a) -> Map k a | < k
 updateWithKey _ _ Tip = Tip
 updateWithKey f k (Bin sx kx x l r) =
-        case lexOrd k kx of
-           LT -> balanceR kx x (updateWithKey f k l) r
-           GT -> balanceL kx x l (updateWithKey f k r)
-           EQ -> case f kx x of
-                   Just x` -> Bin sx kx x` l r
-                   Nothing -> glue l r
+  if (k < kx)
+    (balanceR kx x (updateWithKey f k l) r)
+    (if (k > kx)
+       (balanceL kx x l (updateWithKey f k r))
+       (case f kx x of
+          Just x` -> Bin sx kx x` l r
+          Nothing -> glue l r))
 
 // | /O(log n)/. Lookup and update. See also 'updateWithKey`.
 // The function returns changed value, if it is updated.
@@ -904,26 +887,27 @@ intersectionWithKey f t1 t2 = mergeWithKey (\k x1 x2 -> Just (f k x1 x2)) (const
 
 mergeWithKey :: !(k a b -> Maybe c) !((Map k a) -> Map k c) !((Map k b) -> Map k c)
              !(Map k a) !(Map k b) -> Map k c | < k
-mergeWithKey f g1 g2 m1 m2 = go m1 m2
-  where
-    go Tip t2 = g2 t2
-    go t1 Tip = g1 t1
-    go t1 t2 = hedgeMerge Nothing Nothing t1 t2
+mergeWithKey f g1 g2 Tip t2 = g2 t2
+mergeWithKey f g1 g2 t1 Tip = g1 t1
+mergeWithKey f g1 g2 t1 t2 = hedgeMerge f g1 g2 Nothing Nothing t1 t2
 
-    hedgeMerge _   _   t1  Tip = g1 t1
-    hedgeMerge blo bhi Tip (Bin _ kx x l r) = g2 (link kx x (filterGt blo l) (filterLt bhi r))
-    hedgeMerge blo bhi (Bin _ kx x l r) t2 = let l` = hedgeMerge blo bmi l (trim blo bmi t2)
-                                                 (found, trim_t2) = trimLookupLo kx bhi t2
-                                                 r` = hedgeMerge bmi bhi r trim_t2
-                                             in case found of
-                                                  Nothing -> case g1 (singleton kx x) of
-                                                               Tip -> merge l` r`
-                                                               (Bin _ _ x` Tip Tip) -> link kx x` l` r`
-                                                               _ -> abort "mergeWithKey: Given function only1 does not fulfil required conditions (see documentation)"
-                                                  Just x2 -> case f kx x x2 of
-                                                               Nothing -> merge l` r`
-                                                               Just x` -> link kx x` l` r`
-      where bmi = Just kx
+hedgeMerge :: !(a b c -> Maybe d) !((Map a b) -> Map a d) !((Map a c) -> Map a d)
+              !(Maybe a) !(Maybe a) !(Map a b) !(Map a c) -> Map a d | < a
+hedgeMerge f g1 g2 _   _   t1  Tip = g1 t1
+hedgeMerge f g1 g2 blo bhi Tip (Bin _ kx x l r) = g2 (link kx x (filterGt blo l) (filterLt bhi r))
+hedgeMerge f g1 g2 blo bhi (Bin _ kx x l r) t2
+  #! bmi              = Just kx
+  #! l`               = hedgeMerge f g1 g2 blo bmi l (trim blo bmi t2)
+  #! (found, trim_t2) = trimLookupLo kx bhi t2
+  #! r`               = hedgeMerge f g1 g2 bmi bhi r trim_t2
+  = case found of
+      Nothing -> case g1 (singleton kx x) of
+                   Tip -> merge l` r`
+                   (Bin _ _ x` Tip Tip) -> link kx x` l` r`
+                   _ -> abort "mergeWithKey: Given function only1 does not fulfil required conditions (see documentation)"
+      Just x2 -> case f kx x x2 of
+                   Nothing -> merge l` r`
+                   Just x` -> link kx x` l` r`
 
 //////////////////////////////////////////////////////////////////////
 //  Submap
@@ -1584,18 +1568,21 @@ trim (Just lk) (Just hk) t = middle lk hk t
 trimLookupLo :: !k !(Maybe k) !(Map k a) -> (!Maybe a, !Map k a) | < k
 trimLookupLo lk Nothing t = greater lk t
       where greater :: !k (Map k a) -> (Maybe a, Map k a) | < k
-            greater lo t`=:(Bin _ kx x l r) = case lexOrd lo kx of
-                LT -> (get lo l, t`)
-                EQ -> (Just x, r)
-                GT -> greater lo r
+            greater lo t`=:(Bin _ kx x l r) =
+              if (lo < kx)
+                (get lo l, t`)
+                (if (lo > kx)
+                   (greater lo r)
+                   (Just x, r))
             greater _ Tip = (Nothing, Tip)
 trimLookupLo lk (Just hk) t = middle lk hk t
       where middle :: !k !k (Map k a) -> (Maybe a, Map k a) | < k
-            middle lo hi t`=:(Bin _ kx x l r) = case lexOrd lo kx of
-                LT | kx < hi -> (get lo l, t`)
-                   | otherwise -> middle lo hi l
-                EQ -> (Just x, lesser hi r)
-                GT -> middle lo hi r
+            middle lo hi t`=:(Bin _ kx x l r) =
+              if (lo < kx)
+                (if (kx < hi) (get lo l, t`) (middle lo hi l))
+                (if (lo > kx)
+                   (middle lo hi r)
+                   (Just x, lesser hi r))
             middle _ _ Tip = (Nothing, Tip)
 
             lesser :: !k (Map k a) -> Map k a | < k
@@ -1610,22 +1597,27 @@ trimLookupLo lk (Just hk) t = middle lk hk t
 filterGt :: !(Maybe k) !(Map k v) -> Map k v | < k
 filterGt Nothing t = t
 filterGt (Just b) t = filter` b t
-  where filter` _   Tip = Tip
-        filter` b` (Bin _ kx x l r) =
-          case lexOrd b` kx of
-            LT -> link kx x (filter` b` l) r
-            EQ -> r
-            GT -> filter` b` r
+  where
+  filter` :: !k !(Map k a) -> Map k a | < k
+  filter` _   Tip = Tip
+  filter` b` (Bin _ kx x l r) = if (b` < kx)
+                                  (link kx x (filter` b` l) r)
+                                  (if (b` > kx)
+                                     (filter` b` r)
+                                     r)
 
 filterLt :: !(Maybe k) !(Map k v) -> Map k v | < k
 filterLt Nothing t = t
 filterLt (Just b) t = filter` b t
-  where filter` _   Tip = Tip
-        filter` b` (Bin _ kx x l r) =
-          case lexOrd kx b` of
-            LT -> link kx x l (filter` b` r)
-            EQ -> l
-            GT -> filter` b` l
+  where
+  filter` :: !k !(Map k a) -> Map k a | < k
+  filter` _   Tip = Tip
+  filter` b` (Bin _ kx x l r) =
+    if (kx < b`)
+      (link kx x l (filter` b` r))
+      (if (kx > b`)
+         (filter` b` l)
+         l)
 
 //////////////////////////////////////////////////////////////////////
 //  Split
