@@ -94,10 +94,11 @@ lexOrd x y :== if (x < y) LT (if (x > y) GT EQ)
 // >   Pete's currency: Nothing
 get :: !k !(Map k a) -> Maybe a | < k
 get _ Tip              = Nothing
-get k (Bin _ kx x l r) = case lexOrd k kx of
-                           LT -> get k l
-                           GT -> get k r
-                           EQ -> Just x
+get k (Bin _ kx x l r) = if (k < kx)
+                           (get k l)
+                           (if (k > kx)
+                              (get k r)
+                              (Just x))
 
 // | /O(log n)/. Is the key a member of the map? See also 'notMember`.
 //
