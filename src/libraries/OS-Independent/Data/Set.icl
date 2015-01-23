@@ -95,10 +95,11 @@ singleton x = Bin 1 x Tip Tip
 insert :: !a !.(Set a) -> Set a | < a & == a
 insert x Tip = singleton x
 insert x (Bin sz y l r) =
-  case compare x y of
-    LT -> balanceL y (insert x l) r
-    GT -> balanceR y l (insert x r)
-    EQ -> Bin sz x l r
+  if (x < y)
+    (balanceL y (insert x l) r)
+    (if (x > y)
+       (balanceR y l (insert x r))
+       (Bin sz x l r))
 
 insertR :: !a !(Set a) -> Set a | < a & == a
 insertR x Tip = singleton x
@@ -291,6 +292,7 @@ fold f z (Bin _ x l r) = fold f (f x (fold f z r)) l
 fromList :: ![a] -> Set a | < a & == a
 fromList xs = foldl ins newSet xs
   where
+  ins :: !(Set a) !a -> Set a | < a & == a
   ins t x = insert x t
 
 /*--------------------------------------------------------------------
