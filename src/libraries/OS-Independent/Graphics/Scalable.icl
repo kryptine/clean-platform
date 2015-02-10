@@ -286,17 +286,17 @@ overlay aligns offsets imgs host
 beside :: ![YAlign] ![ImageOffset] ![Image m] !(Host m) -> Image m
 beside ylayouts offsets imgs host
   #! l = length imgs
-  = grid (Rows 1) (LeftToRight, TopToBottom) (take l [(AtLeft, ylayout) \\ ylayout <- ylayouts]) (take l offsets) imgs host
+  = grid (Rows 1) (RowMajor, LeftToRight, TopToBottom) (take l [(AtLeft, ylayout) \\ ylayout <- ylayouts]) (take l offsets) imgs host
 
 above :: ![XAlign] ![ImageOffset] ![Image m] !(Host m) -> Image m
 above xlayouts offsets imgs host
   #! l = length imgs
-  = grid (Columns 1) (LeftToRight, TopToBottom) (take l [(xlayout, AtTop) \\ xlayout <- xlayouts]) (take l offsets) imgs host
+  = grid (Columns 1) (ColumnMajor, LeftToRight, TopToBottom) (take l [(xlayout, AtTop) \\ xlayout <- xlayouts]) (take l offsets) imgs host
 
 grid :: !GridDimension !GridLayout ![ImageAlign] ![ImageOffset] ![Image m] !(Host m) -> Image m
 grid _ _ _ _ [] (Just img) = img
 grid _ _ _ _ [] _          = empty (px 0.0) (px 0.0)
-grid dimension layout aligns offsets imgs host
+grid dimension (major,xlayout,ylayout) aligns offsets imgs host
   #! noOfImgs        = length imgs
   #! (cols, rows)    = case dimension of
                          Rows no
@@ -311,7 +311,7 @@ grid dimension layout aligns offsets imgs host
   #! offsetsComplete = take numCells (offsets ++ repeat (zero, zero))
   #! (  imgs`
       , aligns`
-      , offsets`)    = if (isRowMajor dimension)
+      , offsets`)    = if (isRowMajor major)
                          ( chop cols imgsComplete
                          , chop cols alignsComplete
                          , chop cols offsetsComplete )
@@ -319,16 +319,16 @@ grid dimension layout aligns offsets imgs host
                          , transpose (chop rows alignsComplete)
                          , transpose (chop rows offsetsComplete) )
   = mkImage (Composite { host    = host
-                       , compose = AsGrid (cols, rows) (arrangeLayout layout offsets`)
-                                                       (arrangeLayout layout aligns`)
-                                                       (arrangeLayout layout imgs`)
+                       , compose = AsGrid (cols, rows) (arrangeLayout (xlayout,ylayout) offsets`)
+                                                       (arrangeLayout (xlayout,ylayout) aligns`)
+                                                       (arrangeLayout (xlayout,ylayout) imgs`)
                        })
   where
-  isRowMajor :: !GridDimension -> Bool
-  isRowMajor (Rows _) = True
+  isRowMajor :: !GridMajor -> Bool
+  isRowMajor RowMajor = True
   isRowMajor _        = False
 
-  arrangeLayout :: !GridLayout ![[a]] -> [[a]]
+  arrangeLayout :: !(GridXLayout,!GridYLayout) ![[a]] -> [[a]]
   arrangeLayout (LeftToRight, TopToBottom) xs = xs
   arrangeLayout (RightToLeft, TopToBottom) xs = strictTRMap reverseTR xs
   arrangeLayout (LeftToRight, BottomToTop) xs = reverseTR xs

@@ -149,7 +149,8 @@ from StdOverloaded import class zero, class +, class -, class ~, class sign, cla
 :: ImageAlign  :== (!XAlign, !YAlign)
 :: ImageOffset :== (!Span, !Span)
 :: GridDimension = Rows !Int | Columns !Int
-:: GridLayout  :== (!GridXLayout, !GridYLayout)
+:: GridLayout  :== (!GridMajor, !GridXLayout, !GridYLayout)
+:: GridMajor     = ColumnMajor | RowMajor
 :: GridXLayout   = LeftToRight | RightToLeft
 :: GridYLayout   = TopToBottom | BottomToTop
 

@@ -2,7 +2,8 @@ definition module Graphics.Scalable
 
 /** A proposal for a compositional image library for defining SVG-images.
 	Peter Achten
-	6-6-2014
+	Jurrien Stutterheim
+	Rinus Plasmeijer
 */
 from Graphics.Scalable.Internal import :: Image, :: ImageTag, :: Span,
   :: FontDef {..}, :: ImageOffset, :: Angle, :: Markers {..}, :: ImageAttr,
@@ -12,8 +13,7 @@ from Graphics.Scalable.Internal import :: Image, :: ImageTag, :: Span,
   :: OnMouseOverAttr {..}, :: OnMouseMoveAttr {..}, :: OnMouseOutAttr {..},
   :: DashAttr {..},
   :: MaskAttr {..}, :: Slash, :: ImageAlign, :: XAlign (..), :: YAlign (..),
-  :: Host, :: GridLayout, :: GridXLayout (..), :: GridYLayout (..),
-  :: GridDimension, :: GridXLayout, :: GridYLayout, :: GridDimension (..),
+  :: Host, :: GridLayout, :: GridMajor(..), :: GridXLayout (..), :: GridYLayout (..), :: GridDimension (..),
   class /. (..), class *. (..), instance *. Span, instance /. Span,
   instance + Span, instance - Span, instance zero Span, instance ~ Span
 from StdOverloaded import class zero, class +, class -, class ~, class sign,
