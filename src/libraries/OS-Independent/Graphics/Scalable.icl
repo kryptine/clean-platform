@@ -409,11 +409,16 @@ instance toSVGColor RGB    where toSVGColor {RGB | r, g, b} = SVGRGB r g b
 instance zero RGB where
   zero = { r = 0, g = 0, b = 0 }
 
-instance imageTag Int      where imageTag n = ImageTagSystem n
-instance imageTag ImageTag where imageTag n = n
+imageTag :: !Int -> *ImageTag
+imageTag n = ImageTagSystem n
 
-instance == ImageTag where == (ImageTagSystem s1) (ImageTagSystem s2) = s1 == s2
-instance <  ImageTag where <  (ImageTagSystem s1) (ImageTagSystem s2) = s1 < s2
+instance == ImageTag where == (ImageTagUser n1 s1) (ImageTagUser n2 s2) = n1 == n2 && s1 == s2
+                           == (ImageTagSystem  s1) (ImageTagSystem  s2) = s1 == s2
+                           == _                    _                    = False
+instance <  ImageTag where <  (ImageTagUser n1 s1) (ImageTagUser n2 s2) = n1 < n2 || (n1 == n2 && s1 < s2)
+                           <  (ImageTagUser _  _)  _                    = True
+                           <  (ImageTagSystem  s1) (ImageTagSystem  s2) = s1 < s2
+                           <  _                    _                    = False
 
 instance < (a, b) | < a & < b where
   (<) (x1, x2) (y1, y2) = x1 < y1 && x2 < y2
@@ -421,8 +426,8 @@ instance < (a, b) | < a & < b where
 instance == (a, b) | == a & == b where
   (==) (x1, x2) (y1, y2) = x1 == y1 && x2 == y2
 
-tag :: !t !(Image m) -> Image m | imageTag t
-tag t image=:{Image | tags} = {Image | image & tags = 'DS'.insert (imageTag t) tags}
+tag :: !*ImageTag !(Image m) -> Image m
+tag t image=:{Image | tags} = {Image | image & tags = 'DS'.insert t tags}
 
 /** chop n xs = xss:
       @xss consists of the subsequent sub-lists of @xs of length @n.

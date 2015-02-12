@@ -130,7 +130,7 @@ from StdOverloaded import class zero, class +, class -, class ~, class sign, cla
 :: MaskAttr        m = { mask        :: !Image m  }
 
 :: ImageTag
-  = ImageTagSystem !Int
+  = ImageTagUser !Int !String | ImageTagSystem !Int
 
 :: Angle
   = Deg !Real
