@@ -409,20 +409,11 @@ instance toSVGColor RGB    where toSVGColor {RGB | r, g, b} = SVGRGB r g b
 instance zero RGB where
   zero = { r = 0, g = 0, b = 0 }
 
-instance imageTag Int      where imageTag n = ImageTagInt n
-instance imageTag String   where imageTag s = ImageTagString s
+instance imageTag Int      where imageTag n = ImageTagSystem n
 instance imageTag ImageTag where imageTag n = n
 
-instance == ImageTag     where == (ImageTagInt    n1) (ImageTagInt    n2) = n1 == n2
-                               == (ImageTagString s1) (ImageTagString s2) = s1 == s2
-                               == (ImageTagSystem s1) (ImageTagSystem s2) = s1 == s2
-                               == _                   _                   = False
-instance <  ImageTag     where <  (ImageTagInt    n1) (ImageTagInt    n2) = n1 < n2
-                               <  (ImageTagInt    _)  _                   = True
-                               <  (ImageTagString s1) (ImageTagString s2) = s1 < s2
-                               <  (ImageTagString _)  (ImageTagSystem _)  = True
-                               <  (ImageTagSystem s1) (ImageTagSystem s2) = s1 < s2
-                               <  _                   _                   = False
+instance == ImageTag where == (ImageTagSystem s1) (ImageTagSystem s2) = s1 == s2
+instance <  ImageTag where <  (ImageTagSystem s1) (ImageTagSystem s2) = s1 < s2
 
 instance < (a, b) | < a & < b where
   (<) (x1, x2) (y1, y2) = x1 < y1 && x2 < y2

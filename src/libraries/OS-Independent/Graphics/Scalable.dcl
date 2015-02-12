@@ -97,7 +97,6 @@ instance zero RGB
 
 class imageTag a :: !a -> ImageTag
 instance imageTag Int
-instance imageTag String
 instance imageTag ImageTag
 
 tag :: !t !(Image m) -> Image m | imageTag t
