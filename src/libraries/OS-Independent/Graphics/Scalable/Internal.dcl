@@ -106,6 +106,7 @@ from StdOverloaded import class zero, class +, class -, class ~, class sign, cla
   | ImageFillOpacityAttr   !(OpacityAttr     m)
   | ImageDashAttr          !(DashAttr        m)
   | ImageOnClickAttr       !(OnClickAttr     m)
+  | ImageOnDblClickAttr    !(OnDblClickAttr  m)
   | ImageOnMouseDownAttr   !(OnMouseDownAttr m)
   | ImageOnMouseUpAttr     !(OnMouseUpAttr   m)
   | ImageOnMouseOverAttr   !(OnMouseOverAttr m)
@@ -119,6 +120,7 @@ from StdOverloaded import class zero, class +, class -, class ~, class sign, cla
 :: FillAttr        m = { fill        :: !SVGColor }
 :: OpacityAttr     m = { opacity     :: !Real     }
 :: OnClickAttr     m = { onclick     :: !(m -> m) }
+:: OnDblClickAttr  m = { ondblclick  :: !(m -> m) }
 :: OnMouseDownAttr m = { onmousedown :: !(m -> m) }
 :: OnMouseUpAttr   m = { onmouseup   :: !(m -> m) }
 :: OnMouseOverAttr m = { onmouseover :: !(m -> m) }

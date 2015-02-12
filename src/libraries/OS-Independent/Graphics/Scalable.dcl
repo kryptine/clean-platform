@@ -9,7 +9,7 @@ from Graphics.Scalable.Internal import :: Image, :: ImageTag, :: Span,
   :: FontDef {..}, :: ImageOffset, :: Angle, :: Markers {..}, :: ImageAttr,
   :: StrokeAttr {..}, :: StrokeWidthAttr {..}, :: XRadiusAttr {..},
   :: YRadiusAttr {..}, :: FillAttr {..}, :: OpacityAttr {..},
-  :: OnClickAttr {..}, :: OnMouseDownAttr {..}, :: OnMouseUpAttr {..},
+  :: OnClickAttr {..}, :: OnDblClickAttr {..}, :: OnMouseDownAttr {..}, :: OnMouseUpAttr {..},
   :: OnMouseOverAttr {..}, :: OnMouseMoveAttr {..}, :: OnMouseOutAttr {..},
   :: DashAttr {..},
   :: MaskAttr {..}, :: Slash, :: ImageAlign, :: XAlign (..), :: YAlign (..),
@@ -86,7 +86,7 @@ class tuneImage attr :: !(Image m) !(attr m) -> Image m
 tuneIf :: !Bool !(Image m) !(attr m) -> Image m | tuneImage attr
 
 instance tuneImage StrokeAttr, StrokeWidthAttr, FillAttr, OpacityAttr,
-  OnClickAttr, OnMouseDownAttr, OnMouseUpAttr, OnMouseOverAttr,
+  OnClickAttr, OnDblClickAttr, OnMouseDownAttr, OnMouseUpAttr, OnMouseOverAttr,
   OnMouseMoveAttr, OnMouseOutAttr, XRadiusAttr, YRadiusAttr, DashAttr, MaskAttr
 
 class toSVGColor a :: !a -> SVGColor
