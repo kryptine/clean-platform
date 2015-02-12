@@ -95,8 +95,6 @@ instance zero RGB
 
 :: RGB = { r :: !Int, g :: !Int, b :: !Int }
 
-imageTag :: !Int -> *ImageTag		// should not be part of the API
-
 tag :: !*ImageTag !(Image m) -> Image m
 
 instance == ImageTag

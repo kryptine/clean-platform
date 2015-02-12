@@ -132,6 +132,8 @@ from StdOverloaded import class zero, class +, class -, class ~, class sign, cla
 :: ImageTag
   = ImageTagUser !Int !String | ImageTagSystem !Int
 
+imageTag :: !Int -> *ImageTag		// should not be part of the API
+
 :: Angle
   = Deg !Real
   | Rad !Real

@@ -409,9 +409,6 @@ instance toSVGColor RGB    where toSVGColor {RGB | r, g, b} = SVGRGB r g b
 instance zero RGB where
   zero = { r = 0, g = 0, b = 0 }
 
-imageTag :: !Int -> *ImageTag
-imageTag n = ImageTagSystem n
-
 instance == ImageTag where == (ImageTagUser n1 s1) (ImageTagUser n2 s2) = n1 == n2 && s1 == s2
                            == (ImageTagSystem  s1) (ImageTagSystem  s2) = s1 == s2
                            == _                    _                    = False
