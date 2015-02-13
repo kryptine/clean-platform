@@ -146,6 +146,3 @@ instance /. Span where
   /. (MaxSpan xs)            k = MaxSpan (strictTRMap (\x -> x /. k) xs)
   /. (MinSpan xs)            k = MinSpan (strictTRMap (\x -> x /. k) xs)
   /. s                       k = DivSpan s (PxSpan (toReal k))
-
-imageTag :: !Int -> *ImageTag
-imageTag n = ImageTagSystem n

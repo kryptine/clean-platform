@@ -98,13 +98,13 @@ instance zero RGB
 instance == ImageTag
 instance <  ImageTag
 
-:: *TagSource
-:: *TagRef
+:: *TagSource :== *[TagRef]
+:: *TagRef    :== *(!ImageTag, !*ImageTag)
 
 mkTagRef   :: !*TagSource            -> *(!*TagRef, !*TagSource)
 tagWithRef :: !*TagRef    !(Image m) -> *(!Image m, !*TagRef)
 tagWithSrc :: !*TagSource !(Image m) -> *(!Image m, !*TagRef, !*TagSource)
-tagFromRef :: !*TagRef               -> *(!ImageTag, !*TagRef)
+tagFromRef :: !*TagRef -> *(!ImageTag, !*TagRef)
 
 instance +  ImageOffset
 

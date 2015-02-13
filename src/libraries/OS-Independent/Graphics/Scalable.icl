@@ -423,22 +423,19 @@ instance < (a, b) | < a & < b where
 instance == (a, b) | == a & == b where
   (==) (x1, x2) (y1, y2) = x1 == y1 && x2 == y2
 
-:: *TagSource :== *[TagRef] // Should be opaque
-:: *TagRef    :== *(ImageTag, *ImageTag) // Should be opaque
-
-mkTagRef :: *TagSource -> *(*TagRef, *TagSource)
+mkTagRef :: !*TagSource -> *(!*TagRef, !*TagSource)
 mkTagRef [ref:refs] = (ref, refs)
 
-tagWithRef :: *TagRef (Image m) -> *(Image m, *TagRef)
+tagWithRef :: !*TagRef !(Image m) -> *(!Image m, !*TagRef)
 tagWithRef tr=:(_, t) image=:{Image | tags} = ({Image | image & tags = 'DS'.insert t tags}, tr)
 
-tagWithSrc :: *TagSource (Image m) -> *(Image m, *TagRef, *TagSource)
+tagWithSrc :: !*TagSource !(Image m) -> *(!Image m, !*TagRef, !*TagSource)
 tagWithSrc tsrc img
   #! (ref, tsrc) = mkTagRef tsrc
-  #! (img, ref)  = tagWithRef ref
+  #! (img, ref)  = tagWithRef ref img
   = (img, ref, tsrc)
 
-tagFromRef :: *TagRef -> *(ImageTag, *TagRef)
+tagFromRef :: !*TagRef -> *(!ImageTag, !*TagRef)
 tagFromRef tr=:(t, _) = (t, tr)
 
 /** chop n xs = xss:
