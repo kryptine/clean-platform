@@ -148,4 +148,3 @@ class Text s
 */
 instance Text String
 instance + String
-
