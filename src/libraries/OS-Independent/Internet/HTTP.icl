@@ -44,7 +44,7 @@ badRequestResponse msg
 	= {newHTTPResponse 400 "Bad Request" & rsp_data = msg}	
 
 isOkResponse :: !HTTPResponse -> Bool
-isOkResponse {rsp_code = 200} = True
+isOkResponse {HTTPResponse|rsp_code = 200} = True
 isOkResponse _ = False
 
 newHTTPUpload :: HTTPUpload
@@ -175,7 +175,7 @@ parseResponse rsp = Nothing
 parseRequest 		::	!HTTPRequest																					-> HTTPRequest
 parseRequest req
 	# req 							= {req & arg_get = parseGetArguments req}		//Parse get arguments
-	# type							= case (get "Content-Type") req.req_headers of
+	# type							= case (get "Content-Type") req.HTTPRequest.req_headers of
 		(Just ct)	= ct
 		(Nothing)	= ""
 	| type % (0,32) == "application/x-www-form-urlencoded"
@@ -187,21 +187,21 @@ parseRequest req
 where	
 	parseGetArguments :: !HTTPRequest -> Map String String
 	parseGetArguments req
-		| req.req_query == ""	= newMap
-								= fromList (urlDecodePairs req.req_query)
+		| req.HTTPRequest.req_query == ""	= newMap
+											= fromList (urlDecodePairs req.HTTPRequest.req_query)
 
 	parsePostArguments :: !HTTPRequest -> Map String String
 	parsePostArguments req		= fromList (urlDecodePairs req.req_data)
 
 	parseMultiPartPostArguments :: !HTTPRequest -> ([(String,String)],[(String,HTTPUpload)])
 	parseMultiPartPostArguments req
-		# mimetype				= get "Content-Type" req.req_headers
+		# mimetype				= get "Content-Type" req.HTTPRequest.req_headers
 		| isNothing	mimetype	= ([],[]) //Fail
 		# mimetype				= fromJust mimetype
 		# index					= indexOf "boundary=" mimetype
 		| index == -1			= ([],[]) //Fail
 		# boundary				= mimetype % (index + 9, size mimetype)
-		# parts					= decodeMimeMultipart boundary req.req_data
+		# parts					= decodeMimeMultipart boundary req.HTTPRequest.req_data
 		= parseParts parts [] []
 		where
 			parseParts [] arguments uploads	= (arguments, uploads)
@@ -239,11 +239,11 @@ where
 //Generating responses
 staticResponse		:: !HTTPRequest !*World																				-> (!HTTPResponse, !*World)
 staticResponse req world
-	# filename				= req.req_path % (1, size req.req_path)		//Remove first slash
+	# filename				= req.HTTPRequest.req_path % (1, size req.HTTPRequest.req_path)		//Remove first slash
 	# (type, world)			= fileMimeType filename world
 	# (ok, content, world)	= fileContent filename world
 	| not ok 				= (notfoundResponse, world)
-							= ({okResponse & 
+							= ({HTTPResponse|okResponse & 
 								rsp_headers = [("Content-Type", type),
 											   ("Content-Length", toString (size content))]
 							   ,rsp_data = content}, world)						
@@ -279,6 +279,7 @@ customResponse [] fallback request world 											//None of the request handle
 	| fallback						= (staticResponse request world)				//Use the static response handler
 									= (notfoundResponse, world)						//Raise an error
 customResponse [(pred,handler):rest] fallback request world
-	| (pred request.req_path)		= handler request world							//Apply handler function
+	| (pred request.HTTPRequest.req_path)
+									= handler request world							//Apply handler function
 									= customResponse rest fallback request world	//Search the rest of the list
 

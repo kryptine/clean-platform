@@ -18,6 +18,16 @@ from Data.Map import :: Map
 instance toString   HTTPMethod
 instance fromString HTTPMethod
 
+//A raw request header
+:: HTTPRequestHeader =
+	{ req_method 	:: String  				// The HTTP request method (eg. GET, POST, HEAD)
+	, req_path 		:: String  				// The requested location (eg. /foo)
+	, req_query 	:: String 				// The query part of a location (eg. ?foo=bar&baz=42)
+	, req_version 	:: String  				// The http version (eg. HTTP/1.0 or HTTP/1.1)
+	, req_headers	:: [(String,String)] 	//Additional headers
+	}
+
+//A fully parsed HTTP request
 :: HTTPRequest	= {	req_method		:: 	HTTPMethod				// The HTTP request method (eg. GET, POST, HEAD)
 				,	req_path		::	String					// The requested location (eg. /foo)
 				,	req_query		::	String					// The query part of a location (eg. ?foo=bar&baz=42)
@@ -34,6 +44,7 @@ instance fromString HTTPMethod
 				,	client_name		::	String					// Client host name or ip address
 				}
 
+
 :: HTTPProtocol	= HTTPProtoHTTP | HTTPProtoHTTPS				// The protocol used for a request
 
 :: HTTPResponse	= {	rsp_code		::  Int
@@ -41,12 +52,21 @@ instance fromString HTTPMethod
 				,	rsp_headers		::	[(String,String)]		// Extra return headers that should be sent (eg. ("Content-Type","text/plain"))
 				,	rsp_data		::	String					// The body of the response. (eg. html code or file data)
 				}
-			
+
+//A raw response header
+:: HTTPResponseHeader =
+    { rsp_version 	:: String
+    , rsp_code 		:: Int
+    , rsp_reason    ::  String
+    , rsp_headers   :: [(String,String)]
+    }
+
 :: HTTPUpload	= { upl_name		::	String					// The name of the file input in the form
 				,	upl_filename	::	String					// The filename of the uploaded file
 				,	upl_mimetype	::	String					// The MIME content type of the file
 				,	upl_content		::	String					// The actual content of the file.
 				}
+
 
 //Construction functions 
 newHTTPRequest	:: HTTPRequest
