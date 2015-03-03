@@ -423,3 +423,5 @@ instance html (Maybe a) | html a
 RawText :== Html
 
 browserFriendlySVGEltToString :: !SVGElt -> String
+
+escapeStr :: !String -> String
