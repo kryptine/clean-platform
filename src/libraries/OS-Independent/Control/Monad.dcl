@@ -24,6 +24,7 @@ instance MonadPlus Maybe
 
 return            :: a -> m a | Monad m
 (>>=) infixl 1    :: (m a) (a -> m b) -> m b | Monad m
+(`b`) infixl 1    :: (m a) (a -> m b) -> m b | Monad m
 (>>|) infixl 1    :: (m a) (m b) -> m b | Monad m
 (=<<) infixr 1    :: (a -> m b) (m a) -> m b | Monad m
 sequence          :: .[a b] -> a [b] | Monad a

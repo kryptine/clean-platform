@@ -35,6 +35,9 @@ return x = pure x
 (>>=) infixl 1 :: (m a) (a -> m b) -> m b | Monad m
 (>>=) ma a2mb = bind ma a2mb
 
+(`b`) infixl 1    :: (m a) (a -> m b) -> m b | Monad m
+(`b`) ma a2mb = bind ma a2mb
+
 (>>|) infixl 1 :: (m a) (m b) -> m b | Monad m
 (>>|) ma mb = ma >>= \_ -> mb
 
