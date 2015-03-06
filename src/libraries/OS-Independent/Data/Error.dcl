@@ -1,6 +1,9 @@
 definition module Data.Error
 
-import Data.Functor, Data.Maybe
+from Data.Functor import class Functor
+from Control.Monad import class Monad
+from Control.Applicative import class Applicative
+from Data.Maybe import :: Maybe
 
 :: MaybeError a b = Error a | Ok b 
 

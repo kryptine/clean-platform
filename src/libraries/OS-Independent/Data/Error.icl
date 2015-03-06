@@ -2,11 +2,22 @@ implementation module Data.Error
 
 import StdMisc
 import Data.Functor, Data.Maybe
+import Control.Monad
+import Control.Applicative
 	
 instance Functor (MaybeError a)
 where
 	fmap f (Ok x)		= Ok (f x)
 	fmap f (Error x)	= Error x
+
+instance Applicative (MaybeError e) where
+    pure x            = Ok x
+    (<*>) (Error e) _ = Error e
+    (<*>) (Ok f)    r = fmap f r
+
+instance Monad (MaybeError e) where
+    bind (Error l) _ = Error l
+    bind (Ok r) k = k r
 
 isOk		:: !(MaybeError a b) -> Bool
 isOk		(Ok _) 		= True
