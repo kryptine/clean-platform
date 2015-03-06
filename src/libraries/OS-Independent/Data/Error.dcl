@@ -10,6 +10,8 @@ from Data.Maybe import :: Maybe
 :: MaybeErrorString a :== MaybeError String a
 
 instance Functor (MaybeError a)
+instance Applicative (MaybeError a)
+instance Monad (MaybeError a)
 
 /**
  * Return True when the argument is an Ok value and return False otherwise.
