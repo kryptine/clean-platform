@@ -1,54 +1,59 @@
 definition module Data.Tree
 
-// Ported from Haskell's Data.Tree by Jurriën Stutterheim
+// Ported from Haskell's Data.RTree by Jurriën Stutterheim
 from Data.Functor import class Functor
 from Control.Applicative import class Applicative
 from Control.Monad import class Monad
+from Data.Monoid import class Monoid
 
 // | Multi-way trees, also known as /rose trees/.
-:: Tree a
-  = Node
+:: RTree a
+  = RNode
     a // label value
-    (Forest a) // zero or more child trees
+    (RForest a) // zero or more child trees
 
-rootLabel :: (Tree a) -> a
+rootLabel :: (RTree a) -> a
 
-subForest :: (Tree a) -> Forest a
+subRForest :: (RTree a) -> RForest a
 
-:: Forest a :== [Tree a]
+:: RForest a :== [RTree a]
 
-instance Functor Tree
+instance Functor RTree
 
-fmapTree :: (a -> b) (Tree a) -> Tree b
+fmapRTree :: (a -> b) (RTree a) -> RTree b
 
-instance Applicative Tree
+instance Applicative RTree
 
-instance Monad Tree
+instance Monad RTree
+
+instance Monoid (RForest a) | == a
+
+mergeRForests :: (RForest a) (RForest a) -> RForest a | == a
 
 unlines :: [String] -> String
 
 // | Neat 2-dimensional drawing of a tree.
-drawTree :: (Tree String) -> String
+drawRTree :: (RTree String) -> String
 
 // | Neat 2-dimensional drawing of a forest.
-drawForest :: (Forest String) -> String
+drawRForest :: (RForest String) -> String
 
-draw :: (Tree String) -> [String]
+draw :: (RTree String) -> [String]
 
 // | The elements of a tree in pre-order.
 
 // | Lists of nodes at each level of the tree.
-levels :: (Tree a) -> [[a]]
+levels :: (RTree a) -> [[a]]
 
 // | Build a tree from a seed value
-unfoldTree :: (b -> (a, [b])) b -> Tree a
+unfoldRTree :: (b -> (a, [b])) b -> RTree a
 
 // | Build a forest from a list of seed values
-unfoldForest :: (b -> (a, [b])) [b] -> Forest a
+unfoldRForest :: (b -> (a, [b])) [b] -> RForest a
 
 // | Monadic tree builder, in depth-first order
-unfoldTreeM :: (b -> m (a, [b])) b -> m (Tree a) | Monad m
+unfoldRTreeM :: (b -> m (a, [b])) b -> m (RTree a) | Monad m
 
 // | Monadic forest builder, in depth-first order
-unfoldForestM :: (b -> m (a, [b])) [b] -> m (Forest a) | Monad m
+unfoldRForestM :: (b -> m (a, [b])) [b] -> m (RForest a) | Monad m
 
