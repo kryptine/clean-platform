@@ -85,6 +85,10 @@ levels t =
         takeWhile (not o isEmpty) (
         iterate (concatMap subRForest) [t]))
 
+leafs :: (RTree a) -> [a]
+leafs (RNode x []) = [x]
+leafs (RNode x xs) = concatMap leafs xs
+
 // | Build a tree from a seed value
 unfoldRTree :: (b -> (a, [b])) b -> RTree a
 unfoldRTree f b

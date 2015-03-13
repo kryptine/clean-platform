@@ -45,6 +45,8 @@ draw :: (RTree String) -> [String]
 // | Lists of nodes at each level of the tree.
 levels :: (RTree a) -> [[a]]
 
+leafs :: (RTree a) -> [a]
+
 // | Build a tree from a seed value
 unfoldRTree :: (b -> (a, [b])) b -> RTree a
 
