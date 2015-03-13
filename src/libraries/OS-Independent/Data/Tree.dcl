@@ -26,9 +26,9 @@ instance Applicative RTree
 
 instance Monad RTree
 
-instance Monoid (RForest a) | == a
+mergeForests :: (RForest a) (RForest a) -> RForest a | == a
 
-mergeRForests :: (RForest a) (RForest a) -> RForest a | == a
+mergeForestsBy :: (a a -> Bool) (RForest a) (RForest a) -> RForest a
 
 unlines :: [String] -> String
 

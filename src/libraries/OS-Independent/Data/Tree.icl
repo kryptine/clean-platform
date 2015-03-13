@@ -34,16 +34,15 @@ instance Monad RTree where
     # (RNode x` ts`) = f x
     = RNode x` (ts` ++ map (\x -> bind x f) ts)
 
-instance Monoid (RForest a) | == a where
-  mempty = []
-  mappend l r = mergeRForests l r
+mergeForestsBy :: (a a -> Bool) (RForest a) (RForest a) -> RForest a
+mergeForestsBy _ [] ys = ys
+mergeForestsBy _ xs [] = xs
+mergeForestsBy f [xn=:(RNode x xs) : xss] [yn=:(RNode y ys) : yss]
+  | f x y     = [RNode x (mergeForestsBy f xs ys) : mergeForestsBy f xss yss]
+  | otherwise = [xn : yn : mergeForestsBy f xss yss]
 
-mergeRForests :: (RForest a) (RForest a) -> RForest a | == a
-mergeRForests [] ys = ys
-mergeRForests xs [] = xs
-mergeRForests [xn=:(RNode x xs) : xss] [yn=:(RNode y ys) : yss]
-  | x == y    = [RNode x (mergeRForests xs ys) : mergeRForests xss yss]
-  | otherwise = [xn : yn : mergeRForests xss yss]
+mergeForests :: (RForest a) (RForest a) -> RForest a | == a
+mergeForests l r = mergeForestsBy (==) l r
 
 //instance Traversable RTree where
   //traverse f (RNode x ts) = RNode <$> f x <*> traverse (traverse f) ts
