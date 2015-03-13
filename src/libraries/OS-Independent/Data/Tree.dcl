@@ -30,6 +30,8 @@ mergeForests :: (RForest a) (RForest a) -> RForest a | == a
 
 mergeForestsBy :: (a a -> Bool) (RForest a) (RForest a) -> RForest a
 
+mergeForestsByChoice :: (a a -> Bool) (a a -> a) (RForest a) (RForest a) -> RForest a
+
 unlines :: [String] -> String
 
 // | Neat 2-dimensional drawing of a tree.

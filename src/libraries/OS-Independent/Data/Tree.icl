@@ -34,12 +34,15 @@ instance Monad RTree where
     # (RNode x` ts`) = f x
     = RNode x` (ts` ++ map (\x -> bind x f) ts)
 
+mergeForestsByChoice :: (a a -> Bool) (a a -> a) (RForest a) (RForest a) -> RForest a
+mergeForestsByChoice _ _ [] ys = ys
+mergeForestsByChoice _ _ xs [] = xs
+mergeForestsByChoice pred choose [xn=:(RNode x xs) : xss] [yn=:(RNode y ys) : yss]
+  | pred x y  = [RNode (choose x y) (mergeForestsByChoice pred choose xs ys) : mergeForestsByChoice pred choose xss yss]
+  | otherwise = [xn : yn : mergeForestsByChoice pred choose xss yss]
+
 mergeForestsBy :: (a a -> Bool) (RForest a) (RForest a) -> RForest a
-mergeForestsBy _ [] ys = ys
-mergeForestsBy _ xs [] = xs
-mergeForestsBy f [xn=:(RNode x xs) : xss] [yn=:(RNode y ys) : yss]
-  | f x y     = [RNode x (mergeForestsBy f xs ys) : mergeForestsBy f xss yss]
-  | otherwise = [xn : yn : mergeForestsBy f xss yss]
+mergeForestsBy f xs ys = mergeForestsByChoice f (\x _ -> x) xs ys
 
 mergeForests :: (RForest a) (RForest a) -> RForest a | == a
 mergeForests l r = mergeForestsBy (==) l r
