@@ -373,6 +373,8 @@ instance tuneImage OnMouseMoveAttr where
   tuneImage image=:{Image | attribs} attr = {Image | image & attribs = 'DS'.insert (ImageOnMouseMoveAttr attr) attribs}
 instance tuneImage OnMouseOutAttr  where
   tuneImage image=:{Image | attribs} attr = {Image | image & attribs = 'DS'.insert (ImageOnMouseOutAttr  attr) attribs}
+instance tuneImage DraggableAttr   where
+  tuneImage image=:{Image | attribs} attr = {Image | image & attribs = 'DS'.insert (ImageDraggableAttr   attr) attribs}
 
 (<@<) infixl 2 :: !(Image m) !(attr m) -> Image m | tuneImage attr
 (<@<) image attr = tuneImage image attr
@@ -398,6 +400,7 @@ consNameOf (ImageOnMouseUpAttr   _) = "ImageOnMouseUpAttr"
 consNameOf (ImageOnMouseOverAttr _) = "ImageOnMouseOverAttr"
 consNameOf (ImageOnMouseMoveAttr _) = "ImageOnMouseMoveAttr"
 consNameOf (ImageOnMouseOutAttr  _) = "ImageOnMouseOutAttr"
+consNameOf (ImageDraggableAttr   _) = "ImageDraggableAttr"
 consNameOf (ImageDashAttr        _) = "ImageDashAttr"
 
 instance < (ImageAttr m) where < a b = consNameOf a < consNameOf b
