@@ -127,7 +127,7 @@ from StdOverloaded import class zero, class +, class -, class ~, class sign, cla
 :: OnMouseOverAttr m = { onmouseover :: !(m -> m), local :: !Bool }
 :: OnMouseMoveAttr m = { onmousemove :: !(m -> m), local :: !Bool }
 :: OnMouseOutAttr  m = { onmouseout  :: !(m -> m), local :: !Bool }
-:: DraggableAttr   m = { draggable   :: !Bool     }
+:: DraggableAttr   m = { draggable   :: !Maybe (Real Real m -> m) }
 :: DashAttr        m = { dash        :: ![Int]    }
 :: MaskAttr        m = { mask        :: !Image m  }
 
