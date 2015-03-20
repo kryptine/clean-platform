@@ -119,13 +119,13 @@ from StdOverloaded import class zero, class +, class -, class ~, class sign, cla
 :: YRadiusAttr     m = { yradius     :: !Span     }
 :: FillAttr        m = { fill        :: !SVGColor }
 :: OpacityAttr     m = { opacity     :: !Real     }
-:: OnClickAttr     m = { onclick     :: !(m -> m) }
-:: OnDblClickAttr  m = { ondblclick  :: !(m -> m) }
-:: OnMouseDownAttr m = { onmousedown :: !(m -> m) }
-:: OnMouseUpAttr   m = { onmouseup   :: !(m -> m) }
-:: OnMouseOverAttr m = { onmouseover :: !(m -> m) }
-:: OnMouseMoveAttr m = { onmousemove :: !(m -> m) }
-:: OnMouseOutAttr  m = { onmouseout  :: !(m -> m) }
+:: OnClickAttr     m = { onclick     :: !(m -> m), local :: !Bool }
+:: OnDblClickAttr  m = { ondblclick  :: !(m -> m), local :: !Bool }
+:: OnMouseDownAttr m = { onmousedown :: !(m -> m), local :: !Bool }
+:: OnMouseUpAttr   m = { onmouseup   :: !(m -> m), local :: !Bool }
+:: OnMouseOverAttr m = { onmouseover :: !(m -> m), local :: !Bool }
+:: OnMouseMoveAttr m = { onmousemove :: !(m -> m), local :: !Bool }
+:: OnMouseOutAttr  m = { onmouseout  :: !(m -> m), local :: !Bool }
 :: DashAttr        m = { dash        :: ![Int]    }
 :: MaskAttr        m = { mask        :: !Image m  }
 
