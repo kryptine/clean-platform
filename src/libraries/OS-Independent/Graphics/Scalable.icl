@@ -430,9 +430,9 @@ instance == (a, b) | == a & == b where
 tag :: !*ImageTag !(Image m) -> Image m
 tag t image=:{Image | tags} = {Image | image & tags = 'DS'.insert t tags}
 
-tagWithSrc :: !*TagSource !(Image m) -> *(!Image m, !ImageTag, !*TagSource)
+tagWithSrc :: !*TagSource !(Image m) -> *(!(!Image m, !ImageTag), !*TagSource)
 tagWithSrc [(nut, t) : tsrc] img
-  = (tag t img, nut, tsrc)
+  = ((tag t img, nut), tsrc)
 
 /** chop n xs = xss:
       @xss consists of the subsequent sub-lists of @xs of length @n.
