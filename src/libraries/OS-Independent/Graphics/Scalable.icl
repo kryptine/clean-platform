@@ -362,8 +362,6 @@ instance tuneImage MaskAttr        where
   tuneImage image                    attr = {Image | image & mask = Just attr.MaskAttr.mask }
 instance tuneImage OnClickAttr     where
   tuneImage image=:{Image | attribs} attr = {Image | image & attribs = 'DS'.insert (ImageOnClickAttr     attr) attribs}
-instance tuneImage OnDblClickAttr  where
-  tuneImage image=:{Image | attribs} attr = {Image | image & attribs = 'DS'.insert (ImageOnDblClickAttr  attr) attribs}
 instance tuneImage OnMouseDownAttr where
   tuneImage image=:{Image | attribs} attr = {Image | image & attribs = 'DS'.insert (ImageOnMouseDownAttr attr) attribs}
 instance tuneImage OnMouseUpAttr   where
@@ -395,7 +393,6 @@ consNameOf (ImageYRadiusAttr     _) = "ImageYRadiusAttr"
 consNameOf (ImageFillAttr        _) = "ImageFillAttr"
 consNameOf (ImageFillOpacityAttr _) = "ImageFillOpacityAttr"
 consNameOf (ImageOnClickAttr     _) = "ImageOnClickAttr"
-consNameOf (ImageOnDblClickAttr  _) = "ImageOnDblClickAttr"
 consNameOf (ImageOnMouseDownAttr _) = "ImageOnMouseDownAttr"
 consNameOf (ImageOnMouseUpAttr   _) = "ImageOnMouseUpAttr"
 consNameOf (ImageOnMouseOverAttr _) = "ImageOnMouseOverAttr"

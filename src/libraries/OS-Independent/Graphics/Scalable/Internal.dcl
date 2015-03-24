@@ -107,7 +107,6 @@ from StdOverloaded import class zero, class +, class -, class ~, class sign, cla
   | ImageFillOpacityAttr   !(OpacityAttr     m)
   | ImageDashAttr          !(DashAttr        m)
   | ImageOnClickAttr       !(OnClickAttr     m)
-  | ImageOnDblClickAttr    !(OnDblClickAttr  m)
   | ImageOnMouseDownAttr   !(OnMouseDownAttr m)
   | ImageOnMouseUpAttr     !(OnMouseUpAttr   m)
   | ImageOnMouseOverAttr   !(OnMouseOverAttr m)
@@ -121,8 +120,7 @@ from StdOverloaded import class zero, class +, class -, class ~, class sign, cla
 :: YRadiusAttr     m = { yradius     :: !Span     }
 :: FillAttr        m = { fill        :: !SVGColor }
 :: OpacityAttr     m = { opacity     :: !Real     }
-:: OnClickAttr     m = { onclick     :: !(m -> m), local :: !Bool }
-:: OnDblClickAttr  m = { ondblclick  :: !(m -> m), local :: !Bool }
+:: OnClickAttr     m = { onclick     :: !(Int m -> m), local :: !Bool }
 :: OnMouseDownAttr m = { onmousedown :: !(m -> m), local :: !Bool }
 :: OnMouseUpAttr   m = { onmouseup   :: !(m -> m), local :: !Bool }
 :: OnMouseOverAttr m = { onmouseover :: !(m -> m), local :: !Bool }
