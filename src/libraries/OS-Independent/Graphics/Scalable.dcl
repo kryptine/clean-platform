@@ -102,10 +102,8 @@ instance <  ImageTag
 :: *TagSource :== *[TagRef]
 :: *TagRef    :== *(!ImageTag, !*ImageTag)
 
-mkTagRef   :: !*TagSource            -> *(!*TagRef, !*TagSource)
-tagWithRef :: !*TagRef    !(Image m) -> *(!Image m, !*TagRef)
-tagWithSrc :: !*TagSource !(Image m) -> *(!Image m, !*TagRef, !*TagSource)
-tagFromRef :: !*TagRef -> *(!ImageTag, !*TagRef)
+tag        :: !*ImageTag !(Image m)  -> Image m
+tagWithSrc :: !*TagSource !(Image m) -> *(!Image m, !ImageTag, !*TagSource)
 
 instance +  ImageOffset
 
