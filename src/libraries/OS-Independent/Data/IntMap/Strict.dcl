@@ -86,3 +86,7 @@ union :: !(IntMap a) !(IntMap a) -> IntMap a
 unions :: ![IntMap a] -> IntMap a
 
 instance Functor IntMap
+
+toList :: !(IntMap a) -> [(!Int, !a)]
+
+toAscList :: !(IntMap a) -> [(!Int, !a)]

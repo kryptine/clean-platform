@@ -789,3 +789,18 @@ maybe_link :: !Int !(IntMap a) !Int !(IntMap a) -> IntMap a
 maybe_link _ Nil _ t2 = t2
 maybe_link _ t1 _ Nil = t1
 maybe_link p1 t1 p2 t2 = link p1 t1 p2 t2
+
+// | /O(n)/. Convert the map to a list of key\/value pairs. Subject to list
+// fusion.
+//
+// > toList (fromList [(5,"a"), (3,"b")]) == [(3,"b"), (5,"a")]
+// > toList empty == []
+toList :: !(IntMap a) -> [(!Int, !a)]
+toList m = toAscList m
+
+// | /O(n)/. Convert the map to a list of key\/value pairs where the
+// keys are in ascending order. Subject to list fusion.
+//
+// > toAscList (fromList [(5,"a"), (3,"b")]) == [(3,"b"), (5,"a")]
+toAscList :: !(IntMap a) -> [(!Int, !a)]
+toAscList m = foldrWithKey (\k x xs -> [(k,x):xs]) [] m
