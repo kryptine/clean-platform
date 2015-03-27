@@ -184,3 +184,5 @@ delList xs m :== 'SL'.foldr (\k m -> del k m) m xs
 putList xs m :== union (fromList xs) m
 
 instance Functor (Map k)
+
+difference :: !(Map k a) !(Map k b) -> Map k a | < k
