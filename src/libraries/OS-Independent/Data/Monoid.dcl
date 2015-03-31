@@ -4,12 +4,24 @@ from StdOverloaded import class +, class *, class zero, class one
 from Data.Maybe import :: Maybe
 from Data.Void import :: Void
 
-class Monoid a where
-  mempty :: a
+class Semigroup a where
   mappend :: a a -> a
+
+class Monoid a | Semigroup a where
+  mempty :: a
 
 mconcat         :: .[a] -> a | Monoid a
 (<++>) infixr 6 :: a a -> a | Monoid a
+
+instance Semigroup [a]
+instance Semigroup (a -> b) | Semigroup b
+instance Semigroup ()
+instance Semigroup Void
+instance Semigroup (a, b) | Semigroup a & Semigroup b
+instance Semigroup (a, b, c) | Semigroup a & Semigroup b & Semigroup c
+instance Semigroup (a, b, c, d) | Semigroup a & Semigroup b & Semigroup c & Semigroup d
+instance Semigroup (a, b, c, d, e) | Semigroup a & Semigroup b & Semigroup c & Semigroup d & Semigroup e
+instance Semigroup (Maybe a) | Semigroup a
 
 instance Monoid [a]
 instance Monoid (a -> b) | Monoid b
@@ -19,7 +31,7 @@ instance Monoid (a, b) | Monoid a & Monoid b
 instance Monoid (a, b, c) | Monoid a & Monoid b & Monoid c
 instance Monoid (a, b, c, d) | Monoid a & Monoid b & Monoid c & Monoid d
 instance Monoid (a, b, c, d, e) | Monoid a & Monoid b & Monoid c & Monoid d & Monoid e
-instance Monoid (Maybe a) | Monoid a
+instance Monoid (Maybe a) | Semigroup a
 
 :: Dual a = Dual a
 
@@ -36,6 +48,15 @@ instance Monoid (Maybe a) | Monoid a
 :: First a = First (Maybe a)
 
 :: Last a = Last (Maybe a)
+
+instance Semigroup (Dual a) | Semigroup a
+instance Semigroup (Endo a)
+instance Semigroup All
+instance Semigroup Any
+instance Semigroup (Sum a) | + a & zero a
+instance Semigroup (Product a) | * a & one a
+instance Semigroup (First a)
+instance Semigroup (Last a)
 
 instance Monoid (Dual a) | Monoid a
 instance Monoid (Endo a)

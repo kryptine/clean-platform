@@ -33,9 +33,11 @@ import Control.Monad
 :: Size   :== Int
 
 // TODO
-instance Monoid (Map k v) | < k where
-    mempty      = newMap
+instance Semigroup (Map k v) | < k where
     mappend x y = union x y
+
+instance Monoid (Map k v) | < k where
+    mempty = newMap
 
 //////////////////////////////////////////////////////////////////////
 //  Query

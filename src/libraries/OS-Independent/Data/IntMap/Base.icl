@@ -17,7 +17,7 @@ from Control.Monad import liftM
 import qualified Data.Foldable as Foldable
 from Data.Maybe import :: Maybe (..), fromMaybe, maybe, instance Functor Maybe
 from Data.Either import :: Either (..)
-from Data.Monoid import class Monoid(..)
+from Data.Monoid import class Monoid(..), class Semigroup (..)
 from Data.Functor import <$>
 //from Data.Traversable import class Traversable(..)
 
@@ -26,10 +26,11 @@ from Data.Functor import <$>
 
 
 // Types
+instance Semigroup (IntMap a) where
+    mappend x y = union x y
 
 instance Monoid (IntMap a) where
     mempty  = empty
-    mappend x y = union x y
 
 //instance Foldable.Foldable IntMap where
   //fold = go

@@ -4,7 +4,7 @@ from Control.Applicative import class Applicative (..), :: Const, class Alternat
 from Control.Monad import class Monad (..), >>=, class MonadPlus (..)
 from Data.Either import :: Either
 from Data.Functor import class Functor (..)
-from Data.Monoid import class Monoid (..)
+from Data.Monoid import class Monoid (..), class Semigroup (..)
 from Data.Maybe import :: Maybe
 from StdOverloaded import class +, class one, class *, class zero, class <, class ==
 from StdClass import class Ord

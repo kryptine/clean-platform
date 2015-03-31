@@ -3,7 +3,7 @@ definition module Control.Applicative
 from Control.Monad import class Monad, class MonadPlus
 from Data.Functor  import class Functor
 from Data.Maybe    import :: Maybe
-from Data.Monoid   import class Monoid
+from Data.Monoid   import class Monoid, class Semigroup
 
 :: Const a b = Const a
 :: WrappedMonad m a = WrapMonad (m a)
@@ -15,16 +15,20 @@ getConst :: (Const a b) -> a
 instance Applicative ((->) r)
 instance Applicative Maybe
 instance Applicative []
+
 instance Alternative Maybe
 instance Alternative []
 
 instance Functor (Const m)
-instance Monoid (Const a b) | Monoid a
-instance Applicative (Const m) | Monoid m
 instance Functor (WrappedMonad m) | Monad m
+instance Applicative (Const m) | Monoid m
 instance Applicative (WrappedMonad m) | Monad m
 instance Monad (WrappedMonad m) | Monad m
+
 instance Alternative (WrappedMonad m) | MonadPlus m
+
+instance Semigroup (Const a b) | Semigroup a
+instance Monoid (Const a b) | Monoid a
 
 class Applicative f | Functor f where
   pure            :: a -> f a
