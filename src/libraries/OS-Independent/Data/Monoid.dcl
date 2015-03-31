@@ -11,7 +11,7 @@ class Monoid a | Semigroup a where
   mempty :: a
 
 mconcat         :: .[a] -> a | Monoid a
-(<++>) infixr 6 :: a a -> a | Monoid a
+(<++>) infixr 6 :: a a -> a | Semigroup a
 
 instance Semigroup [a]
 instance Semigroup (a -> b) | Semigroup b
@@ -31,7 +31,7 @@ instance Monoid (a, b) | Monoid a & Monoid b
 instance Monoid (a, b, c) | Monoid a & Monoid b & Monoid c
 instance Monoid (a, b, c, d) | Monoid a & Monoid b & Monoid c & Monoid d
 instance Monoid (a, b, c, d, e) | Monoid a & Monoid b & Monoid c & Monoid d & Monoid e
-instance Monoid (Maybe a) | Semigroup a
+instance Monoid (Maybe a)
 
 :: Dual a = Dual a
 

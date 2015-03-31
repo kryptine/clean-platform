@@ -10,7 +10,7 @@ from StdList import ++, foldr
 mconcat :: .[a] -> a | Monoid a
 mconcat xs = foldr mappend mempty xs
 
-(<++>) infixr 6 :: a a -> a | Monoid a
+(<++>) infixr 6 :: a a -> a | Semigroup a
 (<++>) ma mb = mappend ma mb
 
 instance Semigroup [a] where
@@ -66,7 +66,7 @@ instance Semigroup (Maybe a) | Semigroup a where
   mappend m         Nothing   = m
   mappend (Just m1) (Just m2) = Just (mappend m1 m2)
 
-instance Monoid (Maybe a) | Semigroup a where
+instance Monoid (Maybe a) where
   mempty = Nothing
 
 instance Semigroup (Dual a) | Semigroup a where
