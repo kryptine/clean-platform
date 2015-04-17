@@ -54,7 +54,7 @@ generic XMLEncode a :: !a -> XMLEncodeResult
 :: XMLStringAttribute	a = XMLStringAttribute	!XMLQName !String	!a
 :: XMLBoolAttribute		a = XMLBoolAttribute	!XMLQName !Bool		!a
 
-derive XMLEncode OBJECT, CONS, FIELD, PAIR, EITHER, UNIT, Int, Char, Real, String, Bool
+derive XMLEncode OBJECT, CONS of d, FIELD of d, PAIR, EITHER, UNIT, Int, Char, Real, String, Bool
 derive XMLEncode Maybe, Void, Either, (,), (,,), (,,,), []
 derive XMLEncode XMLIntAttribute, XMLCharAttribute, XMLRealAttribute, XMLStringAttribute, XMLBoolAttribute
 

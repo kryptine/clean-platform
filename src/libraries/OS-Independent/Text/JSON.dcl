@@ -8,8 +8,7 @@ definition module Text.JSON
 * For more info about JSON see: http://www.json.org/
 */
 
-import StdGeneric, StdString
-import Data.Maybe
+import StdGeneric, Data.Maybe, StdString
 
 :: JSONNode	= JSONNull
 			| JSONBool !Bool
@@ -35,6 +34,9 @@ instance fromString JSONNode
 * @return The JSON encoded value
 */
 toJSON		:: !a		-> JSONNode	| JSONEncode{|*|} a
+
+toJSONInField :: !a -> JSONNode | JSONEncode{|*|} a
+
 /**
 * Tries to parse a JSON encoded string.
 * When parsing fails, the result is Nothing.
@@ -76,15 +78,57 @@ jsonQuery :: !String !JSONNode -> Maybe a | JSONDecode{|*|} a
 * directly but always through the toJSON function. It must be derived
 * for each type you want to encode in JSON format.
 */
-generic JSONEncode t :: !t -> [JSONNode]
-derive  JSONEncode Int, Real, Char, Bool, String, UNIT, PAIR, EITHER, FIELD, CONS, OBJECT, [], (,), (,,), (,,,), (,,,,), {}, {!}, Maybe, JSONNode
+generic JSONEncode t :: !Bool !t -> [JSONNode]
+derive  JSONEncode Int, Real, Char, Bool, String, UNIT, [], (,), (,,), (,,,), (,,,,), {}, {!}, Maybe, JSONNode,
+	EITHER, CONS of {gcd_name}, OBJECT
+
+JSONEncode{|RECORD of {grd_fields}|} fx _ (RECORD x)
+	= [JSONObject [(name, o) \\ o <- fx False x & name <- grd_fields | isNotNull o]]
+where
+	isNotNull JSONNull = False
+	isNotNull _ = True
+
+JSONEncode{|FIELD|} fx _ (FIELD x) = fx True x
+
+JSONEncode{|PAIR|} fx fy _ (PAIR x y) = fx False x ++ fy False y
+where
+	(++) infixr 5::![.a] u:[.a] -> u:[.a]
+	(++) [hd:tl]	list	= [hd:tl ++ list]
+	(++) nil 		list	= list
+
 /**
 * Generic decoding function. This function should not be used
 * directly, but always through the fromJSON function. It must be derived
 * for each type you want to parse from JSON format.
 */
-generic JSONDecode t :: ![JSONNode] -> (!Maybe t,![JSONNode])
-derive  JSONDecode Int, Real, Char, Bool, String, UNIT, PAIR, EITHER, FIELD, CONS, OBJECT, [], (,), (,,), (,,,), (,,,,), {}, {!}, Maybe, JSONNode
+generic JSONDecode t :: !Bool ![JSONNode] -> (!Maybe t,![JSONNode])
+derive  JSONDecode Int, Real, Char, Bool, String, UNIT, EITHER, CONS of {gcd_name}, OBJECT, [], (,), (,,), (,,,), (,,,,), {}, {!}, Maybe, JSONNode
+
+JSONDecode{|PAIR|} fx fy _ l = d1 (fx False l) l
+where
+	d1 (Just x,xs)  l = d2 x (fy False xs) l
+	d1 (Nothing, _) l = (Nothing, l)
+
+	d2 x (Just y, ys) l = (Just (PAIR x y), ys)
+	d2 x (Nothing, _) l = (Nothing, l)
+
+JSONDecode{|RECORD|} fx _ l=:[obj=:JSONObject fields : xs] = d (fx False [obj]) xs l
+where
+	d (Just x, _)  xs l = (Just (RECORD x),xs)
+	d (Nothing, _) xs l = (Nothing, l)
+JSONDecode{|RECORD|} fx _ l = (Nothing,l)
+
+JSONDecode{|FIELD of {gfd_name}|} fx _ l =:[JSONObject fields]
+	# field = findField gfd_name fields
+	= case fx True field of
+		(Just x, _)	= (Just (FIELD x), l)
+		(_, _) = (Nothing, l)
+where
+	findField match [(l,x):xs]
+		| l == match 	= [x]
+						= findField match xs						
+	findField match [] 	= []
+JSONDecode{|FIELD|} fx _ l = (Nothing, l)
 
 /**
 * Equality of JSON nodes.
@@ -92,3 +136,12 @@ derive  JSONDecode Int, Real, Char, Bool, String, UNIT, PAIR, EITHER, FIELD, CON
 * JSON Objects are considered equal if they contain the same non-null fields.
 */
 instance == JSONNode
+
+/**
+* Pretty printed string encoding of JSON nodes.
+* This function uses indenting and newlines to make the serialized JSON representation
+* more readable than the standard toString instance, which uses minimal whitespace.
+*/
+jsonPrettyPrint :: JSONNode -> String
+
+

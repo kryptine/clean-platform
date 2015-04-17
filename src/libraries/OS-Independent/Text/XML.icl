@@ -339,8 +339,19 @@ XMLEncode{|OBJECT|} fx (OBJECT o) = fx o
 XMLEncode{|CONS of d|} fx (CONS c)
 	# nodes	= getNodes (fx c)
 	# name	= uname (formatConsName d.gcd_name)
-	| not (isEmpty d.gcd_fields)		= XMLEncNodes (filter nonEmpty nodes) name
 	| d.gcd_type_def.gtd_num_conses > 1 = XMLEncElem (name,[],nodes)
+	| otherwise							= XMLEncNodes nodes name
+where
+	nonEmpty (XMLElem _ _ [])	= False
+	nonEmpty _					= True
+	
+	formatConsName name
+		| startsWith "_" name	= subString 1 (textSize name - 1) name
+		| otherwise				= name
+XMLEncode{|RECORD of d|} fx (RECORD c)
+	# nodes	= getNodes (fx c)
+	# name	= uname (formatConsName d.grd_name)
+	| not (isEmpty d.grd_fields)		= XMLEncNodes (filter nonEmpty nodes) name
 	| otherwise							= XMLEncNodes nodes name
 where
 	nonEmpty (XMLElem _ _ [])	= False
