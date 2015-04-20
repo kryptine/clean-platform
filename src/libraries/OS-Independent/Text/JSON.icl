@@ -613,18 +613,20 @@ decodeItems fx [ox:oxs]	= case fx False [ox] of
 		_ 			= Nothing
 	_			= Nothing
 
-JSONDecode{|Maybe|} fx _ [JSONNull:xs]	        = (Just Nothing, xs) //Tolerate interpreting null as Nothing
-
-JSONDecode{|Maybe|} fx False [JSONArray [JSONString "Nothing"]:xs]	= (Just Nothing, xs)
-JSONDecode{|Maybe|} fx False [JSONArray [JSONString "Just":l]:xs] = case fx False l of
-	(Just x,_)							= (Just (Just x), xs)
-	_									= (Nothing, l)
-JSONDecode{|Maybe|} fx True []				    = (Just Nothing, []) //...but in records fields, Nothing is encoded by being absent
-JSONDecode{|Maybe|} fx True l = case fx False l of                  //...but for record fields, Just is encoded simply by existence in the object
-    (Just x,xs)                         = (Just (Just x), xs)
-    _                                   = (Nothing, l)
-
-JSONDecode{|Maybe|} _ _ l               = (Nothing, l)
+// When not in a record, treat Maybe normally
+JSONDecode{|Maybe|} fx False [JSONArray [JSONString "Nothing"]:xs] = (Just Nothing, xs)
+JSONDecode{|Maybe|} fx False [JSONArray [JSONString "Just":l]:xs]
+  = case fx False l of
+      (Just x, _) = (Just (Just x), xs)
+      _           = (Nothing, l)
+// Maybe is treated a bit special in record fields for efficiency
+JSONDecode{|Maybe|} fx True [JSONNull:xs] = (Just Nothing, xs) // Interpret null as Nothing
+JSONDecode{|Maybe|} fx True []            = (Just Nothing, []) // Interpret absentness as Nothing
+JSONDecode{|Maybe|} fx True l
+  = case fx False l of                  // Interpret existense as Just
+      (Just x,xs)                         = (Just (Just x), xs)
+      _                                   = (Nothing, l)
+JSONDecode{|Maybe|} _ _ l               = (Nothing, l) // If all else fails... Nothing
 
 JSONDecode{|JSONNode|} _ [node:xs]      = (Just node, xs)
 JSONDecode{|JSONNode|} _ l				= (Nothing, l)

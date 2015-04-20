@@ -33,7 +33,7 @@ instance fromString JSONNode
 * @param The value to encode
 * @return The JSON encoded value
 */
-toJSON		:: !a		-> JSONNode	| JSONEncode{|*|} a
+toJSON        :: !a -> JSONNode | JSONEncode{|*|} a
 
 toJSONInField :: !a -> JSONNode | JSONEncode{|*|} a
 
