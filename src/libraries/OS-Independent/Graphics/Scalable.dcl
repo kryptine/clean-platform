@@ -12,7 +12,7 @@ from Graphics.Scalable.Internal import :: Image, :: ImageTag, :: Span,
   :: OnClickAttr {..}, :: OnMouseDownAttr {..}, :: OnMouseUpAttr {..},
   :: OnMouseOverAttr {..}, :: OnMouseMoveAttr {..}, :: OnMouseOutAttr {..},
   :: DraggableAttr {..}, :: DashAttr {..}, 
-  :: MaskAttr {..}, :: Slash, :: ImageAlign, :: XAlign (..), :: YAlign (..),
+  :: MaskAttr {..}, :: Slash (..), :: ImageAlign, :: XAlign (..), :: YAlign (..),
   :: Host, :: GridLayout, :: GridMajor(..), :: GridXLayout (..), :: GridYLayout (..), :: GridDimension (..),
   class /. (..), class *. (..), instance *. Span, instance /. Span,
   instance + Span, instance - Span, instance zero Span, instance ~ Span
