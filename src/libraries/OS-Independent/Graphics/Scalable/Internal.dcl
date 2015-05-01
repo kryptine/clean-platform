@@ -15,7 +15,6 @@ from StdOverloaded import class zero, class +, class -, class ~, class sign, cla
     // TODO Get rid of the next two fields
     , totalSpanPreTrans   :: !ImageSpan                    // Total image span before transformations
     , totalSpanPostTrans  :: !ImageSpan                    // Total image span after transformations
-    , margin              :: !(!Span, !Span, !Span, !Span) // Image margin
     , transformCorrection :: !ImageOffset                  // Correction required after transformation
     }
 

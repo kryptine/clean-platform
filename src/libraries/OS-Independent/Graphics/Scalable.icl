@@ -82,7 +82,6 @@ mkImage cnt =
   , uniqId              = -1
   , totalSpanPreTrans   = (px 0.0, px 0.0)
   , totalSpanPostTrans  = (px 0.0, px 0.0)
-  , margin              = (px 0.0, px 0.0, px 0.0, px 0.0)
   , transformCorrection = (px 0.0, px 0.0)
   }
 
@@ -99,7 +98,11 @@ instance margin (!Span, !Span, !Span) where
   margin (sp1, sp2, sp3) im = margin (sp1, sp2, sp3, sp2) im
 
 instance margin (!Span, !Span, !Span, !Span) where
-  margin (sp1, sp2, sp3, sp4) im = { im & margin = (sp1, sp2, sp3, sp4)}
+  margin (sp1, sp2, sp3, sp4) im = above (repeat AtMiddleX) []
+                                     [ empty zero sp1
+                                     , beside (repeat AtMiddleY) [] [empty sp4 zero, im, empty sp2 zero] Nothing
+                                     , empty zero sp3
+                                     ] Nothing
 
 empty :: !Span !Span -> Image m
 empty xspan yspan = mkImage (Basic EmptyImage (maxSpan [zero, xspan], maxSpan [zero, yspan]))
