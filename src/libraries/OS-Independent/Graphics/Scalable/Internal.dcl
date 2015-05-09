@@ -171,7 +171,13 @@ instance *    Span
 instance /.   Span, Real, Int
 instance /    Span
 
-strictTRMapRev :: !(a -> b) ![a] -> [b]
-strictTRMapAcc :: !(a -> b) ![a] ![b] -> [b]
-strictTRMap    :: !(a -> b) ![a] -> [b]
-reverseTR      :: ![a] -> [a]
+strictTRMapRev   :: !(a -> b) ![a] -> [b]
+strictTRMap      :: !(a -> b) ![a] -> [b]
+reverseTR        :: ![a] -> [a]
+strictTRMapStRev :: !(a .st -> (!b, !.st)) ![a] !.st -> (![b], !.st)
+strictTRMapSt    :: !(a .st -> (!b, !.st)) ![a] !.st -> (![b], !.st)
+strictTRZip2     :: ![a] ![b]-> [(!a, !b)]
+strictTRZip2Rev  :: ![a] ![b]-> [(!a, !b)]
+strictTRZip4     :: ![a] ![b] ![c] ![d] -> [(!a, !b, !c, !d)]
+strictTRZip4Rev  :: ![a] ![b] ![c] ![d] -> [(!a, !b, !c, !d)]
+strictFoldl      :: !(a b -> a) !a ![b] -> a
