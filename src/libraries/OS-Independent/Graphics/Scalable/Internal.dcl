@@ -6,16 +6,16 @@ from Data.Set import :: Set
 from StdOverloaded import class zero, class +, class -, class ~, class sign, class abs, class <, class ==, class toReal, class /, class *
 
 :: Image m
-  = { content             :: !ImageContent m               // the image elements
-    , mask                :: !Maybe (Image m)              // the mask image
-    , attribs             :: !Set (ImageAttr m)            // the image attributes
-    , transform           :: ![ImageTransform]             // [t_1, ..., t_n] transforms the image as t_1 o ... o t_n
-    , tags                :: !Set ImageTag                 // set of tags
-    , uniqId              :: !Int                          // A unique identifier for this image
+  = { content             :: !ImageContent m    // the image elements
+    , mask                :: !Maybe (Image m)   // the mask image
+    , attribs             :: !Set (ImageAttr m) // the image attributes
+    , transform           :: ![ImageTransform]  // [t_1, ..., t_n] transforms the image as t_1 o ... o t_n
+    , tags                :: !Set ImageTag      // set of tags
+    , uniqId              :: !Int               // A unique identifier for this image
     // TODO Get rid of the next two fields
-    , totalSpanPreTrans   :: !ImageSpan                    // Total image span before transformations
-    , totalSpanPostTrans  :: !ImageSpan                    // Total image span after transformations
-    , transformCorrection :: !ImageOffset                  // Correction required after transformation
+    , totalSpanPreTrans   :: !ImageSpan         // Total image span before transformations
+    , totalSpanPostTrans  :: !ImageSpan         // Total image span after transformations
+    , transformCorrection :: !ImageOffset       // Correction required after transformation
     }
 
 :: ImageTransform

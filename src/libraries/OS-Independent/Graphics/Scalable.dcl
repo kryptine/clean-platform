@@ -16,9 +16,10 @@ from Graphics.Scalable.Internal import :: Image, :: ImageTag, :: Span,
   :: Host, :: GridLayout, :: GridMajor(..), :: GridXLayout (..), :: GridYLayout (..), :: GridDimension (..),
   class /. (..), class *. (..), instance *. Span, instance /. Span,
   instance + Span, instance - Span, instance zero Span, instance ~ Span
-from StdOverloaded import class zero, class +, class -, class ~, class sign,
-  class abs, class <, class ==, class toReal, class /, class *
-from Data.Maybe import :: Maybe(..)
+from StdOverloaded import class zero (..), class + (..), class - (..),
+  class ~ (..), class sign (..), class abs (..), class < (..), class == (..),
+  class toReal (..), class / (..), class * (..)
+from Data.Maybe import :: Maybe (..)
 from Text.HTML import :: SVGColor
 from Data.Set import :: Set
 
