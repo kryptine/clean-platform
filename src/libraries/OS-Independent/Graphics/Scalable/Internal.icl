@@ -68,6 +68,28 @@ strictTRZip2Acc [a:as] [b:bs] acc
   = strictTRZip2Acc as bs [(a, b):acc]
 strictTRZip2Acc _ _ acc = acc
 
+strictTRZipWith :: !(a b -> c) ![a] ![b] -> [c]
+strictTRZipWith f as bs = reverseTR (strictTRZipWithRev f as bs)
+
+strictTRZipWithRev :: !(a b -> c) ![a] ![b] -> [c]
+strictTRZipWithRev f as bs = strictTRZipWithAcc f as bs []
+
+strictTRZipWithAcc :: !(a b -> c) ![a] ![b] ![c] -> [c]
+strictTRZipWithAcc f [a:as] [b:bs] acc
+  = strictTRZipWithAcc f as bs [f a b : acc]
+strictTRZipWithAcc _ _ _ acc = acc
+
+strictTRZipWith3 :: !(a b c -> d) ![a] ![b] ![c] -> [d]
+strictTRZipWith3 f as bs cs = reverseTR (strictTRZipWith3Rev f as bs cs)
+
+strictTRZipWith3Rev :: !(a b c -> d) ![a] ![b] ![c] -> [d]
+strictTRZipWith3Rev f as bs cs = strictTRZipWith3Acc f as bs cs []
+
+strictTRZipWith3Acc :: !(a b c -> d) ![a] ![b] ![c] ![d] -> [d]
+strictTRZipWith3Acc f [a:as] [b:bs] [c:cs] acc
+  = strictTRZipWith3Acc f as bs cs [f a b c : acc]
+strictTRZipWith3Acc _ _ _ _ acc = acc
+
 strictFoldl :: !(a b -> a) !a ![b] -> a
 strictFoldl f b [] = b
 strictFoldl f b [x:xs]
