@@ -4,7 +4,7 @@ definition module Data.Tree
 from Data.Functor import class Functor
 from Control.Applicative import class Applicative
 from Control.Monad import class Monad
-from Data.Monoid import class Monoid
+from Data.Monoid import class Monoid, class Semigroup
 
 // | Multi-way trees, also known as /rose trees/.
 :: RTree a
