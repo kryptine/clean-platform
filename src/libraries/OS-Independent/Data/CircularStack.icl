@@ -1,53 +1,62 @@
 implementation module Data.CircularStack
 
-import StdInt, StdOverloaded, StdArray, StdMisc, StdList
+//import StdInt, StdOverloaded, StdArray, StdMisc, StdList
+import StdInt, StdList, StdMisc, Data.Maybe
+from Data.IntMap.Strict import :: IntMap
+import qualified Data.IntMap.Strict as DIS
 
 :: CircularStack a =
   { maxSize    :: !Int
   , actualSize :: !Int
-  , currIdx    :: !Int
-  , stackData  :: !.{a}
+  , nextIdx    :: !Int
+  , stackData  :: !IntMap a
   }
 
-newStack :: !Int -> .(CircularStack a)
+
+newStack :: !Int -> CircularStack a
 newStack n = { CircularStack
              | maxSize    = n
              , actualSize = 0
-             , currIdx    = 0
-             , stackData  = createArray n undef
+             , nextIdx    = 0
+             , stackData  = 'DIS'.newMap
              }
 
-push :: a *(CircularStack a) -> *CircularStack a
+push :: a (CircularStack a) -> CircularStack a
 push x stack
   = { stack
-    & stackData.[stack.currIdx] = x
-    , actualSize                = if (stack.actualSize == stack.maxSize)
-                                    stack.actualSize
-                                    (stack.actualSize + 1)
-    , currIdx                   = (stack.currIdx + 1) modulo stack.maxSize
+    & stackData  = 'DIS'.put stack.nextIdx x stack.stackData
+    , actualSize = if (stack.actualSize == stack.maxSize)
+                     stack.actualSize
+                     (stack.actualSize + 1)
+    , nextIdx    = (stack.nextIdx + 1) modulo stack.maxSize
     }
 
-pop :: .(CircularStack a) -> (a, CircularStack a)
+pop :: (CircularStack a) -> (a, CircularStack a)
 pop stack
-  | isEmpty stack = abort "Cannot pop from empty stack"
-  | otherwise     = (stack.stackData.[stack.currIdx], {stack & currIdx = topIdx stack})
+  | emptyStack stack = abort "Cannot pop from empty stack"
+  | otherwise
+      # topIdx = topElemIdx stack
+      = ( fromJust ('DIS'.get topIdx stack.stackData)
+        , { stack
+          & nextIdx = topIdx
+          , actualSize = stack.actualSize - 1})
 
-peek :: .(CircularStack a) -> a
+peek :: (CircularStack a) -> a
 peek stack
-  | isEmpty stack = abort "Cannot peek in empty stack"
-  | otherwise     = stack.stackData.[topIdx stack]
+  | emptyStack stack = abort "Cannot peek in empty stack"
+  | otherwise        = fromJust ('DIS'.get (topElemIdx stack) stack.stackData)
 
-topIdx :: .(CircularStack a) -> Int
-topIdx stack
-  | stack.currIdx == 0 = stack.maxSize - 1
-  | otherwise          = stack.currIdx - 1
+topElemIdx :: (CircularStack a) -> Int
+topElemIdx stack
+  | stack.nextIdx == 0 = stack.maxSize - 1
+  | otherwise          = stack.nextIdx - 1
 
-isEmpty :: .(CircularStack a) -> Bool
-isEmpty stack = stack.actualSize == 0
+emptyStack :: (CircularStack a) -> Bool
+emptyStack stack = stack.actualSize == 0
 
-toList :: .(CircularStack a) -> [a]
+toList :: (CircularStack a) -> [a]
 toList stack
-  | isEmpty stack = []
+  | emptyStack stack = []
   | otherwise
       # (x, stack) = pop stack
       = [x : toList stack]
