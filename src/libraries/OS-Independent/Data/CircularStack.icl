@@ -1,17 +1,10 @@
 implementation module Data.CircularStack
 
 //import StdInt, StdOverloaded, StdArray, StdMisc, StdList
-import StdInt, StdList, StdMisc, Data.Maybe
+import StdInt, StdList, StdMisc
 from Data.IntMap.Strict import :: IntMap
 import qualified Data.IntMap.Strict as DIS
-
-:: CircularStack a =
-  { maxSize    :: !Int
-  , actualSize :: !Int
-  , nextIdx    :: !Int
-  , stackData  :: !IntMap a
-  }
-
+from Data.Maybe import :: Maybe (..)
 
 newStack :: !Int -> CircularStack a
 newStack n = { CircularStack
@@ -31,20 +24,20 @@ push x stack
     , nextIdx    = (stack.nextIdx + 1) modulo stack.maxSize
     }
 
-pop :: (CircularStack a) -> (a, CircularStack a)
+pop :: (CircularStack a) -> (Maybe a, CircularStack a)
 pop stack
-  | emptyStack stack = abort "Cannot pop from empty stack"
+  | emptyStack stack = (Nothing, stack)
   | otherwise
       # topIdx = topElemIdx stack
-      = ( fromJust ('DIS'.get topIdx stack.stackData)
+      = ( 'DIS'.get topIdx stack.stackData
         , { stack
           & nextIdx = topIdx
           , actualSize = stack.actualSize - 1})
 
-peek :: (CircularStack a) -> a
+peek :: (CircularStack a) -> Maybe a
 peek stack
-  | emptyStack stack = abort "Cannot peek in empty stack"
-  | otherwise        = fromJust ('DIS'.get (topElemIdx stack) stack.stackData)
+  | emptyStack stack = Nothing
+  | otherwise        = 'DIS'.get (topElemIdx stack) stack.stackData
 
 topElemIdx :: (CircularStack a) -> Int
 topElemIdx stack
@@ -58,8 +51,10 @@ toList :: (CircularStack a) -> [a]
 toList stack
   | emptyStack stack = []
   | otherwise
-      # (x, stack) = pop stack
-      = [x : toList stack]
+      # (mx, stack) = pop stack
+      = case mx of
+          Just x -> [x : toList stack]
+          _      -> toList stack
 
 fromList :: [a] -> CircularStack a
 fromList xs = foldr push (newStack (length xs)) xs

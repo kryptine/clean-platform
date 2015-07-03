@@ -1,16 +1,22 @@
 definition module Data.CircularStack
 
-import StdArray
+from Data.Maybe import :: Maybe
+from Data.IntMap.Strict import :: IntMap
 
-:: CircularStack a
+:: CircularStack a =
+  { maxSize    :: !Int
+  , actualSize :: !Int
+  , nextIdx    :: !Int
+  , stackData  :: !IntMap a
+  }
 
 newStack   :: !Int -> CircularStack a
 
 push       :: a (CircularStack a) -> CircularStack a
 
-pop        :: (CircularStack a) -> (a, CircularStack a)
+pop        :: (CircularStack a) -> (Maybe a, CircularStack a)
 
-peek       :: (CircularStack a) -> a
+peek       :: (CircularStack a) -> Maybe a
 
 emptyStack :: (CircularStack a) -> Bool
 
