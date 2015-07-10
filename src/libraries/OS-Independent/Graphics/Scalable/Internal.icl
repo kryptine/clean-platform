@@ -96,6 +96,15 @@ strictFoldl f b [x:xs]
   #! r = f b x
   = foldl f r xs
 
+flatten :: ![[a]] -> [a]
+flatten xss = flatten` xss []
+
+flatten` :: ![[a]] [a] -> [a]
+flatten` [] acc = acc
+flatten` [xs:xss] acc
+  #! r = xs ++ acc
+  = flatten` xss r
+
 instance / Span where
   / (PxSpan 0.0)           _             = PxSpan 0.0
   / _                      (PxSpan 0.0)  = PxSpan 0.0 // Division by zero should be undefined, but that would be impractical

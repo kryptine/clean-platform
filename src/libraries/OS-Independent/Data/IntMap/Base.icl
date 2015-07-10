@@ -1380,7 +1380,7 @@ assocs m = toAscList m
   //| m .&. IntSet.suffixBitMask == 0 = IntSet.Bin p m (keysSet l) (keysSet r)
   //| otherwise = IntSet.Tip (p .&. IntSet.prefixBitMask) (computeBm (computeBm 0 l) r)
   //where
-  //// TODO 1st strict
+  // TODO 1st strict
         //computeBm acc (Bin _ _ l` r`) = computeBm (computeBm acc l`) r`
         //computeBm acc (Tip kx _) = acc .|. IntSet.bitmapOf kx
         //computeBm _   Nil = abort "Data.IntSet.keysSet: Nil"
