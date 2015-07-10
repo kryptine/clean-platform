@@ -1,29 +1,29 @@
 definition module Text
-/**
+/*
 * This module defines the basic operations on pieces of text
 * It also gives an implementation for the String type which
 * is assumed to be an ASCII string
 */
 from StdOverloaded import class +
 
-/**
+/*
 * This class defines the basic operations for manipulating pieces of text.
 */
 class Text s 
 	where
 	
-	/**
+	/*
 	* Calculates the number of logical characters in a piece of text.
 	* When a multibyte encoding is used, this is less then the size in bytes.
 	*/
 	textSize			:: !s -> Int
 	
-	/**
+	/*
 	* Concatenates a list of strings.
 	*/
 	concat				:: ![s] -> s
 	
-	/**
+	/*
 	* Splits a string into a list of strings using a separator string.
 	*
 	* @param The separator string.
@@ -31,7 +31,7 @@ class Text s
 	*/
 	split				:: !s !s -> [s]
 	
-	/**
+	/*
 	* Joins a list of strings using a separator string.
 	*
 	* @param The separator string.
@@ -39,7 +39,7 @@ class Text s
 	*/
 	join				:: !s ![s] -> s
 	
-	/**
+	/*
 	* Find the first occurence of a substring in another string.
 	*
 	* @param The search string.
@@ -47,7 +47,7 @@ class Text s
 	*/
 	indexOf 			:: !s !s -> Int
 	
-	/**
+	/*
  	* Find the last occurence of a substring in another string.
 	*
 	* @param The search string.
@@ -55,7 +55,7 @@ class Text s
 	*/
 	lastIndexOf 		:: !s !s -> Int
 	
-	/**
+	/*
 	* Find the first occurence of a substring in another string after a given offset.
 	*
 	* @param The offset.
@@ -64,7 +64,7 @@ class Text s
 	*/
 	indexOfAfter		:: !Int !s !s -> Int
 	
-	/**
+	/*
 	* Predicate which tests if a string starts with another substring
 	*
 	* @param The substring.
@@ -72,7 +72,7 @@ class Text s
 	*/
 	startsWith			:: !s !s -> Bool
 	
-	/**
+	/*
 	* Predicate which tests if a string ends with another substring
 	*
 	* @param The substring.
@@ -80,7 +80,7 @@ class Text s
 	*/
 	endsWith			:: !s !s -> Bool
 	
-	/**
+	/*
 	* Take a substring from a string
 	*
 	* @param The logical start index.
@@ -89,7 +89,7 @@ class Text s
 	*/
 	subString			:: !Int !Int !s -> s 
 	
-	/**
+	/*
 	* Replaces all occurences of a substring with another in a string
 	*
 	* @param The substring.
@@ -98,52 +98,52 @@ class Text s
 	*/
 	replaceSubString	:: !s !s !s -> s
 	
-	/**
+	/*
 	* Removes whitespace from the beginning and end of a string.
 	*/
 	trim				:: !s -> s
 	
-	/**
+	/*
 	* Removes whitespace from the beginning of a string.
 	*/
 	ltrim				:: !s -> s
 	
-	/**
+	/*
 	* Removes whitespace from the end of a string.
 	*/
 	rtrim				:: !s -> s
 	
-	/**
+	/*
 	* Pads a string to a fixed length by adding characters to the beginning of a string.
 	*/
 	lpad				:: !s !Int !Char -> s
 	
-	/**
+	/*
 	* Pads a string to a fixed length by adding characters to the end of a string.
 	*/
 	rpad				:: !s !Int !Char -> s
 	
-	/**
+	/*
 	* Converts all characters in a string to lower case.
 	*/
 	toLowerCase			:: !s -> s
 	
-	/**
+	/*
 	* Converts all characters in a string to upper case.
 	*/
 	toUpperCase			:: !s -> s
 	
-	/**
+	/*
 	* Convert the first character in a string to upper case.
 	*/
 	upperCaseFirst		:: !s -> s
 	
-	/**
+	/*
 	* Drop given number of chars from the beginning of the string
 	*/
 	dropChars			:: !Int !s -> s
 
-/**
+/*
 * Instances of the text operations for plain ASCII strings.
 */
 instance Text String
