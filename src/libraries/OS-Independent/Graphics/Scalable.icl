@@ -193,7 +193,7 @@ normalizePolyPoints :: ![ImageOffset] -> [ImageOffset]
 normalizePolyPoints offsets
   #! minX = minSpan (strictTRMap fst offsets)
   #! minY = minSpan (strictTRMap snd offsets)
-  = foldr (\(x, y) acc -> [(x - minX, y - minY) : acc]) [] offsets
+  = strictTRMap (\(x, y) -> (x - minX, y - minY)) offsets
 
 rotate :: !Angle !(Image m) -> Image m
 rotate a image=:{Image | transform = ts}
