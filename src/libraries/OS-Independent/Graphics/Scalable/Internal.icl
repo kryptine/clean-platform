@@ -183,10 +183,10 @@ instance - Span where
   - s                      t                      = SubSpan s t
 
 instance *. Int  where
-  *. l r = toInt (toReal l * toReal r)
+  *. l r = PxSpan (toReal l * toReal r)
 
 instance *. Real where
-  *. l r = l * toReal r
+  *. l r = PxSpan (l * toReal r)
 
 instance *. Span where
   *. (PxSpan  a)             k = PxSpan    (a * toReal k)
@@ -198,10 +198,10 @@ instance *. Span where
   *. s                       k = MulSpan s (PxSpan (toReal k))
 
 instance /. Int  where
-  /. l r = toInt (toReal l / toReal r)
+  /. l r = PxSpan (toReal l / toReal r)
 
 instance /. Real where
-  /. l r = l / toReal r
+  /. l r = PxSpan (l / toReal r)
 
 instance /. Span where
   /. (PxSpan  a)             k = PxSpan (a / toReal k)
