@@ -7,7 +7,11 @@ from StdEnv import class *, class +, class zero
 
 instance * (Matrix a) | *, +, zero a
 
-mulVec :: (Vector a) (Vector a) -> a | *, +, zero a
+dotVec :: (Vector a) (Vector a) -> a | *, +, zero a
+
+mulVecMatrix :: (Vector a) (Matrix a) -> Matrix a | *, +, zero a
+
+mulMatrixVec :: (Matrix a) (Vector a) -> Matrix a | *, +, zero a
 
 row :: Int (Matrix a) -> Vector a
 
