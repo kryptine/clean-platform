@@ -12,10 +12,10 @@ dotVec vl vr
   = sum [vl.[i] * vr.[i] \\ i <- [0..size vl - 1]]
 
 mulVecMatrix :: (Vector a) (Matrix a) -> Matrix a | *, +, zero a
-mulVecMatrix v m = {v} * m
+mulVecMatrix vec m = {{v} \\ v <-: vec} * m
 
 mulMatrixVec :: (Matrix a) (Vector a) -> Matrix a | *, +, zero a
-mulMatrixVec m v = m * {v}
+mulMatrixVec m vec = m * {{v} \\ v <-: vec}
 
 row :: Int (Matrix a) -> Vector a
 row n matrix = matrix.[n]
