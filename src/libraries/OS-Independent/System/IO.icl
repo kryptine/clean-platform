@@ -50,7 +50,7 @@ readFileM :: !String -> IO String
 readFileM name = withWorld f
   where
   f world
-    # (ok, file, world) = fopen name FWriteText world
+    # (ok, file, world) = fopen name FReadText world
     # (str, file)       = freads file 16777216
     # (ok, world)       = fclose file world
     = (str, world)
