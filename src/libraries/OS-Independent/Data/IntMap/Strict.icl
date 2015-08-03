@@ -37,10 +37,10 @@ findWithDefault def k (Tip kx x)
   | otherwise = def
 findWithDefault def _ _ = def
 
-get :: !Int !(IntMap a) -> Maybe a
+get :: !Int !.(IntMap a) -> Maybe a
 get k m = lookup k m
 
-lookup :: !Int !(IntMap a) -> Maybe a
+lookup :: !Int !.(IntMap a) -> Maybe a
 lookup k (Bin p m l r)
   | nomatch k p m = Nothing
   | zero k m  = lookup k l
@@ -108,7 +108,7 @@ null _   = False
 // > insert 5 'x' (fromList [(5,'a'), (3,'b')]) == fromList [(3, 'b'), (5, 'x')]
 // > insert 7 'x' (fromList [(5,'a'), (3,'b')]) == fromList [(3, 'b'), (5, 'a'), (7, 'x')]
 // > insert 5 'x' empty                         == singleton 5 'x'
-insert :: !Int !a !(IntMap a) -> IntMap a
+insert :: !Int !a !.(IntMap a) -> IntMap a
 insert k x t =
   case t of
     Bin p m l r
@@ -120,7 +120,7 @@ insert k x t =
       | otherwise     -> link k (Tip k x) ky t
     Nil -> Tip k x
 
-put :: !Int !a !(IntMap a) -> IntMap a
+put :: !Int !a !.(IntMap a) -> IntMap a
 put k v m = insert k v m
 
 member :: !Int !(IntMap a) -> Bool
@@ -143,7 +143,7 @@ union m1 m2 = mergeWithKey` Bin const id id m1 m2
 unions :: ![IntMap a] -> IntMap a
 unions xs = foldlStrict union empty xs
 
-foldrWithKey :: !(Int a u:b -> u:b) !u:b !(IntMap a) -> u:b
+foldrWithKey :: !(Int a .b -> .b) !.b !.(IntMap a) -> .b
 foldrWithKey f z t =
   case t of Bin _ m l r | m < 0 -> go f (go f z l) r // put negative numbers before
                         | otherwise -> go f (go f z r) l

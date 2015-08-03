@@ -34,7 +34,7 @@ mapSize     :: !(IntMap v) -> Int
 * @param The original mapping
 * @return The modified mapping with the added value
 */
-put :: !Int !a !(IntMap a) -> IntMap a
+put :: !Int !a !.(IntMap a) -> IntMap a
 /**
 * Searches for a value at a given key position. Works only for non-unique
 * mappings.
@@ -44,7 +44,7 @@ put :: !Int !a !(IntMap a) -> IntMap a
 * @return When found, the value at the key position, if not: Nothing
 */
 
-get :: !Int !(IntMap a) -> Maybe a
+get :: !Int !.(IntMap a) -> Maybe a
 
 /**
 * Removes the value at a given key position. The mapping itself can be spine unique.
@@ -79,7 +79,7 @@ mergeWithKey :: !(Int a b -> Maybe c) !((IntMap a) -> IntMap c) !((IntMap b) -> 
 
 foldlStrict :: !(a b -> a) !a ![b] -> a
 
-foldrWithKey :: !(Int a u:b -> u:b) !u:b !(IntMap a) -> u:b
+foldrWithKey :: !(Int a .b -> .b) !.b !.(IntMap a) -> .b
 
 union :: !(IntMap a) !(IntMap a) -> IntMap a
 
