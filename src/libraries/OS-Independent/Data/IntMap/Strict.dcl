@@ -22,7 +22,7 @@ null :: !(IntMap a) -> Bool
 */
 newMap      :: w:(IntMap u:v), [ w <= u]
 
-singleton   :: !Int !a -> IntMap a
+singleton   :: !Int !.a -> .(IntMap .a)
 
 mapSize     :: !(IntMap v) -> Int
 
@@ -34,7 +34,7 @@ mapSize     :: !(IntMap v) -> Int
 * @param The original mapping
 * @return The modified mapping with the added value
 */
-put :: !Int !a !.(IntMap a) -> IntMap a
+put :: !Int !u:a !v:(IntMap u:a) -> w:(IntMap u:a), [w <= u,v <= w]
 /**
 * Searches for a value at a given key position. Works only for non-unique
 * mappings.
@@ -44,7 +44,9 @@ put :: !Int !a !.(IntMap a) -> IntMap a
 * @return When found, the value at the key position, if not: Nothing
 */
 
-get :: !Int !.(IntMap a) -> Maybe a
+get :: !Int !.(IntMap .a) -> Maybe .a
+
+getU :: !Int !u:(IntMap a) -> v:(!w:(Maybe a), !x:(IntMap a)), [v <= w,v u <= x]
 
 /**
 * Removes the value at a given key position. The mapping itself can be spine unique.

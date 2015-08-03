@@ -37,10 +37,10 @@ findWithDefault def k (Tip kx x)
   | otherwise = def
 findWithDefault def _ _ = def
 
-get :: !Int !.(IntMap a) -> Maybe a
+get :: !Int !.(IntMap .a) -> Maybe .a
 get k m = lookup k m
 
-lookup :: !Int !.(IntMap a) -> Maybe a
+lookup :: !Int !.(IntMap .a) -> Maybe .a
 lookup k (Bin p m l r)
   | nomatch k p m = Nothing
   | zero k m  = lookup k l
@@ -49,6 +49,16 @@ lookup k (Tip kx x)
   | k == kx   = Just x
   | otherwise = Nothing
 lookup k Nil = Nothing
+
+getU :: !Int !u:(IntMap a) -> v:(!w:(Maybe a), !x:(IntMap a)), [v <= w,v u <= x]
+getU k mp=:(Bin p m l r)
+  | nomatch k p m = (Nothing, mp)
+  | zero k m  = getU k l
+  | otherwise = getU k r
+getU k mp=:(Tip kx x)
+  | k == kx   = (Just x, mp)
+  | otherwise = (Nothing, mp)
+getU k Nil = (Nothing, Nil)
 
 find :: !Int !(IntMap a) -> a
 find k (Bin p m l r)
@@ -80,7 +90,7 @@ not_found k = abort ("IntMap.!: key is not an element of the map")
 //
 // > singleton 1 'a'        == fromList [(1, 'a')]
 // > size (singleton 1 'a') == 1
-singleton :: !Int !a -> IntMap a
+singleton :: !Int !.a -> .(IntMap .a)
 singleton k x = Tip k x
 
 mapSize :: !(IntMap a) -> Int
@@ -108,7 +118,7 @@ null _   = False
 // > insert 5 'x' (fromList [(5,'a'), (3,'b')]) == fromList [(3, 'b'), (5, 'x')]
 // > insert 7 'x' (fromList [(5,'a'), (3,'b')]) == fromList [(3, 'b'), (5, 'a'), (7, 'x')]
 // > insert 5 'x' empty                         == singleton 5 'x'
-insert :: !Int !a !.(IntMap a) -> IntMap a
+insert :: !Int !u:a !v:(IntMap u:a) -> w:(IntMap u:a), [w <= u,v <= w]
 insert k x t =
   case t of
     Bin p m l r
@@ -120,7 +130,7 @@ insert k x t =
       | otherwise     -> link k (Tip k x) ky t
     Nil -> Tip k x
 
-put :: !Int !a !.(IntMap a) -> IntMap a
+put :: !Int !u:a !v:(IntMap u:a) -> w:(IntMap u:a), [w <= u,v <= w]
 put k v m = insert k v m
 
 member :: !Int !(IntMap a) -> Bool
@@ -722,7 +732,7 @@ foldlStrict f acc [x:xs]
 zero :: !Int !Mask -> Bool
 zero i m = (i bitand m) == 0
 
-link :: !Prefix !(IntMap a) !Prefix !(IntMap a) -> IntMap a
+link :: !Prefix !u:(IntMap v:a) !Prefix !w:(IntMap v:a) -> x:(IntMap v:a), [x <= v,w u <= x]
 link p1 t1 p2 t2
   #! m = branchMask p1 p2
   #! p = mask p1 m
