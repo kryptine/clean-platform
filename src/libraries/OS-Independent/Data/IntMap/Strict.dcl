@@ -46,7 +46,7 @@ put :: !Int !u:a !v:(IntMap u:a) -> w:(IntMap u:a), [w <= u,v <= w]
 
 get :: !Int !.(IntMap .a) -> Maybe .a
 
-getU :: !Int !u:(IntMap a) -> v:(!w:(Maybe a), !x:(IntMap a)), [v <= w,v u <= x]
+getU :: !Int !*(IntMap a) -> *(.(Maybe a), *(IntMap a))
 
 /**
 * Removes the value at a given key position. The mapping itself can be spine unique.
@@ -63,6 +63,8 @@ elems :: !(IntMap a) -> [a]
 derive JSONEncode IntMap
 derive JSONDecode IntMap
 derive gEq IntMap
+
+size :: !(IntMap a) -> Int
 
 member :: !Int !(IntMap a) -> Bool
 

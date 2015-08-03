@@ -50,13 +50,13 @@ lookup k (Tip kx x)
   | otherwise = Nothing
 lookup k Nil = Nothing
 
-getU :: !Int !u:(IntMap a) -> v:(!w:(Maybe a), !x:(IntMap a)), [v <= w,v u <= x]
+getU :: !Int !*(IntMap a) -> *(.(Maybe a), *(IntMap a))
 getU k mp=:(Bin p m l r)
   | nomatch k p m = (Nothing, mp)
   | zero k m  = getU k l
   | otherwise = getU k r
 getU k mp=:(Tip kx x)
-  | k == kx   = (Just x, mp)
+  | k == kx   = (Just x, Tip kx x)
   | otherwise = (Nothing, mp)
 getU k Nil = (Nothing, Nil)
 
