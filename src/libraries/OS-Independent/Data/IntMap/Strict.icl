@@ -143,13 +143,13 @@ union m1 m2 = mergeWithKey` Bin const id id m1 m2
 unions :: ![IntMap a] -> IntMap a
 unions xs = foldlStrict union empty xs
 
-foldrWithKey :: !(Int a b -> b) !b !(IntMap a) -> b
+foldrWithKey :: !(Int a u:b -> u:b) !u:b !(IntMap a) -> u:b
 foldrWithKey f z t =
   case t of Bin _ m l r | m < 0 -> go f (go f z l) r // put negative numbers before
                         | otherwise -> go f (go f z r) l
             _ -> go f z t
   where
-  go :: !(Int a b -> b) !b !(IntMap a) -> b
+  go :: !(Int a u:b -> u:b) !u:b !(IntMap a) -> u:b
   go _ z` Nil           = z`
   go f z` (Tip kx x)    = f kx x z`
   go f z` (Bin _ _ l r) = go f (go f z` r) l
