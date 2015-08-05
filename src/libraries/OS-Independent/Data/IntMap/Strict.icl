@@ -141,10 +141,10 @@ member k (Bin p m l r)
 member k (Tip kx _) = k == kx
 member k Nil = False
 
-elems :: !(IntMap a) -> [a]
+elems :: !.(IntMap a) -> [a]
 elems m = foldr (\x xs -> [x:xs]) [] m
 
-keys  :: !(IntMap a) -> [Int]
+keys  :: !.(IntMap a) -> [Int]
 keys m = foldrWithKey (\k _ ks -> [k : ks]) [] m
 
 union :: !(IntMap a) !(IntMap a) -> IntMap a
@@ -718,6 +718,16 @@ instance Functor IntMap where
   fmap _ Nil       = Nil
   fmap f (Tip n x) = Tip n (f x)
   fmap f (Bin p m l r) = Bin p m (fmap f l) (fmap f r)
+
+mapSt :: !(a *st -> *(b, *st)) !.(IntMap a) *st -> *(!IntMap b, !*st)
+mapSt _ Nil       st = (Nil, st)
+mapSt f (Tip n x) st
+  #! (x, st) = f x st
+  = (Tip n x, st)
+mapSt f (Bin p m l r) st
+  #! (l, st) = mapSt f l st
+  #! (r, st) = mapSt f r st
+  = (Bin p m l r, st)
 
 derive JSONEncode IntMap
 derive JSONDecode IntMap

@@ -57,8 +57,8 @@ getU :: !Int !*(IntMap a) -> *(.(Maybe a), *(IntMap a))
 */
 del :: !Int !(IntMap a) -> IntMap a
 
-keys  :: !(IntMap a) -> [Int]
-elems :: !(IntMap a) -> [a]
+keys  :: !.(IntMap a) -> [Int]
+elems :: !.(IntMap a) -> [a]
 
 derive JSONEncode IntMap
 derive JSONDecode IntMap
@@ -91,6 +91,10 @@ unions :: ![IntMap a] -> IntMap a
 
 instance Functor IntMap
 
+mapSt :: !(a *st -> *(b, *st)) !.(IntMap a) *st -> *(!IntMap b, !*st)
+
 toList :: !(IntMap a) -> [(!Int, !a)]
 
 toAscList :: !(IntMap a) -> [(!Int, !a)]
+
+fromList :: ![(!Int, !a)] -> IntMap a

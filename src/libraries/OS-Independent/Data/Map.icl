@@ -2475,7 +2475,7 @@ foldlNoKey f z m = go z m
     go z` (MNode l _ _ v r) = go (f (go z` l) v) r
 
 // TODO Replace this with an efficient implementation that does not require Eq and Ord
-filterWithKey :: (k a -> Bool) (Map k a) -> Map k a | Eq k & gLexOrd{|*|} k
+filterWithKey :: (k a -> Bool) (Map k a) -> Map k a
 filterWithKey p m = fromList [(k, v) \\ (k, v) <- toList m | p k v]
 
 keys :: (Map k a) -> [k]
