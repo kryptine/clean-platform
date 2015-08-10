@@ -15,20 +15,20 @@ import Text.HTML
 from Data.Functor import class Functor (..)
 import GenLexOrd
 
-strictTRMapRev :: !(a -> b) ![a] -> [b]
+strictTRMapRev :: !(.a -> .b) ![.a] -> [.b]
 strictTRMapRev f xs = strictTRMapAcc f xs []
 
-strictTRMapAcc :: !(a -> b) ![a] ![b] -> [b]
+strictTRMapAcc :: !(.a -> .b) ![.a] ![.b] -> [.b]
 strictTRMapAcc f []     acc = acc
 strictTRMapAcc f [x:xs] acc = strictTRMapAcc f xs [f x : acc]
 
-strictTRMap :: !(a -> b) ![a] -> [b]
+strictTRMap :: !(.a -> .b) ![.a] -> [.b]
 strictTRMap f xs = reverseTR (strictTRMapAcc f xs [])
 
-reverseTR :: ![a] -> [a]
+reverseTR :: ![.a] -> [.a]
 reverseTR xs = rev` xs []
   where
-  rev` :: ![a] ![a] -> [a]
+  rev` :: ![.a] ![.a] -> [.a]
   rev` [] acc = acc
   rev` [x:xs] acc = rev` xs [x:acc]
 
