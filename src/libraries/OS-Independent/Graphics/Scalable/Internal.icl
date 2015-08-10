@@ -18,7 +18,7 @@ import GenLexOrd
 strictTRMapRev :: !(.a -> .b) ![.a] -> [.b]
 strictTRMapRev f xs = strictTRMapAcc f xs []
 
-strictTRMapAcc :: !(.a -> .b) ![.a] ![.b] -> [.b]
+strictTRMapAcc :: !(u:a -> v:b) !w:[u:a] !x:[v:b] -> y:[v:b], [w <= u,y <= v,x <= y]
 strictTRMapAcc f []     acc = acc
 strictTRMapAcc f [x:xs] acc = strictTRMapAcc f xs [f x : acc]
 
@@ -28,7 +28,7 @@ strictTRMap f xs = reverseTR (strictTRMapAcc f xs [])
 reverseTR :: ![.a] -> [.a]
 reverseTR xs = rev` xs []
   where
-  rev` :: ![.a] ![.a] -> [.a]
+  rev` :: !u:[v:a] !w:[v:a] -> x:[v:a], [x u <= v,w <= x]
   rev` [] acc = acc
   rev` [x:xs] acc = rev` xs [x:acc]
 
