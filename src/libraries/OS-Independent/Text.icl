@@ -4,7 +4,7 @@ import StdOverloaded, StdString, StdArray, StdChar, StdInt, StdBool, StdClass, S
 
 instance Text String
 	where
-	textSize :: !String -> Int 
+	textSize :: !String -> Int
 	textSize s = size s	
 
 	concat :: ![String] -> String
