@@ -13,3 +13,7 @@ foldrUArr :: !(a -> .(.b -> .(*(arr a) -> *(.b, *(arr a))))) .b *(arr a)
 
 foldrUArrWithKey :: !(Int a -> .(.b -> .(*(arr a) -> *(.b, *(arr a))))) .b *(arr a)
                  -> *(.b, *(arr a)) | Array arr a
+
+foldlArr :: !(.b a -> .b) !.b !.(arr a) -> .b | Array arr a
+
+foldlArrWithKey :: !(Int .b a -> .b) !.b !.(arr a) -> .b | Array arr a

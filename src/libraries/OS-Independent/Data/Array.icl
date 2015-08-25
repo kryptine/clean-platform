@@ -47,3 +47,19 @@ foldrUArrWithKey f b arr
       #! (elem, arr) = uselect arr idx
       #! (res, arr)  = foldUArr` sz (idx + 1) b arr
       = f idx elem res arr
+
+foldlArr :: !(.b a -> .b) !.b !.(arr a) -> .b | Array arr a
+foldlArr f b arr = foldlArrWithKey (\_ -> f) b arr
+
+foldlArrWithKey :: !(Int .b a -> .b) !.b !.(arr a) -> .b | Array arr a
+foldlArrWithKey f b arr
+  #! (arrSz, arr) = usize arr
+  = foldlArr` arrSz 0 f b arr
+  where
+  foldlArr` :: !Int !Int !(Int .b a -> .b) !.b !.(arr a) -> .b | Array arr a
+  foldlArr` arrSz idx f b arr
+    | idx == arrSz = b
+    | otherwise
+        #! (e, arr) = arr![idx]
+        #! b` = f idx b e
+        = foldlArr` arrSz (idx + 1) f b` arr
