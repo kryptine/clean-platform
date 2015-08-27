@@ -2,8 +2,6 @@ implementation module Math.Geometry
 
 import StdOverloaded, StdClass, StdReal
 
-pi =: 3.14159265359
-
 rad :: !Real -> Angle
 rad r = Rad r
 
