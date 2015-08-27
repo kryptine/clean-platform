@@ -13,6 +13,7 @@ from StdBool import &&, ||
 import qualified Data.Set as DS
 import Text.HTML
 from Data.Functor import class Functor (..)
+import Math.Geometry
 
 isPxSpan :: !Span -> Bool
 isPxSpan (PxSpan _) = True
@@ -268,14 +269,6 @@ skewy yskew image=:{Image | transform = ts}
                    = [SkewYImage yskew` : ts]
       = {Image | image & transform = ts`}
 
-rad :: !Real -> Angle
-rad r = Rad r
-
-deg :: !Real -> Angle
-deg d = Deg d
-
-pi =: 3.14159265359
-
 overlay :: ![ImageAlign] ![ImageOffset] ![Image m] !(Host m) -> Image m
 overlay _      _       []   (Just img) = img
 overlay _      _       []   _          = empty (px 0.0) (px 0.0)
@@ -447,50 +440,6 @@ chop n xs
 instance + ImageOffset where
   (+) :: !ImageOffset !ImageOffset -> ImageOffset
   (+) (xal1, yal1) (xal2, yal2) = (xal1 + xal2, yal1 + yal2)
-
-toDeg :: !Angle -> Real
-toDeg (Deg r) = r
-toDeg (Rad r) = r / (pi / 180.0)
-
-toRad :: !Angle -> Real
-toRad (Deg r) = (pi / 180.0) * r
-toRad (Rad r) = r
-
-normalize :: !Angle -> Angle
-normalize a
-  #! a`    = toDeg a
-  #! absa` = abs a`
-  | absa` <= 360.0 = Deg a`
-  | a`    >  0.0   = Deg (a` - d absa`)
-  | otherwise      = Deg (a` + d absa`)
-  where
-  d :: !Real -> Real
-  d absa` = toReal (entier (absa` / 360.0)) * 360.0
-
-instance == Angle where
-  (==) :: !Angle !Angle -> Bool
-  (==) (Deg r) r` = r == toDeg r`
-  (==) (Rad r) r` = r == toRad r`
-
-instance < Angle where
-  (<) :: !Angle !Angle -> Bool
-  (<) (Deg r) r` = r < toDeg r`
-  (<) (Rad r) r` = r < toRad r`
-
-instance + Angle where
-  (+) :: !Angle !Angle -> Angle
-  (+) (Deg r) r` = Deg (r + toDeg r`)
-  (+) (Rad r) r` = Rad (r + toRad r`)
-
-instance - Angle where
-  (-) :: !Angle !Angle -> Angle
-  (-) (Deg r) r` = Deg (r - toDeg r`)
-  (-) (Rad r) r` = Rad (r - toRad r`)
-
-instance sign Angle where
-  sign :: !Angle -> Int
-  sign (Deg r) = sign r
-  sign (Rad r) = sign r
 
 instance == FontDef where
   (==) :: !FontDef !FontDef -> Bool

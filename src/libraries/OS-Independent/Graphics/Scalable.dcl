@@ -22,6 +22,7 @@ from StdOverloaded import class zero (..), class + (..), class - (..),
 from Data.Maybe import :: Maybe (..)
 from Text.HTML import :: SVGColor
 from Data.Set import :: Set
+import Math.Geometry
 
 px         :: !Real            -> Span // (px a) is a pixels
 textxspan  :: !FontDef !String -> Span // (textxspan font str) is the x-span of str written in font
@@ -68,9 +69,6 @@ flipy    :: !(Image m) -> Image m
 skewx    :: !Angle !(Image m) -> Image m
 skewy    :: !Angle !(Image m) -> Image m
 
-rad :: !Real -> Angle
-deg :: !Real -> Angle
-
 overlay ::                            ![ImageAlign] ![ImageOffset] ![Image m] !(Host m) -> Image m
 beside  ::                                ![YAlign] ![ImageOffset] ![Image m] !(Host m) -> Image m
 above   ::                                ![XAlign] ![ImageOffset] ![Image m] !(Host m) -> Image m
@@ -107,16 +105,6 @@ tag        :: !*ImageTag !(Image m)  -> Image m
 tagWithSrc :: !*TagSource !(Image m) -> *(!(!Image m, !ImageTag), !*TagSource)
 
 instance +  ImageOffset
-
-toDeg     :: !Angle -> Real
-toRad     :: !Angle -> Real
-normalize :: !Angle -> Angle
-
-instance == Angle
-instance < Angle
-instance + Angle
-instance - Angle
-instance sign Angle
 
 instance == FontDef
 instance < FontDef

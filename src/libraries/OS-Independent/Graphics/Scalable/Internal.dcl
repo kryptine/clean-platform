@@ -3,6 +3,7 @@ definition module Graphics.Scalable.Internal
 from Data.Maybe import :: Maybe
 from Text.HTML import :: SVGColor
 from Data.Set import :: Set
+from Math.Geometry import :: Angle
 from StdOverloaded import class zero, class +, class -, class ~, class sign, class abs, class <, class ==, class toReal, class /, class *
 
 :: Image m
@@ -131,10 +132,6 @@ from StdOverloaded import class zero, class +, class -, class ~, class sign, cla
 
 :: ImageTag
   = ImageTagUser !Int !String | ImageTagSystem !Int
-
-:: Angle
-  = Deg !Real
-  | Rad !Real
 
 :: XAlign
   = AtLeft
