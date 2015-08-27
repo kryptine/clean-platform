@@ -1,6 +1,6 @@
 implementation module Data.Array
 
-import StdArray, StdInt
+import StdArray, StdInt, StdOverloaded, StdClass
 
 mapArrSt :: !(.a *st -> *(!.a, !*st)) !*(arr .a) !*st -> *(!*(arr .a), !*st) | Array arr a
 mapArrSt f arr st
@@ -19,12 +19,12 @@ mapArrSt f arr st
 foldrArr :: !(a .b -> .b) !.b !.(arr a) -> .b | Array arr a
 foldrArr f b arr = foldrArrWithKey (\_ -> f) b arr
 
-foldrArrWithKey :: !(Int a .b -> .b) !.b !.(arr a) -> .b | Array arr a
+foldrArrWithKey :: !(Int a -> .(.b -> .b)) !.b !.(arr a) -> .b | Array arr a
 foldrArrWithKey f b arr
   #! (arrSz, arr) = usize arr
   = foldrArr` arrSz 0 f b arr
   where
-  foldrArr` :: !Int !Int !(Int a .b -> .b) !.b !.(arr a) -> .b | Array arr a
+  foldrArr` :: !Int !Int !(Int a -> .(.b -> .b)) !.b !.(arr a) -> .b | Array arr a
   foldrArr` arrSz idx f b arr
     | idx == arrSz = b
     | otherwise
@@ -47,3 +47,24 @@ foldrUArrWithKey f b arr
       #! (elem, arr) = uselect arr idx
       #! (res, arr)  = foldUArr` sz (idx + 1) b arr
       = f idx elem res arr
+
+foldlArr :: !(.b a -> .b) !.b !.(arr a) -> .b | Array arr a
+foldlArr f b arr = foldlArrWithKey (\_ -> f) b arr
+
+foldlArrWithKey :: !(Int .b -> .(a -> .b)) !.b !.(arr a) -> .b | Array arr a
+foldlArrWithKey f b arr
+  #! (arrSz, arr) = usize arr
+  = foldlArr` arrSz 0 f b arr
+  where
+  foldlArr` :: !Int !Int !(Int .b -> .(a -> .b)) !.b !.(arr a) -> .b | Array arr a
+  foldlArr` arrSz idx f b arr
+    | idx == arrSz = b
+    | otherwise
+        #! (e, arr) = arr![idx]
+        #! b` = f idx b e
+        = foldlArr` arrSz (idx + 1) f b` arr
+
+reverseArr :: !.(arr a) -> .arr a | Array arr a
+reverseArr arr
+  #! sz = size arr
+  = foldlArrWithKey (\idx acc e -> {acc & [sz - idx - 1] = e}) {x \\ x <-: arr} arr
