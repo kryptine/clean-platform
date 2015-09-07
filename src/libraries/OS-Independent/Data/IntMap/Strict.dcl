@@ -83,7 +83,7 @@ mergeWithKey :: !(Int a b -> Maybe c) !((IntMap a) -> IntMap c) !((IntMap b) -> 
 
 foldlStrict :: !(a b -> a) !a ![b] -> a
 
-foldrWithKey :: !(Int a .b -> .b) !.b !.(IntMap a) -> .b
+foldrWithKey :: !(Int .a -> .(.b -> .b)) !.b !.(IntMap .a) -> .b
 
 union :: !(IntMap a) !(IntMap a) -> IntMap a
 
