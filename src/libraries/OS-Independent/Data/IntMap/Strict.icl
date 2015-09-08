@@ -51,13 +51,13 @@ lookup k (Tip kx x)
 lookup k Nil = Nothing
 
 getU :: !Int !*(IntMap a) -> *(.(Maybe a), *(IntMap a))
-getU k mp=:(Bin p m l r)
-  | nomatch k p m = (Nothing, mp)
+getU k (Bin p m l r)
+  | nomatch k p m = (Nothing, Bin p m l r)
   | zero k m  = getU k l
   | otherwise = getU k r
-getU k mp=:(Tip kx x)
+getU k (Tip kx x)
   | k == kx   = (Just x, Tip kx x)
-  | otherwise = (Nothing, mp)
+  | otherwise = (Nothing, Tip kx x)
 getU k Nil = (Nothing, Nil)
 
 find :: !Int !(IntMap a) -> a

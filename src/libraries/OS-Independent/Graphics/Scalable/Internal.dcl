@@ -131,7 +131,8 @@ from StdOverloaded import class zero, class +, class -, class ~, class sign, cla
 :: MaskAttr        m = { mask        :: !Image m  }
 
 :: ImageTag
-  = ImageTagUser !Int !String | ImageTagSystem !Int
+  = ImageTagUser !Int !String
+  | ImageTagSystem !Int
 
 :: XAlign
   = AtLeft
