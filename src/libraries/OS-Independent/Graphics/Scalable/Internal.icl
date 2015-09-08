@@ -33,21 +33,21 @@ reverseTR xs = rev` xs []
   rev` [x:xs] acc = rev` xs [x:acc]
 
 instance / Span where
-  / (PxSpan 0.0)           _             = PxSpan 0.0
-  / _                      (PxSpan 0.0)  = PxSpan 0.0 // Division by zero should be undefined, but that would be impractical
-  / l                      (PxSpan 1.0)  = l // Identity
-  / (PxSpan l)             (PxSpan r)    = PxSpan (l / r)
-  / (MulSpan a (PxSpan l)) (PxSpan r)    = MulSpan a (PxSpan (l / r))
-  / (DivSpan a (PxSpan l)) (PxSpan r)    = DivSpan a (PxSpan (l * r))
-  / (MaxSpan xs)           r=:(PxSpan _) = MaxSpan (strictTRMap (\x -> x / r) xs)
-  / (MinSpan xs)           r=:(PxSpan _) = MinSpan (strictTRMap (\x -> x / r) xs)
-  / l=:(PxSpan _)          (MaxSpan xs)  = MaxSpan (strictTRMap (\x -> l / x) xs)
-  / l=:(PxSpan _)          (MinSpan xs)  = MinSpan (strictTRMap (\x -> l / x) xs)
-  / l                      r             = DivSpan l r
+  / p=:(PxSpan 0.0)        _               = p
+  / _                      p=:(PxSpan 0.0) = p // Division by zero should be undefined, but that would be impractical
+  / l                      (PxSpan 1.0)    = l // Identity
+  / (PxSpan l)             (PxSpan r)      = PxSpan (l / r)
+  / (MulSpan a (PxSpan l)) (PxSpan r)      = MulSpan a (PxSpan (l / r))
+  / (DivSpan a (PxSpan l)) (PxSpan r)      = DivSpan a (PxSpan (l * r))
+  / (MaxSpan xs)           r=:(PxSpan _)   = MaxSpan (strictTRMap (\x -> x / r) xs)
+  / (MinSpan xs)           r=:(PxSpan _)   = MinSpan (strictTRMap (\x -> x / r) xs)
+  / l=:(PxSpan _)          (MaxSpan xs)    = MaxSpan (strictTRMap (\x -> l / x) xs)
+  / l=:(PxSpan _)          (MinSpan xs)    = MinSpan (strictTRMap (\x -> l / x) xs)
+  / l                      r               = DivSpan l r
 
 instance * Span where
-  * (PxSpan 0.0)           _                      = PxSpan 0.0
-  * _                      (PxSpan 0.0)           = PxSpan 0.0
+  * p=:(PxSpan 0.0)        _                      = p
+  * _                      p=:(PxSpan 0.0)        = p
   * (PxSpan 1.0)           r                      = r // Identity
   * l                      (PxSpan 1.0)           = l // Identity
   * (PxSpan a)             (PxSpan b)             = PxSpan (a * b)
@@ -91,32 +91,32 @@ instance + Span where
   + a=:(PxSpan _)             (SubSpan b c=:(PxSpan _)) = SubSpan (a + b) c
   + (PxSpan a)                (SubSpan (PxSpan b) c)    = SubSpan (PxSpan (a + b)) c
   + (DivSpan a l=:(PxSpan b)) (DivSpan c r=:(PxSpan d))
-     | b == d    = DivSpan (a + c) (PxSpan b)
+     | b == d    = DivSpan (a + c) l
      | otherwise = DivSpan ((l * c) + (r * a)) (PxSpan (b * d))
-  + (MulSpan (PxSpan a) b)    (MulSpan (PxSpan c) d)
-     | a == c = MulSpan (PxSpan a) (b + d)
-  + (MulSpan a (PxSpan b))    (MulSpan (PxSpan c) d)
-     | b == c = MulSpan (PxSpan b) (a + d)
-  + (MulSpan (PxSpan a) b)    (MulSpan c (PxSpan d))
-     | a == d = MulSpan (PxSpan a) (b + c)
-  + (MulSpan a (PxSpan b))    (MulSpan c (PxSpan d))
-     | b == d = MulSpan (PxSpan b) (a + c)
+  + (MulSpan p=:(PxSpan a) b) (MulSpan (PxSpan c) d)
+     | a == c = MulSpan p (b + d)
+  + (MulSpan a p=:(PxSpan b)) (MulSpan (PxSpan c) d)
+     | b == c = MulSpan p (a + d)
+  + (MulSpan p=:(PxSpan a) b) (MulSpan c (PxSpan d))
+     | a == d = MulSpan p (b + c)
+  + (MulSpan a p=:(PxSpan b)) (MulSpan c (PxSpan d))
+     | b == d = MulSpan p (a + c)
   + l=:(PxSpan _)             (MaxSpan xs)              = MaxSpan (strictTRMap (\x -> x + l) xs)
   + (MaxSpan xs)              r=:(PxSpan _)             = MaxSpan (strictTRMap (\x -> x + r) xs)
   + s                         t                         = AddSpan s t
 
 instance - Span where
-  - a                      (PxSpan 0.0)           = a // Identity
-  - (PxSpan a)             (PxSpan b)             = PxSpan (a - b)
-  - (AddSpan a (PxSpan b)) (PxSpan c)             = AddSpan a (PxSpan (b - c))
-  - (AddSpan (PxSpan a) b) (PxSpan c)             = AddSpan (PxSpan (a - c)) b
-  - (PxSpan c)             (AddSpan a (PxSpan b)) = SubSpan (PxSpan (c - b)) a
-  - (PxSpan c)             (AddSpan (PxSpan a) b) = SubSpan (PxSpan (c - a)) b
-  - (DivSpan a (PxSpan b)) (DivSpan c (PxSpan d))
-     | b == d = DivSpan (a - c) (PxSpan b)
-  - (MaxSpan xs)           r=:(PxSpan _)          = MaxSpan (strictTRMap (\x -> x - r) xs)
-  - l=:(PxSpan _)          (MaxSpan xs)           = MaxSpan (strictTRMap (\x -> l - x) xs)
-  - s                      t                      = SubSpan s t
+  - a                         (PxSpan 0.0)           = a // Identity
+  - (PxSpan a)                (PxSpan b)             = PxSpan (a - b)
+  - (AddSpan a (PxSpan b))    (PxSpan c)             = AddSpan a (PxSpan (b - c))
+  - (AddSpan (PxSpan a) b)    (PxSpan c)             = AddSpan (PxSpan (a - c)) b
+  - (PxSpan c)                (AddSpan a (PxSpan b)) = SubSpan (PxSpan (c - b)) a
+  - (PxSpan c)                (AddSpan (PxSpan a) b) = SubSpan (PxSpan (c - a)) b
+  - (DivSpan a p=:(PxSpan b)) (DivSpan c (PxSpan d))
+     | b == d = DivSpan (a - c) p
+  - (MaxSpan xs)              r=:(PxSpan _)          = MaxSpan (strictTRMap (\x -> x - r) xs)
+  - l=:(PxSpan _)             (MaxSpan xs)           = MaxSpan (strictTRMap (\x -> l - x) xs)
+  - s                         t                      = SubSpan s t
 
 instance *. Int  where
   *. l r = PxSpan (toReal l * toReal r)
