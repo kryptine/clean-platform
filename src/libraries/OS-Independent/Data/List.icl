@@ -314,3 +314,15 @@ unionBy eq xs ys        =  xs ++ foldl (flip (deleteBy eq)) (nubBy eq ys) xs
 isMemberGen :: !a !.[a] -> Bool | gEq{|*|} a
 isMemberGen x [hd:tl]	= hd === x || isMemberGen x tl
 isMemberGen x []		= False
+
+strictFoldr :: !(.a -> .(.b -> .b)) !.b ![.a] -> .b
+strictFoldr _ b []     = b
+strictFoldr f b [x:xs] = f x (strictFoldr f b xs)
+
+strictFoldl :: !(.a -> .(.b -> .a)) !.a ![.b] -> .a
+strictFoldl f b [] = b
+strictFoldl f b [x:xs]
+  #! r = f b x
+  = strictFoldl f r xs
+
+

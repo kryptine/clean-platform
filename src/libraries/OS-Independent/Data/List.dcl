@@ -73,4 +73,7 @@ unionBy         :: (a -> .(a -> .Bool)) .[a] .[a] -> .[a]
 
 isMemberGen :: !a !.[a] -> Bool | gEq{|*|} a
 
+strictFoldr :: !(.a -> .(.b -> .b)) !.b ![.a] -> .b
+strictFoldl :: !(.a -> .(.b -> .a)) !.a ![.b] -> .a
+
 instance Functor []
