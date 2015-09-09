@@ -91,7 +91,7 @@ unions :: ![IntMap a] -> IntMap a
 
 instance Functor IntMap
 
-mapSt :: !(a *st -> *(!b, !*st)) !.(IntMap a) *st -> *(!IntMap b, !*st)
+mapSt :: !(a *st -> *(!b, !*st)) !.(IntMap a) !*st -> *(!IntMap b, !*st)
 
 toList :: !(IntMap a) -> [(!Int, !a)]
 
