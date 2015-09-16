@@ -51,8 +51,8 @@ instance * Span where
   * (PxSpan 1.0)           r                      = r // Identity
   * l                      (PxSpan 1.0)           = l // Identity
   * (PxSpan a)             (PxSpan b)             = PxSpan (a * b)
-  * (PxSpan a)             (MulSpan (PxSpan b) c) = MulSpan (PxSpan (a * b)) c // Associativity
-  * (PxSpan a)             (MulSpan b (PxSpan c)) = MulSpan (PxSpan (a * c)) b // Associativity + commutativity
+  * (PxSpan a)             (MulSpan (PxSpan b) c) = MulSpan c (PxSpan (a * b)) // Associativity
+  * (PxSpan a)             (MulSpan b (PxSpan c)) = MulSpan b (PxSpan (a * c)) // Associativity + commutativity
   * (MulSpan a (PxSpan b)) (PxSpan c)             = MulSpan a (PxSpan (b * c)) // Associativity
   * (MulSpan (PxSpan a) b) (PxSpan c)             = MulSpan b (PxSpan (a * c)) // Associativity + commutativity
   * (DivSpan (PxSpan a) b) (PxSpan c)             = DivSpan (PxSpan (a * c)) b
@@ -82,8 +82,8 @@ instance + Span where
   + (PxSpan 0.0)              b                         = b // Identity
   + a                         (PxSpan 0.0)              = a // Identity
   + (PxSpan a)                (PxSpan b)                = PxSpan (a + b)
-  + (PxSpan a)                (AddSpan (PxSpan b) c)    = AddSpan (PxSpan (a + b)) c // Associativity
-  + (PxSpan a)                (AddSpan b (PxSpan c))    = AddSpan (PxSpan (a + c)) b // Associativity + commutativity
+  + (PxSpan a)                (AddSpan (PxSpan b) c)    = AddSpan c (PxSpan (a + b)) // Associativity
+  + (PxSpan a)                (AddSpan b (PxSpan c))    = AddSpan b (PxSpan (a + c)) // Associativity + commutativity
   + (AddSpan a (PxSpan b))    (PxSpan c)                = AddSpan a (PxSpan (b + c)) // Associativity
   + (AddSpan (PxSpan a) b)    (PxSpan c)                = AddSpan b (PxSpan (a + c)) // Associativity + commutativity
   + (SubSpan a b=:(PxSpan _)) c=:(PxSpan _)             = SubSpan (a + c) b
@@ -109,7 +109,7 @@ instance - Span where
   - a                         (PxSpan 0.0)           = a // Identity
   - (PxSpan a)                (PxSpan b)             = PxSpan (a - b)
   - (AddSpan a (PxSpan b))    (PxSpan c)             = AddSpan a (PxSpan (b - c))
-  - (AddSpan (PxSpan a) b)    (PxSpan c)             = AddSpan (PxSpan (a - c)) b
+  - (AddSpan (PxSpan a) b)    (PxSpan c)             = AddSpan b (PxSpan (a - c))
   - (PxSpan c)                (AddSpan a (PxSpan b)) = SubSpan (PxSpan (c - b)) a
   - (PxSpan c)                (AddSpan (PxSpan a) b) = SubSpan (PxSpan (c - a)) b
   - (DivSpan a p=:(PxSpan b)) (DivSpan c (PxSpan d))
@@ -125,7 +125,7 @@ instance *. Real where
   *. l r = PxSpan (l * toReal r)
 
 instance *. Span where
-  *. (PxSpan  a)             k = PxSpan    (a * toReal k)
+  *. (PxSpan  a)             k = PxSpan  (a * toReal k)
   *. (MulSpan (PxSpan k1) a) k = MulSpan a (PxSpan (toReal k * k1))
   *. (MulSpan a (PxSpan k1)) k = MulSpan a (PxSpan (toReal k * k1))
   *. (DivSpan a (PxSpan k1)) k = MulSpan a (PxSpan (toReal k / k1))
