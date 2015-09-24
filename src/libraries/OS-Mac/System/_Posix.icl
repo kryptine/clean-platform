@@ -3,7 +3,7 @@ implementation module System._Posix
 import System._Pointer, System.Time
 import StdInt
 
-errno :: !*World -> (!Int,!*World)
+errno :: !*w -> (!Int,!*w)
 errno world = (getErrno,world)
 where
 	getErrno :: Int
@@ -19,60 +19,60 @@ strerr world = code {
 	ccall strerror "I:p"
 }
 
-stat :: !{#Char} !{#Char} !*World -> (!Int,!*World)
+stat :: !{#Char} !{#Char} !*w -> (!Int,!*w)
 stat path buf world = code {
 	ccall stat$INODE64 "ss:I:A"
 }
 
-unlink :: !{#Char} !*World -> (!Int,!*World)
+unlink :: !{#Char} !*w -> (!Int,!*w)
 unlink path world = code {
 	ccall unlink "s:I:A"
 }
-fork :: !*World -> (!Int,!*World)
+fork :: !*w -> (!Int,!*w)
 fork world = code {
 	ccall fork ":I:A"
 }
-execvp :: !{#Char} !{#Pointer} !*World -> (!Int,!*World)
+execvp :: !{#Char} !{#Pointer} !*w -> (!Int,!*w)
 execvp name argv world = code {
 	ccall execvp "sA:I:A"
 }
-waitpid :: !Int !{#Int} !Int !*World -> (!Int,!*World)
+waitpid :: !Int !{#Int} !Int !*w -> (!Int,!*w)
 waitpid pid status_p options world = code {
     ccall waitpid "IAI:I:A"
 }
-exit :: !Int !*World -> (!.a,!*World)
+exit :: !Int !*w -> (!.a,!*w)
 exit num world = code {
 	ccall exit "I:p:A"
 }
-getcwd :: !{#Char} !Int !*World -> (!Pointer,!*World)
+getcwd :: !{#Char} !Int !*w -> (!Pointer,!*w)
 getcwd buf size_t world = code {
 	ccall getcwd "sI:p:A"
 }
-chdir :: !{#Char} !*World -> (!Int,!*World)
+chdir :: !{#Char} !*w -> (!Int,!*w)
 chdir name world = code {
 	ccall chdir "s:I:A"
 }
-mkdir :: !{#Char} !Int !*World -> (!Int,!*World)
+mkdir :: !{#Char} !Int !*w -> (!Int,!*w)
 mkdir name mode world = code {
 	ccall mkdir "sI:I:A"
 }
-rmdir :: !{#Char} !*World -> (!Int,!*World)
+rmdir :: !{#Char} !*w -> (!Int,!*w)
 rmdir name world = code {
 	ccall rmdir "s:I:A"
 }
-rename :: !{#Char} !{#Char} !*World -> (!Int,!*World)
+rename :: !{#Char} !{#Char} !*w -> (!Int,!*w)
 rename old new world = code {
 	ccall rename "ss:I:A"
 }
-opendir	:: !{#Char} !*World -> (!Pointer,!*World)
+opendir	:: !{#Char} !*w -> (!Pointer,!*w)
 opendir path world = code {
 	ccall opendir "s:p:A"
 }
-closedir :: !Pointer !*World -> (!Int,!*World)
+closedir :: !Pointer !*w -> (!Int,!*w)
 closedir dir world = code {
 	ccall closedir "p:I:A"
 }
-readdir	:: !Pointer !*World -> (!Pointer,!*World)
+readdir	:: !Pointer !*w -> (!Pointer,!*w)
 readdir dir world = code {
 	ccall readdir "p:p:A"
 }

@@ -5,12 +5,12 @@ from System.FilePath import :: FilePath
 from Data.Error import :: MaybeError
 from System.OSError import :: MaybeOSError, :: OSError, :: OSErrorMessage, :: OSErrorCode
 
-createDirectory :: !FilePath !*World -> (!MaybeOSError Void, !*World)
+createDirectory :: !FilePath !*w -> (!MaybeOSError Void, !*w)
 
-removeDirectory :: !FilePath !*World -> (!MaybeOSError Void, !*World)
+removeDirectory :: !FilePath !*w -> (!MaybeOSError Void, !*w)
 
-readDirectory :: !FilePath !*World -> (!MaybeOSError [FilePath], !*World)
+readDirectory :: !FilePath !*w -> (!MaybeOSError [FilePath], !*w)
 
-getCurrentDirectory :: !*World -> (!MaybeOSError FilePath, !*World)
+getCurrentDirectory :: !*w -> (!MaybeOSError FilePath, !*w)
 
-setCurrentDirectory :: !FilePath !*World -> (!MaybeOSError Void, !*World)
+setCurrentDirectory :: !FilePath !*w -> (!MaybeOSError Void, !*w)

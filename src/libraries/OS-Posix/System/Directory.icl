@@ -9,7 +9,7 @@ import System.OSError
 import System._Posix
 import System._Pointer
 
-createDirectory :: !FilePath !*World -> (!MaybeOSError Void, !*World)
+createDirectory :: !FilePath !*w -> (!MaybeOSError Void, !*w)
 createDirectory path world
 	# (ret,world)	= mkdir (packString path) 493 world // 493 = 0755 in octal
 	| ret == 0
@@ -17,7 +17,7 @@ createDirectory path world
 	| otherwise
 		= getLastOSError world
 
-removeDirectory :: !FilePath !*World -> (!MaybeOSError Void, !*World)
+removeDirectory :: !FilePath !*w -> (!MaybeOSError Void, !*w)
 removeDirectory path world
 	# (ret,world)	= rmdir (packString path) world
 	| ret == 0
@@ -25,7 +25,7 @@ removeDirectory path world
 	| otherwise
 		= getLastOSError world
 
-readDirectory :: !FilePath !*World -> (!MaybeOSError [FilePath], !*World)
+readDirectory :: !FilePath !*w -> (!MaybeOSError [FilePath], !*w)
 readDirectory path world
 	# (dirptr,world)	= opendir (packString path) world
 	| dirptr == 0
@@ -37,7 +37,7 @@ readDirectory path world
 	| otherwise
 		= getLastOSError world
 where
-	readEntries :: !Pointer !*World -> (![String],!*World)
+	readEntries :: !Pointer !*w -> (![String],!*w)
 	readEntries dirptr world
 		# (entryptr,world)	= readdir dirptr world
 		| entryptr == 0
@@ -46,11 +46,11 @@ where
 		# (entries,world)	= readEntries dirptr world
 		= ([entry:entries],world)
 	
-	readEntry :: !Pointer !*World -> (!String,!*World) 
+	readEntry :: !Pointer !*w -> (!String,!*w) 
 	readEntry entryptr world
 		= (derefString (entryptr + DIRENT_D_NAME_OFFSET), world)
 
-getCurrentDirectory :: !*World -> (!MaybeOSError FilePath, !*World)
+getCurrentDirectory :: !*w -> (!MaybeOSError FilePath, !*w)
 getCurrentDirectory world
 	# buf			= createArray MAXPATHLEN '\0'
 	# (ptr,world)	= getcwd buf MAXPATHLEN world
@@ -59,7 +59,7 @@ getCurrentDirectory world
 	| otherwise
 		= (Ok {c \\ c <-: buf | c <> '\0'},world)
 
-setCurrentDirectory :: !FilePath !*World -> (!MaybeOSError Void, !*World)
+setCurrentDirectory :: !FilePath !*w -> (!MaybeOSError Void, !*w)
 setCurrentDirectory path world 
 	# (ret,world)	= chdir (packString path) world
 	| ret == 0
