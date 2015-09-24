@@ -100,57 +100,57 @@ SYNCHRONIZE :== 0x00100000
  * Windows API calls 
  */
 
-closeHandle :: !HANDLE !*World -> (!Bool,!*World)
+closeHandle :: !HANDLE !*w -> (!Bool,!*w)
 	
 createFileA :: !String !DWORD !DWORD !LPSECURITY_ATTRIBUTES 
-	!DWORD !DWORD !HANDLE !*World -> (!HANDLE, !*World)
+	!DWORD !DWORD !HANDLE !*w -> (!HANDLE, !*w)
 	
-readFile :: !HANDLE !LPVOID !DWORD !LPDWORD !LPOVERLAPPED !*World -> (!Bool, !*World)
+readFile :: !HANDLE !LPVOID !DWORD !LPDWORD !LPOVERLAPPED !*w -> (!Bool, !*w)
 
-writeFile :: !HANDLE !LPVOID !DWORD !LPDWORD !LPOVERLAPPED !*World -> (!Bool, !*World)
+writeFile :: !HANDLE !LPVOID !DWORD !LPDWORD !LPOVERLAPPED !*w -> (!Bool, !*w)
 
-setEndOfFile :: !HANDLE !*World -> (!Bool, !*World)
+setEndOfFile :: !HANDLE !*w -> (!Bool, !*w)
 
-lockFileEx :: !HANDLE !DWORD !DWORD !DWORD !DWORD !LPOVERLAPPED !*World -> (!Bool, !*World)
+lockFileEx :: !HANDLE !DWORD !DWORD !DWORD !DWORD !LPOVERLAPPED !*w -> (!Bool, !*w)
 
-unlockFile :: !HANDLE !DWORD !DWORD !DWORD !DWORD !*World -> (!Bool, !*World)
+unlockFile :: !HANDLE !DWORD !DWORD !DWORD !DWORD !*w -> (!Bool, !*w)
 
-getFileSize :: !HANDLE !LPDWORD !*World -> (!DWORD, !*World)
+getFileSize :: !HANDLE !LPDWORD !*w -> (!DWORD, !*w)
 
-createDirectoryA :: !String !LPSECURITY_ATTRIBUTES !*World -> (!Bool, !*World)
+createDirectoryA :: !String !LPSECURITY_ATTRIBUTES !*w -> (!Bool, !*w)
 
 createProcessA :: !String !String !LPSECURITY_ATTRIBUTES !LPSECURITY_ATTRIBUTES !Bool !Int !LPVOID
-					!LPCTSTR !LPSTARTUPINFO !LPPROCESS_INFORMATION !*World -> (!Bool,!*World)
+					!LPCTSTR !LPSTARTUPINFO !LPPROCESS_INFORMATION !*w -> (!Bool,!*w)
 
 createProcessA_dir :: !String !String !LPSECURITY_ATTRIBUTES !LPSECURITY_ATTRIBUTES !Bool !Int !LPVOID
-					!String !LPSTARTUPINFO !LPPROCESS_INFORMATION !*World -> (!Bool,!*World)
+					!String !LPSTARTUPINFO !LPPROCESS_INFORMATION !*w -> (!Bool,!*w)
 
-deleteFileA :: !String !*World -> (!Int, !*World)
+deleteFileA :: !String !*w -> (!Int, !*w)
 
-fileTimeToSystemTime :: !FILETIME !LPSYSTEMTIME !*World -> (!Bool, *World)
+fileTimeToSystemTime :: !FILETIME !LPSYSTEMTIME !*w -> (!Bool, *w)
 
-findClose :: !HANDLE !*World -> (!Bool, !*World)
+findClose :: !HANDLE !*w -> (!Bool, !*w)
 
-findFirstFileA :: !String !LPWIN32_FIND_DATA !*World -> (!HANDLE, !*World)
+findFirstFileA :: !String !LPWIN32_FIND_DATA !*w -> (!HANDLE, !*w)
 
-findNextFileA :: !HANDLE !LPWIN32_FIND_DATA !*World -> (!Bool, !*World)
+findNextFileA :: !HANDLE !LPWIN32_FIND_DATA !*w -> (!Bool, !*w)
 
 formatMessageA :: !DWORD !LPCVOID !DWORD !DWORD !{#LPTSTR} !DWORD !Int -> DWORD
 
-getCurrentDirectoryA :: !DWORD !{#Char} !*World -> (!DWORD, *World)
+getCurrentDirectoryA :: !DWORD !{#Char} !*w -> (!DWORD, *w)
 
-getExitCodeProcess :: !HANDLE !*World -> (!Bool,!Int,!*World);
+getExitCodeProcess :: !HANDLE !*w -> (!Bool,!Int,!*w);
 
 
-getLastError :: !*World -> (!Int, !*World)
+getLastError :: !*w -> (!Int, !*w)
 
 localFree :: !HLOCAL -> HLOCAL
 
-moveFileA :: !String !String !*World -> (!Bool, !*World)
+moveFileA :: !String !String !*w -> (!Bool, !*w)
 
-removeDirectoryA :: !String !*World -> (!Bool, !*World)
+removeDirectoryA :: !String !*w -> (!Bool, !*w)
 
-setCurrentDirectoryA :: !String !*World -> (!Bool, !*World)
+setCurrentDirectoryA :: !String !*w -> (!Bool, !*w)
 
 waitForSingleObject :: !HANDLE !Int !*env -> (!Int,!*env)
 
@@ -158,23 +158,23 @@ getProcessHeap :: !*env -> (!HANDLE, !*env)
 
 heapAlloc :: !HANDLE !DWORD !SIZE_T !*env -> (!LPVOID, !*env)
 heapFree :: !HANDLE !DWORD !LPVOID !*env -> (!Bool, !*env)
-heapCreate :: !DWORD !SIZE_T !SIZE_T !*World -> (!HANDLE, !*World)
+heapCreate :: !DWORD !SIZE_T !SIZE_T !*w -> (!HANDLE, !*w)
 
-CreateThread :: !LPSECURITY_ATTRIBUTES !SIZE_T !LPTHREAD_START_ROUTINE !LPVOID !DWORD !*World -> (!HANDLE,!DWORD,!*World)
-ResumeThread :: !HANDLE !*World -> (!DWORD, *World)
+CreateThread :: !LPSECURITY_ATTRIBUTES !SIZE_T !LPTHREAD_START_ROUTINE !LPVOID !DWORD !*w -> (!HANDLE,!DWORD,!*w)
+ResumeThread :: !HANDLE !*w -> (!DWORD, *w)
 
-initializeCriticalSection :: !LPCRITICAL_SECTION !*World -> *World
-initializeCriticalSectionAndSpinCount :: !LPCRITICAL_SECTION !DWORD !*World -> (!Bool, !*World)
-enterCriticalSection :: !LPCRITICAL_SECTION !*World -> *World
-leaveCriticalSection :: !LPCRITICAL_SECTION !*World -> *World
+initializeCriticalSection :: !LPCRITICAL_SECTION !*w -> *w
+initializeCriticalSectionAndSpinCount :: !LPCRITICAL_SECTION !DWORD !*w -> (!Bool, !*w)
+enterCriticalSection :: !LPCRITICAL_SECTION !*w -> *w
+leaveCriticalSection :: !LPCRITICAL_SECTION !*w -> *w
 
 createMutexA :: !LPSECURITY_ATTRIBUTES !Bool !LPCTSTR !*env -> (!HANDLE, !*env)
 releaseMutex :: !HANDLE !*env -> (!Bool, !*env)
-createEventA :: !LPSECURITY_ATTRIBUTES !Bool !Bool !LPCTSTR !*World -> (!HANDLE, !*World)
+createEventA :: !LPSECURITY_ATTRIBUTES !Bool !Bool !LPCTSTR !*w -> (!HANDLE, !*w)
 setEvent :: !HANDLE !*env -> (!Bool, !*env)
 
-WinGetThreadId :: !HANDLE !*World -> (!DWORD, !*World)
-WinGetCurrentThreadId :: !*World -> (!DWORD, !*World)
-WinOpenThread :: !DWORD !Bool !DWORD *World -> (!DWORD, !*World)
+WinGetThreadId :: !HANDLE !*w -> (!DWORD, !*w)
+WinGetCurrentThreadId :: !*w -> (!DWORD, !*w)
+WinOpenThread :: !DWORD !Bool !DWORD *w -> (!DWORD, !*w)
 
-sleep :: !DWORD !*World -> *World
+sleep :: !DWORD !*w -> *w
