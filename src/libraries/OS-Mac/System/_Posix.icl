@@ -2,8 +2,9 @@ implementation module System._Posix
 
 import System._Pointer, System.Time
 import StdInt
+import StdFile
 
-errno :: !*w -> (!Int,!*w)
+errno :: !*w -> (!Int,!*w) | FileSystem w
 errno world = (getErrno,world)
 where
 	getErrno :: Int
@@ -19,60 +20,60 @@ strerr world = code {
 	ccall strerror "I:p"
 }
 
-stat :: !{#Char} !{#Char} !*w -> (!Int,!*w)
+stat :: !{#Char} !{#Char} !*w -> (!Int,!*w) | FileSystem w
 stat path buf world = code {
 	ccall stat$INODE64 "ss:I:A"
 }
 
-unlink :: !{#Char} !*w -> (!Int,!*w)
+unlink :: !{#Char} !*w -> (!Int,!*w) | FileSystem w
 unlink path world = code {
 	ccall unlink "s:I:A"
 }
-fork :: !*w -> (!Int,!*w)
+fork :: !*w -> (!Int,!*w) | FileSystem w
 fork world = code {
 	ccall fork ":I:A"
 }
-execvp :: !{#Char} !{#Pointer} !*w -> (!Int,!*w)
+execvp :: !{#Char} !{#Pointer} !*w -> (!Int,!*w) | FileSystem w
 execvp name argv world = code {
 	ccall execvp "sA:I:A"
 }
-waitpid :: !Int !{#Int} !Int !*w -> (!Int,!*w)
+waitpid :: !Int !{#Int} !Int !*w -> (!Int,!*w) | FileSystem w
 waitpid pid status_p options world = code {
     ccall waitpid "IAI:I:A"
 }
-exit :: !Int !*w -> (!.a,!*w)
+exit :: !Int !*w -> (!.a,!*w) | FileSystem w
 exit num world = code {
 	ccall exit "I:p:A"
 }
-getcwd :: !{#Char} !Int !*w -> (!Pointer,!*w)
+getcwd :: !{#Char} !Int !*w -> (!Pointer,!*w) | FileSystem w
 getcwd buf size_t world = code {
 	ccall getcwd "sI:p:A"
 }
-chdir :: !{#Char} !*w -> (!Int,!*w)
+chdir :: !{#Char} !*w -> (!Int,!*w) | FileSystem w
 chdir name world = code {
 	ccall chdir "s:I:A"
 }
-mkdir :: !{#Char} !Int !*w -> (!Int,!*w)
+mkdir :: !{#Char} !Int !*w -> (!Int,!*w) | FileSystem w
 mkdir name mode world = code {
 	ccall mkdir "sI:I:A"
 }
-rmdir :: !{#Char} !*w -> (!Int,!*w)
+rmdir :: !{#Char} !*w -> (!Int,!*w) | FileSystem w
 rmdir name world = code {
 	ccall rmdir "s:I:A"
 }
-rename :: !{#Char} !{#Char} !*w -> (!Int,!*w)
+rename :: !{#Char} !{#Char} !*w -> (!Int,!*w) | FileSystem w
 rename old new world = code {
 	ccall rename "ss:I:A"
 }
-opendir	:: !{#Char} !*w -> (!Pointer,!*w)
+opendir	:: !{#Char} !*w -> (!Pointer,!*w) | FileSystem w
 opendir path world = code {
 	ccall opendir "s:p:A"
 }
-closedir :: !Pointer !*w -> (!Int,!*w)
+closedir :: !Pointer !*w -> (!Int,!*w) | FileSystem w
 closedir dir world = code {
 	ccall closedir "p:I:A"
 }
-readdir	:: !Pointer !*w -> (!Pointer,!*w)
+readdir	:: !Pointer !*w -> (!Pointer,!*w) | FileSystem w
 readdir dir world = code {
 	ccall readdir "p:p:A"
 }

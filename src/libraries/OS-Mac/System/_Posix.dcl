@@ -2,6 +2,7 @@ definition module System._Posix
 
 from System._Pointer import :: Pointer
 from System.Time import :: Tm
+from StdFile import class FileSystem
 
 WNOHANG		:==	0x00000001  
 WUNTRACED	:== 0x00000002
@@ -20,22 +21,22 @@ S_IFSOCK	:== 0140000
 S_IFWHT		:== 0160000
 
 //Posix API calls
-errno		:: !*w -> (!Int,!*w)
+errno		:: !*w -> (!Int,!*w) | FileSystem w
 strerr		:: !Int -> Pointer
-stat		:: !{#Char} !{#Char} !*w -> (!Int,!*w)
-unlink		:: !{#Char} !*w -> (!Int,!*w)
-fork		:: !*w -> (!Int,!*w)
-execvp		:: !{#Char} !{#Pointer} !*w -> (!Int,!*w)
-waitpid		:: !Int !{#Int} !Int !*w -> (!Int,!*w)
-exit		:: !Int !*w -> (!.a,!*w) 
-getcwd		:: !{#Char} !Int !*w -> (!Pointer,!*w)
-chdir		:: !{#Char} !*w -> (!Int,!*w)
-mkdir		:: !{#Char} !Int !*w -> (!Int,!*w)
-rmdir		:: !{#Char} !*w -> (!Int,!*w)
-rename		:: !{#Char} !{#Char} !*w -> (!Int,!*w)
-opendir		:: !{#Char} !*w -> (!Pointer,!*w)
-closedir	:: !Pointer !*w -> (!Int,!*w)
-readdir		:: !Pointer !*w -> (!Pointer,!*w)
+stat		:: !{#Char} !{#Char} !*w -> (!Int,!*w) | FileSystem w
+unlink		:: !{#Char} !*w -> (!Int,!*w) | FileSystem w
+fork		:: !*w -> (!Int,!*w) | FileSystem w
+execvp		:: !{#Char} !{#Pointer} !*w -> (!Int,!*w) | FileSystem w
+waitpid		:: !Int !{#Int} !Int !*w -> (!Int,!*w) | FileSystem w
+exit		:: !Int !*w -> (!.a,!*w) | FileSystem w
+getcwd		:: !{#Char} !Int !*w -> (!Pointer,!*w) | FileSystem w
+chdir		:: !{#Char} !*w -> (!Int,!*w) | FileSystem w
+mkdir		:: !{#Char} !Int !*w -> (!Int,!*w) | FileSystem w
+rmdir		:: !{#Char} !*w -> (!Int,!*w) | FileSystem w
+rename		:: !{#Char} !{#Char} !*w -> (!Int,!*w) | FileSystem w
+opendir		:: !{#Char} !*w -> (!Pointer,!*w) | FileSystem w
+closedir	:: !Pointer !*w -> (!Int,!*w) | FileSystem w
+readdir		:: !Pointer !*w -> (!Pointer,!*w) | FileSystem w
 
 //Memory (impure)
 malloc	:: !Int -> Pointer
