@@ -1,7 +1,6 @@
 definition module System.OSError
 
 import Data.Error
-from StdFile import class FileSystem
 
 :: OSErrorCode :== Int
 :: OSErrorMessage :== String
@@ -10,6 +9,6 @@ from StdFile import class FileSystem
 :: MaybeOSError a :== MaybeError OSError a
 :: MaybeOSErrorCode a :== MaybeError OSErrorCode a
 
-getLastOSError :: *w -> (MaybeOSError .a, *w) | FileSystem w
+getLastOSError :: *w -> (MaybeOSError .a, *w)
 
-getLastOSErrorCode :: *w -> (MaybeOSErrorCode .a, *w) | FileSystem w
+getLastOSErrorCode :: *w -> (MaybeOSErrorCode .a, *w)
