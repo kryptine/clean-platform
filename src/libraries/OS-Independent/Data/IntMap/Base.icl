@@ -1395,13 +1395,13 @@ assocs m = toAscList m
 //fromSet _ IntSet.Nil = Nil
 //fromSet f (IntSet.Bin p m l r) = Bin p m (fromSet f l) (fromSet f r)
 //fromSet f (IntSet.Tip kx bm) = buildTree f kx bm (IntSet.suffixBitMask + 1)
-  //where -- This is slightly complicated, as we to convert the dense
-        //-- representation of IntSet into tree representation of IntMap.
-        //--
-        //-- We are given a nonzero bit mask 'bmask' of 'bits' bits with prefix 'prefix'.
-        //-- We split bmask into halves corresponding to left and right subtree.
-        //-- If they are both nonempty, we create a Bin node, otherwise exactly
-        //-- one of them is nonempty and we construct the IntMap from that half.
+  //where // This is slightly complicated, as we to convert the dense
+        //// representation of IntSet into tree representation of IntMap.
+        ////
+        //// We are given a nonzero bit mask 'bmask' of 'bits' bits with prefix 'prefix'.
+        //// We split bmask into halves corresponding to left and right subtree.
+        //// If they are both nonempty, we create a Bin node, otherwise exactly
+        //// one of them is nonempty and we construct the IntMap from that half.
         //buildTree g prefix bmask bits = prefix `seq` bmask `seq` case bits of
           //0 -> Tip prefix (g prefix)
           //_ -> case (bits `shiftRL` 1) of
