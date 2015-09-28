@@ -1,5 +1,7 @@
 definition module Data.Func
 
+from StdFunc import id, const, flip, o
+
 ($) infixr 0 :: !(.a -> .b) !.a -> .b
 app          :: !(.a -> .b) !.a -> .b
 seqSt        :: !(a .st -> .st)       ![a] !.st -> .st
