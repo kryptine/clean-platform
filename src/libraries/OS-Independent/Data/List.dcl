@@ -77,3 +77,7 @@ strictFoldr :: !(.a -> .(.b -> .b)) !.b ![.a] -> .b
 strictFoldl :: !(.a -> .(.b -> .a)) !.a ![.b] -> .a
 
 instance Functor []
+
+//null :: [.a] -> Bool
+null xs :== isnull xs
+
