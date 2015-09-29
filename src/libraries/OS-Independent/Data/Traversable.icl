@@ -69,48 +69,60 @@ forM :: (t a) (a -> m b) -> m (t b) | Traversable t & Monad m
 forM x f = flip mapM x f
 
 /// left-to-right state transformer
-:: StateL s a = StateL (s -> (s, a))
+:: StateL s a = StateL (s -> (a, s))
 
 runStateL (StateL f) = f
 
 instance Functor (StateL s) where
-    fmap f (StateL k) = StateL (\s -> let (s`, v) = k s in (s`, f v))
+    fmap f (StateL k) = StateL g
+      where
+      g s
+        # (v, s) = k s
+        = (f v, s)
 
 instance Applicative (StateL s) where
-    pure x = StateL (\ s -> (s, x))
-    (<*>) (StateL kf) (StateL kv) = StateL (\s ->
-        let (s`, f) = kf s
-            (s``, v) = kv s`
-        in (s``, f v))
+    pure x = StateL (\ s -> (x, s))
+    (<*>) (StateL kf) (StateL kv) = StateL f
+      where
+      f s
+        # (f, s) = kf s
+        # (v, s) = kv s
+        = (f v, s)
 
 // The 'mapAccumL' function behaves like a combination of 'fmap'
 // and 'foldl'; it applies a function to each element of a structure,
 // passing an accumulating parameter from left to right, and returning
 // a final value of this accumulator together with the new structure.
-mapAccumL :: (a b -> (a, c)) a (t b) -> (a, t c) | Traversable t
-mapAccumL f s t = runStateL (traverse (StateL o flip f) t) s
+mapAccumL :: (b -> (a -> (c, a))) (t b) a -> (t c, a) | Traversable t
+mapAccumL f t s = runStateL (traverse (StateL o f) t) s
 
 // right-to-left state transformer
-:: StateR s a = StateR (s -> (s, a))
+:: StateR s a = StateR (s -> (a, s))
 
 runStateR (StateR f) = f
 
 instance Functor (StateR s) where
-    fmap f (StateR k) = StateR (\s -> let (s`, v) = k s in (s`, f v))
+    fmap f (StateR k) = StateR g
+      where
+      g s
+        # (v, s) = k s
+        = (f v, s)
 
 instance Applicative (StateR s) where
-    pure x = StateR (\ s -> (s, x))
-    (<*>) (StateR kf) (StateR kv) = StateR (\s ->
-        let (s`, v) = kv s
-            (s``, f) = kf s`
-        in (s``, f v))
+    pure x = StateR (\s -> (x, s))
+    (<*>) (StateR kf) (StateR kv) = StateR f
+      where
+      f s
+        # (v, s) = kv s
+        # (f, s) = kf s
+        = (f v, s)
 
 // The 'mapAccumR' function behaves like a combination of 'fmap'
 // and 'foldr'; it applies a function to each element of a structure,
 // passing an accumulating parameter from right to left, and returning
 // a final value of this accumulator together with the new structure.
-mapAccumR :: (a b -> (a, c)) a (t b) -> (a, t c) | Traversable t
-mapAccumR f s t = runStateR (traverse (StateR o flip f) t) s
+mapAccumR :: (b -> (a -> (c, a))) (t b) a -> (t c, a) | Traversable t
+mapAccumR f t s = runStateR (traverse (StateR o f) t) s
 
 // This function may be used as a value for `fmap` in a `Functor`
 // instance, provided that 'traverse' is defined. (Using

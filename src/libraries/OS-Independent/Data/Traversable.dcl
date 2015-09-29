@@ -120,7 +120,7 @@ instance Traversable ((,) a)
 
 for :: (t a) (a -> f b) -> f (t b) | Traversable t & Applicative f
 forM :: (t a) (a -> m b) -> m (t b) | Traversable t & Monad m
-mapAccumL :: (a b -> (a, c)) a (t b) -> (a, t c) | Traversable t
-mapAccumR :: (a b -> (a, c)) a (t b) -> (a, t c) | Traversable t
+mapAccumL :: (b -> (a -> (c, a))) (t b) a -> (t c, a) | Traversable t
+mapAccumR :: (b -> (a -> (c, a))) (t b) a -> (t c, a) | Traversable t
 fmapDefault :: (a -> b) (t a) -> t b | Traversable t
 foldMapDefault :: (a -> m) (t a) -> m | Traversable t & Monoid m
