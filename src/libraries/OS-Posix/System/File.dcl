@@ -1,11 +1,11 @@
 definition module System.File
 
-from StdFile import class FileSystem
-from StdClass import class toString
+from StdFile import class FileSystem, :: Files, instance FileSystem Files, instance FileSystem World
 
 from System.Time import ::Tm
 from Data.Error import ::MaybeError
 from Data.Void import ::Void
+from Data.String import class toString
 from System.OSError import ::MaybeOSError, ::OSError, ::OSErrorCode, ::OSErrorMessage
 
 :: FileError = CannotOpen | CannotClose | IOError
@@ -58,6 +58,15 @@ writeFile :: !String !String !*env -> (!MaybeError FileError Void, !*env) | File
 */
 withFile :: !String Int (*File -> (!MaybeError FileError a,!*File)) !*env 
 			-> (!MaybeError FileError a, !*env) | FileSystem env
+
+/**
+ * Writes the string representation of a to stdout.
+ *
+ * @param Value to write
+ * @param The World
+ * @return The New World
+ */
+print :: !a !*env -> *env | toString a & FileSystem env
 
 /**
 * Checks if a file exists

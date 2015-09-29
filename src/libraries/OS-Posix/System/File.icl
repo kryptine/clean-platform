@@ -4,11 +4,11 @@ implementation module System.File
 import StdArray
 import StdFile
 import StdList
-import StdString
 
 import System.Time
 import Data.Error
 import Data.Void
+import Data.String
 import System.OSError
 import System._Pointer
 import System._Posix
@@ -20,6 +20,14 @@ where
 	toString CannotOpen = "Cannot open"
 	toString CannotClose = "Cannot close"
 	toString IOError = "I/O error"
+
+print :: !a !*env -> *env | toString a & FileSystem env
+print a world
+    # (stdout,world) = stdio world
+    # stdout = fwrites (toString a) stdout
+    # stdout = fwritec '\n' stdout
+    # (_,world) = fclose stdout world //XXX ignores errors!!!
+    = world
 
 readFile :: !String !*env -> (!MaybeError FileError String, !*env) | FileSystem env
 readFile filename env = withFile filename FReadData readAll env
