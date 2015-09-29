@@ -69,19 +69,18 @@ forM :: (t a) (a -> m b) -> m (t b) | Traversable t & Monad m
 forM x f = flip mapM x f
 
 /// left-to-right state transformer
-:: StateL s a = StateL .(s -> .(a, s))
+:: StateL s a = StateL .(s -> *(a, s))
 
-runStateL :: (StateL s a) -> (s -> (a, s))
 runStateL (StateL f) = f
 
-instance Functor (StateL s) where
+instance Functor (StateL *s) where
     fmap f (StateL k) = StateL g
       where
       g s
         # (v, s) = k s
         = (f v, s)
 
-instance Applicative (StateL s) where
+instance Applicative (StateL *s) where
     pure x = StateL (\s -> (x, s))
     (<*>) (StateL kf) (StateL kv) = StateL f
       where
@@ -94,23 +93,22 @@ instance Applicative (StateL s) where
 // and 'foldl'; it applies a function to each element of a structure,
 // passing an accumulating parameter from left to right, and returning
 // a final value of this accumulator together with the new structure.
-mapAccumL :: (b -> (s -> .(c, s))) (t b) s -> (t c, s) | Traversable t
+mapAccumL :: (b -> (*s -> *(c, *s))) (t b) *s -> *(t c, *s) | Traversable t
 mapAccumL f t s = runStateL (traverse (StateL o f) t) s
 
 // right-to-left state transformer
-:: StateR s a = StateR .(s -> .(a, s))
+:: StateR s a = StateR .(s -> *(a, s))
 
-runStateR :: (StateR s a) -> (s -> (a, s))
 runStateR (StateR f) = f
 
-instance Functor (StateR s) where
+instance Functor (StateR *s) where
     fmap f (StateR k) = StateR g
       where
       g s
         # (v, s) = k s
         = (f v, s)
 
-instance Applicative (StateR s) where
+instance Applicative (StateR *s) where
     pure x = StateR (\s -> (x, s))
     (<*>) (StateR kf) (StateR kv) = StateR f
       where
@@ -123,7 +121,7 @@ instance Applicative (StateR s) where
 // and 'foldr'; it applies a function to each element of a structure,
 // passing an accumulating parameter from right to left, and returning
 // a final value of this accumulator together with the new structure.
-mapAccumR :: (b -> (s -> .(c, s))) (t b) s -> (t c, s) | Traversable t
+mapAccumR :: (b -> (*s -> *(c, *s))) (t b) *s -> *(t c, *s) | Traversable t
 mapAccumR f t s = runStateR (traverse (StateR o f) t) s
 
 // This function may be used as a value for `fmap` in a `Functor`
