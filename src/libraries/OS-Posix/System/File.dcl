@@ -73,6 +73,7 @@ fileExists ::  !String !*World -> (!Bool, !*World)
 */
 deleteFile :: !String !*World -> (!MaybeOSError Void, !*World)
 
+//FIXME should be named FileStat
 :: FileInfo =
 	{ directory         :: !Bool
 	, creationTime      :: !Tm
