@@ -1,5 +1,7 @@
 definition module Data.Tuple
 
+import StdTuple
+
 tuple	:: !a !b	-> (!a,!b)
 tuple3	:: !a !b !c	-> (!a,!b,!c)
 
