@@ -57,9 +57,9 @@ instance Monoid (Map k v) | < k where
 // > mapSize (singleton 1 'a`)                       == 1
 // > mapSize (fromList([(1,'a`), (2,'c'), (3,'b`)])) == 3
 
-//mapSize :: !(Map k a) -> Int
-//mapSize Tip              = 0
-//mapSize (Bin sz _ _ _ _) = sz
+mapSize :: !(Map k a) -> Int
+mapSize Tip              = 0
+mapSize (Bin sz _ _ _ _) = sz
 
 :: LexOrd = LT | GT | EQ
 

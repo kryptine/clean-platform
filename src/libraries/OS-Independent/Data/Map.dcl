@@ -52,10 +52,7 @@ newMap      :: w:(Map k u:v), [ w <= u]
 
 singleton   :: !k !a -> Map k a
 
-//mapSize     :: !(Map k v) -> Int
-mapSize mp :== case mp of
-                 Tip -> 0
-                 (Bin sz _ _ _ _) -> sz
+mapSize     :: !(Map k v) -> Int
 
 /**
 * Adds or replaces the value for a given key.
