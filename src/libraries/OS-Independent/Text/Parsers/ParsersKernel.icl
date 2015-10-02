@@ -99,11 +99,12 @@ instance Functor (Parser s t) where
 
 instance Applicative (Parser s t) where
   pure a        = yield a
-  (<*>) fab fa  = fab <++> fa
+  (<*>) fab fa  = fab <&> \ab -> fa <&> \a -> yield (ab a)
+  // (<*>) fab fa  = fab <++> fa
 
 instance Alternative (Parser s t) where
   empty         = fail
-  (<|>) fa fa`  = alternative fa fa`
+  (<|>) fa fa`  = fa <!> fa`
 
 instance Monad (Parser s t) where
   bind ma a2mb  = ma <&> a2mb
