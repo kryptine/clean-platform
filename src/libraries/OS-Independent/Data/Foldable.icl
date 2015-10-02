@@ -5,7 +5,7 @@ from StdMisc import abort
 import Control.Applicative
 import Control.Monad
 import qualified Data.List as DL
-import Data.Either
+import qualified Data.Either as ET
 import Data.Monoid
 import Data.Maybe
 import qualified StdList as SL
@@ -87,13 +87,13 @@ instance Foldable [] where
     foldr1 f x = 'DL'.foldr1 f x
     foldl1 f x = 'DL'.foldl1 f x
 
-instance Foldable (Either a) where
-    foldMap _ (Left _) = mempty
-    foldMap f (Right y) = f y
+instance Foldable ('ET'.Either a) where
+    foldMap _ ('ET'.Left _) = mempty
+    foldMap f ('ET'.Right y) = f y
     fold x = foldMap id x
 
-    foldr _ z (Left _) = z
-    foldr f z (Right y) = f y z
+    foldr _ z ('ET'.Left _) = z
+    foldr f z ('ET'.Right y) = f y z
     foldr` f z0 xs = foldl f` id xs z0
       where f` k x z = k (f x z)
     foldl f z t = appEndo (getDual (foldMap (Dual o Endo o flip f) t)) z

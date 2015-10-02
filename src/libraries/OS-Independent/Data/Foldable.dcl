@@ -2,7 +2,8 @@ definition module Data.Foldable
 
 from Control.Applicative import class Applicative (..), :: Const, class Alternative (..)
 from Control.Monad import class Monad (..), >>=, class MonadPlus (..)
-from Data.Either import :: Either
+// from Data.Either import :: Either
+import qualified Data.Either
 from Data.Functor import class Functor (..)
 from Data.Monoid import class Monoid (..), class Semigroup (..)
 from Data.Maybe import :: Maybe
@@ -79,7 +80,7 @@ class Foldable t where
 
 instance Foldable Maybe
 instance Foldable []
-instance Foldable (Either a)
+instance Foldable ('Data.Either'.Either a)
 instance Foldable ((,) a)
 
 // TODO Cleanify
