@@ -2,7 +2,7 @@ definition module Text.Parsers.ParsersAccessories
 
 import Text.Parsers.ParsersKernel, Text.Parsers.ParsersDerived
 from StdEnv import class toString, class toChar
-from StdMaybe import :: Maybe (..)
+from Data.Maybe import :: Maybe (..)
 
 number :: Parser  Char a Int //wants at least one digit and takes all it can get
 number` :: Parser  Char a Int //takes any number of digits non-deterministically

@@ -36,6 +36,7 @@ count :: !Int (Parser s t r) -> (Parser s t [r])
 
 // takes one element or more non-deterministically,
 <+>			:: (Parser s t r) -> Parser s t [r]
+<.+> p :== <+> p
 
 // takes one element or more non-deterministically,
 // to append something to the result.  useful with the <++> combinator 
