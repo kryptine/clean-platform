@@ -38,7 +38,6 @@ instance Monoid (Map k v) | < k
 //Basic functions
 
 //null :: !(Map k a) -> Bool
-//null :: !(Map k a) -> Bool
 null mp :== case mp of
               Tip -> True
               _   -> False

@@ -12,7 +12,7 @@ import Data.Maybe, Text.JSON
 from Data.Set import :: Set
 import qualified Data.Set as DS
 import Data.Monoid, Data.Functor, Control.Applicative
-import Data.List, Data.Either
+import StdList, Data.Either
 from Data.Foldable import class Foldable
 from Data.Traversable import class Traversable
 import qualified Data.Foldable as DF
