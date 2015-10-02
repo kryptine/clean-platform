@@ -1,7 +1,7 @@
 definition module Data.Eq
 
 from StdOverloaded import class ==(..)
-from StdClass import class Eq, <>
+from StdClass import class Eq, <> // EXPLICIT because these are MACROS!
 from StdBool import not
 
 from StdBool import instance == Bool
