@@ -169,3 +169,28 @@ moveFile oldpath newpath world
 	| otherwise
 		= getLastOSError world
 	
+// # Special cases for standard input and output
+
+putStrLn :: !String !*World -> *World
+putStrLn string world
+    # (stdout,world) = stdio world
+    # stdout = fwrites string stdout
+    # stdout = fwritec '\n' stdout
+    # (_,world) = fclose stdout world
+    = world
+
+putStr :: !String !*World -> *World
+putStr string world
+    # (stdout,world) = stdio world
+    # stdout = fwrites string stdout
+    # (_,world) = fclose stdout world
+    = world
+
+print :: !a !*World -> *World | gPrint{|*|} a
+print a world
+    # (stdout,world) = stdio world
+    # stdout = fwrites (printToString a) stdout
+    # stdout = fwritec '\n' stdout
+    # (_,world) = fclose stdout world //XXX ignores errors!!!
+    = world
+

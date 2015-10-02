@@ -4,6 +4,7 @@ implementation module System.File
 import StdArray
 import StdFile
 import StdList
+import GenPrint
 
 import System.Time
 import Data.Error
@@ -20,14 +21,6 @@ where
 	toString CannotOpen = "Cannot open"
 	toString CannotClose = "Cannot close"
 	toString IOError = "I/O error"
-
-print :: !a !*env -> *env | toString a & FileSystem env
-print a world
-    # (stdout,world) = stdio world
-    # stdout = fwrites (toString a) stdout
-    # stdout = fwritec '\n' stdout
-    # (_,world) = fclose stdout world //XXX ignores errors!!!
-    = world
 
 readFile :: !String !*env -> (!MaybeError FileError String, !*env) | FileSystem env
 readFile filename env = withFile filename FReadData readAll env
@@ -118,3 +111,29 @@ moveFile oldpath newpath world
 		= (Ok Void, world)
 	| otherwise
 		= getLastOSError world
+
+// # Special cases for standard input and output
+
+putStrLn :: !String !*World -> *World
+putStrLn string world
+    # (stdout,world) = stdio world
+    # stdout = fwrites string stdout
+    # stdout = fwritec '\n' stdout
+    # (_,world) = fclose stdout world
+    = world
+
+putStr :: !String !*World -> *World
+putStr string world
+    # (stdout,world) = stdio world
+    # stdout = fwrites string stdout
+    # (_,world) = fclose stdout world
+    = world
+
+print :: !a !*World -> *World | gPrint{|*|} a
+print a world
+    # (stdout,world) = stdio world
+    # stdout = fwrites (printToString a) stdout
+    # stdout = fwritec '\n' stdout
+    # (_,world) = fclose stdout world //XXX ignores errors!!!
+    = world
+

@@ -95,3 +95,17 @@ getFileInfo :: !String !*World -> (!MaybeOSError FileInfo, !*World)
 * @param Path to the new file
 */
 moveFile :: !String !String !*World -> (!MaybeOSError Void, !*World)
+
+/**
+ * Write the string representation to stdout.
+ *
+ * @param Value to write
+ * @param The World
+ * @return The New World
+ */
+print :: !a !*World -> *World | gPrint{|*|} a
+
+putStrLn :: !String !*World -> *World
+
+putStr :: !String !*World -> *World
+

@@ -1,6 +1,7 @@
 definition module System.File
 
 from StdFile import class FileSystem, :: Files, instance FileSystem Files, instance FileSystem World
+from GenPrint import generic gPrint, :: PrintState, class PrintOutput
 
 from System.Time import ::Tm
 from Data.Error import ::MaybeError
@@ -60,15 +61,6 @@ withFile :: !String Int (*File -> (!MaybeError FileError a,!*File)) !*env
 			-> (!MaybeError FileError a, !*env) | FileSystem env
 
 /**
- * Writes the string representation of a to stdout.
- *
- * @param Value to write
- * @param The World
- * @return The New World
- */
-print :: !a !*env -> *env | toString a & FileSystem env
-
-/**
 * Checks if a file exists
 * @param Path to the file 
 * @return file exists
@@ -105,3 +97,17 @@ getFileInfo :: !String !*World -> (!MaybeOSError FileInfo, !*World)
 * @param Path to the new file
 */
 moveFile :: !String !String !*World -> (!MaybeOSError Void, !*World)
+
+/**
+ * Write the string representation to stdout.
+ *
+ * @param Value to write
+ * @param The World
+ * @return The New World
+ */
+print :: !a !*World -> *World | gPrint{|*|} a
+
+putStrLn :: !String !*World -> *World
+
+putStr :: !String !*World -> *World
+
