@@ -4,7 +4,10 @@ from Data.Functor import class Functor
 from Data.Maybe import :: Maybe
 import StdList, GenEq
 
+cons            :: u:a v:[u:a] -> w:[u:a], [w <= u,v <= w]
+singleton       :: .a -> [.a]
 head            :: ![.a] -> .a
+headDef         :: a [a] -> a
 tail            :: !u:[.a] -> u:[.a]
 isnull          :: ![.a] -> Bool
 keep            :: Int [a] -> [a]

@@ -19,6 +19,21 @@ product xs = prod xs
 
 // End Haskell Data.List compat
 
+// List construction
+
+cons :: u:a v:[u:a] -> w:[u:a], [w <= u,v <= w]
+cons x xs = [x:xs]
+
+singleton :: .a -> [.a]
+singleton x = [x]
+
+// Safe functions
+
+headDef :: a [a] -> a
+headDef d l
+    | null l = d
+    | otherwise = head l
+
 keep :: Int [a] -> [a]
 keep n xs = drop (length xs - n) xs
 
