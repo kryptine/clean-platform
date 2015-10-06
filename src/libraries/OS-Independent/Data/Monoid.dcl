@@ -13,6 +13,7 @@ class Monoid a | Semigroup a where
 mconcat         :: .[a] -> a | Monoid a
 (<++>) infixr 6 :: a a -> a | Semigroup a
 
+instance Semigroup String
 instance Semigroup [a]
 instance Semigroup (a -> b) | Semigroup b
 instance Semigroup ()
@@ -23,6 +24,7 @@ instance Semigroup (a, b, c, d) | Semigroup a & Semigroup b & Semigroup c & Semi
 instance Semigroup (a, b, c, d, e) | Semigroup a & Semigroup b & Semigroup c & Semigroup d & Semigroup e
 instance Semigroup (Maybe a) | Semigroup a
 
+instance Monoid String
 instance Monoid [a]
 instance Monoid (a -> b) | Monoid b
 instance Monoid ()

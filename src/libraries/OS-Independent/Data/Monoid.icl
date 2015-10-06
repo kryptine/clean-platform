@@ -7,11 +7,16 @@ from Data.Maybe import :: Maybe(..)
 from Data.Void import :: Void(..)
 from StdList import ++, foldr
 
+import Data.String
+
 mconcat :: .[a] -> a | Monoid a
 mconcat xs = foldr mappend mempty xs
 
 (<++>) infixr 6 :: a a -> a | Semigroup a
 (<++>) ma mb = mappend ma mb
+
+instance Semigroup String where
+  mappend s t = s +++ t
 
 instance Semigroup [a] where
   mappend xs ys  = xs ++ ys
@@ -33,6 +38,9 @@ instance Monoid () where
 
 instance Semigroup Void where
   mappend _ _  = Void
+
+instance Monoid String where
+  mempty = ""
 
 instance Monoid Void where
   mempty = Void
