@@ -2,7 +2,7 @@ definition module Data.Eq
 
 from StdOverloaded import class ==(..)
 from StdClass import class Eq, <> // EXPLICIT because these are MACROS!
-from StdBool import not
+from StdBool import not // USED in macro from StdClass
 
 from StdBool import instance == Bool
 from StdChar import instance == Char

@@ -1,7 +1,11 @@
 implementation module Data.Func
 
+//FIXME Should this be defined as a macro?
 ($) infixr 0 :: !(.a -> .b) !.a -> .b
 ($) f x = f x
+
+// (&) infixl 1 :: !.a !(.a -> .b) -> .b
+// (&) x f = f x
 
 app :: !(.a -> .b) !.a -> .b
 app f x = f x

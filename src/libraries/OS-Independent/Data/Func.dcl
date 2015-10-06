@@ -4,6 +4,7 @@ from StdFunc import id, const, o, flip
 from StdMisc import undef
 
 ($) infixr 0 :: !(.a -> .b) !.a -> .b
+// (&) infixl 1 :: !.a !(.a -> .b) -> .b
 fix          :: (a -> a) -> a
 on           :: (b b -> c) (a -> b) -> (a a -> c)
 
