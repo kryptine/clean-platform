@@ -1,36 +1,38 @@
 definition module Data.Error
 
+import Data.Either
+
+from Data.Maybe import :: Maybe
 from Data.Functor import class Functor
+
 from Control.Monad import class Monad
 from Control.Applicative import class Applicative
-from Data.Maybe import :: Maybe
 
-:: MaybeError a b = Error a | Ok b 
+:: MaybeError a b :== Either a b
+
+Error a :== Left a
+Ok b :== Right b
 
 :: MaybeErrorString a :== MaybeError String a
-
-instance Functor (MaybeError a)
-instance Applicative (MaybeError a)
-instance Monad (MaybeError a)
 
 /**
  * Return True when the argument is an Ok value and return False otherwise.
  */
-isOk			:: !(MaybeError a b) -> Bool
+isOk e :== isRight e
 /**
  * Return True when the argument is an Error value and return False otherwise.
  */
-isError			:: !(MaybeError a b) -> Bool
+isError e :== isLeft e
 
 /**
  * Return the contents of an Ok value and abort at run-time otherwise.
  */
-fromOk			:: !(MaybeError .a .b) -> .b
+fromOk e :== fromRight e
 
 /**
  * Return the contents of an Error value and abort at run-time otherwise.
  */
-fromError		:: !(MaybeError .a .b) -> .a
+fromError e :== fromLeft e
 
 /**
  * Lifts a (MaybeError a b) to another MaybeError

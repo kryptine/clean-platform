@@ -4,7 +4,7 @@ from StdFile import class FileSystem, :: Files, instance FileSystem Files, insta
 from GenPrint import generic gPrint, :: PrintState, class PrintOutput
 
 from System.Time import ::Tm
-from Data.Error import ::MaybeError
+from Data.Error import ::MaybeError, ::Either
 from Data.Void import ::Void
 from Data.String import class toString
 from System.OSError import ::MaybeOSError, ::OSError, ::OSErrorCode, ::OSErrorMessage
