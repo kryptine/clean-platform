@@ -1,7 +1,7 @@
 definition module Data.Func
 
 from StdFunc import id, const, o, flip
-from StdMisc import undef
+from StdMisc import undef, abort
 
 ($) infixr 0 :: !(.a -> .b) !.a -> .b
 // (&) infixl 1 :: !.a !(.a -> .b) -> .b
