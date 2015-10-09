@@ -5,6 +5,7 @@ import StdClass
 from Data.Maybe import :: Maybe
 from StdFunc import o
 import qualified Data.List as L
+from Data.Monoid import class Monoid, class Semigroup
 
 /**
  * Ported from Edward Kmett's Data.Heap by Jurriën Stutterheim 15-08-2014
@@ -23,6 +24,10 @@ import qualified Data.List as L
 instance == (Heap a)
 
 instance < (Heap a)
+
+instance Semigroup (Heap a)
+
+instance Monoid (Heap a)
 
 :: Entry p a = Entry p a
 
