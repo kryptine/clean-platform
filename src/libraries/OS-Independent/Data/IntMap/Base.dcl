@@ -3,12 +3,13 @@ definition module Data.IntMap.Base
 
 // A map of integers to values @a@.
 
-:: IntMap a = Bin !Prefix
-                  !Mask
-                  !(IntMap a)
-                  !(IntMap a)
-            | Tip !Int a
-            | Nil
+:: IntMap a
+  = Nil
+  | Tip !Int a
+  | Bin !Prefix
+        !Mask
+        !(IntMap a)
+        !(IntMap a)
 
 :: Prefix :== Int
 :: Mask   :== Int
