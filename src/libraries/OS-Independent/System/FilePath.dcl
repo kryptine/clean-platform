@@ -23,7 +23,10 @@ extSeparator :: Char
 /**
 * Concatenates two paths
 */
-(</>) infixr 5 :: !FilePath !FilePath -> FilePath
+combine :: !FilePath !FilePath -> FilePath
+
+(</>) infixr 5 // :: !FilePath !FilePath -> FilePath
+(</>) x y :== combine x y
 
 /**
 * Split a FilePath into filename and extension. The result does not include the extension separator (.).
@@ -44,6 +47,9 @@ dropExtension :: !FilePath -> String
 * Add an extension to a FilePath
 */
 addExtension :: !FilePath !String -> FilePath
+
+(<.>) infixr 7 // :: !FilePath !String -> FilePath
+(<.>) p e :== addExtension p e
 
 /**
 * Replace the extension of a FilePath
