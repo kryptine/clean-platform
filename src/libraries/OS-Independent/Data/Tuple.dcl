@@ -1,6 +1,6 @@
 definition module Data.Tuple
 
-import StdTuple
+from StdTuple import fst, snd, fst3, snd3, thd3, app2, app3, curry, uncurry
 
 tuple	:: !a !b	-> (!a,!b)
 tuple3	:: !a !b !c	-> (!a,!b,!c)
