@@ -26,6 +26,9 @@ from StdOverloaded import class zero, class +, class -, class ~, class sign, cla
   | FitImage    !Span !Span
   | FitXImage   !Span
   | FitYImage   !Span
+  | ScaleImage  !Real !Real
+  | ScaleXImage !Real
+  | ScaleYImage !Real
   | FlipXImage
   | FlipYImage
 

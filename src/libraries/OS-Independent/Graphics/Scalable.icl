@@ -242,6 +242,34 @@ fity yspan image=:{Image | transform = ts}
                 ts                 = [FitYImage yspan` : ts]
   = {Image | image & transform = ts`}
 
+scale :: !Real !Real !(Image m) -> Image m
+scale xspan yspan image=:{Image | transform = ts}
+  #! xspan` = max zero xspan
+  #! yspan` = max zero yspan
+  #! ts`    = case ts of
+                [ScaleImage _ _ : ts] = [ScaleImage xspan` yspan` : ts]
+                ts                  = [ScaleImage xspan` yspan` : ts]
+  = {Image | image & transform = ts`}
+
+scalex :: !Real !(Image m) -> Image m
+scalex xspan image=:{Image | transform = ts}
+  #! xspan` = max zero xspan
+  #! ts`    = case ts of
+                [ScaleXImage _ : ts] = [ScaleXImage xspan` : ts]
+                [ScaleYImage _ : ts] = [ScaleXImage xspan` : ts]
+                ts                   = [ScaleXImage xspan` : ts]
+  = {Image | image & transform = ts`}
+
+scaley :: !Real !(Image m) -> Image m
+scaley yspan image=:{Image | transform = ts}
+  #! yspan` = max zero yspan
+  #! ts`    = case ts of
+                [ScaleXImage _ : ts] = [ScaleYImage yspan` : ts]
+                [ScaleYImage _ : ts] = [ScaleYImage yspan` : ts]
+                ts                   = [ScaleYImage yspan` : ts]
+  = {Image | image & transform = ts`}
+
+
 skewx :: !Angle !(Image m) -> Image m
 skewx xskew image=:{Image | transform = ts}
   #! xskew` = normalize xskew

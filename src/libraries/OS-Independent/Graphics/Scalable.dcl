@@ -63,6 +63,10 @@ fit      :: !Span !Span !(Image m) -> Image m
 fitx     :: !Span       !(Image m) -> Image m
 fity     :: !Span       !(Image m) -> Image m
 
+scale    :: !Real !Real !(Image m) -> Image m
+scalex   :: !Real       !(Image m) -> Image m
+scaley   :: !Real       !(Image m) -> Image m
+
 rotate   :: !Angle !(Image m) -> Image m
 flipx    :: !(Image m) -> Image m
 flipy    :: !(Image m) -> Image m
