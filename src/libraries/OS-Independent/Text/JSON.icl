@@ -629,6 +629,7 @@ JSONDecode{|Maybe|} fx True l
 JSONDecode{|Maybe|} _ _ l               = (Nothing, l) // If all else fails... Nothing
 
 JSONDecode{|JSONNode|} _ [node:xs]      = (Just node, xs)
+JSONDecode{|JSONNode|} True []			= (Just JSONNull, []) //In record fields, fields with value JSONNull are removed
 JSONDecode{|JSONNode|} _ l				= (Nothing, l)
 
 jsonQuery :: !String !JSONNode -> Maybe a | JSONDecode{|*|} a
