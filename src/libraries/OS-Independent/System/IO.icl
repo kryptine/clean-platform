@@ -5,6 +5,7 @@ import Control.Monad
 import Data.Functor
 from StdFunc import o, id
 import StdFile, StdString
+from Text import class Text (trim), instance Text String
 
 :: IO a = IO (*World -> *(a, *World))
 
@@ -65,7 +66,7 @@ getLine = withWorld f
     # (input, world) = stdio world
     # (str, input)   = freadline input
     # (_, world)     = fclose input world
-    = (str, world)
+    = (trim str, world)
 
 readFileM :: !String -> IO String
 readFileM name = withWorld f
