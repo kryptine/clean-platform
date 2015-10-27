@@ -13,9 +13,15 @@ evalIO :: (IO a) *World -> *(a, *World)
 
 withWorld :: (*World -> *(a, !*World)) -> IO a
 
+putStr :: String -> IO ()
+
 putStrLn :: String -> IO ()
 
 print :: a -> IO () | toString a
+
+getChar :: IO Char
+
+getLine :: IO String
 
 readFileM :: !String -> IO String
 

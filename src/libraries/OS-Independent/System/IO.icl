@@ -34,17 +34,38 @@ instance Monad IO where
         # (IO g)     = a2mb x
         = g world
 
-putStrLn :: String -> IO ()
-putStrLn str = withWorld f
+putStr :: String -> IO ()
+putStr str = withWorld f
   where
-    f world
-      # (out, world) = stdio world
-      # out          = fwrites (str +++ "\n") out
-      # (_, world)   = fclose out world
-      = ((), world)
+  f world
+    # (out, world) = stdio world
+    # out          = fwrites str out
+    # (_, world)   = fclose out world
+    = ((), world)
+
+putStrLn :: String -> IO ()
+putStrLn str = putStr (str +++ "\n")
 
 print :: a -> IO () | toString a
 print x = putStrLn (toString x)
+
+getChar :: IO Char
+getChar = withWorld f
+  where
+  f world
+    # (input, world) = stdio world
+    # (ok, c, input) = freadc input
+    # (_, world)     = fclose input world
+    = (c, world)
+
+getLine :: IO String
+getLine = withWorld f
+  where
+  f world
+    # (input, world) = stdio world
+    # (str, input)   = freadline input
+    # (_, world)     = fclose input world
+    = (str, world)
 
 readFileM :: !String -> IO String
 readFileM name = withWorld f
