@@ -13,6 +13,7 @@ from Data.Functor.Identity import :: Identity
 state       :: (a -> .(b, a)) -> .(StateT a c b) | Monad c
 put         :: a -> .(StateT a b Void) | Monad b
 modify      :: (a -> a) -> .(StateT a b Void) | Monad b
+getState    :: .(StateT a b a) | Monad b
 gets        :: (a -> b) -> .(StateT a c b) | Monad c
 runStateT   :: .(StateT a u:b c) -> a -> u:(b (c,a))
 runState    :: .(StateT a .Identity b) -> .(a -> (b,a))

@@ -32,8 +32,8 @@ instance MonadTrans (StateT s) where
 state :: (a -> .(b, a)) -> .(StateT a c b) | Monad c
 state f = StateT (return o f)
 
-get :: .(StateT a b a) | Monad b
-get = state $ \s -> (s, s)
+getState :: .(StateT a b a) | Monad b
+getState = state $ \s -> (s, s)
 
 put :: a -> .(StateT a b Void) | Monad b
 put s = state $ \_ -> (Void, s)
