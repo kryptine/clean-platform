@@ -81,8 +81,9 @@ where
 			decodeOctet` oct off s	= decodeOctet` (oct>>8) (off-1) {s & [off+dest_o] = (fromInt (oct bitand 255))}
 		
 			getValue :: !Char -> Int
-			getValue c = hd ([i \\ i<-[0..(size a-2)] | (a.[i] == c)])
+			getValue c = hd ([i \\ i<-[0..alphabetSizeMin2] | (a.[i] == c)])
 		
+    alphabetSizeMin2 = size a - 2
 	srcSize = size s
 	destSize
 		| srcSize == 0				= 0
