@@ -1,6 +1,7 @@
 implementation module Text.Encodings.Base64
 
 import StdChar, StdString, StdList, StdArray, StdMisc, StdBool
+import Text
 
 //65th character is padding-character
 stdAlphabet :== "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/="
@@ -81,9 +82,8 @@ where
 			decodeOctet` oct off s	= decodeOctet` (oct>>8) (off-1) {s & [off+dest_o] = (fromInt (oct bitand 255))}
 		
 			getValue :: !Char -> Int
-			getValue c = hd ([i \\ i<-[0..alphabetSizeMin2] | (a.[i] == c)])
+			getValue c = indexOf {#c} a
 		
-    alphabetSizeMin2 = size a - 2
 	srcSize = size s
 	destSize
 		| srcSize == 0				= 0
