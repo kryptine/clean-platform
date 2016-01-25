@@ -142,6 +142,16 @@ rect xspan yspan
                               ]
     }
 
+raw :: !Span !Span !String -> Image m
+raw xspan yspan svgStr
+  = { mkImage (Basic (RawImage svgStr) (maxSpan [zero, xspan], maxSpan [zero, yspan]))
+    & attribs = 'DS'.fromList [ ImageStrokeAttr      {stroke      = toSVGColor "none"}
+                              , ImageStrokeWidthAttr {strokewidth = px 0.0}
+                              , ImageFillAttr        {fill        = toSVGColor "none"}
+                              , ImageFillOpacityAttr {opacity     = 1.0}
+                              ]
+    }
+
 defaultMarkers :: Markers m
 defaultMarkers
   = { Markers

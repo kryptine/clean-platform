@@ -45,11 +45,12 @@ instance margin (!Span, !Span, !Span, !Span) // (t, r, b, l) Margin is t on top,
 
 normalFontDef  :: !String !Real    -> FontDef // (normalFontDef family size) sets all other fields to "normal"
 
-empty          :: !Span !Span      -> Image m // (empty a b) is an empty image with x-span a and y-span b
-text           :: !FontDef !String -> Image m // (text font str) is an image containg str written in font
-circle         :: !Span            -> Image m // (circle a) is an image of a circle with diameter a
-ellipse        :: !Span !Span      -> Image m // (ellipse a b) is an image of an ellipse with x-diameter a and y-diameter b
-rect           :: !Span !Span      -> Image m // (rect a b) is an image of a rectangle with x-span a and y-span b
+empty          :: !Span !Span         -> Image m // (empty a b) is an empty image with x-span a and y-span b
+text           :: !FontDef !String    -> Image m // (text font str) is an image containg str written in font
+circle         :: !Span               -> Image m // (circle a) is an image of a circle with diameter a
+ellipse        :: !Span !Span         -> Image m // (ellipse a b) is an image of an ellipse with x-diameter a and y-diameter b
+rect           :: !Span !Span         -> Image m // (rect a b) is an image of a rectangle with x-span a and y-span b
+raw            :: !Span !Span !String -> Image m
 
 defaultMarkers :: Markers m
 

@@ -73,6 +73,7 @@ from StdOverloaded import class zero, class +, class -, class ~, class sign, cla
   | CircleImage
   | RectImage
   | EllipseImage
+  | RawImage !String
 
 :: FontDef
   = { fontfamily  :: !String
