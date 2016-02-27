@@ -10,7 +10,7 @@ where
 	//The reason why first a big string is made into which the characters are copied is to
 	//avoid many string concatenations with big strings
 	toString node
-		# len = sizeOf node
+		#! len = sizeOf node
 		= snd (copyNode 0 node (createArray len '\0'))
 
 //Determine serialized size of a JSON datastructure
@@ -411,7 +411,7 @@ where
 	//Build the escaped string from the original and the replacements		
 	copyAndReplaceChars :: !Int !Int ![!(!Int, !Char)!] !String !*String -> *String
 	copyAndReplaceChars is id reps=:[!(ir,c):rs!] src dest
-		# (is,id,src,dest) = copyCharsI is id ir src dest
+		#! (is,id,src,dest) = copyCharsI is id ir src dest
 		=	copyAndReplaceChars (is + 2) (id + 1) rs src {dest & [id] = c}
 	copyAndReplaceChars is id [!!] src dest
 		= copyRemainingChars is id src dest
@@ -723,7 +723,7 @@ jsonQuery path node
 		Just child	= fromJSON child
 		Nothing		= Nothing
 where
-	findNode :: ![String] !JSONNode -> (Maybe JSONNode)
+	findNode :: ![String] !JSONNode -> Maybe JSONNode
 	findNode [] node	= Just node
 	findNode [s:ss] (JSONObject fields)
 		= case findField s fields of
@@ -739,24 +739,25 @@ where
 	findField s []			= Nothing
 	findField s [(l,x):xs]	= if (l == s) (Just x) (findField s xs)
 
-instance == JSONNode
-where
-	(==) JSONNull 			JSONNull 			= True
-	(==) (JSONBool x) 		(JSONBool y)		= x == y
-	(==) (JSONInt x) 		(JSONInt y)			= x == y
-	(==) (JSONReal x)		(JSONReal y)		= toString x == toString y
-	(==) (JSONInt x)		(JSONReal y)		= toString (toReal x) == toString y
-	(==) (JSONReal x)		(JSONInt y)			= toString x == toString (toReal y)
-	(==) (JSONString x)		(JSONString y)		= x == y
-	(==) (JSONArray xs) 	(JSONArray ys)		= xs == ys
-	(==) (JSONObject xs) 	(JSONObject ys)		= sortBy cmpFst (filter (notNull o snd) xs) == sortBy cmpFst (filter (notNull o snd) ys)
-	where
-		cmpFst a b = fst a < fst b
-		notNull JSONNull	= False
-		notNull _			= True
-	(==) (JSONRaw x)		(JSONRaw y)			= x == y
-	(==) JSONError			JSONError			= True
-	(==) _ 					_ 					= False
+instance == JSONNode where
+  (==) JSONNull        JSONNull        = True
+  (==) (JSONBool x)    (JSONBool y)    = x == y
+  (==) (JSONInt x)     (JSONInt y)     = x == y
+  (==) (JSONReal x)    (JSONReal y)    = toString x == toString y
+  (==) (JSONInt x)     (JSONReal y)    = toString (toReal x) == toString y
+  (==) (JSONReal x)    (JSONInt y)     = toString x == toString (toReal y)
+  (==) (JSONString x)  (JSONString y)  = x == y
+  (==) (JSONArray xs)  (JSONArray ys)  = xs == ys
+  (==) (JSONObject xs) (JSONObject ys) = sortBy cmpFst (filter (notNull o snd) xs) == sortBy cmpFst (filter (notNull o snd) ys)
+    where
+    cmpFst :: !(!a, b) !(!a, c) -> Bool | < a
+    cmpFst a b = fst a < fst b
+    notNull :: !JSONNode -> Bool
+    notNull JSONNull = False
+    notNull _        = True
+  (==) (JSONRaw x)     (JSONRaw y)     = x == y
+  (==) JSONError       JSONError       = True
+  (==) _               _               = False
 
 jsonPrettyPrint :: !JSONNode -> String
 jsonPrettyPrint json = display (renderPretty 0.0 400 (pretty json))
