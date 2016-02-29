@@ -190,12 +190,18 @@ find :: (a -> .Bool) -> .(.[a] -> .(Maybe a))
 find p          = listToMaybe o filter p
 
 partition :: !(a -> .Bool) !.[a] -> (!.[a], !.[a])
-partition p xs = foldr (select p) ([],[]) xs
-  where
-  select :: !.(a -> .Bool) !a !(!u:[a], !v:[a]) -> (!w:[a], !x:[a]), [u <= w,v <= x]
-  select p x (ts, fs)
-    | p x       = ([x:ts], fs)
-    | otherwise = (ts, [x:fs])
+partition p xs = foldr` (select p) ([],[]) xs
+
+select :: !.(a -> .Bool) !a !(!u:[a], !v:[a]) -> (!w:[a], !x:[a]), [u <= w,v <= x]
+select p x (ts, fs)
+  | p x       = ([x:ts], fs)
+  | otherwise = (ts, [x:fs])
+
+foldr` :: !(a .b -> .b) !.b !.[a] -> !.b
+foldr` _ acc []       = acc
+foldr` f acc [x : xs]
+  #! tmp = foldr` f acc xs
+  = f x tmp
 
 elemIndex :: a -> .(.[a] -> .(Maybe Int)) | == a
 elemIndex x     = findIndex (\y -> x==y)
