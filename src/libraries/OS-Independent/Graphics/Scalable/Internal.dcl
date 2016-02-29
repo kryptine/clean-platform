@@ -133,6 +133,7 @@ from StdOverloaded import class zero, class +, class -, class ~, class sign, cla
 :: DraggableAttr   m = { draggable   :: !Maybe ((Maybe (Set ImageTag)) Real Real m -> m) }
 :: DashAttr        m = { dash        :: ![Int]    }
 :: MaskAttr        m = { mask        :: !Image m  }
+:: NoAttr          m = NoAttr
 
 :: ImageTag
   = ImageTagUser !Int !String

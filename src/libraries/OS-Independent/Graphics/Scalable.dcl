@@ -11,7 +11,7 @@ from Graphics.Scalable.Internal import :: Image, :: ImageTag, :: Span,
   :: YRadiusAttr {..}, :: FillAttr {..}, :: OpacityAttr {..},
   :: OnClickAttr {..}, :: OnMouseDownAttr {..}, :: OnMouseUpAttr {..},
   :: OnMouseOverAttr {..}, :: OnMouseMoveAttr {..}, :: OnMouseOutAttr {..},
-  :: DraggableAttr {..}, :: DashAttr {..}, 
+  :: DraggableAttr {..}, :: DashAttr {..}, :: NoAttr (..),
   :: MaskAttr {..}, :: Slash (..), :: ImageAlign, :: XAlign (..), :: YAlign (..),
   :: Host, :: GridLayout, :: GridMajor(..), :: GridXLayout (..), :: GridYLayout (..), :: GridDimension (..),
   class /. (..), class *. (..), instance *. Span, instance /. Span,
@@ -92,7 +92,7 @@ tuneIf :: !Bool !(Image m) !(attr m) -> Image m | tuneImage attr
 instance tuneImage StrokeAttr, StrokeWidthAttr, FillAttr, OpacityAttr,
   OnClickAttr, OnMouseDownAttr, OnMouseUpAttr, OnMouseOverAttr,
   OnMouseMoveAttr, OnMouseOutAttr, DraggableAttr, XRadiusAttr, YRadiusAttr,
-  DashAttr, MaskAttr
+  DashAttr, MaskAttr, NoAttr
 
 class toSVGColor a :: !a -> SVGColor
 instance toSVGColor String, RGB

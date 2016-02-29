@@ -378,6 +378,8 @@ collage offsets imgs host
                        , compose = AsCollage offsets` imgs
                        })
 
+instance tuneImage NoAttr          where
+  tuneImage image _ = image
 instance tuneImage StrokeAttr      where
   tuneImage image=:{Image | attribs} attr = {Image | image & attribs = 'DS'.insert (ImageStrokeAttr      attr) attribs}
 instance tuneImage StrokeWidthAttr where
