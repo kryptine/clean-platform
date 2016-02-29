@@ -13,13 +13,22 @@ from Text.JSON import generic JSONEncode, generic JSONDecode, :: JSONNode
 
 foldr :: !(a b -> b) !b !(IntMap a) -> b
 foldr f z t =
-  case t of Bin _ m l r | m < 0 -> go (go z l) r // put negative numbers before
-                        | otherwise -> go (go z r) l
-            _ -> go z t
+  case t of
+    Bin _ m l r
+      | m < 0
+        #! tmp = go f z l
+        = go f tmp r // put negative numbers before
+      | otherwise
+        #! tmp = go f z r
+        = go f tmp l
+    _ = go f z t
   where
-  go z` Nil           = z`
-  go z` (Tip _ x)     = f x z`
-  go z` (Bin _ _ l r) = go (go z` r) l
+  go :: !(a b -> b) !b !(IntMap a) -> b
+  go _ z` Nil       = z`
+  go f z` (Tip _ x) = f x z`
+  go f z` (Bin _ _ l r)
+    #! tmp = go f z` r
+    = go f tmp l
 
 // | /O(min(n,W))/. The expression @('findWithDefault' def k map)@
 // returns the value at key @k@ or returns @def@ when the key is not an

@@ -721,10 +721,16 @@ unionsWith :: !(a a -> a) ![Map k a] -> Map k a | < k
 unionsWith f ts = foldlStrict (unionWith f) newMap ts
 
 unionWith :: !(a a -> a) !(Map k a) !(Map k a) -> Map k a | < k
-unionWith f m1 m2 = unionWithKey (\_ x y -> f x y) m1 m2
+unionWith f m1 m2 = unionWithKey (appUnion f) m1 m2
+  where
+  appUnion :: !(a a -> a) k !a !a -> a
+  appUnion f _ x y = f x y
 
 unionWithKey :: !(k a a -> a) !(Map k a) !(Map k a) -> Map k a | < k
-unionWithKey f t1 t2 = mergeWithKey (\k x1 x2 -> Just (f k x1 x2)) id id t1 t2
+unionWithKey f t1 t2 = mergeWithKey (appUnion f) id id t1 t2
+  where
+  appUnion :: !(k a a -> a) !k !a !a -> Maybe a
+  appUnion f k x y = Just (f k x y)
 
 // left-biased hedge union
 hedgeUnion :: !(Maybe a) !(Maybe a) !(Map a b) !(Map a b) -> Map a b | < a
