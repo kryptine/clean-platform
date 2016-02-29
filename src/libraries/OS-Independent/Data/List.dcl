@@ -43,7 +43,7 @@ elem            :: a .[a] -> .Bool | == a
 notElem         :: a .[a] -> .Bool | == a
 lookup          :: a [(a,.b)] -> Maybe .b | == a
 find            :: (a -> .Bool) -> .(.[a] -> .(Maybe a))
-partition       :: (a -> .Bool) .[a] -> (.[a],.[a])
+partition       :: !(a -> .Bool) !.[a] -> (!.[a], !.[a])
 elemIndex       :: a -> .(.[a] -> .(Maybe Int)) | == a
 elemIndices     :: a -> .(.[a] -> .[Int]) | == a
 findIndex       :: (.a -> .Bool) -> .([.a] -> .(Maybe Int))

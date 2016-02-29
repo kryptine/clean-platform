@@ -189,12 +189,13 @@ lookup  key [(x,y):xys]
 find :: (a -> .Bool) -> .(.[a] -> .(Maybe a))
 find p          = listToMaybe o filter p
 
-partition :: (a -> .Bool) .[a] -> (.[a],.[a])
+partition :: !(a -> .Bool) !.[a] -> (!.[a], !.[a])
 partition p xs = foldr (select p) ([],[]) xs
-  where select :: .(a -> .Bool) a (u:[a],v:[a]) -> (w:[a],x:[a]), [u <= w,v <= x]
-        select p x t =
-          let (ts,fs) = t
-          in if (p x) ([x:ts],fs) (ts, [x:fs])
+  where
+  select :: !.(a -> .Bool) !a !(!u:[a], !v:[a]) -> (!w:[a], !x:[a]), [u <= w,v <= x]
+  select p x (ts, fs)
+    | p x       = ([x:ts], fs)
+    | otherwise = (ts, [x:fs])
 
 elemIndex :: a -> .(.[a] -> .(Maybe Int)) | == a
 elemIndex x     = findIndex (\y -> x==y)
