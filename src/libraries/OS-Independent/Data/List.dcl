@@ -79,5 +79,7 @@ strictTRMapRev :: !(.a -> .b) ![.a] -> [.b]
 strictTRMapAcc :: !(u:a -> v:b) !w:[u:a] !x:[v:b] -> y:[v:b], [w <= u,y <= v,x <= y]
 strictTRMap    :: !(.a -> .b) ![.a] -> [.b]
 reverseTR      :: ![.a] -> [.a]
+strictFoldrSt  :: !(.a -> .(.b *st -> *(.b, *st))) !.b ![.a] *st -> *(.b, *st)
+strictFoldlSt  :: !(.a -> .(.b *st -> *(.a, *st))) !.a ![.b] *st -> *(.a, *st)
 
 instance Functor []
