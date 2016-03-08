@@ -173,7 +173,3 @@ instance *.   Span, Real, Int
 instance *    Span
 instance /.   Span, Real, Int
 instance /    Span
-
-strictTRMapRev :: !(.a -> .b) ![.a] -> [.b]
-strictTRMap    :: !(.a -> .b) ![.a] -> [.b]
-reverseTR      :: ![.a] -> [.a]

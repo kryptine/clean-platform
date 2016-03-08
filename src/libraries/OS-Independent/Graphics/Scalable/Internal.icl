@@ -15,23 +15,6 @@ import Text.HTML
 from Data.Functor import class Functor (..)
 import GenLexOrd
 
-strictTRMapRev :: !(.a -> .b) ![.a] -> [.b]
-strictTRMapRev f xs = strictTRMapAcc f xs []
-
-strictTRMapAcc :: !(u:a -> v:b) !w:[u:a] !x:[v:b] -> y:[v:b], [w <= u,y <= v,x <= y]
-strictTRMapAcc f []     acc = acc
-strictTRMapAcc f [x:xs] acc = strictTRMapAcc f xs [f x : acc]
-
-strictTRMap :: !(.a -> .b) ![.a] -> [.b]
-strictTRMap f xs = reverseTR (strictTRMapAcc f xs [])
-
-reverseTR :: ![.a] -> [.a]
-reverseTR xs = rev` xs []
-  where
-  rev` :: !u:[v:a] !w:[v:a] -> x:[v:a], [x u <= v,w <= x]
-  rev` [] acc = acc
-  rev` [x:xs] acc = rev` xs [x:acc]
-
 instance / Span where
   / p=:(PxSpan 0.0)        _               = p
   / _                      p=:(PxSpan 0.0) = p // Division by zero should be undefined, but that would be impractical

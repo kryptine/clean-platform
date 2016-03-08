@@ -73,7 +73,11 @@ unionBy         :: (a -> .(a -> .Bool)) .[a] .[a] -> .[a]
 
 isMemberGen :: !a !.[a] -> Bool | gEq{|*|} a
 
-strictFoldr :: !(.a -> .(.b -> .b)) !.b ![.a] -> .b
-strictFoldl :: !(.a -> .(.b -> .a)) !.a ![.b] -> .a
+strictFoldr    :: !(.a -> .(.b -> .b)) !.b ![.a] -> .b
+strictFoldl    :: !(.a -> .(.b -> .a)) !.a ![.b] -> .a
+strictTRMapRev :: !(.a -> .b) ![.a] -> [.b]
+strictTRMapAcc :: !(u:a -> v:b) !w:[u:a] !x:[v:b] -> y:[v:b], [w <= u,y <= v,x <= y]
+strictTRMap    :: !(.a -> .b) ![.a] -> [.b]
+reverseTR      :: ![.a] -> [.a]
 
 instance Functor []
