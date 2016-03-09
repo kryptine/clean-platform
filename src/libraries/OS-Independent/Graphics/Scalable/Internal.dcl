@@ -107,8 +107,8 @@ from StdOverloaded import class zero, class +, class -, class ~, class sign, cla
   | ImageXRadiusAttr       !(XRadiusAttr     m)
   | ImageYRadiusAttr       !(YRadiusAttr     m)
   | ImageStrokeOpacityAttr !(OpacityAttr     m)
-  | ImageFillAttr          !(FillAttr        m)
   | ImageFillOpacityAttr   !(OpacityAttr     m)
+  | ImageFillAttr          !(FillAttr        m)
   | ImageDashAttr          !(DashAttr        m)
   | ImageOnClickAttr       !(OnClickAttr     m)
   | ImageOnMouseDownAttr   !(OnMouseDownAttr m)
@@ -122,8 +122,9 @@ from StdOverloaded import class zero, class +, class -, class ~, class sign, cla
 :: StrokeWidthAttr m = { strokewidth :: !Span     }
 :: XRadiusAttr     m = { xradius     :: !Span     }
 :: YRadiusAttr     m = { yradius     :: !Span     }
-:: FillAttr        m = { fill        :: !SVGColor }
 :: OpacityAttr     m = { opacity     :: !Real     }
+:: FillAttr        m = { fill        :: !SVGColor }
+:: DashAttr        m = { dash        :: ![Int]    }
 :: OnClickAttr     m = { onclick     :: !(Int m -> m), local :: !Bool }
 :: OnMouseDownAttr m = { onmousedown :: !(m -> m), local :: !Bool }
 :: OnMouseUpAttr   m = { onmouseup   :: !(m -> m), local :: !Bool }
@@ -131,7 +132,6 @@ from StdOverloaded import class zero, class +, class -, class ~, class sign, cla
 :: OnMouseMoveAttr m = { onmousemove :: !(m -> m), local :: !Bool }
 :: OnMouseOutAttr  m = { onmouseout  :: !(m -> m), local :: !Bool }
 :: DraggableAttr   m = { draggable   :: !Maybe ((Maybe (Set ImageTag)) Real Real m -> m) }
-:: DashAttr        m = { dash        :: ![Int]    }
 :: MaskAttr        m = { mask        :: !Image m  }
 :: NoAttr          m = NoAttr
 

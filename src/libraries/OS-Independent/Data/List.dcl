@@ -73,13 +73,28 @@ unionBy         :: (a -> .(a -> .Bool)) .[a] .[a] -> .[a]
 
 isMemberGen :: !a !.[a] -> Bool | gEq{|*|} a
 
-strictFoldr    :: !(.a -> .(.b -> .b)) !.b ![.a] -> .b
-strictFoldl    :: !(.a -> .(.b -> .a)) !.a ![.b] -> .a
-strictTRMapRev :: !(.a -> .b) ![.a] -> [.b]
-strictTRMapAcc :: !(u:a -> v:b) !w:[u:a] !x:[v:b] -> y:[v:b], [w <= u,y <= v,x <= y]
-strictTRMap    :: !(.a -> .b) ![.a] -> [.b]
-reverseTR      :: ![.a] -> [.a]
-strictFoldrSt  :: !(.a -> .(.b *st -> *(.b, *st))) !.b ![.a] *st -> *(.b, *st)
-strictFoldlSt  :: !(.a -> .(.b *st -> *(.a, *st))) !.a ![.b] *st -> *(.a, *st)
+strictFoldr         :: !(.a -> .(.b -> .b)) !.b ![.a] -> .b
+strictFoldl         :: !(.a -> .(.b -> .a)) !.a ![.b] -> .a
+strictTRMapRev      :: !(.a -> .b) ![.a] -> [.b]
+strictTRMapAcc      :: !(u:a -> v:b) !w:[u:a] !x:[v:b] -> y:[v:b], [w <= u,y <= v,x <= y]
+strictTRMap         :: !(.a -> .b) ![.a] -> [.b]
+reverseTR           :: ![.a] -> [.a]
+flattenTR           :: ![[a]] -> [a]
+strictFoldrSt       :: !(.a -> .(.b *st -> *(.b, *st))) !.b ![.a] *st -> *(.b, *st)
+strictFoldlSt       :: !(.a -> .(.b *st -> *(.a, *st))) !.a ![.b] *st -> *(.a, *st)
+strictTRMapSt       :: !(a .st -> (!b, !.st)) ![a] !.st -> (![b], !.st)
+strictTRMapStAcc    :: !(a .st -> (!b, !.st)) ![a] ![b] !.st -> (![b], !.st)
+strictTRZipWith     :: !(a b -> c) ![a] ![b] -> [c]
+strictTRZipWithRev  :: !(a b -> c) ![a] ![b] -> [c]
+strictTRZipWithAcc  :: !(a b -> c) ![a] ![b] ![c] -> [c]
+strictTRZip4        :: ![a] ![b] ![c] ![d] -> [(!a, !b, !c, !d)]
+strictTRZip4Rev     :: ![a] ![b] ![c] ![d] -> [(!a, !b, !c, !d)]
+strictTRZip4Acc     :: ![a] ![b] ![c] ![d] ![(!a, !b, !c, !d)] -> [(!a, !b, !c, !d)]
+strictTRZip2        :: ![a] ![b]-> [(!a, !b)]
+strictTRZip2Rev     :: ![a] ![b]-> [(!a, !b)]
+strictTRZip2Acc     :: ![a] ![b] ![(!a, !b)] -> [(!a, !b)]
+strictTRZipWith3    :: !(a b c -> d) ![a] ![b] ![c] -> [d]
+strictTRZipWith3Rev :: !(a b c -> d) ![a] ![b] ![c] -> [d]
+strictTRZipWith3Acc :: !(a b c -> d) ![a] ![b] ![c] ![d] -> [d]
 
 instance Functor []
