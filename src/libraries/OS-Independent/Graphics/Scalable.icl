@@ -82,7 +82,6 @@ mkImage cnt =
   , tags                = 'DS'.newSet
   , uniqId              = -1
   , totalSpanPreTrans   = (px 0.0, px 0.0)
-  , totalSpanPostTrans  = (px 0.0, px 0.0)
   , transformCorrection = (px 0.0, px 0.0)
   }
 

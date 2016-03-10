@@ -15,7 +15,6 @@ from StdOverloaded import class zero, class +, class -, class ~, class sign, cla
     , uniqId              :: !Int               // A unique identifier for this image
     // TODO Get rid of the next two fields
     , totalSpanPreTrans   :: !ImageSpan         // Total image span before transformations
-    , totalSpanPostTrans  :: !ImageSpan         // Total image span after transformations
     , transformCorrection :: !ImageOffset       // Correction required after transformation
     }
 
@@ -57,10 +56,10 @@ from StdOverloaded import class zero, class +, class -, class ~, class sign, cla
 :: Span
   = PxSpan     !Real       // (PxSpan a) is a pixels
   | LookupSpan !LookupSpan // (LookupSpan a) needs to be looked up after computing dimensions
-  | AddSpan    !Span !Span  // (AddSpan a b) is span a + span b
-  | SubSpan    !Span !Span  // (SubSpan a b) is span a - span b
-  | MulSpan    !Span !Span  // (MulSpan a b) is span a * span k
-  | DivSpan    !Span !Span  // (DivSpan a b) is span a / span k
+  | AddSpan    !Span !Span // (AddSpan a b) is span a + span b
+  | SubSpan    !Span !Span // (SubSpan a b) is span a - span b
+  | MulSpan    !Span !Span // (MulSpan a b) is span a * span k
+  | DivSpan    !Span !Span // (DivSpan a b) is span a / span k
   | AbsSpan    !Span       // (AbsSpan a)  is absolute value of span a
   | MinSpan    ![Span]     // (MinSpan as) is minimum span value in as
   | MaxSpan    ![Span]     // (MaxSpan as) is maximum span value in as
