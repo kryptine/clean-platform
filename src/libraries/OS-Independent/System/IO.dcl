@@ -30,3 +30,6 @@ writeFileM :: !String !String -> IO ()
 instance Applicative IO
 instance Functor IO
 instance Monad IO
+
+unsafePerformIO :: !(*World -> *World) .a -> .a
+unsafePerformIOTrue :: !(*World -> *World) -> Bool

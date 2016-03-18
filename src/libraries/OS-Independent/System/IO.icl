@@ -86,3 +86,24 @@ writeFileM name txt = withWorld f
     # (ok, world)       = fclose file world
     = ((), world)
 
+unsafePerformIO :: !(*World -> *World) .a -> .a
+unsafePerformIO f x
+  | world_to_true (f make_world) = x
+
+unsafePerformIOTrue :: !(*World -> *World) -> Bool
+unsafePerformIOTrue f
+  = world_to_true (f make_world)
+
+world_to_true :: !*World -> Bool;
+world_to_true world
+ = code inline {
+   pop_a 1
+   pushB TRUE
+ }
+
+make_world :: *World;
+make_world
+  = code {
+    fillI 65536 0
+  }
+
