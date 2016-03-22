@@ -5,7 +5,7 @@ from Data.Functor import class Functor
 from Control.Monad import class Monad
 from StdOverloaded import class toString
 
-:: IO a = IO (*World -> *(a, *World))
+:: IO a = IO .(*World -> *(a, *World))
 
 execIO :: (IO a) *World -> *World
 
