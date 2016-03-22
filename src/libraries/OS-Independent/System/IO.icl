@@ -17,7 +17,7 @@ execIO (IO f) world
 evalIO :: (IO a) *World -> *(a, *World)
 evalIO (IO f) world = f world
 
-withWorld :: (*World -> *(a, !*World)) -> IO a
+withWorld :: (*World -> *(.a, !*World)) -> IO .a
 withWorld f = IO f
 
 instance Applicative IO where

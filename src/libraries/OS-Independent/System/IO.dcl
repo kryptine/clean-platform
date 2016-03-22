@@ -11,7 +11,7 @@ execIO :: (IO a) *World -> *World
 
 evalIO :: (IO a) *World -> *(a, *World)
 
-withWorld :: (*World -> *(a, !*World)) -> IO a
+withWorld :: (*World -> *(.a, !*World)) -> IO .a
 
 putStr :: String -> IO ()
 
