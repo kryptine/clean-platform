@@ -23,7 +23,7 @@ instance Monad (StateT s m) | Monad m where
 instance MonadTrans (StateT s) where
   liftT m = StateT (\s -> m >>= \a -> return (a, s))
 
-state :: (s -> .(a, s)) -> .StateT s m a | Monad m
+state :: (s -> .(a, s)) -> StateT s m a | Monad m
 state f = StateT (\s -> pure (f s))
 
 getState :: StateT s m s | Monad m
