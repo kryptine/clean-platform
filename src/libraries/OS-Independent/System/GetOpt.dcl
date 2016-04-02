@@ -1,4 +1,4 @@
-definition module GetOpt
+definition module System.GetOpt
 
 /*
 

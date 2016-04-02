@@ -1,7 +1,7 @@
 implementation module System.GetOpt
 
 import StdEnv, Text, Data.Maybe, Data.Either
-from Data.List import maximum, null, find, concatMap, unzip3, zipWith3
+from Data.List import maximum, isnull, find, concatMap, unzip3, zipWith3
 
 :: OptKind a                    // kind of cmd line arg (internal use only):
    = Opt       a                //    an option
@@ -72,7 +72,7 @@ longOpt ls rs optDescr = long ads arg rs
    where (opt,arg) = breakAt (indexOf "=" ls) ls
          getWith p = [o \\ o=:(Option _ xs _ _) <- optDescr | isJust (find (p opt) xs)]
          exact     = getWith (==)
-         options   = if (null exact) (getWith startsWith) exact
+         options   = if (isnull exact) (getWith startsWith) exact
          ads       = [ ad \\ Option _ _ ad _ <- options ]
          optStr    = ("--"+++opt)
 
