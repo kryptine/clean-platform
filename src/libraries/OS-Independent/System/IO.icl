@@ -7,7 +7,7 @@ from StdFunc import o, id
 import StdFile, StdString
 from Text import class Text (trim), instance Text String
 
-:: IO a = IO (*World -> *(a, *World))
+:: IO a = IO .(*World -> *(a, *World))
 
 execIO :: (IO a) *World -> *World
 execIO (IO f) world
