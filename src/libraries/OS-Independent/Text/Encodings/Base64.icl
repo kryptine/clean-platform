@@ -53,8 +53,8 @@ where
 	where
 		encodeLastOctet :: !Int !Offset !Padding !*{#Char} -> *{#Char}
 		encodeLastOctet oct off p s
-			| off < 0	= s
-			| p > 0		= encodeLastOctet (oct>>6) (off-1) (p-1) {s & [off+dest_o] = '='}
+			| off < 0	= s;
+			| p > 0		= encodeLastOctet (oct>>6) (off-1) (p-1) {s & [off+dest_o] = a.[64]}
 			| otherwise	= encodeLastOctet (oct>>6) (off-1) p {s & [off+dest_o] = a.[oct bitand 63]}
 		
 	srcSize = size s
@@ -83,51 +83,52 @@ decodeString s a
 where
 	decodeString` :: !*{#Char} !Int !Int -> *{#Char}
 	decodeString` dest src_o dest_o
-		| src_o < srcSize - 4
-			#! oct =	((fromChar a.[toInt (s.[src_o])]) << 18) +
-						((fromChar a.[toInt (s.[src_o + 1])]) << 12) +
-						((fromChar a.[toInt (s.[src_o + 2])]) << 6) +
-						(fromChar a.[toInt (s.[src_o + 3])])
-			#! dest & [dest_o + 2] = toChar oct
-			#! dest & [dest_o + 1] = toChar (oct >> 8)
-			#! dest & [dest_o]     = toChar (oct >> 16)
+		| src_o < srcSizeM4
+			#! oct =	((fromChar a.[toInt (s.[src_o])])<<18)+
+						((fromChar a.[toInt (s.[src_o+1])])<<12)+
+						((fromChar a.[toInt (s.[src_o+2])])<<6)+
+						(fromChar a.[toInt (s.[src_o+3])])
+			#! dest & [dest_o+2] = toChar oct
+			#! dest & [dest_o+1] = toChar (oct>>8)
+			#! dest & [dest_o]   = toChar (oct>>16)
 			= decodeString` dest (src_o + 4) (dest_o + 3)
 		| src_o < srcSize	= decodeLastOctet dest
 		| otherwise			= dest
 	where
 		decodeLastOctet :: !*{#Char} -> *{#Char}
 		decodeLastOctet dest
-		| s.[src_o + 2] == '='
+		| s.[src_o+2] == a.[64]
 			// lose the last four obsolete bits (2*6-8b)
-			#! oct = (fromChar a.[toInt s.[src_o]] << 2) +
-					(fromChar a.[toInt s.[src_o + 1]] >> 4)
+			#! oct = (fromChar a.[toInt s.[src_o]]<<6)+
+					(fromChar a.[toInt s.[src_o+1]]>>4)
 			#! dest & [dest_o] = toChar oct
 			= dest
-		| s.[src_o + 3] == '='
-			#! oct = (fromChar a.[toInt s.[src_o]] << 10)+
-					(fromChar a.[toInt s.[src_o + 1]] << 4)+
-					(fromChar a.[toInt s.[src_o + 2]] >> 2)
+		| s.[src_o+3] == a.[64]
+			#! oct = (fromChar a.[toInt s.[src_o]]<<12)+
+					(fromChar a.[toInt s.[src_o+1]]<<6)+
+					(fromChar a.[toInt s.[src_o+2]]>>2)
 			// lose the last two obsolete bits (3*6-2*8b)
 			#! dest & [dest_o+1] = toChar oct
-			#! dest & [dest_o] = toChar (oct >> 8)
+			#! dest & [dest_o] = toChar (oct>>8)
 			= dest
 		| otherwise
-			#! oct =	(fromChar a.[toInt s.[src_o]] << 18) +
-						(fromChar a.[toInt s.[src_o + 1]] << 12) +
-						(fromChar a.[toInt s.[src_o + 2]] << 6) +
-						fromChar a.[toInt s.[src_o + 3]]
-			#! dest & [dest_o + 2] = toChar oct
-			#! dest & [dest_o + 1] = toChar (oct >> 8)
-			#! dest & [dest_o]     = toChar (oct >> 16)
+			#! oct =	(fromChar a.[toInt s.[src_o]]<<18) +
+						(fromChar a.[toInt s.[src_o+1]]<<12) +
+						(fromChar a.[toInt s.[src_o+2]]<<6) +
+						fromChar a.[toInt s.[src_o+3]]
+			#! dest & [dest_o+2] = toChar oct
+			#! dest & [dest_o+1] = toChar (oct>>8)
+			#! dest & [dest_o]   = toChar (oct>>16)
 			= dest
 
 	srcSize = size s
+	srcSizeM4 = size s-4
 	destSize
-		| srcSize == 0            = 0
-		#! d = srcSize * 3 / 4
-		| s.[srcSize - 2] == '=' = d - 2
-		| s.[srcSize - 1] == '=' = d - 1
-		| otherwise              = d
+		| srcSize == 0				= 0
+		#! d = srcSize*3/4
+		| s.[srcSize-2] == a.[64]	= d - 2
+		| s.[srcSize-1] == a.[64]	= d - 1
+		| otherwise					= d
 
 removeLineBreaks :: !{#Char} -> {#Char}
 removeLineBreaks src
@@ -143,15 +144,15 @@ where
 		| s_i<size s
 			| s.[s_i]<>'\n'
 				#! d & [d_i] = s.[s_i]
-				= copy_without_line_breaks (s_i + 1) (d_i + 1) s d
-				= copy_without_line_breaks (s_i + 1) d_i s d
+				= copy_without_line_breaks (s_i+1) (d_i+1) s d
+				= copy_without_line_breaks (s_i+1) d_i s d
 			= d
 	
 	count_line_breaks :: !Int !Int !{#Char} -> Int
 	count_line_breaks i n_line_breaks s
 		| i<size s
 			| s.[i]<>'\n'
-				= count_line_breaks (i + 1) n_line_breaks s
-				= count_line_breaks (i + 1) (n_line_breaks + 1) s
+				= count_line_breaks (i+1) n_line_breaks s
+				= count_line_breaks (i+1) (n_line_breaks+1) s
 			= n_line_breaks
 
