@@ -1,4 +1,4 @@
-definition module RWST
+definition module Control.Monad.RWST
 
 /*
 
