@@ -1,6 +1,5 @@
 implementation module Control.Monad.Reader
 
-from Data.Func import $
 import Data.Functor.Identity
 import Control.Monad
 from StdFunc import o, const
@@ -39,10 +38,10 @@ withReader :: u:((.a -> .b) -> v:(.(ReaderT .b .c .d) -> .(ReaderT .a .c .d))), 
 withReader = withReaderT
 
 mapReaderT :: (u:(a .b) -> v:(c .d)) .(ReaderT .e u:a .b) -> .(ReaderT .e v:c .d)
-mapReaderT f m = ReaderT $ f o runReaderT m
+mapReaderT f m = ReaderT (f o runReaderT m)
 
 withReaderT :: (.a -> .b) .(ReaderT .b .c .d) -> .(ReaderT .a .c .d)
-withReaderT f m = ReaderT $ runReaderT m o f
+withReaderT f m = ReaderT (runReaderT m o f)
 
 liftReaderT :: (a .b) -> .(ReaderT .c a .b)
 liftReaderT m = ReaderT (const m)
