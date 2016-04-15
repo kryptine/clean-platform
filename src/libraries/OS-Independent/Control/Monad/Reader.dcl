@@ -1,8 +1,10 @@
 definition module Control.Monad.Reader
 
+from Control.Applicative import class Applicative
 from Control.Monad import class Monad
-import Data.Functor.Identity
-import Control.Monad.Trans
+from Control.Monad.Trans import class MonadTrans
+from Data.Functor import class Functor
+from Data.Functor.Identity import :: Identity
 
 :: ReaderT r m a = ReaderT (r -> m a)
 
@@ -20,6 +22,8 @@ ask          :: .(ReaderT a b a) | Monad b
 local        :: u:((.a -> .b) -> v:(.(ReaderT .b .c .d) -> .(ReaderT .a .c .d))), [v <= u]
 asks         :: (a -> b) -> ReaderT a c b | Monad c
 
+instance Functor (ReaderT r m) | Monad m
+instance Applicative (ReaderT r m) | Monad m
 instance Monad (ReaderT r m) | Monad m
 
 instance MonadTrans (ReaderT r)
