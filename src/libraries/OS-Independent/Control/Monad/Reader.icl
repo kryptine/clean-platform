@@ -10,9 +10,15 @@ import Control.Monad.Trans
 
 :: Reader r a :== ReaderT r Identity a
 
+instance Functor (ReaderT r m) | Monad m where
+  fmap f m = liftM f m
+
+instance Applicative (ReaderT r m) | Monad m where
+  pure x = (liftT o return) x
+  <*> mf mx = ap mf mx
+
 instance Monad (ReaderT r m) | Monad m where
-  return x = (liftT o return) x
-  (>>=) m k = ReaderT (\r -> runReaderT m r >>= \a -> runReaderT (k a) r)
+  bind m k = ReaderT (\r -> runReaderT m r >>= \a -> runReaderT (k a) r)
 
 instance MonadTrans (ReaderT r) where
   liftT r = liftReaderT r
