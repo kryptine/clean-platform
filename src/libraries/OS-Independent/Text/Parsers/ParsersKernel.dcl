@@ -1,6 +1,6 @@
 definition module Text.Parsers.ParsersKernel
 from StdEnv import class Eq, class toString, class ==
-from StdMaybe import :: Maybe(..)
+from Data.Maybe import :: Maybe(..)
 
 from Control.Applicative import class Applicative, class Alternative
 from Control.Monad import class Monad
