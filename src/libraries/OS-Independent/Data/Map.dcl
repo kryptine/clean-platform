@@ -183,3 +183,6 @@ putList xs m :== union (fromList xs) m
 instance Functor (Map k)
 
 difference :: !(Map k a) !(Map k b) -> Map k a | < k
+mapWithKey :: !(k a -> b) !(Map k a) -> Map k b
+isSubmapOf :: !(Map k a) !(Map k a) -> Bool | < k & Eq a
+isSubmapOfBy :: !(a b -> Bool) !(Map k a) !(Map k b) -> Bool | < k
