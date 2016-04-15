@@ -5,6 +5,7 @@ import Data.Functor.Identity
 import Control.Monad
 import Data.Monoid
 import Control.Monad.Trans
+import Data.Void
 from StdFunc import o
 from StdTuple import fst, snd
 
@@ -12,11 +13,17 @@ from StdTuple import fst, snd
 
 :: Writer w a :== WriterT w Identity a
 
+instance Functor (WriterT w m) | Monad m & Monoid w where
+  fmap f m = liftM f m
+
+instance Applicative (WriterT w m) | Monad m & Monoid w where
+  pure x = WriterT (return (x, mempty))
+  <*> mf mx = ap mf mx
+
 instance Monad (WriterT w m) | Monad m & Monoid w where
-  return a = WriterT $ return (a, mempty)
-  (>>=) m k = WriterT $ runWriterT m >>= \(a, w) ->
+  bind m k = WriterT (runWriterT m >>= \(a, w) ->
               runWriterT (k a) >>= \(b, w`) ->
-              return (b, mappend w w`)
+              return (b, mappend w w`))
 
 instance MonadTrans (WriterT w) | Monoid w where
   liftT m = WriterT $ m >>= \a -> return (a, mempty)
