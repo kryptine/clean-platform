@@ -5,7 +5,6 @@ import Data.Functor.Identity
 import Control.Monad
 import Data.Monoid
 import Control.Monad.Trans
-import Data.Void
 from StdFunc import o
 from StdTuple import fst, snd
 
@@ -49,8 +48,8 @@ execWriterT m = runWriterT m >>= \(_, w) -> return w
 mapWriterT :: .(u:(a (b,c)) -> v:(d (e,f))) (WriterT c u:a b) -> WriterT f v:d e
 mapWriterT f m = WriterT $ f (runWriterT m)
 
-tell :: a -> .(WriterT a b Void) | Monad b
-tell w = WriterT $ return (Void, w)
+tell :: a -> .(WriterT a b ()) | Monad b
+tell w = WriterT $ return ((), w)
 
 listen :: .(WriterT a b c) -> .(WriterT a b (c,a)) | Monad b
 listen m = WriterT $ runWriterT m >>= \(a, w) ->
