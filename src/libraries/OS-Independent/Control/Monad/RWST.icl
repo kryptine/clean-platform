@@ -1,13 +1,14 @@
-implementation module Control.Monad.RWST
+implementation module RWST
 
+from StdFunc import o
 import StdTuple
 
 from Data.Func import $
-import Data.Void
 import Data.Functor.Identity
 import Data.Functor
 import Data.Monoid
 import Control.Monad
+import Control.Monad.Trans
 import Control.Applicative
 
 // The RWS monad 
@@ -46,6 +47,9 @@ instance Monad (RWST r w s m) | Monad m & Monoid w where
 		>>= \(a, s`, w)->runRWST (k a) r s`
 		>>= \(b, s``,w`)->pure (b, s``, mappend w w`)
 
+instance MonadTrans (RWST r w s) | Monoid w where
+	liftT m = RWST \_ s->m >>= \a->pure (a, s, mempty)
+
 runRWST :: (RWST r w s m a) r s -> m (a, s, w)
 runRWST (RWST f) r s = f r s
 
@@ -72,8 +76,8 @@ asks :: (r -> a) -> RWST r w s m a | Monoid w & Monad m
 asks f = ask >>= \r->pure $ f r
 
 // Writer operations
-tell :: w -> RWST r w s m Void | Monoid w & Monad m
-tell w = RWST \_ s->pure (Void, s,w)
+tell :: w -> RWST r w s m () | Monoid w & Monad m
+tell w = RWST \_ s->pure ((), s,w)
 
 listen :: (RWST r w s m a) -> RWST r w s m (a, w) | Monoid w & Monad m
 listen m = RWST \r s->runRWST m r s >>= \(a, s`, w)->pure ((a, w), s`, w)
@@ -91,10 +95,10 @@ censor f m = pass $ m >>= \a->pure (a, f)
 get :: RWST r w s m s | Monoid w & Monad m
 get = RWST \_ s->pure (s, s, mempty)
 
-put :: s -> RWST r w s m Void | Monoid w & Monad m
-put s = RWST \_ _->pure (Void, s, mempty)
+put :: s -> RWST r w s m () | Monoid w & Monad m
+put s = RWST \_ _->pure ((), s, mempty)
 
-modify :: (s -> s) -> RWST r w s m Void | Monoid w & Monad m
+modify :: (s -> s) -> RWST r w s m () | Monoid w & Monad m
 modify f = get >>= \s->put $ f s
  
 gets :: (s -> a) -> RWST r w s m a | Monoid w & Monad m
