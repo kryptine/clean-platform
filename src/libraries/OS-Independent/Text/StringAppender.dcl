@@ -39,7 +39,7 @@ joinList :: !String [a] StringAppender -> StringAppender | toString a
 * @param The File
 * @return (Error if any, the File)
 */
-intoFile :: !StringAppender !*File -> (!MaybeError FileError Void, !*File)
+intoFile :: !StringAppender !*File -> (!MaybeError FileError (), !*File)
 
 /**
 * Combinator to easily append values of different type to the stream.

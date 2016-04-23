@@ -2,26 +2,25 @@ implementation module System.Directory
 
 import StdArray, StdBool, StdClass, StdInt, StdChar, StdString
 
-import Data.Void
 import System.FilePath
 import System.OSError
 
 import System._Posix
 import System._Pointer
 
-createDirectory :: !FilePath !*w -> (!MaybeOSError Void, !*w)
+createDirectory :: !FilePath !*w -> (!MaybeOSError (), !*w)
 createDirectory path world
 	# (ret,world)	= mkdir (packString path) 493 world // 493 = 0755 in octal
 	| ret == 0
-		= (Ok Void, world)
+		= (Ok (), world)
 	| otherwise
 		= getLastOSError world
 
-removeDirectory :: !FilePath !*w -> (!MaybeOSError Void, !*w)
+removeDirectory :: !FilePath !*w -> (!MaybeOSError (), !*w)
 removeDirectory path world
 	# (ret,world)	= rmdir (packString path) world
 	| ret == 0
-		= (Ok Void, world)
+		= (Ok (), world)
 	| otherwise
 		= getLastOSError world
 
@@ -59,10 +58,10 @@ getCurrentDirectory world
 	| otherwise
 		= (Ok {c \\ c <-: buf | c <> '\0'},world)
 
-setCurrentDirectory :: !FilePath !*w -> (!MaybeOSError Void, !*w)
+setCurrentDirectory :: !FilePath !*w -> (!MaybeOSError (), !*w)
 setCurrentDirectory path world 
 	# (ret,world)	= chdir (packString path) world
 	| ret == 0
-		= (Ok Void, world)
+		= (Ok (), world)
 	| otherwise
 		= getLastOSError world

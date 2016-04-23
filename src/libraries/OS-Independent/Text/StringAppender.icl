@@ -1,7 +1,7 @@
 implementation module Text.StringAppender
 
 import StdString, StdArray, StdInt, StdFile, StdList
-import Data.Error, System.File, Data.Void
+import Data.Error, System.File
 
 :: StringAppender = { elements 		:: [String]
 		 		    , full_length 	:: Int
@@ -31,15 +31,15 @@ joinList sep [t] a = append a t
 joinList sep [t:ts] a = joinList sep ts (append (append a t) sep)
 joinList sep [] a = a	
 
-intoFile :: !StringAppender !*File -> (!MaybeError FileError Void, !*File)
-intoFile {elements} file = foldl wrt (Ok Void, file) (reverse elements)
+intoFile :: !StringAppender !*File -> (!MaybeError FileError (), !*File)
+intoFile {elements} file = foldl wrt (Ok (), file) (reverse elements)
 where
-	wrt (Ok Void, file) str 
+	wrt (Ok (), file) str 
 		# file = fwrites str file
 		# (error, file) = ferror file
 		| error
 			= (Error IOError, file)
-			= (Ok Void, file) 
+			= (Ok (), file) 
 
 instance toString StringAppender			   
 where
