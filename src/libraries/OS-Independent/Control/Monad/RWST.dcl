@@ -1,39 +1,8 @@
-definition module Control.Monad.RWST
-
-/*
-
-Reader Write State Transformer Monad
-
-Ported from haskells Control.Monad.Trans.RWS.Lazy by
-Mart Lubbers <mart@martlubbers.net> Apr. 2016
-http://hackage.haskell.org/package/transformers-0.1.1.0/docs/Control-Monad-Trans-RWS-Lazy.html
-
-Originally written:
-
-Module      :  Control.Monad.Trans.RWS.Lazy
-Copyright   :  (c) Andy Gill 2001,
-               (c) Oregon Graduate Institute of Science and Technology, 2001
-License     :  BSD-style (see the file libraries/base/LICENSE)
-
-Maintainer  :  libraries@haskell.org
-Stability   :  experimental
-Portability :  portable
-
-Lazy RWS monad.
-
-     Inspired by the paper
-     /Functional Programming with Overloading and
-         Higher-Order Polymorphism/,
-       Mark P Jones (<http://web.cecs.pdx.edu/~mpj/>)
-         Advanced School of Functional Programming, 1995.
-
-Under BSD3 licence:
-http://hackage.haskell.org/package/base-4.8.2.0/src/LICENSE
-
-*/
+definition module RWST
 
 from Control.Applicative import class Applicative
 from Control.Monad import class Monad
+from Control.Monad.Trans import class MonadTrans
 from Data.Functor import class Functor
 from Data.Functor.Identity import :: Identity
 from Data.Monoid import class Monoid, class Semigroup
@@ -47,6 +16,7 @@ from Data.Monoid import class Monoid, class Semigroup
 instance Functor (RWST r w s m) | Monad m & Monoid w
 instance Applicative (RWST r w s m) | Monad m & Monoid w
 instance Monad (RWST r w s m) | Monad m & Monoid w
+instance MonadTrans (RWST r w s) | Monoid w
 
 rws :: (r -> s -> (a, s, w)) -> RWS r w s a
 runRWS :: (RWS r w s a) r s -> (a, s, w)

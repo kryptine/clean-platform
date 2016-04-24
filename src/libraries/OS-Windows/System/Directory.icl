@@ -2,7 +2,6 @@ implementation module System.Directory
 
 import StdArray, StdBool, StdClass, StdInt, StdChar, StdString
 
-import Data.Void
 import System.File
 import System.FilePath
 import System.OSError
@@ -10,19 +9,19 @@ import System.OSError
 import qualified System._Windows
 import System._Pointer
 
-createDirectory :: !FilePath !*w -> (!MaybeOSError Void, !*w)
+createDirectory :: !FilePath !*w -> (!MaybeOSError (), !*w)
 createDirectory path world
 	# (ok,world)	= 'System._Windows'.createDirectoryA (packString path) 'System._Windows'.NULL world
 	| ok
-		= (Ok Void, world)
+		= (Ok (), world)
 	| otherwise
 		= getLastOSError world
 
-removeDirectory :: !FilePath !*w -> (!MaybeOSError Void, !*w)
+removeDirectory :: !FilePath !*w -> (!MaybeOSError (), !*w)
 removeDirectory path world
 	# (ok,world)	= 'System._Windows'.removeDirectoryA (packString path) world
 	| ok
-		= (Ok Void, world)
+		= (Ok (), world)
 	| otherwise
 		= getLastOSError world
 
@@ -59,10 +58,10 @@ getCurrentDirectory world
 	| otherwise
 		= (Ok (unpackString buf),world)
 
-setCurrentDirectory :: !FilePath !*w -> (!MaybeOSError Void, !*w)
+setCurrentDirectory :: !FilePath !*w -> (!MaybeOSError (), !*w)
 setCurrentDirectory path world 
 	# (ok,world)	= 'System._Windows'.setCurrentDirectoryA (packString path) world
 	| ok
-		= (Ok Void, world)
+		= (Ok (), world)
 	| otherwise
 		= getLastOSError world

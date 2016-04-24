@@ -4,7 +4,6 @@ from StdOverloaded import class + (..), class * (..), class zero (..), class one
 from StdBool import &&, ||
 from StdFunc import o, id
 from Data.Maybe import :: Maybe(..)
-from Data.Void import :: Void(..)
 from StdList import ++, foldr
 
 mconcat :: .[a] -> a | Monoid a
@@ -30,12 +29,6 @@ instance Semigroup () where
 
 instance Monoid () where
   mempty = ()
-
-instance Semigroup Void where
-  mappend _ _  = Void
-
-instance Monoid Void where
-  mempty = Void
 
 instance Semigroup (a, b) | Semigroup a & Semigroup b where
   mappend (a1, b1) (a2, b2)  = (mappend a1 a2, mappend b1 b2)

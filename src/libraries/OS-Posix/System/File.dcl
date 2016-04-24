@@ -5,7 +5,6 @@ from StdClass import class toString
 
 from System.Time import ::Tm
 from Data.Error import ::MaybeError
-from Data.Void import ::Void
 from System.OSError import ::MaybeOSError, ::OSError, ::OSErrorCode, ::OSErrorMessage
 
 :: FileError = CannotOpen | CannotClose | IOError
@@ -47,7 +46,7 @@ readAll :: !*File -> (!MaybeError FileError String, !*File)
 * @param Path to the file to read
 * @param contents of the file
 */
-writeFile :: !String !String !*env -> (!MaybeError FileError Void, !*env) | FileSystem env
+writeFile :: !String !String !*env -> (!MaybeError FileError (), !*env) | FileSystem env
 
 /**
 * Performs a file operation on a given filename.
@@ -71,7 +70,7 @@ fileExists ::  !String !*World -> (!Bool, !*World)
 * @param Path to the file 
 * @return delete succeeded
 */
-deleteFile :: !String !*World -> (!MaybeOSError Void, !*World)
+deleteFile :: !String !*World -> (!MaybeOSError (), !*World)
 
 :: FileInfo =
 	{ directory         :: !Bool
@@ -94,4 +93,4 @@ getFileInfo :: !String !*World -> (!MaybeOSError FileInfo, !*World)
 * @param Path to the current file
 * @param Path to the new file
 */
-moveFile :: !String !String !*World -> (!MaybeOSError Void, !*World)
+moveFile :: !String !String !*World -> (!MaybeOSError (), !*World)

@@ -11,7 +11,6 @@ import StdMisc
 
 //Data
 import Data.Maybe
-import Data.Void
 
 //System
 import System.FilePath

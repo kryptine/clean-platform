@@ -1,7 +1,6 @@
 implementation module Text.Parsers.ParsersAccessories
 
 import Text.Parsers.ParsersKernel, Text.Parsers.ParsersDerived, Text.Parsers.ParserLanguage, StdEnv
-from StdMaybe import :: Maybe (..)
 from StdChar import isAlpha, isAlphanum, isHexDigit
 
 number :: Parser  Char a Int

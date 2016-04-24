@@ -9,7 +9,6 @@ import StdList
 import StdString
 
 //Data
-import Data.Void
 import Data.Maybe
 import Data.Either
 
@@ -60,13 +59,13 @@ waitForProcess handle=:{processHandle} world
 	# (mbError,world)		= closeProcessHandle handle world
 	= (Ok exitCode, world)
 
-closeProcessHandle :: !ProcessHandle !*World -> (MaybeOSError Void, *World)
+closeProcessHandle :: !ProcessHandle !*World -> (MaybeOSError (), *World)
 closeProcessHandle handle world
 	# (ok,world) = closeHandle handle.processHandle world
 	| not ok = getLastOSError world
 	# (ok, world) = closeHandle handle.threadHandle world
 	| not ok = getLastOSError world
-	= (Ok Void, world)
+	= (Ok (), world)
 
 callProcess :: !FilePath ![String] !(Maybe String) !*World -> (MaybeOSError Int, *World)
 callProcess path args mCurrentDirectory world

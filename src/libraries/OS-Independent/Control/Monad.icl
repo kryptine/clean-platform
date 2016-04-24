@@ -4,7 +4,6 @@ from Control.Applicative  import class Applicative (..), lift
 from Data.Functor         import class Functor (..)
 from Data.List            import map, zipWith, replicate
 from Data.Maybe           import :: Maybe, Nothing, Just
-from Data.Void            import :: Void (..)
 from StdList              import foldr, ++
 from StdFunc              import flip, id, o, const
 from StdInt               import class +, instance + Int
@@ -49,19 +48,19 @@ sequence ms = foldr k (lift []) ms
   where
     k m m` = m >>= \x -> m` >>= \xs -> lift [x:xs]
 
-sequence_ :: .[a b] -> a Void | Monad a
-sequence_ ms = foldr (>>|) (lift Void) ms
+sequence_ :: .[a b] -> a () | Monad a
+sequence_ ms = foldr (>>|) (lift ()) ms
 
 mapM :: (.a -> b c) [.a] -> b [c] | Monad b
 mapM f as = sequence (map f as)
 
-mapM_ :: (.a -> b c) [.a] -> b Void | Monad b
+mapM_ :: (.a -> b c) [.a] -> b () | Monad b
 mapM_ f as = sequence_ (map f as)
 
 forM :: u:([v:a] -> w:((v:a -> b c) -> b [c])) | Monad b, [w <= u,w <= v]
 forM = flip mapM
 
-forM_ :: u:([v:a] -> w:((v:a -> b c) -> b Void)) | Monad b, [w <= u,w <= v]
+forM_ :: u:([v:a] -> w:((v:a -> b c) -> b ())) | Monad b, [w <= u,w <= v]
 forM_ = flip mapM_
 
 forever :: (a b) -> a c | Monad a

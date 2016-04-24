@@ -1,12 +1,14 @@
-implementation module Control.Monad.RWST
+implementation module RWST
 
 import StdTuple
 
+from Data.Func import $
 from StdFunc import o
 import Data.Functor.Identity
 import Data.Functor
 import Data.Monoid
 import Control.Monad
+import Control.Monad.Trans
 import Control.Applicative
 
 instance Functor (RWST r w s m) | Monad m & Monoid w where
@@ -21,6 +23,9 @@ instance Monad (RWST r w s m) | Monad m & Monoid w where
     = RWST (   \r s          -> runRWST m r s
            >>= \(a, s`, w)   -> runRWST (k a) r s`
            >>= \(b, s``, w`) -> pure (b, s``, mappend w w`))
+
+instance MonadTrans (RWST r w s) | Monoid w where
+  liftT m = RWST \_ s->m >>= \a->pure (a, s, mempty)
 
 rws :: (r -> s -> (a, s, w)) -> RWS r w s a
 rws f = RWST (\r s -> Identity (f r s))
@@ -43,6 +48,9 @@ mapRWS f m = mapRWST (Identity o f o runIdentity) m
 
 withRWS :: (r` s -> (r, s)) (RWS r w s a) -> RWS r` w s a
 withRWS f m = withRWST f m
+
+// The RWST monad transformer
+:: RWST r w s m a = RWST (r s -> m (a, s, w))
 
 runRWST :: (RWST r w s m a) r s -> m (a, s, w)
 runRWST (RWST f) r s = f r s
@@ -77,7 +85,7 @@ asks f
 
 // Writer operations
 tell :: w -> RWST r w s m () | Monoid w & Monad m
-tell w = RWST (\_ s -> pure ((), s,w))
+tell w = RWST \_ s->pure ((), s,w)
 
 listen :: (RWST r w s m a) -> RWST r w s m (a, w) | Monoid w & Monad m
 listen m
@@ -102,7 +110,7 @@ get :: RWST r w s m s | Monoid w & Monad m
 get = RWST (\_ s -> pure (s, s, mempty))
 
 put :: s -> RWST r w s m () | Monoid w & Monad m
-put s = RWST (\_ _ -> pure ((), s, mempty))
+put s = RWST \_ _->pure ((), s, mempty)
 
 modify :: (s -> s) -> RWST r w s m () | Monoid w & Monad m
 modify f
