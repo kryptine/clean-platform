@@ -1,12 +1,12 @@
 implementation module Data.Complex
 
-import StdOverloaded
+import StdBool
 import StdClass
 import StdInt
-import StdString
-import StdBool
-import StdReal
 import StdMisc
+import StdOverloaded
+import StdReal
+import StdString
 
 from Text import class Text(split,textSize), instance Text String
 
@@ -14,11 +14,6 @@ from Text import class Text(split,textSize), instance Text String
 
 instance pi Real where
 	pi = 3.14159265358979323846264338327950288419716939937510582097494459230781
-
-class Geo a | sin a & cos a & tan a
-class ArcGeo a | asin a & acos a & atan a
-class HypGeo a | asinh a & acosh a & atanh a & sinh a & cosh a & tanh a
-class AllGeo a | Geo a & ArcGeo a & HypGeo a
 
 instance pi (Complex a) | pi a & zero a where pi = pi :+ zero
 
@@ -167,4 +162,3 @@ conjugate (x :+ y) = x :+ (~y)
 //Ugly
 two :: a | one a & + a
 two = one + one
-
