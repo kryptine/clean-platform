@@ -2,7 +2,7 @@ implementation module System.Time
 
 import StdString, StdArray, StdClass, StdOverloaded, StdInt, StdMisc
 import System._Pointer
-import text
+import Text
 
 import code from library "msvcrt.txt"
 
