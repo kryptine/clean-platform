@@ -39,6 +39,7 @@ tails           :: [a] -> .[[a]]
 isPrefixOf      :: .[a] .[a] -> .Bool | == a
 isSuffixOf      :: .[a] .[a] -> .Bool | == a
 isInfixOf       :: .[a] .[a] -> Bool | == a
+levenshtein     :: .[a] .[a] -> Int | == a
 elem            :: a .[a] -> .Bool | == a
 notElem         :: a .[a] -> .Bool | == a
 lookup          :: a [(a,.b)] -> Maybe .b | == a
