@@ -172,6 +172,13 @@ isSuffixOf x y          =  isPrefixOf (reverse x) (reverse y)
 isInfixOf :: .[a] .[a] -> Bool | == a
 isInfixOf needle haystack = any (isPrefixOf needle) (tails haystack)
 
+// Ported from https://rosettacode.org/wiki/Levenshtein_distance#Haskell
+levenshtein :: .[a] .[a] -> Int | == a
+levenshtein xs ys = last (foldl transform [0..length xs] ys)
+where
+	transform ns=:[n:ns`] c = scan (calc c) (n+1) (zip3 xs ns ns`)
+	calc c z (c`, x, y) = minList [y+1, z+1, if (c`<>c) 1 0 + x]
+
 elem :: a .[a] -> .Bool | == a
 elem _ []       = False
 elem x [y:ys]   = x == y || elem x ys
