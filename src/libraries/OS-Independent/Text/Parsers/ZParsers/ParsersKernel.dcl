@@ -1,4 +1,4 @@
-definition module Text.Parsers.ParsersKernel
+definition module Text.Parsers.ZParsers.ParsersKernel
 from StdEnv import class Eq, class toString, class ==
 from Data.Maybe import :: Maybe(..)
 

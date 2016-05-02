@@ -1,3 +1,3 @@
-definition module Text.Parsers.Parsers
+definition module Text.Parsers.ZParsers.Parsers
 
-import Text.Parsers.ParsersKernel, Text.Parsers.ParsersDerived, Text.Parsers.ParsersAccessories
+import Text.Parsers.ZParsers.ParsersKernel, Text.Parsers.ZParsers.ParsersDerived, Text.Parsers.ZParsers.ParsersAccessories

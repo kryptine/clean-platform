@@ -1,4 +1,4 @@
-definition module Text.Parsers.ParserLanguage
+definition module Text.Parsers.ZParsers.ParserLanguage
 import StdString
 
 cantAnalyseAsOf	:: String

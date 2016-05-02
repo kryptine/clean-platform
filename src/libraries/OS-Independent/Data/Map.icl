@@ -26,12 +26,6 @@ import Control.Monad
 ////////////////////////////////////////////////////////////////////
 // | A Map from keys @k@ to values @a@.
 
-:: Map k a
-  = Bin !Size !k !a !(Map k a) !(Map k a)
-  | Tip
-
-:: Size   :== Int
-
 // TODO
 instance Semigroup (Map k v) | < k where
     mappend x y = union x y
@@ -66,41 +60,6 @@ mapSize (Bin sz _ _ _ _) = sz
 //lexOrd :: !a !a -> LexOrd | < a
 lexOrd x y :== if (x < y) LT (if (x > y) GT EQ)
 
-// | /O(log n)/. Lookup the value at a key in the map.
-//
-// The function will return the corresponding value as @('Just` value)@,
-// or 'Nothing' if the key isn't in the map.
-//
-// An example of using @get@:
-//
-// > import Prelude hiding (get)
-// > import Data.Map
-// >
-// > employeeDept = fromList([("John","Sales"), ("Bob","IT")])
-// > deptCountry = fromList([("IT","USA"), ("Sales","France")])
-// > countryCurrency = fromList([("USA", "Dollar"), ("France", "Euro")])
-// >
-// > employeeCurrency :: String -> Maybe String
-// > employeeCurrency name = do
-// >     dept <- get name employeeDept
-// >     country <- get dept deptCountry
-// >     get country countryCurrency
-// >
-// > main = do
-// >     putStrLn $ "John's currency: " ++ (toString (employeeCurrency "John"))
-// >     putStrLn $ "Pete's currency: " ++ (toString (employeeCurrency "Pete"))
-//
-// The output of this program:
-//
-// >   John's currency: Just "Euro"
-// >   Pete's currency: Nothing
-get :: !k !(Map k a) -> Maybe a | < k
-get _ Tip              = Nothing
-get k (Bin _ kx x l r) = if (k < kx)
-                           (get k l)
-                           (if (k > kx)
-                              (get k r)
-                              (Just x))
 
 // | /O(log n)/. Is the key a member of the map? See also 'notMember`.
 //

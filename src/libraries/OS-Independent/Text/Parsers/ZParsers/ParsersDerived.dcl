@@ -1,5 +1,5 @@
-definition module Text.Parsers.ParsersDerived
-from Text.Parsers.ParsersKernel import :: Parser, yield, <&>, <++>
+definition module Text.Parsers.ZParsers.ParsersDerived
+from Text.Parsers.ZParsers.ParsersKernel import :: Parser, yield, <&>, <++>
 from StdEnv import class Eq, class ==, const
 
 // PARSER COMBINATORS:

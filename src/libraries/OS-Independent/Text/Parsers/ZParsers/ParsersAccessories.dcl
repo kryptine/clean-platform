@@ -1,6 +1,6 @@
-definition module Text.Parsers.ParsersAccessories
+definition module Text.Parsers.ZParsers.ParsersAccessories
 
-import Text.Parsers.ParsersKernel, Text.Parsers.ParsersDerived
+import Text.Parsers.ZParsers.ParsersKernel, Text.Parsers.ZParsers.ParsersDerived
 from StdEnv import class toString, class toChar
 
 number :: Parser  Char a Int //wants at least one digit and takes all it can get

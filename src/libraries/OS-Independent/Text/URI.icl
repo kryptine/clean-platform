@@ -2,7 +2,7 @@ implementation module Text.URI
 
 import StdBool, StdChar, StdString, StdList, StdMisc
 import Data.Maybe, Data.List, Data.Either, Data.Functor
-import Text.Parsers.Parsers
+import Text.Parsers.ZParsers.Parsers
 import Text.Encodings.UrlEncoding
 
 from StdFunc import id

@@ -1,6 +1,6 @@
-implementation module Text.Parsers.ParsersAccessories
+implementation module Text.Parsers.ZParsers.ParsersAccessories
 
-import Text.Parsers.ParsersKernel, Text.Parsers.ParsersDerived, Text.Parsers.ParserLanguage, StdEnv
+import Text.Parsers.ZParsers.ParsersKernel, Text.Parsers.ZParsers.ParsersDerived, Text.Parsers.ZParsers.ParserLanguage, StdEnv
 from StdChar import isAlpha, isAlphanum, isHexDigit
 
 number :: Parser  Char a Int
