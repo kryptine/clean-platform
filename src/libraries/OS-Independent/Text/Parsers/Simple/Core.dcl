@@ -1,7 +1,7 @@
 definition module Text.Parsers.Simple.Core
 
 from Control.Applicative import class Applicative (..), class Alternative (..), *>, <*
-from Control.Monad import class Monad (..)
+from Control.Monad import class Monad (..), class MonadPlus (..)
 from Data.Either import :: Either (..)
 from Data.Functor import class Functor (..), <$>
 
@@ -13,6 +13,7 @@ instance Functor (Parser t)
 instance Applicative (Parser t)
 instance Alternative (Parser t)
 instance Monad (Parser t)
+instance MonadPlus (Parser t)
 
 // Functions to run the parser
 parse     :: (Parser t a) [t] -> Either [Error] a

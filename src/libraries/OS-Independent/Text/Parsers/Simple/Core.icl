@@ -25,6 +25,10 @@ instance Alternative (Parser t) where
 instance Monad (Parser t) where
   bind l r = pBind l r
 
+instance MonadPlus (Parser t) where
+  mzero = pFail
+  mplus l r = l <|> r
+
 parse :: (Parser t a) [t] -> Either [Error] a
 parse p ts
   = case runParser p ts of
