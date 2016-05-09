@@ -6,7 +6,6 @@ definition module Data.Map
 */
 
 from Data.Maybe		import :: Maybe (..)
-from StdClass		import class Eq, class Ord
 from StdOverloaded	import class ==, class <
 from StdBool        import not
 from StdFunc        import id
@@ -17,7 +16,7 @@ import qualified StdList as SL
 from Data.List import foldr
 from Data.Functor import class Functor (..)
 from StdOverloaded import class < (..)
-from StdClass import class Ord (..)
+import StdClass
 
 /**
 * The abstract Map type provides the mapping.
