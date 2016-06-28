@@ -18,3 +18,6 @@ instance Functor ((,) a) where
 
 ($>) infixl 4 :: (f b) a -> f a | Functor f
 ($>) fa x = x <$ fa
+
+void :: (f a) -> f () | Functor f
+void x = () <$ x
