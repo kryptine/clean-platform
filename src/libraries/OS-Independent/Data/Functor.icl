@@ -1,6 +1,6 @@
 implementation module Data.Functor
 
-from StdFunc import o
+from StdFunc import o, const
 import Control.Applicative
 import Control.Monad
 
@@ -12,3 +12,9 @@ instance Functor ((,) a) where
 
 (<$>) infixl 4 :: (a -> b) (f a) -> (f b) | Functor f
 (<$>) f fa = fmap f fa
+
+(<$) infixl 4 :: a (f b) -> f a | Functor f
+(<$) x fa = fmap (const x) fa
+
+($>) infixl 4 :: (f b) a -> f a | Functor f
+($>) fa x = x <$ fa
