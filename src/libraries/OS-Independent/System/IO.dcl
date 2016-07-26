@@ -31,5 +31,5 @@ instance Applicative IO
 instance Functor IO
 instance Monad IO
 
-unsafePerformIO :: !(*World -> *(!.a, !*World)) -> .a
-unsafePerformIOTrue :: !(*World -> *(!a, !*World)) -> Bool
+unsafePerformIO :: (*World -> *(.a, *World)) -> .a
+unsafePerformIOTrue :: (*World -> *(a, *World)) -> Bool
