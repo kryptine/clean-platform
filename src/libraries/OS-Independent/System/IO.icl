@@ -96,7 +96,7 @@ unsafePerformIOTrue f
   # (x, world) = f make_world
   | world_to_true world = True
 
-world_to_true :: *World -> Bool
+world_to_true :: !*World -> Bool
 world_to_true world
  = code inline {
    pop_a 1
