@@ -17,8 +17,8 @@ pathSeparators = ['\\', '/']
 extSeparator :: Char
 extSeparator = '.'
 
-(</>) infixr 5 :: !FilePath !FilePath -> FilePath
-(</>) x y = (addTrailingPathSeparator x) +++ y
+combine :: !FilePath !FilePath -> FilePath
+combine x y = (addTrailingPathSeparator x) +++ y
 
 splitExtension :: !FilePath -> (String, String)
 splitExtension path = 
