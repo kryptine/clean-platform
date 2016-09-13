@@ -82,7 +82,6 @@ mkImage cnt =
   , tags                = 'DS'.newSet
   , uniqId              = -1
   , totalSpanPreTrans   = (px 0.0, px 0.0)
-  , totalSpanPostTrans  = (px 0.0, px 0.0)
   , transformCorrection = (px 0.0, px 0.0)
   }
 
@@ -138,6 +137,16 @@ rect xspan yspan
     & attribs = 'DS'.fromList [ ImageStrokeAttr      {stroke      = toSVGColor "black"}
                               , ImageStrokeWidthAttr {strokewidth = px 1.0}
                               , ImageFillAttr        {fill        = toSVGColor "black"}
+                              , ImageFillOpacityAttr {opacity     = 1.0}
+                              ]
+    }
+
+raw :: !Span !Span !String -> Image m
+raw xspan yspan svgStr
+  = { mkImage (Basic (RawImage svgStr) (maxSpan [zero, xspan], maxSpan [zero, yspan]))
+    & attribs = 'DS'.fromList [ ImageStrokeAttr      {stroke      = toSVGColor "none"}
+                              , ImageStrokeWidthAttr {strokewidth = px 0.0}
+                              , ImageFillAttr        {fill        = toSVGColor "none"}
                               , ImageFillOpacityAttr {opacity     = 1.0}
                               ]
     }
@@ -242,6 +251,34 @@ fity yspan image=:{Image | transform = ts}
                 ts                 = [FitYImage yspan` : ts]
   = {Image | image & transform = ts`}
 
+scale :: !Real !Real !(Image m) -> Image m
+scale xspan yspan image=:{Image | transform = ts}
+  #! xspan` = max zero xspan
+  #! yspan` = max zero yspan
+  #! ts`    = case ts of
+                [ScaleImage _ _ : ts] = [ScaleImage xspan` yspan` : ts]
+                ts                  = [ScaleImage xspan` yspan` : ts]
+  = {Image | image & transform = ts`}
+
+scalex :: !Real !(Image m) -> Image m
+scalex xspan image=:{Image | transform = ts}
+  #! xspan` = max zero xspan
+  #! ts`    = case ts of
+                [ScaleXImage _ : ts] = [ScaleXImage xspan` : ts]
+                [ScaleYImage _ : ts] = [ScaleXImage xspan` : ts]
+                ts                   = [ScaleXImage xspan` : ts]
+  = {Image | image & transform = ts`}
+
+scaley :: !Real !(Image m) -> Image m
+scaley yspan image=:{Image | transform = ts}
+  #! yspan` = max zero yspan
+  #! ts`    = case ts of
+                [ScaleXImage _ : ts] = [ScaleYImage yspan` : ts]
+                [ScaleYImage _ : ts] = [ScaleYImage yspan` : ts]
+                ts                   = [ScaleYImage yspan` : ts]
+  = {Image | image & transform = ts`}
+
+
 skewx :: !Angle !(Image m) -> Image m
 skewx xskew image=:{Image | transform = ts}
   #! xskew` = normalize xskew
@@ -340,6 +377,8 @@ collage offsets imgs host
                        , compose = AsCollage offsets` imgs
                        })
 
+instance tuneImage NoAttr          where
+  tuneImage image _ = image
 instance tuneImage StrokeAttr      where
   tuneImage image=:{Image | attribs} attr = {Image | image & attribs = 'DS'.insert (ImageStrokeAttr      attr) attribs}
 instance tuneImage StrokeWidthAttr where

@@ -15,7 +15,6 @@ from StdOverloaded import class zero, class +, class -, class ~, class sign, cla
     , uniqId              :: !Int               // A unique identifier for this image
     // TODO Get rid of the next two fields
     , totalSpanPreTrans   :: !ImageSpan         // Total image span before transformations
-    , totalSpanPostTrans  :: !ImageSpan         // Total image span after transformations
     , transformCorrection :: !ImageOffset       // Correction required after transformation
     }
 
@@ -26,6 +25,9 @@ from StdOverloaded import class zero, class +, class -, class ~, class sign, cla
   | FitImage    !Span !Span
   | FitXImage   !Span
   | FitYImage   !Span
+  | ScaleImage  !Real !Real
+  | ScaleXImage !Real
+  | ScaleYImage !Real
   | FlipXImage
   | FlipYImage
 
@@ -54,10 +56,10 @@ from StdOverloaded import class zero, class +, class -, class ~, class sign, cla
 :: Span
   = PxSpan     !Real       // (PxSpan a) is a pixels
   | LookupSpan !LookupSpan // (LookupSpan a) needs to be looked up after computing dimensions
-  | AddSpan    !Span !Span  // (AddSpan a b) is span a + span b
-  | SubSpan    !Span !Span  // (SubSpan a b) is span a - span b
-  | MulSpan    !Span !Span  // (MulSpan a b) is span a * span k
-  | DivSpan    !Span !Span  // (DivSpan a b) is span a / span k
+  | AddSpan    !Span !Span // (AddSpan a b) is span a + span b
+  | SubSpan    !Span !Span // (SubSpan a b) is span a - span b
+  | MulSpan    !Span !Span // (MulSpan a b) is span a * span k
+  | DivSpan    !Span !Span // (DivSpan a b) is span a / span k
   | AbsSpan    !Span       // (AbsSpan a)  is absolute value of span a
   | MinSpan    ![Span]     // (MinSpan as) is minimum span value in as
   | MaxSpan    ![Span]     // (MaxSpan as) is maximum span value in as
@@ -70,6 +72,7 @@ from StdOverloaded import class zero, class +, class -, class ~, class sign, cla
   | CircleImage
   | RectImage
   | EllipseImage
+  | RawImage !String
 
 :: FontDef
   = { fontfamily  :: !String
@@ -103,8 +106,8 @@ from StdOverloaded import class zero, class +, class -, class ~, class sign, cla
   | ImageXRadiusAttr       !(XRadiusAttr     m)
   | ImageYRadiusAttr       !(YRadiusAttr     m)
   | ImageStrokeOpacityAttr !(OpacityAttr     m)
-  | ImageFillAttr          !(FillAttr        m)
   | ImageFillOpacityAttr   !(OpacityAttr     m)
+  | ImageFillAttr          !(FillAttr        m)
   | ImageDashAttr          !(DashAttr        m)
   | ImageOnClickAttr       !(OnClickAttr     m)
   | ImageOnMouseDownAttr   !(OnMouseDownAttr m)
@@ -118,8 +121,9 @@ from StdOverloaded import class zero, class +, class -, class ~, class sign, cla
 :: StrokeWidthAttr m = { strokewidth :: !Span     }
 :: XRadiusAttr     m = { xradius     :: !Span     }
 :: YRadiusAttr     m = { yradius     :: !Span     }
-:: FillAttr        m = { fill        :: !SVGColor }
 :: OpacityAttr     m = { opacity     :: !Real     }
+:: FillAttr        m = { fill        :: !SVGColor }
+:: DashAttr        m = { dash        :: ![Int]    }
 :: OnClickAttr     m = { onclick     :: !(Int m -> m), local :: !Bool }
 :: OnMouseDownAttr m = { onmousedown :: !(m -> m), local :: !Bool }
 :: OnMouseUpAttr   m = { onmouseup   :: !(m -> m), local :: !Bool }
@@ -127,8 +131,8 @@ from StdOverloaded import class zero, class +, class -, class ~, class sign, cla
 :: OnMouseMoveAttr m = { onmousemove :: !(m -> m), local :: !Bool }
 :: OnMouseOutAttr  m = { onmouseout  :: !(m -> m), local :: !Bool }
 :: DraggableAttr   m = { draggable   :: !Maybe ((Maybe (Set ImageTag)) Real Real m -> m) }
-:: DashAttr        m = { dash        :: ![Int]    }
 :: MaskAttr        m = { mask        :: !Image m  }
+:: NoAttr          m = NoAttr
 
 :: ImageTag
   = ImageTagUser !Int !String
@@ -168,7 +172,3 @@ instance *.   Span, Real, Int
 instance *    Span
 instance /.   Span, Real, Int
 instance /    Span
-
-strictTRMapRev :: !(.a -> .b) ![.a] -> [.b]
-strictTRMap    :: !(.a -> .b) ![.a] -> [.b]
-reverseTR      :: ![.a] -> [.a]

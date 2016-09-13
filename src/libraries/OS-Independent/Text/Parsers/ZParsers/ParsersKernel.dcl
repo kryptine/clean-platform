@@ -1,6 +1,5 @@
-definition module Text.Parsers.ParsersKernel
+definition module Text.Parsers.ZParsers.ParsersKernel
 from StdEnv import class Eq, class toString, class ==
-
 from Data.Maybe import :: Maybe(..)
 
 from Control.Applicative import class Applicative, class Alternative
@@ -100,7 +99,7 @@ token			:: [s] -> Parser s t [s] | == s
 
 // parser succeeds if there is no remaining input (on the given hierarchic level)
 epsilon			:: Parser s t r
-			
+
 // PARSER COMBINATORS:
 
 // or-combinator tries both alternatives non-deterministically
@@ -117,14 +116,14 @@ epsilon			:: Parser s t r
 
 /*	p1 <&>  p2 <!> p3 and
 	p1 <++> p2 <!> p3 share the following behavior:
-	
+
 	a) if p1 succeeds and p2 succeeds, p3 is not tried
 	b) if p1 succeeds and p2 fails, p3 is tried
 	c) if p1 fails, p2 is not tried and p3 is tried
-	
+
 	p1 <&->  p2 <-!> p3 and
 	p1 <++-> p2 <-!> p3 modify line b) of the above behavior:
-	
+
 	b) if p1 succeeds and p2 fails, p3 is NOT tried
 */
 
@@ -163,12 +162,12 @@ atMost				:: !Int (Parser s t r) -> Parser s t r
 /*	drill turns a parser that would consume say Char's as its symbols into a parser that consumes lists
 	of Char's as is symbols. so if the input is [['my'],['number:'],['54365']] the following parser will
 	recognize this, independent of the actual number and deliver that number as a string of digits:
-	
+
 	\_ _ n -> n @>		// forget about this: it serves to drop the two words and retain the number
 	symbol ['my'] <++> symbol ['number:'] <++> drill (<!+> digit)
 
 	The String below represents the name of a subsymbol, to be used in error messages.
-*/ 
+*/
 drill			:: (Parser s r r) String -> Parser [s] t r
 
 // sortResultBy and minResultBy take a 'less' function
@@ -203,7 +202,7 @@ longest			:: (Parser s r r) -> Parser s t r
 	// RoseLeaf indicates where a twig ends, so the following are indeed different
 	// [RoseTwig 1 [RoseTwig 3 [RoseLeaf,RoseTwig 4 [RoseLeaf]]]]
 	// this contains a path [1,3] and a path [1,3,4] (both are closed by a RoseLeaf)
-	
+
 :: Rose a :== [RoseNode a]
 
 // actually apply a parser to a list of symbols. the two strings are names for

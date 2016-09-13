@@ -6,7 +6,6 @@ definition module Data.Map
 */
 
 from Data.Maybe		import :: Maybe (..)
-from StdClass		import class Eq, class Ord
 from StdOverloaded	import class ==, class <
 from StdBool        import not
 from StdFunc        import id
@@ -16,6 +15,8 @@ from Data.Monoid    import class Monoid, class Semigroup
 import qualified StdList as SL
 from Data.List import foldr
 from Data.Functor import class Functor (..)
+from StdOverloaded import class < (..)
+import StdClass
 
 /**
 * The abstract Map type provides the mapping.
@@ -28,10 +29,8 @@ from Data.Functor import class Functor (..)
             //| MNode !(Map k v) !k !Int v !(Map k v)
 
 :: Map k a
-  = Bin !Size !k !a !(Map k a) !(Map k a)
+  = Bin !Int !k !a !(Map k a) !(Map k a)
   | Tip
-
-:: Size   :== Int
 
 instance Monoid (Map k v) | < k
 
@@ -51,10 +50,7 @@ newMap      :: w:(Map k u:v), [ w <= u]
 
 singleton   :: !k !a -> Map k a
 
-//mapSize     :: !(Map k v) -> Int
-mapSize mp :== case mp of
-                 Tip -> 0
-                 (Bin sz _ _ _ _) -> sz
+mapSize     :: !(Map k v) -> Int
 
 /**
 * Adds or replaces the value for a given key.
@@ -74,7 +70,43 @@ put :: !k !a !(Map k a) -> Map k a | < k
 * @return When found, the value at the key position, if not: Nothing
 */
 
-get :: !k !(Map k a) -> Maybe a | < k
+// | /O(log n)/. Lookup the value at a key in the map.
+//
+// The function will return the corresponding value as @('Just` value)@,
+// or 'Nothing' if the key isn't in the map.
+//
+// An example of using @get@:
+//
+// > import Prelude hiding (get)
+// > import Data.Map
+// >
+// > employeeDept = fromList([("John","Sales"), ("Bob","IT")])
+// > deptCountry = fromList([("IT","USA"), ("Sales","France")])
+// > countryCurrency = fromList([("USA", "Dollar"), ("France", "Euro")])
+// >
+// > employeeCurrency :: String -> Maybe String
+// > employeeCurrency name = do
+// >     dept <- get name employeeDept
+// >     country <- get dept deptCountry
+// >     get country countryCurrency
+// >
+// > main = do
+// >     putStrLn $ "John's currency: " ++ (toString (employeeCurrency "John"))
+// >     putStrLn $ "Pete's currency: " ++ (toString (employeeCurrency "Pete"))
+//
+// The output of this program:
+//
+// >   John's currency: Just "Euro"
+// >   Pete's currency: Nothing
+//get :: !k !(Map k a) -> Maybe a | < k
+get k m :== get` k m
+  where
+  get` _ Tip              = Nothing
+  get` k (Bin _ kx x l r) = if (k < kx)
+                              (get` k l)
+                              (if (k > kx)
+                                 (get` k r)
+                                 (Just x))
 
 getU :: !k !w:(Map k v) -> x:(!Maybe v, !y:(Map k v)) | == k & < k, [ x <= y, w <= y]
 /**
@@ -185,3 +217,6 @@ putList xs m :== union (fromList xs) m
 instance Functor (Map k)
 
 difference :: !(Map k a) !(Map k b) -> Map k a | < k
+mapWithKey :: !(k a -> b) !(Map k a) -> Map k b
+isSubmapOf :: !(Map k a) !(Map k a) -> Bool | < k & Eq a
+isSubmapOfBy :: !(a b -> Bool) !(Map k a) !(Map k b) -> Bool | < k

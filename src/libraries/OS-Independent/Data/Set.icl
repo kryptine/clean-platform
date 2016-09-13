@@ -10,14 +10,6 @@ mapSetMonotonic :: !(a -> b) !(Set a) -> Set b
 mapSetMonotonic _ Tip = Tip
 mapSetMonotonic f (Bin n x l r) = Bin n (f x) (mapSetMonotonic f l) (mapSetMonotonic f r)
 
-//compare :: !a !a -> Ordering | < a & == a
-//compare x y = if (x < y) LT (if (x > y) GT EQ)
-
-:: Ordering = LT | GT | EQ
-
-compare x y :== if (x < y) LT (if (x > y) GT EQ)
-
-
 /*
  * Sets are size balanced trees.
  * A set of values @a@.
@@ -63,11 +55,10 @@ instance < (Set a) | < a where
 // | /O(log n)/. Is the element in the set?
 member :: !a !(Set a) -> Bool | < a & == a
 member x Tip = False
-member x (Bin _ y l r) =
-          case compare x y of
-            LT -> member x l
-            GT -> member x r
-            EQ -> True
+member x (Bin _ y l r)
+  | x < y     = member x l
+  | x > y     = member x r
+  | otherwise = True
 
 // | /O(log n)/. Is the element not in the set?
 //notMember :: !a !(Set a) -> Bool | < a & == a
@@ -94,28 +85,25 @@ singleton x = Bin 1 x Tip Tip
 // it is replaced with the new value.
 insert :: !a !.(Set a) -> Set a | < a & == a
 insert x Tip = singleton x
-insert x (Bin sz y l r) =
-  if (x < y)
-    (balanceL y (insert x l) r)
-    (if (x > y)
-       (balanceR y l (insert x r))
-       (Bin sz x l r))
+insert x (Bin sz y l r)
+  | x < y     = balanceL y (insert x l) r
+  | x > y     = balanceR y l (insert x r)
+  | otherwise = Bin sz x l r
 
 insertR :: !a !(Set a) -> Set a | < a & == a
 insertR x Tip = singleton x
-insertR x t=:(Bin _ y l r) = case compare x y of
-        LT -> balanceL y (insertR x l) r
-        GT -> balanceR y l (insertR x r)
-        EQ -> t
+insertR x t=:(Bin _ y l r)
+  | x < y     = balanceL y (insertR x l) r
+  | x > y     = balanceR y l (insertR x r)
+  | otherwise = t
 
 // | /O(log n)/. Delete an element from a set.
 delete :: !a !.(Set a) -> Set a | < a & == a
 delete x Tip = Tip
-delete x (Bin _ y l r) =
-  case compare x y of
-    LT -> balanceR y (delete x l) r
-    GT -> balanceL y l (delete x r)
-    EQ -> glue l r
+delete x (Bin _ y l r)
+  | x < y     = balanceR y (delete x l) r
+  | x > y     = balanceL y l (delete x r)
+  | otherwise = glue l r
 
 /*--------------------------------------------------------------------
  * Subset
@@ -345,19 +333,19 @@ filterGt :: !(MaybeS a) !(Set a) -> Set a | < a & == a
 filterGt NothingS t = t
 filterGt (JustS b) t = filter` b t
   where filter` _   Tip = Tip
-        filter` b` (Bin _ x l r) =
-          case compare b` x of LT -> link x (filter` b` l) r
-                               EQ -> r
-                               GT -> filter` b` r
+        filter` b` (Bin _ x l r)
+          | b` < x    = link x (filter` b` l) r
+          | b` > x    = r
+          | otherwise = filter` b` r
 
 filterLt :: !(MaybeS a) !(Set a) -> Set a | < a & == a
 filterLt NothingS t = t
 filterLt (JustS b) t = filter` b t
   where filter` _   Tip = Tip
-        filter` b` (Bin _ x l r) =
-          case compare x b` of LT -> link x l (filter` b` r)
-                               EQ -> l
-                               GT -> filter` b` l
+        filter` b` (Bin _ x l r)
+          | x < b`    = link x l (filter` b` r)
+          | x > b`    = l
+          | otherwise = filter` b` l
 
 /*--------------------------------------------------------------------
  * Split
@@ -369,31 +357,26 @@ filterLt (JustS b) t = filter` b t
 split :: !a !(Set a) -> (!Set a, !Set a) | < a & == a
 split _ Tip = (Tip,Tip)
 split x (Bin _ y l r)
-  = case compare x y of
-      LT
-        #! (lt, gt) = split x l
-        = (lt, link y gt r)
-      GT
-        #! (lt,gt) = split x r
-        = (link y l lt,gt)
-      EQ
-        = (l,r)
+  | x < y
+    #! (lt, gt) = split x l
+    = (lt, link y gt r)
+  | x > y
+    #! (lt,gt) = split x r
+    = (link y l lt,gt)
+  | otherwise = (l, r)
 
 // | /O(log n)/. Performs a 'split' but also returns whether the pivot
 // element was found in the original set.
 splitMember :: !a !(Set a) -> (!Set a, !Bool, !Set a) | < a & == a
 splitMember _ Tip = (Tip, False, Tip)
 splitMember x (Bin _ y l r)
-  = case compare x y of
-      LT
-        #! (lt, found, gt) = splitMember x l
-        = (lt, found, link y gt r)
-      GT
-        #! (lt, found, gt) = splitMember x r
-        = (link y l lt, found, gt)
-      EQ
-        = (l, True, r)
-
+  | x < y
+    #! (lt, found, gt) = splitMember x l
+    = (lt, found, link y gt r)
+  | x > y
+    #! (lt, found, gt) = splitMember x r
+    = (link y l lt, found, gt)
+  | otherwise = (l, True, r)
 
 /*--------------------------------------------------------------------
   Utility functions that maintain the balance properties of the tree.

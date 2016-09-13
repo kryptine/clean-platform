@@ -1,4 +1,4 @@
-implementation module Text.Parsers.ParsersKernel
+implementation module Text.Parsers.ZParsers.ParsersKernel
 
 // ****************************************************************************************
 //	Clean Library Module
@@ -11,12 +11,11 @@ import StdEnv
 import Data.Maybe
 from Data.Monoid import class Monoid
 from Data.Func import $
-from Data.Void import :: Void (..)
 
-from Text.Parsers.ParsersDerived import <&
-from Text.Parsers.ParsersAccessories import class toString (..), instance toString SymbolType
-from Text.Parsers.ParserLanguage import endOf
-from Text.Parsers.ParsersDerived import <&, @>, yield, <++>
+from Text.Parsers.ZParsers.ParsersDerived import <&
+from Text.Parsers.ZParsers.ParsersAccessories import class toString (..), instance toString SymbolType
+from Text.Parsers.ZParsers.ParserLanguage import endOf
+from Text.Parsers.ZParsers.ParsersDerived import <&, @>, yield, <++>
 
 from Control.Monad import class Monad(bind), >>=
 import Control.Applicative, Data.Functor, Data.Tuple
@@ -133,7 +132,7 @@ instance Splittable (Parser s t) where
   //mempty       = empty
 
 mkG :: (f a) -> Gram f a | Splittable f & Functor f
-mkG p = Gram  (maybe [] (\p -> [Seq (const <$> p) (pure Void)]) (getNonPure p))
+mkG p = Gram  (maybe [] (\p -> [Seq (const <$> p) (pure ())]) (getNonPure p))
               (getPure p)
 
 instance Functor (Gram f) | Functor f where

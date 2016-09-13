@@ -13,13 +13,22 @@ from Text.JSON import generic JSONEncode, generic JSONDecode, :: JSONNode
 
 foldr :: !(a b -> b) !b !(IntMap a) -> b
 foldr f z t =
-  case t of Bin _ m l r | m < 0 -> go (go z l) r // put negative numbers before
-                        | otherwise -> go (go z r) l
-            _ -> go z t
+  case t of
+    Bin _ m l r
+      | m < 0
+        #! tmp = go f z l
+        = go f tmp r // put negative numbers before
+      | otherwise
+        #! tmp = go f z r
+        = go f tmp l
+    _ = go f z t
   where
-  go z` Nil           = z`
-  go z` (Tip _ x)     = f x z`
-  go z` (Bin _ _ l r) = go (go z` r) l
+  go :: !(a b -> b) !b !(IntMap a) -> b
+  go _ z` Nil       = z`
+  go f z` (Tip _ x) = f x z`
+  go f z` (Bin _ _ l r)
+    #! tmp = go f z` r
+    = go f tmp l
 
 // | /O(min(n,W))/. The expression @('findWithDefault' def k map)@
 // returns the value at key @k@ or returns @def@ when the key is not an
@@ -609,13 +618,13 @@ mapEitherWithKey _ Nil = (Nil, Nil)
 //fromSet _ IntSet.Nil = Nil
 //fromSet f (IntSet.Bin p m l r) = Bin p m (fromSet f l) (fromSet f r)
 //fromSet f (IntSet.Tip kx bm) = buildTree f kx bm (IntSet.suffixBitMask + 1)
-  //where -- This is slightly complicated, as we to convert the dense
-        //-- representation of IntSet into tree representation of IntMap.
-        //--
-        //-- We are given a nonzero bit mask 'bmask' of 'bits' bits with prefix 'prefix'.
-        //-- We split bmask into halves corresponding to left and right subtree.
-        //-- If they are both nonempty, we create a Bin node, otherwise exactly
-        //-- one of them is nonempty and we construct the IntMap from that half.
+  //where // This is slightly complicated, as we to convert the dense
+        //// representation of IntSet into tree representation of IntMap.
+        ////
+        //// We are given a nonzero bit mask 'bmask' of 'bits' bits with prefix 'prefix'.
+        //// We split bmask into halves corresponding to left and right subtree.
+        //// If they are both nonempty, we create a Bin node, otherwise exactly
+        //// one of them is nonempty and we construct the IntMap from that half.
         //buildTree g prefix bmask bits = prefix `seq` bmask `seq` case bits of
           //0 -> Tip prefix $! g prefix
           //_ -> case intFromNat ((natFromInt bits) `shiftRL` 1) of

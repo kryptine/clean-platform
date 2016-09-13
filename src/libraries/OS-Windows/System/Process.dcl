@@ -1,6 +1,6 @@
 definition module System.Process
 
-import Data.Void, Data.Maybe, Data.Either
+import Data.Maybe, Data.Either
 import System.OSError
 import System.FilePath
 

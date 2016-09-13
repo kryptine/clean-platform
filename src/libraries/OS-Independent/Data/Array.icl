@@ -68,3 +68,48 @@ reverseArr :: !.(arr a) -> .arr a | Array arr a
 reverseArr arr
   #! sz = size arr
   = foldlArrWithKey (\idx acc e -> {acc & [sz - idx - 1] = e}) {x \\ x <-: arr} arr
+
+takeArr :: !Int !.(arr a) -> .arr a | Array arr a
+takeArr n arr
+  | size arr > 0
+    #! newArr = createArray n arr.[0]
+    = copyArr n 0 arr newArr
+  | otherwise = {x \\ x <-: arr}
+  where
+  copyArr sz i origArr newArr
+    | i == sz - 1 = newArr
+    | otherwise   = copyArr sz (i + 1) origArr {newArr & [i] = origArr.[i]}
+
+mapArr :: !(a -> a) !(arr a) -> arr a | Array arr a
+mapArr f arr
+  #! arr = {a \\ a <-: arr}
+  #! (sz, arr) = usize arr
+  = mapArrSt` sz 0 f arr
+  where
+  mapArrSt` :: !Int !Int !(.a -> .a) !*(arr .a) -> *arr .a | Array arr a
+  mapArrSt` sz idx f arr
+    | idx == sz = arr
+    | otherwise
+        #! (e, arr) = arr![idx]
+        #! e        = f e
+        #! arr      = {arr & [idx] = e}
+        = mapArrSt` sz (idx + 1) f arr
+
+appendArr :: !(arr a) !(arr a) -> arr a | Array arr a
+appendArr l r
+  #! szl     = size l
+  #! szr     = size r
+  #! totalSz = szl + szr
+  | totalSz < 1 = l
+  | otherwise
+    #! el     = if (szl > 0) l.[0] r.[0]
+    #! newArr = createArray totalSz el
+    #! newArr = addWithOffset totalSz 0 l newArr
+    #! newArr = addWithOffset totalSz (szl - 1) r newArr
+    = newArr
+  where
+  addWithOffset totalSz offset oldArr newArr
+    = foldrArrWithKey (\idx oldEl newArr -> {newArr & [idx + offset] = oldEl}) newArr oldArr
+
+instance +++ (arr a) | Array arr a where
+  (+++) l r = appendArr l r

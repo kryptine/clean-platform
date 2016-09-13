@@ -26,12 +26,6 @@ import Control.Monad
 ////////////////////////////////////////////////////////////////////
 // | A Map from keys @k@ to values @a@.
 
-:: Map k a
-  = Bin !Size !k !a !(Map k a) !(Map k a)
-  | Tip
-
-:: Size   :== Int
-
 // TODO
 instance Semigroup (Map k v) | < k where
     mappend x y = union x y
@@ -57,50 +51,15 @@ instance Monoid (Map k v) | < k where
 // > mapSize (singleton 1 'a`)                       == 1
 // > mapSize (fromList([(1,'a`), (2,'c'), (3,'b`)])) == 3
 
-//mapSize :: !(Map k a) -> Int
-//mapSize Tip              = 0
-//mapSize (Bin sz _ _ _ _) = sz
+mapSize :: !(Map k a) -> Int
+mapSize Tip              = 0
+mapSize (Bin sz _ _ _ _) = sz
 
 :: LexOrd = LT | GT | EQ
 
 //lexOrd :: !a !a -> LexOrd | < a
 lexOrd x y :== if (x < y) LT (if (x > y) GT EQ)
 
-// | /O(log n)/. Lookup the value at a key in the map.
-//
-// The function will return the corresponding value as @('Just` value)@,
-// or 'Nothing' if the key isn't in the map.
-//
-// An example of using @get@:
-//
-// > import Prelude hiding (get)
-// > import Data.Map
-// >
-// > employeeDept = fromList([("John","Sales"), ("Bob","IT")])
-// > deptCountry = fromList([("IT","USA"), ("Sales","France")])
-// > countryCurrency = fromList([("USA", "Dollar"), ("France", "Euro")])
-// >
-// > employeeCurrency :: String -> Maybe String
-// > employeeCurrency name = do
-// >     dept <- get name employeeDept
-// >     country <- get dept deptCountry
-// >     get country countryCurrency
-// >
-// > main = do
-// >     putStrLn $ "John's currency: " ++ (toString (employeeCurrency "John"))
-// >     putStrLn $ "Pete's currency: " ++ (toString (employeeCurrency "Pete"))
-//
-// The output of this program:
-//
-// >   John's currency: Just "Euro"
-// >   Pete's currency: Nothing
-get :: !k !(Map k a) -> Maybe a | < k
-get _ Tip              = Nothing
-get k (Bin _ kx x l r) = if (k < kx)
-                           (get k l)
-                           (if (k > kx)
-                              (get k r)
-                              (Just x))
 
 // | /O(log n)/. Is the key a member of the map? See also 'notMember`.
 //
@@ -521,14 +480,15 @@ elemAt i (Bin _ kx x l r)
 updateAt :: !(k a -> Maybe a) !Int !(Map k a) -> Map k a
 updateAt f i t =
   case t of
-    Tip -> abort "Map.updateAt: index out of range"
-    Bin sx kx x l r -> let mapSizeL = mapSize l
-                       in case lexOrd i mapSizeL of
-                            LT -> balanceR kx x (updateAt f i l) r
-                            GT -> balanceL kx x l (updateAt f (i-mapSizeL-1) r)
-                            EQ -> case f kx x of
-                                    Just x` -> Bin sx kx x` l r
-                                    Nothing -> glue l r
+    Tip = abort "Map.updateAt: index out of range"
+    Bin sx kx x l r
+      #! mapSizeL = mapSize l
+      = case lexOrd i mapSizeL of
+          LT -> balanceR kx x (updateAt f i l) r
+          GT -> balanceL kx x l (updateAt f (i-mapSizeL-1) r)
+          EQ -> case f kx x of
+                  Just x` -> Bin sx kx x` l r
+                  Nothing -> glue l r
 
 // | /O(log n)/. Delete the element at /index/, i.e. by its zero-based index in
 // the sequence sorted by keys. If the /index/ is out of range (less than zero,
@@ -542,12 +502,13 @@ updateAt f i t =
 deleteAt :: !Int !(Map k a) -> Map k a
 deleteAt i t =
   case t of
-    Tip -> abort "Map.deleteAt: index out of range"
-    Bin _ kx x l r -> let mapSizeL = mapSize l
-                      in case lexOrd i mapSizeL of
-                           LT -> balanceR kx x (deleteAt i l) r
-                           GT -> balanceL kx x l (deleteAt (i-mapSizeL-1) r)
-                           EQ -> glue l r
+    Tip = abort "Map.deleteAt: index out of range"
+    Bin _ kx x l r
+      #! mapSizeL = mapSize l
+      = case lexOrd i mapSizeL of
+          LT -> balanceR kx x (deleteAt i l) r
+          GT -> balanceL kx x l (deleteAt (i-mapSizeL-1) r)
+          EQ -> glue l r
 
 
 //////////////////////////////////////////////////////////////////////
@@ -721,10 +682,16 @@ unionsWith :: !(a a -> a) ![Map k a] -> Map k a | < k
 unionsWith f ts = foldlStrict (unionWith f) newMap ts
 
 unionWith :: !(a a -> a) !(Map k a) !(Map k a) -> Map k a | < k
-unionWith f m1 m2 = unionWithKey (\_ x y -> f x y) m1 m2
+unionWith f m1 m2 = unionWithKey (appUnion f) m1 m2
+  where
+  appUnion :: !(a a -> a) k !a !a -> a
+  appUnion f _ x y = f x y
 
 unionWithKey :: !(k a a -> a) !(Map k a) !(Map k a) -> Map k a | < k
-unionWithKey f t1 t2 = mergeWithKey (\k x1 x2 -> Just (f k x1 x2)) id id t1 t2
+unionWithKey f t1 t2 = mergeWithKey (appUnion f) id id t1 t2
+  where
+  appUnion :: !(k a a -> a) !k !a !a -> Maybe a
+  appUnion f k x y = Just (f k x y)
 
 // left-biased hedge union
 hedgeUnion :: !(Maybe a) !(Maybe a) !(Map a b) !(Map a b) -> Map a b | < a
@@ -732,9 +699,10 @@ hedgeUnion _   _   t1  Tip = t1
 hedgeUnion blo bhi Tip (Bin _ kx x l r) = link kx x (filterGt blo l) (filterLt bhi r)
 hedgeUnion _   _   t1  (Bin _ kx x Tip Tip) = putR kx x t1  // According to benchmarks, this special case increases
                                                               // performance up to 30%. It does not help in difference or intersection.
-hedgeUnion blo bhi (Bin _ kx x l r) t2 = link kx x (hedgeUnion blo bmi l (trim blo bmi t2))
-                                                   (hedgeUnion bmi bhi r (trim bmi bhi t2))
-  where bmi = Just kx
+hedgeUnion blo bhi (Bin _ kx x l r) t2
+  #! bmi = Just kx
+  = link kx x (hedgeUnion blo bmi l (trim blo bmi t2))
+              (hedgeUnion bmi bhi r (trim bmi bhi t2))
 
 //////////////////////////////////////////////////////////////////////
 //  Union with a combining function
@@ -770,9 +738,9 @@ difference t1 t2   = hedgeDiff Nothing Nothing t1 t2
 hedgeDiff :: !(Maybe a) !(Maybe a) !(Map a b) !(Map a c) -> Map a b | < a
 hedgeDiff _   _   Tip              _ = Tip
 hedgeDiff blo bhi (Bin _ kx x l r) Tip = link kx x (filterGt blo l) (filterLt bhi r)
-hedgeDiff blo bhi t (Bin _ kx _ l r) = merge (hedgeDiff blo bmi (trim blo bmi t) l)
-                                             (hedgeDiff bmi bhi (trim bmi bhi t) r)
-  where bmi = Just kx
+hedgeDiff blo bhi t (Bin _ kx _ l r)
+  #! bmi = Just kx
+  = merge (hedgeDiff blo bmi (trim blo bmi t) l) (hedgeDiff bmi bhi (trim bmi bhi t) r)
 
 // | /O(n+m)/. Difference with a combining function.
 // When two equal keys are
@@ -822,10 +790,12 @@ intersection t1 t2 = hedgeInt Nothing Nothing t1 t2
 hedgeInt :: !(Maybe k) !(Maybe k) !(Map k a) !(Map k b) -> Map k a | < k
 hedgeInt _ _ _   Tip = Tip
 hedgeInt _ _ Tip _   = Tip
-hedgeInt blo bhi (Bin _ kx x l r) t2 = let l` = hedgeInt blo bmi l (trim blo bmi t2)
-                                           r` = hedgeInt bmi bhi r (trim bmi bhi t2)
-                                       in if (member kx t2) (link kx x l` r`) (merge l` r`)
-  where bmi = Just kx
+hedgeInt blo bhi (Bin _ kx x l r) t2
+  #! bmi = Just kx
+  #! l` = hedgeInt blo bmi l (trim blo bmi t2)
+  #! r` = hedgeInt bmi bhi r (trim bmi bhi t2)
+  | member kx t2 = link kx x l` r`
+  | otherwise    = merge l` r`
 
 // | /O(n+m)/. Intersection with a combining function.  The implementation uses
 // an efficient /hedge/ algorithm comparable with /hedge-union/.
@@ -1418,9 +1388,10 @@ fromListWith f xs :== fromListWithKey (\_ x y -> f x y) xs
 // > fromListWithKey f [] == newMap
 
 fromListWithKey :: !(k a a -> a) ![(!k, !a)] -> Map k a | < k
-fromListWithKey f xs = foldlStrict ins newMap xs
+fromListWithKey f xs = foldlStrict (ins f) newMap xs
   where
-  ins t (k, x) = putWithKey f k x t
+  ins :: !(k a a -> a) !(Map k a) !(!k, !a) -> Map k a | < k
+  ins f t (k, x) = putWithKey f k x t
 
 // | /O(n)/. Convert the map to a list of key\/value pairs. Subject to list fusion.
 //
@@ -1486,16 +1457,20 @@ fromAscListWithKey :: !(k a a -> a) ![(!k, !a)] -> Map k a | == k
 fromAscListWithKey f xs = fromDistinctAscList (combineEq f xs)
   where
   // [combineEq f xs] combines equal elements with function [f] in an ordered list [xs]
-  combineEq _ xs`
+  combineEq :: !(k a a -> a) ![(!k, !a)] -> [(!k, !a)] | == k
+  combineEq f xs`
     = case xs` of
         []     -> []
         [x]    -> [x]
-        [x:xx] -> combineEq` x xx
+        [x:xx] -> combineEq` f x xx
 
-  combineEq` z [] = [z]
-  combineEq` z=:(kz,zz) [x=:(kx,xx):xs`]
-    | kx == kz    = let yy = f kx xx zz in combineEq` (kx,yy) xs`
-    | otherwise = [z:combineEq` x xs`]
+  combineEq` :: !(k a a -> a)  !(!k, !a) ![(!k, !a)] -> [(!k, !a)] | == k
+  combineEq` _ z [] = [z]
+  combineEq` f z=:(kz,zz) [x=:(kx,xx):xs`]
+    | kx == kz
+      #! yy = f kx xx zz
+      = combineEq` f (kx, yy) xs`
+    | otherwise = [z : combineEq` f x xs`]
 
 // | /O(n)/. Build a map from an ascending list of distinct elements in linear time.
 // /The precondition is not checked./
@@ -1552,14 +1527,17 @@ trim :: !(Maybe k) !(Maybe k) !(Map k a) -> Map k a | < k
 trim Nothing   Nothing   t = t
 trim (Just lk) Nothing   t = greater lk t
   where
+  greater :: !k !(Map k a) -> Map k a | < k
   greater lo (Bin _ k _ _ r) | k <= lo = greater lo r
   greater _  t` = t`
 trim Nothing   (Just hk) t = lesser hk t
   where
-  lesser  hi (Bin _ k _ l _) | k >= hi = lesser  hi l
-  lesser  _  t` = t`
+  lesser :: !k !(Map k a) -> Map k a | < k
+  lesser hi (Bin _ k _ l _) | k >= hi = lesser hi l
+  lesser _  t` = t`
 trim (Just lk) (Just hk) t = middle lk hk t
   where
+  middle :: !k !k !(Map k a) -> Map k a | < k
   middle lo hi (Bin _ k _ _ r) | k <= lo = middle lo hi r
   middle lo hi (Bin _ k _ l _) | k >= hi = middle lo hi l
   middle _  _  t` = t`
@@ -1569,7 +1547,7 @@ trim (Just lk) (Just hk) t = middle lk hk t
 
 trimLookupLo :: !k !(Maybe k) !(Map k a) -> (!Maybe a, !Map k a) | < k
 trimLookupLo lk Nothing t = greater lk t
-      where greater :: !k (Map k a) -> (Maybe a, Map k a) | < k
+      where greater :: !k !(Map k a) -> (!Maybe a, !Map k a) | < k
             greater lo t`=:(Bin _ kx x l r) =
               if (lo < kx)
                 (get lo l, t`)
@@ -1578,7 +1556,7 @@ trimLookupLo lk Nothing t = greater lk t
                    (Just x, r))
             greater _ Tip = (Nothing, Tip)
 trimLookupLo lk (Just hk) t = middle lk hk t
-      where middle :: !k !k (Map k a) -> (Maybe a, Map k a) | < k
+      where middle :: !k !k !(Map k a) -> (!Maybe a, !Map k a) | < k
             middle lo hi t`=:(Bin _ kx x l r) =
               if (lo < kx)
                 (if (kx < hi) (get lo l, t`) (middle lo hi l))
@@ -1993,7 +1971,7 @@ showTree :: !(Map k a) -> String | toString k & toString a
 showTree m
   = showTreeWith showElem True False m
   where
-    showElem k x  = toString k +++ ":=" +++ toString x
+  showElem k x  = toString k +++ ":=" +++ toString x
 
 shows :: !a -> (String -> String) | toString a
 shows x = showsPrec 0 x
@@ -2227,18 +2205,18 @@ where // TODO
 	takeMax Tip = abort "takeMax of leaf evaluated" 
 	takeMax (Bin _ nk nv left Tip)	= (left, nk, nv)
 	takeMax (Bin _ nk nv left right)
-					# (right,k,v)		= takeMax right
-					# (hleft,left)		= height left
-					# (hright,right)	= height right
-					# h					= (max hleft hright) + 1
-					= (balance nk nv left right, k, v)
+      #! (right,k,v)    = takeMax right
+      #! (hleft,left)   = height left
+      #! (hright,right) = height right
+      #! h              = (max hleft hright) + 1
+      = (balance nk nv left right, k, v)
 
 	//Determines the height of the parent node of two sub trees
     parentHeight :: !(Map a b) !(Map c d) -> (!Int, !Map a b, !Map c d)
 	parentHeight left right
-		# (hleft,left)		= height left
-		# (hright,right)	= height right
-		# h					= (max hleft hright) + 1
+		#! (hleft,left)   = height left
+		#! (hright,right) = height right
+		#! h              = (max hleft hright) + 1
 		= (h, left, right)
 
 height :: !u:(Map k w:v) -> x:(!Int, !y:(Map k w:v)), [u y <= w, x <= y, u <= y]

@@ -21,22 +21,22 @@ S_IFSOCK	:== 0140000
 S_IFWHT		:== 0160000
 
 //Posix API calls
-errno		:: !*World -> (!Int,!*World)
+errno		:: !*w -> (!Int,!*w)
 strerr		:: !Int -> Pointer
-stat		:: !{#Char} !{#Char} !*World -> (!Int,!*World)
-unlink		:: !{#Char} !*World -> (!Int,!*World)
-fork		:: !*World -> (!Int,!*World)
-execvp		:: !{#Char} !{#Pointer} !*World -> (!Int,!*World)
-waitpid		:: !Int !{#Int} !Int !*World -> (!Int,!*World)
-exit		:: !Int !*World -> (!.a,!*World) 
-getcwd		:: !{#Char} !Int !*World -> (!Pointer,!*World)
-chdir		:: !{#Char} !*World -> (!Int,!*World)
-mkdir		:: !{#Char} !Int !*World -> (!Int,!*World)
-rmdir		:: !{#Char} !*World -> (!Int,!*World)
-rename		:: !{#Char} !{#Char} !*World -> (!Int,!*World)
-opendir		:: !{#Char} !*World -> (!Pointer,!*World)
-closedir	:: !Pointer !*World -> (!Int,!*World)
-readdir		:: !Pointer !*World -> (!Pointer,!*World)
+stat		:: !{#Char} !{#Char} !*w -> (!Int,!*w)
+unlink		:: !{#Char} !*w -> (!Int,!*w)
+fork		:: !*w -> (!Int,!*w)
+execvp		:: !{#Char} !{#Pointer} !*w -> (!Int,!*w)
+waitpid		:: !Int !{#Int} !Int !*w -> (!Int,!*w)
+exit		:: !Int !*w -> (!.a,!*w) 
+getcwd		:: !{#Char} !Int !*w -> (!Pointer,!*w)
+chdir		:: !{#Char} !*w -> (!Int,!*w)
+mkdir		:: !{#Char} !Int !*w -> (!Int,!*w)
+rmdir		:: !{#Char} !*w -> (!Int,!*w)
+rename		:: !{#Char} !{#Char} !*w -> (!Int,!*w)
+opendir		:: !{#Char} !*w -> (!Pointer,!*w)
+closedir	:: !Pointer !*w -> (!Int,!*w)
+readdir		:: !Pointer !*w -> (!Pointer,!*w)
 
 //Memory (impure)
 malloc	:: !Int -> Pointer

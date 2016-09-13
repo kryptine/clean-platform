@@ -629,6 +629,7 @@ svgEltSize (RadialGradientElt html_attrs svg_attrs elts) = 33 + attrsSize html_a
 svgEltSize (RectElt           html_attrs svg_attrs)      =  7 + attrsSize html_attrs + svgAttrsSize svg_attrs
 svgEltSize (StopElt           html_attrs svg_attrs)      =  7 + attrsSize html_attrs + svgAttrsSize svg_attrs
 svgEltSize (TextElt           html_attrs svg_attrs text) = 13 + attrsSize html_attrs + svgAttrsSize svg_attrs + escapedSize text
+svgEltSize (RawElt                                 text) = size text
 svgEltSize _                                             = abort "Text.HTML: svgEltSize applied to unexpected argument.\n"
 
 svgAttrsSize :: ![SVGAttr] -> Int
@@ -925,6 +926,7 @@ serializeSVGElt (RadialGradientElt  html_attrs svg_attrs elts) s i = writeSVGTag
 serializeSVGElt (RectElt            html_attrs svg_attrs)      s i = writeEmptySVGTag "rect"        html_attrs svg_attrs      s i
 serializeSVGElt (StopElt            html_attrs svg_attrs)      s i = writeEmptySVGTag "stop"        html_attrs svg_attrs      s i
 serializeSVGElt (TextElt            html_attrs svg_attrs text) s i = writeSVGPlainTag "text"        html_attrs svg_attrs text s i
+serializeSVGElt (RawElt                                  text) s i = writeRawSVG                                         text s i
 serializeSVGElt _ _ _                                              = abort "Text.HTML: serializeSVGElt applied to unexpected argument.\n"
 
 serializeSVGAttrs :: ![SVGAttr] !*{#Char} !Int -> (!*{#Char}, !Int)
@@ -1050,6 +1052,9 @@ writeSVGPlainTag name html_attrs svg_attrs plain dest dest_i
 	#! dest_i = dest_i + 1
 	= (dest,dest_i)
 
+writeRawSVG :: !{#Char} !*{#Char} !Int -> (!*{#Char},!Int)
+writeRawSVG plain dest dest_i = copyChars plain 0 False dest dest_i
+
 glue_list :: !String ![String] -> String
 glue_list sep [str : strs]	= str +++ foldr (\t txt -> sep +++ t +++ txt) "" strs
 glue_list _ _				= ""
@@ -1096,6 +1101,7 @@ browserFriendlySVGEltToString (RadialGradientElt  html_attrs svg_attrs elts) = w
 browserFriendlySVGEltToString (RectElt            html_attrs svg_attrs)      = writeBrowserFriendlyEmptySVGTag "rect"        html_attrs svg_attrs
 browserFriendlySVGEltToString (StopElt            html_attrs svg_attrs)      = writeBrowserFriendlyEmptySVGTag "stop"        html_attrs svg_attrs
 browserFriendlySVGEltToString (TextElt            html_attrs svg_attrs text) = writeBrowserFriendlyTextSVGTag "text"         html_attrs svg_attrs text
+browserFriendlySVGEltToString (RawElt                                  text) = text
 browserFriendlySVGEltToString _                                              = abort "Text.HTML: browserFriendlySVGToString applied to unexpected argument.\n"
 
 writeBrowserFriendlyAttr :: !String !String -> String

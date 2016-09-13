@@ -1,7 +1,7 @@
 implementation module System.GetOpt
 
 import StdEnv, Text, Data.Maybe, Data.Either
-from Data.List import maximum, null, isnull, find, concatMap, unzip3, zipWith3
+from Data.List import maximum, isnull, find, concatMap, unzip3, zipWith3
 
 :: OptKind a                    // kind of cmd line arg (internal use only):
    = Opt       a                //    an option
@@ -10,7 +10,7 @@ from Data.List import maximum, null, isnull, find, concatMap, unzip3, zipWith3
    | EndOfOpts                  //    end-of-options marker (i.e. "--")
    | OptErr    String           //    something went wrong...
 
-usageInfo :: String [OptDescr a] -> String   
+usageInfo :: String [OptDescr a] -> String
 usageInfo header optDescr = join "\n" [header:table]
    where (ss,ls,ds)     = (unzip3 o concatMap fmtOpt) optDescr
          table          = zipWith3 paste (sameLen ss) (sameLen ls) ds
@@ -63,7 +63,7 @@ getNext xs rest optDescr | startsWith "--" xs = longOpt (dropChars 2 xs) rest op
 getNext xs rest optDescr | startsWith "-" xs  = shortOpt xs.[1] (dropChars 2 xs) rest optDescr
 getNext a            rest _        = (NonOpt a,rest)
 
-breakAt -1 s = (s, "")	
+breakAt -1 s = (s, "")
 breakAt n s = (s % (0,n-1), dropChars n s)
 
 // handle long option
@@ -72,7 +72,7 @@ longOpt ls rs optDescr = long ads arg rs
    where (opt,arg) = breakAt (indexOf "=" ls) ls
          getWith p = [o \\ o=:(Option _ xs _ _) <- optDescr | isJust (find (p opt) xs)]
          exact     = getWith (==)
-         options   = if (null exact) (getWith startsWith) exact
+         options   = if (isnull exact) (getWith startsWith) exact
          ads       = [ ad \\ Option _ _ ad _ <- options ]
          optStr    = ("--"+++opt)
 
@@ -157,14 +157,11 @@ test order cmdline = case getOpt order options cmdline of
 -- putStr (test Permute ["--ver","foo"])
 --    ==> option `--ver' is ambiguous; could be one of:
 --          -v      --verbose             verbosely list files
---          -V, -?  --version, --release  show version info   
+--          -V, -?  --version, --release  show version info
 --        Usage: foobar [OPTION...] files...
---          -v        --verbose             verbosely list files  
---          -V, -?    --version, --release  show version info     
---          -o[FILE]  --output[=FILE]       use FILE for dump     
+--          -v        --verbose             verbosely list files
+--          -V, -?    --version, --release  show version info
+--          -o[FILE]  --output[=FILE]       use FILE for dump
 --          -n USER   --name=USER           only dump USER's files
 -----------------------------------------------------------------------------------------
 */
-
-
-

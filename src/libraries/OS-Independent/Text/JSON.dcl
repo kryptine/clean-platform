@@ -8,7 +8,7 @@ definition module Text.JSON
 * For more info about JSON see: http://www.json.org/
 */
 
-import StdGeneric, Data.Maybe, StdString
+import StdGeneric, Data.Maybe, StdList, StdString
 
 :: JSONNode	= JSONNull
 			| JSONBool !Bool
@@ -79,20 +79,21 @@ jsonQuery :: !String !JSONNode -> Maybe a | JSONDecode{|*|} a
 * for each type you want to encode in JSON format.
 */
 generic JSONEncode t :: !Bool !t -> [JSONNode]
-derive  JSONEncode Int, Real, Char, Bool, String, UNIT, [], (,), (,,), (,,,), (,,,,), {}, {!}, Maybe, JSONNode,
+derive  JSONEncode Int, Real, Char, Bool, String, UNIT, [], (,), (,,), (,,,), (,,,,), (,,,,,), (,,,,,,), (,,,,,,,), {}, {!}, Maybe, JSONNode,
 	EITHER, CONS of {gcd_name}, OBJECT
 
 JSONEncode{|RECORD of {grd_fields}|} fx _ (RECORD x)
-	= [JSONObject [(name, o) \\ o <- fx False x & name <- grd_fields | isNotNull o]]
-where
-	isNotNull JSONNull = False
-	isNotNull _ = True
+  = [JSONObject [(name, o) \\ o <- fx False x & name <- grd_fields | isNotNull o]]
+  where
+  isNotNull :: !JSONNode -> Bool
+  isNotNull JSONNull = False
+  isNotNull _ = True
 
 JSONEncode{|FIELD|} fx _ (FIELD x) = fx True x
 
 JSONEncode{|PAIR|} fx fy _ (PAIR x y) = fx False x ++ fy False y
 where
-	(++) infixr 5::![.a] u:[.a] -> u:[.a]
+	(++) infixr 5::![.a] !u:[.a] -> u:[.a]
 	(++) [hd:tl]	list	= [hd:tl ++ list]
 	(++) nil 		list	= list
 
@@ -102,32 +103,47 @@ where
 * for each type you want to parse from JSON format.
 */
 generic JSONDecode t :: !Bool ![JSONNode] -> (!Maybe t,![JSONNode])
-derive  JSONDecode Int, Real, Char, Bool, String, UNIT, EITHER, CONS of {gcd_name}, OBJECT, [], (,), (,,), (,,,), (,,,,), {}, {!}, Maybe, JSONNode
+derive  JSONDecode Int, Real, Char, Bool, String, UNIT, EITHER, CONS of {gcd_name}, OBJECT, [], (,), (,,), (,,,), (,,,,), (,,,,,), (,,,,,,), (,,,,,,,), {}, {!}, Maybe, JSONNode
 
-JSONDecode{|PAIR|} fx fy _ l = d1 (fx False l) l
-where
-	d1 (Just x,xs)  l = d2 x (fy False xs) l
-	d1 (Nothing, _) l = (Nothing, l)
+JSONDecode{|PAIR|} fx fy _ l = d1 fy (fx False l) l
+  where
+  d1 :: !(Bool [JSONNode] -> (!Maybe b, ![JSONNode])) !(!Maybe a, ![JSONNode]) ![JSONNode]
+     -> (!Maybe (PAIR a b), ![JSONNode])
+  d1 fy (Just x,xs)  l = d2 x (fy False xs) l
+  d1 _  (Nothing, _) l = (Nothing, l)
 
-	d2 x (Just y, ys) l = (Just (PAIR x y), ys)
-	d2 x (Nothing, _) l = (Nothing, l)
+  d2 :: !a !(!Maybe b, ![JSONNode]) ![JSONNode] -> (!Maybe (PAIR a b), ![JSONNode])
+  d2 x (Just y, ys) l = (Just (PAIR x y), ys)
+  d2 x (Nothing, _) l = (Nothing, l)
 
 JSONDecode{|RECORD|} fx _ l=:[obj=:JSONObject fields : xs] = d (fx False [obj]) xs l
-where
-	d (Just x, _)  xs l = (Just (RECORD x),xs)
-	d (Nothing, _) xs l = (Nothing, l)
+  where
+  d :: !(Maybe a, b) ![JSONNode] ![JSONNode] -> (!Maybe (RECORD a), ![JSONNode])
+  d (Just x, _)  xs l = (Just (RECORD x),xs)
+  d (Nothing, _) xs l = (Nothing, l)
+JSONDecode{|RECORD|} fx _ l=:[obj=:JSONArray fields : xs] = d (fx False [obj]) xs l
+  where
+  d :: !(Maybe a, b) ![JSONNode] ![JSONNode] -> (!Maybe (RECORD a), ![JSONNode])
+  d (Just x, _)  xs l = (Just (RECORD x),xs)
+  d (Nothing, _) xs l = (Nothing, l)
 JSONDecode{|RECORD|} fx _ l = (Nothing,l)
 
 JSONDecode{|FIELD of {gfd_name}|} fx _ l =:[JSONObject fields]
-	# field = findField gfd_name fields
-	= case fx True field of
-		(Just x, _)	= (Just (FIELD x), l)
-		(_, _) = (Nothing, l)
-where
-	findField match [(l,x):xs]
-		| l == match 	= [x]
-						= findField match xs						
-	findField match [] 	= []
+  #! field = findField gfd_name fields
+  = case fx True field of
+      (Just x, _) = (Just (FIELD x), l)
+      (_, _)      = (Nothing, l)
+  where
+  findField :: !String ![(!String, !JSONNode)] -> [JSONNode]
+  findField match [(l,x):xs]
+    | l == match = [x]
+    | otherwise  = findField match xs
+  findField match [] = []
+JSONDecode{|FIELD of {gfd_index}|} fx _ l =:[JSONArray fields]
+  #! field = fields !! gfd_index
+  = case fx True [field] of
+      (Just x, _) = (Just (FIELD x), l)
+      (_, _)      = (Nothing, l)
 JSONDecode{|FIELD|} fx _ l = (Nothing, l)
 
 /**
@@ -142,6 +158,6 @@ instance == JSONNode
 * This function uses indenting and newlines to make the serialized JSON representation
 * more readable than the standard toString instance, which uses minimal whitespace.
 */
-jsonPrettyPrint :: JSONNode -> String
+jsonPrettyPrint :: !JSONNode -> String
 
 

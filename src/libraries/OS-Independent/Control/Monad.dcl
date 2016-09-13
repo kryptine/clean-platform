@@ -3,7 +3,6 @@ definition module Control.Monad
 from Control.Applicative  import class Applicative
 from Data.Functor         import class Functor
 from Data.Maybe           import :: Maybe
-from Data.Void            import :: Void
 
 class Monad m | Applicative m where
   bind :: (m a) (a -> m b) -> m b
@@ -28,11 +27,11 @@ return            :: a -> m a | Monad m
 (>>|) infixl 1    :: (m a) (m b) -> m b | Monad m
 (=<<) infixr 1    :: (a -> m b) (m a) -> m b | Monad m
 sequence          :: .[a b] -> a [b] | Monad a
-sequence_         :: .[a b] -> a Void | Monad a
+sequence_         :: .[a b] -> a () | Monad a
 mapM              :: (.a -> b c) [.a] -> b [c] | Monad b
-mapM_             :: (.a -> b c) [.a] -> b Void | Monad b
+mapM_             :: (.a -> b c) [.a] -> b () | Monad b
 forM              :: u:([v:a] -> w:((v:a -> b c) -> b [c])) | Monad b, [w <= u,w <= v]
-forM_             :: u:([v:a] -> w:((v:a -> b c) -> b Void)) | Monad b, [w <= u,w <= v]
+forM_             :: u:([v:a] -> w:((v:a -> b c) -> b ())) | Monad b, [w <= u,w <= v]
 forever           :: (a b) -> a c | Monad a
 join              :: (a (a b)) -> a b | Monad a
 zipWithM          :: (.a -> .(.b -> c d)) [.a] [.b] -> c [d] | Monad c

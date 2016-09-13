@@ -1,7 +1,6 @@
-implementation module Text.Parsers.ParsersAccessories
+implementation module Text.Parsers.ZParsers.ParsersAccessories
 
-import Text.Parsers.ParsersKernel, Text.Parsers.ParsersDerived, Text.Parsers.ParserLanguage, StdEnv
-from Data.Maybe import :: Maybe (..)
+import Text.Parsers.ZParsers.ParsersKernel, Text.Parsers.ZParsers.ParsersDerived, Text.Parsers.ZParsers.ParserLanguage, StdEnv
 from StdChar import isAlpha, isAlphanum, isHexDigit
 
 number :: Parser  Char a Int
@@ -11,19 +10,19 @@ number` :: Parser  Char a Int
 number` = (<.*> digit) <@ foldl (\n d -> 10*n + digitToInt d) 0
 
 digit :: Parser Char a Char
-digit = satisfy (\c -> isMember c ['0'..'9']) 
+digit = satisfy (\c -> isMember c ['0'..'9'])
 
 hexDigit :: Parser Char a Char
 hexDigit = satisfy isHexDigit
 
 letter :: Parser Char a Char
-letter = satisfy isAlpha 
+letter = satisfy isAlpha
 
 alphaNum :: Parser Char a Char
-alphaNum = satisfy isAlphanum 
+alphaNum = satisfy isAlphanum
 
 oneOf :: [Char] -> Parser Char a Char
-oneOf cs = satisfy (\c -> isMember c cs)  
+oneOf cs = satisfy (\c -> isMember c cs)
 
 choice :: [Parser s t r] -> Parser s t r
 choice l = foldl (<!>) fail l
@@ -50,7 +49,7 @@ identifier = satisfy isAlpha <&> \c -> <.*> (satisfy isAlphanum) <@ \r -> toStri
 
 /*	Computes line and column number, taking into account tabs and line breaks. Mind that tabs and
 	line breaks are themselves characters in the input string and have a position.*/
-		
+
 lineAndColumn :: [Char] Int			// position returned by error msg
 						Int ->		// standard tab width
 						(Int,Int)	// line,column
@@ -66,7 +65,7 @@ where	lnc :: [Char]	Int			// position returned by error msg
 			'\n' -> lnc cs (n-1) (line+1) 1
 			'\t' -> lnc cs (n-1) line     (col + tab - ((col-1) rem tab)) // rem was mod
 			_	 -> lnc cs (n-1) line     (col+1)
-		lnc []     n line col = abort "ParserKernel.icl: position beyond input-list"				
+		lnc []     n line col = abort "ParserKernel.icl: position beyond input-list"
 
 // START EXPLAIN RESULT
 
@@ -101,19 +100,19 @@ errorToFormat symbolTypes hypotheses position
 myZip :: SymbolTypes [SugPosition] -> String
 myZip syms ps
 	# [s:ss]	 = reverse syms
-	= toString s +++ myZip` ss ps 
+	= toString s +++ myZip` ss ps
 where	myZip` []	   _		= ""
 		myZip` [s:ss] [p:pp]	= ", "+++ toString s +++" "+++ toString p +++ myZip` ss pp
 		myZip` _	  _			= abort "'myZip' in ParserAccessories called with unexpected combination of list lengths"
 
 instance toString SymbolType
-where	toString (Whole str)	= str 
+where	toString (Whole str)	= str
 		toString (Slice str i)	= toString i +++ sliceOf +++ str
 
 instance toString SugPosition
 where	toString (At i)		= toString i
 		toString (EndAt i)	= ".." +++ toString i
-		// ..45 should succinctly express that the error could be before or on position 45 
+		// ..45 should succinctly express that the error could be before or on position 45
 
 fromRose :: (Rose (String,[SugPosition])) Int [SugPosition] -> [(Int,String)]
 fromRose []	_ _ = []

@@ -11,7 +11,7 @@ from Graphics.Scalable.Internal import :: Image, :: ImageTag, :: Span,
   :: YRadiusAttr {..}, :: FillAttr {..}, :: OpacityAttr {..},
   :: OnClickAttr {..}, :: OnMouseDownAttr {..}, :: OnMouseUpAttr {..},
   :: OnMouseOverAttr {..}, :: OnMouseMoveAttr {..}, :: OnMouseOutAttr {..},
-  :: DraggableAttr {..}, :: DashAttr {..}, 
+  :: DraggableAttr {..}, :: DashAttr {..}, :: NoAttr (..),
   :: MaskAttr {..}, :: Slash (..), :: ImageAlign, :: XAlign (..), :: YAlign (..),
   :: Host, :: GridLayout, :: GridMajor(..), :: GridXLayout (..), :: GridYLayout (..), :: GridDimension (..),
   class /. (..), class *. (..), instance *. Span, instance /. Span,
@@ -45,11 +45,12 @@ instance margin (!Span, !Span, !Span, !Span) // (t, r, b, l) Margin is t on top,
 
 normalFontDef  :: !String !Real    -> FontDef // (normalFontDef family size) sets all other fields to "normal"
 
-empty          :: !Span !Span      -> Image m // (empty a b) is an empty image with x-span a and y-span b
-text           :: !FontDef !String -> Image m // (text font str) is an image containg str written in font
-circle         :: !Span            -> Image m // (circle a) is an image of a circle with diameter a
-ellipse        :: !Span !Span      -> Image m // (ellipse a b) is an image of an ellipse with x-diameter a and y-diameter b
-rect           :: !Span !Span      -> Image m // (rect a b) is an image of a rectangle with x-span a and y-span b
+empty          :: !Span !Span         -> Image m // (empty a b) is an empty image with x-span a and y-span b
+text           :: !FontDef !String    -> Image m // (text font str) is an image containg str written in font
+circle         :: !Span               -> Image m // (circle a) is an image of a circle with diameter a
+ellipse        :: !Span !Span         -> Image m // (ellipse a b) is an image of an ellipse with x-diameter a and y-diameter b
+rect           :: !Span !Span         -> Image m // (rect a b) is an image of a rectangle with x-span a and y-span b
+raw            :: !Span !Span !String -> Image m
 
 defaultMarkers :: Markers m
 
@@ -62,6 +63,10 @@ polyline :: !(Maybe (Markers m)) ![ImageOffset]     -> Image m // (polyline xs) 
 fit      :: !Span !Span !(Image m) -> Image m
 fitx     :: !Span       !(Image m) -> Image m
 fity     :: !Span       !(Image m) -> Image m
+
+scale    :: !Real !Real !(Image m) -> Image m
+scalex   :: !Real       !(Image m) -> Image m
+scaley   :: !Real       !(Image m) -> Image m
 
 rotate   :: !Angle !(Image m) -> Image m
 flipx    :: !(Image m) -> Image m
@@ -87,7 +92,7 @@ tuneIf :: !Bool !(Image m) !(attr m) -> Image m | tuneImage attr
 instance tuneImage StrokeAttr, StrokeWidthAttr, FillAttr, OpacityAttr,
   OnClickAttr, OnMouseDownAttr, OnMouseUpAttr, OnMouseOverAttr,
   OnMouseMoveAttr, OnMouseOutAttr, DraggableAttr, XRadiusAttr, YRadiusAttr,
-  DashAttr, MaskAttr
+  DashAttr, MaskAttr, NoAttr
 
 class toSVGColor a :: !a -> SVGColor
 instance toSVGColor String, RGB

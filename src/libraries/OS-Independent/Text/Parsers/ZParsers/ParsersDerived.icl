@@ -1,5 +1,5 @@
-implementation module Text.Parsers.ParsersDerived
-import Text.Parsers.ParsersKernel
+implementation module Text.Parsers.ZParsers.ParsersDerived
+import Text.Parsers.ZParsers.ParsersKernel
 from StdEnv import o, abort, id
 from StdEnv import const, instance == Char
 import StdClass, StdInt

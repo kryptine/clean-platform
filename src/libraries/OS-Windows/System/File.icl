@@ -9,7 +9,6 @@ import StdMisc
 import StdString
 
 import Data.Error
-import Data.Void
 import System.OSError
 import System._Pointer
 import System.Time
@@ -87,9 +86,9 @@ where
 		| eof			= (Ok [str:acc],file)
 		| otherwise		= readAcc file [str:acc]			
 
-writeFile :: !String !String !*env -> (!MaybeError FileError Void, !*env) | FileSystem env
+writeFile :: !String !String !*env -> (!MaybeError FileError (), !*env) | FileSystem env
 writeFile filename contents env = 
-	withFile filename FWriteData (\file -> (Ok Void, fwrites contents file)) env
+	withFile filename FWriteData (\file -> (Ok (), fwrites contents file)) env
 
 withFile :: !String Int (*File -> (!MaybeError FileError a,!*File)) !*env 
 			-> (!MaybeError FileError a, !*env) | FileSystem env
@@ -110,11 +109,11 @@ fileExists filename world
 # (_,world) = findClose handle world
 = (True, world)
 
-deleteFile :: !String !*World -> (!MaybeOSError Void, !*World)
+deleteFile :: !String !*World -> (!MaybeOSError (), !*World)
 deleteFile filename world 
 	# (ok, world) = deleteFileA (packString filename) world
 	| ok == 0 = getLastOSError world
-	= (Ok Void, world)
+	= (Ok (), world)
 
 getFileInfo :: !String !*World -> (!MaybeOSError FileInfo, !*World)
 getFileInfo filename world
@@ -161,11 +160,11 @@ filetimeToTm filetime world
 			}
 	= (Ok tm, world)
 
-moveFile :: !String !String !*World -> (!MaybeOSError Void, !*World)
+moveFile :: !String !String !*World -> (!MaybeOSError (), !*World)
 moveFile oldpath newpath world
 	# (ok,world)	= moveFileA (packString oldpath) (packString newpath) world
 	| ok
-		= (Ok Void, world)
+		= (Ok (), world)
 	| otherwise
 		= getLastOSError world
 	

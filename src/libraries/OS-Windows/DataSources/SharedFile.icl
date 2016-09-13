@@ -62,7 +62,7 @@ where
 			// check ok
 			# (ok, world)	= setEndOfFile handle world
 			| not ok = (Error "shared file: set EOF error", world)
-			= (Ok Void, world)
+			= (Ok (), world)
 			
 		getVersion world
 			# (len, world)		= getFileSize handle (packInt 0) world

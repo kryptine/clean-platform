@@ -2,6 +2,7 @@ implementation module System.Time
 
 import StdString, StdArray, StdClass, StdOverloaded, StdInt, StdMisc
 import System._Pointer
+import Text
 
 import code from library "msvcrt.txt"
 
@@ -18,7 +19,7 @@ where
 
 instance toString Tm
 where
-	toString tm = derefString (toStringTmC (packTm tm))
+	toString tm = trim (derefString (toStringTmC (packTm tm)))
 	where
 		toStringTmC :: !{#Int} -> Pointer
 		toStringTmC a0 = code {
@@ -28,7 +29,7 @@ instance toString Timestamp
 where
 	toString (Timestamp t) 
 	| t < 0 = abort "System.Time: Timestamp cannot be negative" 
-	= derefString (toStringTimeC (packInt t))
+	= trim (derefString (toStringTimeC (packInt t)))
 	where	
 		toStringTimeC :: !{#Int} -> Pointer
 		toStringTimeC a0 = code {

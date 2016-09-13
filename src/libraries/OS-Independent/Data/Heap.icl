@@ -266,9 +266,11 @@ fromListWith f xs :== 'SL'.foldr (insertWith f) mempty xs
 //sort :: [a] -> [a] | Ord a
 sort xs = 'DF'.toList (fromList xs)
 
+instance Semigroup (Heap a) where
+  mappend l r = union l r
+
 instance Monoid (Heap a) where
   mempty = empty
-  mappend l r = union l r
 
 // /O(n)/. Returns the elements in the heap in some arbitrary, very likely unsorted, order.
 //

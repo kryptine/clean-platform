@@ -263,6 +263,7 @@ import StdString, Data.Maybe
                         | RadialGradientElt ![HtmlAttr] ![SVGAttr] ![SVGElt]
 						| StopElt           ![HtmlAttr] ![SVGAttr]
 						| TextElt           ![HtmlAttr] ![SVGAttr] !String                      // currently only a String as content
+                        | RawElt            !String
 
 
 /*

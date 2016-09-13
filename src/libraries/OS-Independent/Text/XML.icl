@@ -1,7 +1,7 @@
 implementation module Text.XML
 
 import StdArray, StdBool, StdInt, StdList, StdTuple, StdGeneric, StdFunc
-import Data.Error, Data.Void, Data.Either, Data.Maybe, Text, Text.ParserCombinators, GenEq
+import Data.Error, Data.Either, Data.Maybe, Text, Text.ParserCombinators, GenEq
 
 uname :: !String -> XMLQName
 uname name = XMLQName Nothing name
@@ -390,7 +390,7 @@ XMLEncode{|XMLBoolAttribute|}	fx (XMLBoolAttribute name v x)		= encodeAttr name 
 
 encodeAttr name a x = XMLEncElem (fromElem (wrapToElemAttr x [XMLAttr name (toString a)]))
 
-derive XMLEncode Void, Either, (,), (,,), (,,,)
+derive XMLEncode Either, (,), (,,), (,,,)
 
 // auxiliary functions
 wrapToElem :: !XMLEncodeResult -> XMLNode

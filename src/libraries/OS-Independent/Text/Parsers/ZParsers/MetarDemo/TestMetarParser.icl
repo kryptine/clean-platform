@@ -13,12 +13,12 @@ import StdEnv, StdIO, Text.Parsers.MetarDemo.MetarParser
 Start :: *World -> *World
 Start world
 	# (ids,world)	= openIds 3 world
-	= startIO NDI Void (initialise ids) [] world
+	= startIO NDI () (initialise ids) [] world
 
 ::	ResultSt =	{offset :: !Int, text :: [String],nrLines :: Int}
 
 initialise ids pst
-	# (error,pst)	= openDialog Void METAR_Dialog pst
+	# (error,pst)	= openDialog () METAR_Dialog pst
 	| error<>NoError= closeProcess pst
 	| otherwise		= pst
 where

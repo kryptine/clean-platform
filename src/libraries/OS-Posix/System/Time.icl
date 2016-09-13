@@ -2,6 +2,7 @@ implementation module System.Time
 
 import StdString, StdArray, StdClass, StdOverloaded, StdInt
 import System._Pointer
+import Text
 
 //String buffer size
 MAXBUF :== 256
@@ -16,7 +17,7 @@ where
 
 instance toString Tm
 where
-	toString tm = derefString (toStringTmC (packTm tm))
+	toString tm = trim (derefString (toStringTmC (packTm tm)))
 	where
 		toStringTmC :: !{#Int} -> Pointer
 		toStringTmC a0 = code {
@@ -24,7 +25,7 @@ where
 		}
 instance toString Timestamp
 where
-	toString (Timestamp t) = derefString (toStringTimeC (packInt t))
+	toString (Timestamp t) = trim (derefString (toStringTimeC (packInt t)))
 	where	
 		toStringTimeC :: !{#Int} -> Pointer
 		toStringTimeC a0 = code {

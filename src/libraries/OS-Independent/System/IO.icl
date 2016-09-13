@@ -5,8 +5,9 @@ import Control.Monad
 import Data.Functor
 from StdFunc import o, id
 import StdFile, StdString
+from Text import class Text (trim), instance Text String
 
-:: IO a = IO (*World -> *(a, *World))
+:: IO a = IO .(*World -> *(a, *World))
 
 execIO :: (IO a) *World -> *World
 execIO (IO f) world
@@ -16,7 +17,7 @@ execIO (IO f) world
 evalIO :: (IO a) *World -> *(a, *World)
 evalIO (IO f) world = f world
 
-withWorld :: (*World -> *(a, !*World)) -> IO a
+withWorld :: (*World -> *(.a, !*World)) -> IO .a
 withWorld f = IO f
 
 instance Applicative IO where
@@ -34,17 +35,38 @@ instance Monad IO where
         # (IO g)     = a2mb x
         = g world
 
-putStrLn :: String -> IO ()
-putStrLn str = withWorld f
+putStr :: String -> IO ()
+putStr str = withWorld f
   where
-    f world
-      # (out, world) = stdio world
-      # out          = fwrites (str +++ "\n") out
-      # (_, world)   = fclose out world
-      = ((), world)
+  f world
+    # (out, world) = stdio world
+    # out          = fwrites str out
+    # (_, world)   = fclose out world
+    = ((), world)
+
+putStrLn :: String -> IO ()
+putStrLn str = putStr (str +++ "\n")
 
 print :: a -> IO () | toString a
 print x = putStrLn (toString x)
+
+getChar :: IO Char
+getChar = withWorld f
+  where
+  f world
+    # (input, world) = stdio world
+    # (ok, c, input) = freadc input
+    # (_, world)     = fclose input world
+    = (c, world)
+
+getLine :: IO String
+getLine = withWorld f
+  where
+  f world
+    # (input, world) = stdio world
+    # (str, input)   = freadline input
+    # (_, world)     = fclose input world
+    = (trim str, world)
 
 readFileM :: !String -> IO String
 readFileM name = withWorld f
@@ -63,4 +85,27 @@ writeFileM name txt = withWorld f
     # file              = fwrites txt file
     # (ok, world)       = fclose file world
     = ((), world)
+
+unsafePerformIO :: (*World -> *(.a, *World)) -> .a
+unsafePerformIO f
+  # (x, world) = f make_world
+  | world_to_true world = x
+
+unsafePerformIOTrue :: (*World -> *(a, *World)) -> Bool
+unsafePerformIOTrue f
+  # (x, world) = f make_world
+  | world_to_true world = True
+
+world_to_true :: !*World -> Bool
+world_to_true world
+ = code inline {
+   pop_a 1
+   pushB TRUE
+ }
+
+make_world :: *World
+make_world
+  = code {
+    fillI 65536 0
+  }
 

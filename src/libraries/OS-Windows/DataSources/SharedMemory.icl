@@ -72,7 +72,7 @@ where
 			# (wptr,ptr)	= readIntElemOffsetP ptr 3
 			# world			= notifyObservers wptr world
 			# ptr			= writeIntElemOffset ptr 3 NULL
-			= (Ok Void, forceEvalPointer ptr world)
+			= (Ok (), forceEvalPointer ptr world)
 		where
 			notifyObservers :: !Pointer !*env -> *env
 			notifyObservers wptr world

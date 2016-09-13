@@ -187,6 +187,13 @@ isSuffixOf x y          =  isPrefixOf (reverse x) (reverse y)
 isInfixOf :: .[a] .[a] -> Bool | == a
 isInfixOf needle haystack = any (isPrefixOf needle) (tails haystack)
 
+// Ported from https://rosettacode.org/wiki/Levenshtein_distance#Haskell
+levenshtein :: .[a] .[a] -> Int | == a
+levenshtein xs ys = last (foldl transform [0..length xs] ys)
+where
+	transform ns=:[n:ns`] c = scan (calc c) (n+1) (zip3 xs ns ns`)
+	calc c z (c`, x, y) = minList [y+1, z+1, if (c`<>c) 1 0 + x]
+
 elem :: a .[a] -> .Bool | == a
 elem _ []       = False
 elem x [y:ys]   = x == y || elem x ys
@@ -204,12 +211,19 @@ lookup  key [(x,y):xys]
 find :: (a -> .Bool) -> .(.[a] -> .(Maybe a))
 find p          = listToMaybe o filter p
 
-partition :: (a -> .Bool) .[a] -> (.[a],.[a])
-partition p xs = foldr (select p) ([],[]) xs
-  where select :: .(a -> .Bool) a (u:[a],v:[a]) -> (w:[a],x:[a]), [u <= w,v <= x]
-        select p x t =
-          let (ts,fs) = t
-          in if (p x) ([x:ts],fs) (ts, [x:fs])
+partition :: !(a -> .Bool) !.[a] -> (!.[a], !.[a])
+partition p xs = foldr` (select p) ([],[]) xs
+
+select :: !.(a -> .Bool) !a !(!u:[a], !v:[a]) -> (!w:[a], !x:[a]), [u <= w,v <= x]
+select p x (ts, fs)
+  | p x       = ([x:ts], fs)
+  | otherwise = (ts, [x:fs])
+
+foldr` :: !(a .b -> .b) !.b !.[a] -> !.b
+foldr` _ acc []       = acc
+foldr` f acc [x : xs]
+  #! tmp = foldr` f acc xs
+  = f x tmp
 
 elemIndex :: a -> .(.[a] -> .(Maybe Int)) | == a
 elemIndex x     = findIndex (\y -> x==y)
@@ -334,10 +348,102 @@ strictFoldr :: !(.a -> .(.b -> .b)) !.b ![.a] -> .b
 strictFoldr _ b []     = b
 strictFoldr f b [x:xs] = f x (strictFoldr f b xs)
 
+strictFoldrSt :: !(.a -> .(.b *st -> *(.b, *st))) !.b ![.a] *st -> *(.b, *st)
+strictFoldrSt _ b []     st = (b, st)
+strictFoldrSt f b [x:xs] st
+  #! (acc, st) = strictFoldrSt f b xs st
+  #! (r, st)   = f x acc st
+  = (r, st)
+
+strictFoldlSt :: !(.a -> .(.b *st -> *(.a, *st))) !.a ![.b] *st -> *(.a, *st)
+strictFoldlSt _ b [] st = (b, st)
+strictFoldlSt f b [x:xs] st
+  #! (r, st) = f b x st
+  = strictFoldlSt f r xs st
+
 strictFoldl :: !(.a -> .(.b -> .a)) !.a ![.b] -> .a
-strictFoldl f b [] = b
+strictFoldl _ b [] = b
 strictFoldl f b [x:xs]
   #! r = f b x
   = strictFoldl f r xs
 
+strictTRMapRev :: !(.a -> .b) ![.a] -> [.b]
+strictTRMapRev f xs = strictTRMapAcc f xs []
 
+strictTRMapAcc :: !(u:a -> v:b) !w:[u:a] !x:[v:b] -> y:[v:b], [w <= u,y <= v,x <= y]
+strictTRMapAcc f []     acc = acc
+strictTRMapAcc f [x:xs] acc = strictTRMapAcc f xs [f x : acc]
+
+strictTRMap :: !(.a -> .b) ![.a] -> [.b]
+strictTRMap f xs = reverseTR (strictTRMapAcc f xs [])
+
+reverseTR :: ![.a] -> [.a]
+reverseTR xs = rev` xs []
+  where
+  rev` :: !u:[v:a] !w:[v:a] -> x:[v:a], [x u <= v,w <= x]
+  rev` [] acc = acc
+  rev` [x:xs] acc = rev` xs [x:acc]
+
+flattenTR :: ![[a]] -> [a]
+flattenTR xss = reverseTR (flattenTRAcc xss [])
+
+flattenTRAcc :: ![[a]] [a] -> [a]
+flattenTRAcc [] acc = acc
+flattenTRAcc [xs:xss] acc
+  #! r = reverseTR xs ++ acc
+  = flattenTRAcc xss r
+
+strictTRMapSt :: !(a .st -> (!b, !.st)) ![a] !.st -> (![b], !.st)
+strictTRMapSt f xs st
+  #! (rs, st) = strictTRMapStAcc f xs [] st
+  = (reverseTR rs, st)
+
+strictTRMapStAcc :: !(a .st -> (!b, !.st)) ![a] ![b] !.st -> (![b], !.st)
+strictTRMapStAcc f []     acc st = (acc, st)
+strictTRMapStAcc f [x:xs] acc st
+  #! (r, st) = f x st
+  = strictTRMapStAcc f xs [r : acc] st
+
+strictTRZipWith :: !(a b -> c) ![a] ![b] -> [c]
+strictTRZipWith f as bs = reverseTR (strictTRZipWithRev f as bs)
+
+strictTRZipWithRev :: !(a b -> c) ![a] ![b] -> [c]
+strictTRZipWithRev f as bs = strictTRZipWithAcc f as bs []
+
+strictTRZipWithAcc :: !(a b -> c) ![a] ![b] ![c] -> [c]
+strictTRZipWithAcc f [a:as] [b:bs] acc
+  = strictTRZipWithAcc f as bs [f a b : acc]
+strictTRZipWithAcc _ _ _ acc = acc
+
+strictTRZip4 :: ![a] ![b] ![c] ![d] -> [(!a, !b, !c, !d)]
+strictTRZip4 as bs cs ds = reverseTR (strictTRZip4Rev as bs cs ds)
+
+strictTRZip4Rev :: ![a] ![b] ![c] ![d] -> [(!a, !b, !c, !d)]
+strictTRZip4Rev as bs cs ds = strictTRZip4Acc as bs cs ds []
+
+strictTRZip4Acc :: ![a] ![b] ![c] ![d] ![(!a, !b, !c, !d)] -> [(!a, !b, !c, !d)]
+strictTRZip4Acc [a:as] [b:bs] [c:cs] [d:ds] acc
+  = strictTRZip4Acc as bs cs ds [(a, b, c, d):acc]
+strictTRZip4Acc _ _ _ _ acc = acc
+
+strictTRZip2 :: ![a] ![b]-> [(!a, !b)]
+strictTRZip2 as bs = reverseTR (strictTRZip2Rev as bs)
+
+strictTRZip2Rev :: ![a] ![b]-> [(!a, !b)]
+strictTRZip2Rev as bs = strictTRZip2Acc as bs []
+
+strictTRZip2Acc :: ![a] ![b] ![(!a, !b)] -> [(!a, !b)]
+strictTRZip2Acc [a:as] [b:bs] acc
+  = strictTRZip2Acc as bs [(a, b):acc]
+strictTRZip2Acc _ _ acc = acc
+
+strictTRZipWith3 :: !(a b c -> d) ![a] ![b] ![c] -> [d]
+strictTRZipWith3 f as bs cs = reverseTR (strictTRZipWith3Rev f as bs cs)
+
+strictTRZipWith3Rev :: !(a b c -> d) ![a] ![b] ![c] -> [d]
+strictTRZipWith3Rev f as bs cs = strictTRZipWith3Acc f as bs cs []
+
+strictTRZipWith3Acc :: !(a b c -> d) ![a] ![b] ![c] ![d] -> [d]
+strictTRZipWith3Acc f [a:as] [b:bs] [c:cs] acc
+  = strictTRZipWith3Acc f as bs cs [f a b c : acc]
+strictTRZipWith3Acc _ _ _ _ acc = acc

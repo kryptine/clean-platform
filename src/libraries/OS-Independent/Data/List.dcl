@@ -42,11 +42,12 @@ tails           :: [a] -> .[[a]]
 isPrefixOf      :: .[a] .[a] -> .Bool | == a
 isSuffixOf      :: .[a] .[a] -> .Bool | == a
 isInfixOf       :: .[a] .[a] -> Bool | == a
+levenshtein     :: .[a] .[a] -> Int | == a
 elem            :: a .[a] -> .Bool | == a
 notElem         :: a .[a] -> .Bool | == a
 lookup          :: a [(a,.b)] -> Maybe .b | == a
 find            :: (a -> .Bool) -> .(.[a] -> .(Maybe a))
-partition       :: (a -> .Bool) .[a] -> (.[a],.[a])
+partition       :: !(a -> .Bool) !.[a] -> (!.[a], !.[a])
 elemIndex       :: a -> .(.[a] -> .(Maybe Int)) | == a
 elemIndices     :: a -> .(.[a] -> .[Int]) | == a
 findIndex       :: (.a -> .Bool) -> .([.a] -> .(Maybe Int))
@@ -76,8 +77,29 @@ unionBy         :: (a -> .(a -> .Bool)) .[a] .[a] -> .[a]
 
 isMemberGen :: !a !.[a] -> Bool | gEq{|*|} a
 
-strictFoldr :: !(.a -> .(.b -> .b)) !.b ![.a] -> .b
-strictFoldl :: !(.a -> .(.b -> .a)) !.a ![.b] -> .a
+strictFoldr         :: !(.a -> .(.b -> .b)) !.b ![.a] -> .b
+strictFoldl         :: !(.a -> .(.b -> .a)) !.a ![.b] -> .a
+strictTRMapRev      :: !(.a -> .b) ![.a] -> [.b]
+strictTRMapAcc      :: !(u:a -> v:b) !w:[u:a] !x:[v:b] -> y:[v:b], [w <= u,y <= v,x <= y]
+strictTRMap         :: !(.a -> .b) ![.a] -> [.b]
+reverseTR           :: ![.a] -> [.a]
+flattenTR           :: ![[a]] -> [a]
+strictFoldrSt       :: !(.a -> .(.b *st -> *(.b, *st))) !.b ![.a] *st -> *(.b, *st)
+strictFoldlSt       :: !(.a -> .(.b *st -> *(.a, *st))) !.a ![.b] *st -> *(.a, *st)
+strictTRMapSt       :: !(a .st -> (!b, !.st)) ![a] !.st -> (![b], !.st)
+strictTRMapStAcc    :: !(a .st -> (!b, !.st)) ![a] ![b] !.st -> (![b], !.st)
+strictTRZipWith     :: !(a b -> c) ![a] ![b] -> [c]
+strictTRZipWithRev  :: !(a b -> c) ![a] ![b] -> [c]
+strictTRZipWithAcc  :: !(a b -> c) ![a] ![b] ![c] -> [c]
+strictTRZip4        :: ![a] ![b] ![c] ![d] -> [(!a, !b, !c, !d)]
+strictTRZip4Rev     :: ![a] ![b] ![c] ![d] -> [(!a, !b, !c, !d)]
+strictTRZip4Acc     :: ![a] ![b] ![c] ![d] ![(!a, !b, !c, !d)] -> [(!a, !b, !c, !d)]
+strictTRZip2        :: ![a] ![b]-> [(!a, !b)]
+strictTRZip2Rev     :: ![a] ![b]-> [(!a, !b)]
+strictTRZip2Acc     :: ![a] ![b] ![(!a, !b)] -> [(!a, !b)]
+strictTRZipWith3    :: !(a b c -> d) ![a] ![b] ![c] -> [d]
+strictTRZipWith3Rev :: !(a b c -> d) ![a] ![b] ![c] -> [d]
+strictTRZipWith3Acc :: !(a b c -> d) ![a] ![b] ![c] ![d] -> [d]
 
 instance Functor []
 

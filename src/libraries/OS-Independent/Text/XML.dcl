@@ -5,7 +5,7 @@ definition module Text.XML
 * a generic printer/parser.
 */
 
-import StdOverloaded, StdGeneric, Data.Void, Data.Either
+import StdOverloaded, StdGeneric, Data.Either
 from Data.Maybe	import :: Maybe
 from Data.Error	import :: MaybeErrorString, :: MaybeError
 
@@ -55,6 +55,6 @@ generic XMLEncode a :: !a -> XMLEncodeResult
 :: XMLBoolAttribute		a = XMLBoolAttribute	!XMLQName !Bool		!a
 
 derive XMLEncode OBJECT, CONS of d, FIELD of d, PAIR, EITHER, UNIT, Int, Char, Real, String, Bool
-derive XMLEncode Maybe, Void, Either, (,), (,,), (,,,), []
+derive XMLEncode Maybe, Either, (,), (,,), (,,,), []
 derive XMLEncode XMLIntAttribute, XMLCharAttribute, XMLRealAttribute, XMLStringAttribute, XMLBoolAttribute
 
