@@ -4,9 +4,10 @@ from StdOverloaded import class + (..), class * (..), class zero (..), class one
 from StdBool import &&, ||
 from StdFunc import o, id
 from Data.Maybe import :: Maybe(..)
+from Data.Void import :: Void(..)
 from StdList import ++, foldr
 
-import Data.String
+from Data.String import class +++(..), instance +++ {#Char}
 
 mconcat :: .[a] -> a | Monoid a
 mconcat xs = foldr mappend mempty xs
