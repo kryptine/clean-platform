@@ -1,0 +1,6 @@
+Clean System Files/*.o
+Clean System Files/*.abc
+Clean System Files/*.tcl
+TTY
+sapl
+TTY.prj
