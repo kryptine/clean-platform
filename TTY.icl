@@ -17,47 +17,24 @@ instance zero TTYSettings where
 		baudrate = B9600,
 		bytesize = BytesizeEight,
 		parity = ParityNone,
-		stopbits = StopbitsOne,
+		stop2bits = False,
 		xonxoff = False}
 
 instance toInt BaudRate where
-	toInt B0 = 0
-	toInt B50 = 1
-	toInt B75 = 2
-	toInt B110 = 3
-	toInt B134 = 4
-	toInt B150 = 5
-	toInt B200 = 6
-	toInt B300 = 7
-	toInt B600 = 8
-	toInt B1200 = 9
-	toInt B1800 = 10
-	toInt B2400 = 11
-	toInt B4800 = 12
-	toInt B9600 = 13
-	toInt B19200 = 14
-	toInt B38400 = 15
-	toInt B57600 = 16
-	toInt B115200 = 17
-	toInt B230400 = 18
+	toInt b = case b of
+		B0 = 0; B50 = 1; B75 = 2; B110 = 3; B134 = 4; B150 = 5; B200 = 6
+		B300 = 7; B600 = 8; B1200 = 9; B1800 = 10; B2400 = 11; B4800 = 12
+		B9600 = 13; B19200 = 14; B38400 = 15; B57600 = 16; B115200 = 17
+		B230400 = 18
 
 instance toInt ByteSize where
-	toInt BytesizeFive = 0
-	toInt BytesizeSix = 1
-	toInt BytesizeSeven = 2
-	toInt BytesizeEight = 3
+	toInt b = case b of
+		BytesizeFive = 0; BytesizeSix = 1; BytesizeSeven = 2; BytesizeEight = 3
 
 instance toInt Parity where
-	toInt ParityNone = 0
-	toInt ParityEven = 1
-	toInt ParityOdd = 2
-	toInt ParityMark = 3
-	toInt ParitySpace = 4
-
-instance toInt StopBits where
-	toInt StopbitsOne = 0
-	toInt StopbitsOnePointFive = 1
-	toInt StopbitsTwo = 2
+	toInt p = case p of
+		ParityNone = 0; ParityEven = 1; ParityOdd = 2; ParityMark = 3;
+		ParitySpace = 4
 
 TTYopen :: !String !TTYSettings !*env -> (!Bool, !*TTY, !*env)
 TTYopen fn ts w = TTYopen2
@@ -65,11 +42,11 @@ TTYopen fn ts w = TTYopen2
 	(toInt ts.baudrate)
 	(toInt ts.bytesize)
 	(toInt ts.parity)
-	(toInt ts.stopbits)
+	ts.stop2bits
 	ts.xonxoff
 	w
 	where
-		TTYopen2 :: !String !Int !Int !Int !Int !Bool !*env -> (!Bool, !*TTY, !*env)
+		TTYopen2 :: !String !Int !Int !Int !Bool !Bool !*env -> (!Bool, !*TTY, !*env)
 		TTYopen2 _ _ _ _ _ _ _ = code {
 				ccall ttyopen "SIIIII:VII:A"
 			}

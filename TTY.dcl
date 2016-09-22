@@ -8,7 +8,6 @@ from StdClass import class zero
 
 :: ByteSize = BytesizeFive | BytesizeSix | BytesizeSeven | BytesizeEight
 :: Parity = ParityNone | ParityEven | ParityOdd | ParityMark | ParitySpace
-:: StopBits = StopbitsOne | StopbitsOnePointFive | StopbitsTwo
 :: BaudRate = B0 | B50 | B75 | B110 | B134 | B150 | B200 | B300 | B600 |
 	B1200 | B1800 | B2400 | B4800 | B9600 | B19200 | B38400 | B57600 |
 	B115200 | B230400
@@ -17,7 +16,7 @@ from StdClass import class zero
 		baudrate :: BaudRate,
 		bytesize :: ByteSize,
 		parity :: Parity,
-		stopbits :: StopBits,
+		stop2bits :: Bool,
 		xonxoff :: Bool
 	}
 

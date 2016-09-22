@@ -60,7 +60,7 @@ void ttyopen(CleanString fn, int baudrate, int bytesize, int parity, int stopbit
 		}
 		//Stopbits
 		tio.c_cflag |= CSTOPB;
-		tio.c_cflag -= stopbits != 0 ? 0 : CSTOPB;
+		tio.c_cflag -= stopbits == 0 ? 0 : CSTOPB;
 		//Xonoff
 		tio.c_cflag |= IXON;
 		tio.c_cflag -= xonoff == 1 ? 0 : IXON;
