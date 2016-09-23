@@ -1,6 +1,5 @@
 definition module TTY
 
-from Data.Maybe import :: Maybe
 from StdFile import class FileSystem
 from StdClass import class zero
 

@@ -68,12 +68,7 @@ void ttyopen(CleanString fn, int baudrate, int bytesize, int parity,
 		tcsetattr(fd, TCSANOW, &tio);
 
 		*f = fdopen(fd, "r+");
-		if(*f == NULL){
-			printf("Couldn't open\n");
-			fflush(stdout);
-		} else {
-			printf("Succesfully opened\n");
-			fflush(stdout);
+		if(*f != NULL){
 			setbuf(*f, NULL);
 			*status = 1;
 		}
@@ -121,13 +116,10 @@ void ttyreadline(FILE *fd, CleanString *result, FILE **fdo)
 	free(buf);
 }
 
-int ttywrite(FILE *fd, CleanString s, FILE **fdo)
+FILE *ttywrite(FILE *fd, CleanString s)
 {
-	char *cs_s = cleanStringToCString(s);
-	fwrite(s, 1, strlen(cs_s), fd);
-	
-	free(cs_s);
-	*fdo = fd;
+	fwrite(CleanStringCharacters(s), 1, CleanStringLength(s), fd);
+	return fd;
 }
 
 int ttyclose(FILE *fd)

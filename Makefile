@@ -1,5 +1,5 @@
 TTY: TTY.prj TTY.icl TTY.dcl Clean\ System\ Files/tty.o
-	cpm make
+	clm -desc -exl -tst -ns -nt TTY -o TTY
 
 Clean\ System\ Files/tty.o: tty.c
 	gcc -g -c $< -o "$@"

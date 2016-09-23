@@ -1,5 +1,4 @@
 implementation module TTY
-import Data.Maybe
 
 import StdFunc
 import StdFile
@@ -79,8 +78,8 @@ Start :: *World -> (!String, *World)
 Start w
 #! (ok, tty, w) = TTYopen "/dev/ttyUSB0" zero w
 | not ok = TTYerror w
+#! tty = TTYwrite tty "echo123\n"
 #! (c, tty) = TTYreadline tty
-#! tty = TTYwrite tty "Hello World"
 #! (ok, w) = TTYclose tty w
 | not ok = TTYerror w
 #! (s, w) = TTYerror w
