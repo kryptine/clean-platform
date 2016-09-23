@@ -16,6 +16,43 @@ static speed_t baudrates[] = {B0, B50, B75, B110, B134, B150, B200, B300, B600,
 static int bytesizes[4] = {CS5, CS6, CS7, CS8};
 static char *error = "";
 
+struct termioslist
+{
+	int fd;
+	struct termios to;
+	struct termioslist *next;
+};
+
+struct termioslist *head = NULL;
+
+static struct termios *getTermios(int fd)
+{
+	struct termioslist *h = head;
+	while(h != NULL)
+		if(h->fd == fd)
+			return &h->to;
+	return NULL;
+}
+
+static void remTermios(int fd)
+{
+	struct termioslist *beforeit = NULL;
+	struct termioslist *it = head;
+	while(it != NULL){
+		if(it->fd == fd){
+			if(beforeit == NULL){
+				head = it->next;
+			} else {
+				beforeit->next = it->next;
+			}
+			free(it);
+			break;
+		}
+		beforeit = it;
+		it = it->next;
+	}
+}
+
 static char *cleanStringToCString(CleanString s)
 {
 	unsigned long len = CleanStringLength(s);
@@ -25,6 +62,24 @@ static char *cleanStringToCString(CleanString s)
 	memcpy(cs, CleanStringCharacters(s), len);
 	cs[len] = '\0';
 	return cs;
+}
+
+static void addTermios(int fd, struct termios *t)
+{
+	struct termioslist *new = malloc(sizeof(struct termioslist));
+	if(new == NULL)
+		die("malloc");
+	new->fd = fd;
+	memcpy(&new->to, t, sizeof(struct termios));
+	new->next = NULL;
+	if(head == NULL){
+		head = new;
+	} else {
+		struct termioslist *h = head;
+		while(h->next != NULL)
+			h = h->next;
+		h->next = new;
+	}
 }
 
 void ttyopen(CleanString fn, int baudrate, int bytesize, int parity,
@@ -39,6 +94,7 @@ void ttyopen(CleanString fn, int baudrate, int bytesize, int parity,
 	} else {
 		//Get
 		tcgetattr(fd, &tio);
+		addTermios(fd, &tio);
 		//Baudrate
 		cfsetispeed(&tio, baudrates[baudrate]);
 		//Bytesize
@@ -120,7 +176,12 @@ FILE *ttywrite(FILE *fd, CleanString s)
 	return fd;
 }
 
-int ttyclose(FILE *fd)
+int ttyclose(FILE *fdes)
 {
-	return fclose(fd) == 0 ? 1 : 0;
+	int fd = fileno(fdes);
+	struct termios *to = getTermios(fd);
+	fflush(fdes);
+	tcsetattr(fd, TCSANOW, to);
+	remTermios(fd);
+	return fclose(fdes) == 0 ? 1 : 0;
 }
