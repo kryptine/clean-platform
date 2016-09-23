@@ -1,7 +1,4 @@
-Clean System Files/*.o
-Clean System Files/*.abc
-Clean System Files/*.tcl
-Clean System Files/*.sapl
+Clean System Files/[^.]*
 TTY
 sapl
 TTY.prj
