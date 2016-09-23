@@ -98,12 +98,10 @@ void ttyopen(CleanString fn, int baudrate, int bytesize, int parity,
 		//Baudrate
 		cfsetispeed(&tio, baudrates[baudrate]);
 		//Bytesize
-		tio.c_cflag |= CS5 | CS6 | CS7 | CS8;
-		tio.c_cflag -= CS5 | CS6 | CS7 | CS8;
+		tio.c_cflag &= ~CS5 | ~CS6 | ~CS7 | ~CS8;
 		tio.c_cflag |= bytesizes[bytesize];
 		//Parity
-		tio.c_cflag |= PARENB | PARODD | CMSPAR;
-		tio.c_cflag -= PARENB | PARODD | CMSPAR;
+		tio.c_cflag &= ~PARENB | ~PARODD | ~CMSPAR;
 		if(parity == 1)
 			tio.c_cflag |= PARENB | PARODD;
 		else if(parity == 2)
@@ -113,11 +111,15 @@ void ttyopen(CleanString fn, int baudrate, int bytesize, int parity,
 		else if(parity == 4)
 			tio.c_cflag |= PARENB | CMSPAR;
 		//Stopbits
-		tio.c_cflag |= CSTOPB;
-		tio.c_cflag -= stopbits == 0 ? 0 : CSTOPB;
+		if(stopbits != 0)
+			tio.c_cflag |= CSTOPB;
+		else
+			tio.c_cflag &= ~CSTOPB;
 		//Xonoff
-		tio.c_cflag |= IXON;
-		tio.c_cflag -= xonoff == 1 ? 0 : IXON;
+		if(xonoff == 1)
+			tio.c_cflag |= IXON;
+		else
+			tio.c_cflag &= ~IXON;
 		//Set
 		tcsetattr(fd, TCSANOW, &tio);
 
