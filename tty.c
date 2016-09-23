@@ -29,7 +29,8 @@ static char *cleanStringToCString(CleanString s)
 	return cs;
 }	
 
-void ttyopen(CleanString fn, int baudrate, int bytesize, int parity, int stopbits, int xonoff, int *status, FILE **f)
+void ttyopen(CleanString fn, int baudrate, int bytesize, int parity,
+	int stopbits, int xonoff, int *status, FILE **f)
 {
 	struct termios tio;
 	char *cs_fn = cleanStringToCString(fn);
@@ -49,15 +50,14 @@ void ttyopen(CleanString fn, int baudrate, int bytesize, int parity, int stopbit
 		//Parity
 		tio.c_cflag |= PARENB | PARODD | CMSPAR;
 		tio.c_cflag -= PARENB | PARODD | CMSPAR;
-		if(parity == 1){
+		if(parity == 1)
 			tio.c_cflag |= PARENB | PARODD;
-		} else if(parity == 2){
+		else if(parity == 2)
 			tio.c_cflag |= PARENB;
-		} else if(parity == 3){
+		else if(parity == 3)
 			tio.c_cflag |= PARODD | PARENB | CMSPAR;
-		} else if(parity == 4){
+		else if(parity == 4)
 			tio.c_cflag |= PARENB | CMSPAR;
-		}
 		//Stopbits
 		tio.c_cflag |= CSTOPB;
 		tio.c_cflag -= stopbits == 0 ? 0 : CSTOPB;
@@ -119,6 +119,15 @@ void ttyreadline(FILE *fd, CleanString *result, FILE **fdo)
 	CleanStringLength(cleanOutput) = strlen(buf);
 	*fdo = fd;
 	free(buf);
+}
+
+int ttywrite(FILE *fd, CleanString s, FILE **fdo)
+{
+	char *cs_s = cleanStringToCString(s);
+	fwrite(s, 1, strlen(cs_s), fd);
+	
+	free(cs_s);
+	*fdo = fd;
 }
 
 int ttyclose(FILE *fd)

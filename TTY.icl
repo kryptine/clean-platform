@@ -1,5 +1,4 @@
 implementation module TTY
-
 import Data.Maybe
 
 import StdFunc
@@ -56,11 +55,6 @@ TTYclose f w = code {
 		ccall ttyclose "I:I:A"
 	}
 
-TTYerror :: !*env -> (!String, !*env)
-TTYerror w = code {
-		ccall ttyerror ":S:A"
-	}
-
 TTYreadc :: !*TTY -> (!Char, !*TTY)
 TTYreadc w = code {
 		ccall ttyreadc "I:VII"
@@ -71,11 +65,22 @@ TTYreadline t = code {
 		ccall ttyreadline "I:VSI"
 }
 
+TTYwrite :: !*TTY !String -> !*TTY
+TTYwrite s e = code {
+		ccall ttywrite "IS:I"
+	}
+
+TTYerror :: !*env -> (!String, !*env)
+TTYerror w = code {
+		ccall ttyerror ":S:A"
+	}
+
 Start :: *World -> (!String, *World)
 Start w
 #! (ok, tty, w) = TTYopen "/dev/ttyUSB0" zero w
 | not ok = TTYerror w
 #! (c, tty) = TTYreadline tty
+#! tty = TTYwrite tty "Hello World"
 #! (ok, w) = TTYclose tty w
 | not ok = TTYerror w
 #! (s, w) = TTYerror w

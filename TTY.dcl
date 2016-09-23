@@ -30,4 +30,6 @@ TTYreadc :: !*TTY -> (!Char, !*TTY)
 
 TTYreadline :: !*TTY -> (!String, !*TTY)
 
+TTYwrite :: !*TTY !String -> !*TTY
+
 TTYerror :: !*env -> (!String, !*env)
