@@ -43,11 +43,10 @@ static void remTermios(int fd)
 	struct termioslist *it = head;
 	while(it != NULL){
 		if(it->fd == fd){
-			if(beforeit == NULL){
+			if(beforeit == NULL)
 				head = it->next;
-			} else {
+			else
 				beforeit->next = it->next;
-			}
 			free(it);
 			break;
 		}
@@ -105,7 +104,7 @@ void ttyopen(CleanString fn, int baudrate, int bytesize, int parity,
 		tio.c_cflag |= bytesizes[bytesize];
 		//Parity
 		if(parity == 0) {
-			tio.c_cflag &= ~PARENB |  ~INPCK;
+			tio.c_cflag &= ~PARENB | ~INPCK;
 		} else if(parity == 1) {
 			tio.c_cflag |= PARODD | PARENB;
 		} else if(parity == 2) {
@@ -150,18 +149,20 @@ void ttyreadline(int fd, CleanString *result, int *fdo)
 {
 	size_t bufsize = INITIAL_BUFFERSIZE;
 	char *buf = NULL;
-	ssize_t charsread = 0;
+	ssize_t cr, charsread = 0; 
 	while(buf == NULL || buf[charsread-1] != '\n'){
 		if((buf = realloc(buf, (bufsize*=2)+1)) == NULL)
 			die("realloc");
-		charsread += read(fd, buf+charsread, bufsize-charsread);
+		if((cr = read(fd, buf+charsread, bufsize-charsread)) < 0)
+			die("read");
+		charsread += cr;
 	}
 	buf[charsread] = '\0';
 
-	CleanStringVariable(cleanOutput, charsread+1);
+	CleanStringVariable(cleanOutput, charsread);
 	*result = (CleanString) cleanOutput;
-	memcpy(CleanStringCharacters(cleanOutput), buf, charsread+1);
-	CleanStringLength(cleanOutput) = charsread+1;
+	memcpy(CleanStringCharacters(cleanOutput), buf, charsread);
+	CleanStringLength(cleanOutput) = charsread;
 	*fdo = fd;
 
 	free(buf);
@@ -181,5 +182,5 @@ int ttyclose(int fd)
 	remTermios(fd);
 	int ret = close(fd);
 	error = strerror(errno);
-	return ret+1;
+	return ret + 1;
 }
