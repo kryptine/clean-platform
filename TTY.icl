@@ -1,10 +1,6 @@
 implementation module TTY
 
-import StdFunc
-import StdFile
-import StdMisc
-import StdBool
-import StdString
+import StdClass
 
 import code from "tty."
 
@@ -31,8 +27,8 @@ instance toInt ByteSize where
 
 instance toInt Parity where
 	toInt p = case p of
-		ParityNone = 0; ParityEven = 1; ParityOdd = 2; ParityMark = 3;
-		ParitySpace = 4
+		ParityNone = 0; ParityOdd = 1; ParityEven = 2; ParitySpace = 3;
+		ParityMark = 4
 
 TTYopen :: !String !TTYSettings !*env -> (!Bool, !*TTY, !*env)
 TTYopen fn ts w = TTYopen2
@@ -54,15 +50,10 @@ TTYclose f w = code {
 		ccall ttyclose "I:I:A"
 	}
 
-TTYreadc :: !*TTY -> (!Char, !*TTY)
-TTYreadc w = code {
-		ccall ttyreadc "I:VII"
-	}
-
 TTYreadline :: !*TTY -> (!String, !*TTY)
 TTYreadline t = code {
 		ccall ttyreadline "I:VSI"
-}
+	}
 
 TTYwrite :: !*TTY !String -> *TTY
 TTYwrite s e = code {
@@ -74,13 +65,4 @@ TTYerror w = code {
 		ccall ttyerror ":S:A"
 	}
 
-Start :: *World -> (!String, *World)
-Start w
-#! (ok, tty, w) = TTYopen "/dev/ttyUSB0" zero w
-| not ok = TTYerror w
-#! tty = TTYwrite tty "echo123\n"
-#! (c, tty) = TTYreadline tty
-#! (ok, w) = TTYclose tty w
-| not ok = TTYerror w
-#! (s, w) = TTYerror w
-= (c, w)
+Start =0

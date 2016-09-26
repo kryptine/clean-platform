@@ -1,13 +1,16 @@
+#include <errno.h>
+#include <fcntl.h>
+#include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <errno.h>
-#include <fcntl.h>
+#include <sys/ioctl.h>
 #include <termios.h>
+#include <time.h>
 
 #include "Clean.h"
 
-#define INITIAL_BUFFERSIZE 1024
+#define INITIAL_BUFFERSIZE 2
 #define die(s) {perror(s);exit(EXIT_FAILURE);}
 
 static speed_t baudrates[] = {B0, B50, B75, B110, B134, B150, B200, B300, B600,
@@ -83,33 +86,37 @@ static void addTermios(int fd, struct termios *t)
 }
 
 void ttyopen(CleanString fn, int baudrate, int bytesize, int parity,
-	int stopbits, int xonoff, int *status, FILE **f)
+	int stopbits, int xonoff, int *status, int *fd)
 {
 	struct termios tio;
 	char *cs_fn = cleanStringToCString(fn);
-	int fd = open(cs_fn, O_RDWR | O_NOCTTY);
+	*fd = open(cs_fn, O_RDWR | O_NOCTTY);
 	*status = 0;
-	if(fd < 0){
+	if(*fd < 0){
 		error = strerror(errno);
 	} else {
 		//Get
-		tcgetattr(fd, &tio);
-		addTermios(fd, &tio);
+		tcgetattr(*fd, &tio);
+		addTermios(*fd, &tio);
 		//Baudrate
 		cfsetispeed(&tio, baudrates[baudrate]);
 		//Bytesize
-		tio.c_cflag &= ~CS5 | ~CS6 | ~CS7 | ~CS8;
+		tio.c_cflag &= ~CSIZE;
 		tio.c_cflag |= bytesizes[bytesize];
 		//Parity
-		tio.c_cflag &= ~PARENB | ~PARODD | ~CMSPAR;
-		if(parity == 1)
-			tio.c_cflag |= PARENB | PARODD;
-		else if(parity == 2)
+		if(parity == 0) {
+			tio.c_cflag &= ~PARENB |  ~INPCK;
+		} else if(parity == 1) {
+			tio.c_cflag |= PARODD | PARENB;
+		} else if(parity == 2) {
 			tio.c_cflag |= PARENB;
-		else if(parity == 3)
-			tio.c_cflag |= PARODD | PARENB | CMSPAR;
-		else if(parity == 4)
+			tio.c_cflag &= ~PARODD;
+		} else if(parity == 3) {
 			tio.c_cflag |= PARENB | CMSPAR;
+			tio.c_cflag &= ~PARODD;
+		} else if( parity == 4) {
+			tio.c_cflag |= PARENB | CMSPAR | PARODD;
+		}
 		//Stopbits
 		if(stopbits != 0)
 			tio.c_cflag |= CSTOPB;
@@ -121,13 +128,11 @@ void ttyopen(CleanString fn, int baudrate, int bytesize, int parity,
 		else
 			tio.c_cflag &= ~IXON;
 		//Set
-		tcsetattr(fd, TCSANOW, &tio);
+		tio.c_oflag = 0;
+		tio.c_lflag |= ICANON;
+		tcsetattr(*fd, TCSANOW, &tio);
 
-		*f = fdopen(fd, "r+");
-		if(*f != NULL){
-			setbuf(*f, NULL);
-			*status = 1;
-		}
+		*status = 1;
 		error = strerror(errno);
 	}
 	free(cs_fn);
@@ -141,49 +146,40 @@ void ttyerror(CleanString *result)
 	CleanStringLength(clean_string) = strlen(error);
 }
 
-void ttyreadc(FILE *fd, int *c, FILE **fdo)
-{
-	*c = fgetc(fd);
-	*fdo = fd;
-}
-
-void ttyreadline(FILE *fd, CleanString *result, FILE **fdo)
+void ttyreadline(int fd, CleanString *result, int *fdo)
 {
 	size_t bufsize = INITIAL_BUFFERSIZE;
-	char *buf = (char *)malloc(bufsize+1);
-	int c, i = 0;
-
-	if(buf == NULL)
-		die("malloc");
-
-	while((c = fgetc(fd)) != EOF && c != '\n'){
-		if(i >= bufsize)
-			if((buf = realloc(buf, bufsize *= 2)) == NULL)
-				die("realloc");
-		buf[i++] = c;
+	char *buf = NULL;
+	ssize_t charsread = 0;
+	while(buf == NULL || buf[charsread-1] != '\n'){
+		if((buf = realloc(buf, (bufsize*=2)+1)) == NULL)
+			die("realloc");
+		charsread += read(fd, buf+charsread, bufsize-charsread);
 	}
-	buf[i] = '\0';
+	buf[charsread] = '\0';
 
-	CleanStringVariable(cleanOutput, strlen(buf));
+	CleanStringVariable(cleanOutput, charsread+1);
 	*result = (CleanString) cleanOutput;
-	memcpy(CleanStringCharacters(cleanOutput), buf, strlen(buf));
-	CleanStringLength(cleanOutput) = strlen(buf);
+	memcpy(CleanStringCharacters(cleanOutput), buf, charsread+1);
+	CleanStringLength(cleanOutput) = charsread+1;
 	*fdo = fd;
+
 	free(buf);
 }
 
-FILE *ttywrite(FILE *fd, CleanString s)
+int ttywrite(int fd, CleanString s)
 {
-	fwrite(CleanStringCharacters(s), 1, CleanStringLength(s), fd);
+	write(fd, CleanStringCharacters(s), CleanStringLength(s));
+	tcdrain(fd);
 	return fd;
 }
 
-int ttyclose(FILE *fdes)
+int ttyclose(int fd)
 {
-	int fd = fileno(fdes);
 	struct termios *to = getTermios(fd);
-	fflush(fdes);
 	tcsetattr(fd, TCSANOW, to);
 	remTermios(fd);
-	return fclose(fdes) == 0 ? 1 : 0;
+	int ret = close(fd);
+	error = strerror(errno);
+	return ret+1;
 }
