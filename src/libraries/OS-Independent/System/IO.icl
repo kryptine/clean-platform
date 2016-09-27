@@ -28,12 +28,12 @@ instance Functor IO where
   fmap f x = x >>= (lift o f)
 
 instance Monad IO where
-  bind (IO f) a2mb = IO run
+  bind ma a2mb = IO (run ma)
     where
-      run world
-        # (x, world) = f world
-        # (IO g)     = a2mb x
-        = g world
+    run (IO f) world
+      # (x, world) = f world
+      # (IO g)     = a2mb x
+      = g world
 
 putStr :: String -> IO ()
 putStr str = withWorld f
@@ -94,7 +94,7 @@ unsafePerformIO f
 unsafePerformIOTrue :: (*World -> *(a, *World)) -> Bool
 unsafePerformIOTrue f
   # (x, world) = f make_world
-  | world_to_true world = True
+  = world_to_true world
 
 world_to_true :: !*World -> Bool
 world_to_true world
