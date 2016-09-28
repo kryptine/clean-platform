@@ -106,11 +106,20 @@ digit = satisfy isDigit
 /// # Special characters
 ////////////////////////////////////////////////////////////////////////////////
 
+isSpace :: Char -> Bool
+isSpace c = c == ' '
+
+isTab :: Char -> Bool
+isTab c = c == '\t'
+
 isHorizontalSpace :: Char -> Bool
 isHorizontalSpace c = c == ' ' || c == '\t'
 
 isVerticalSpace :: Char -> Bool
 isVerticalSpace c = '\n' <= c && c <= '\r' //EQUALS c == '\n' || c == '\v' || c == '\f' || c == '\r'
+
+isAnySpace :: Char -> Bool
+isAnySpace c = c == ' ' || c == '\t' || '\n' <= c && c <= '\r'
 
 isEndOfLine :: Char -> Bool
 isEndOfLine c = c == '\n' || c == '\r'
@@ -118,11 +127,17 @@ isEndOfLine c = c == '\n' || c == '\r'
 space :: Parser Char
 space = satisfy isSpace
 
+tab :: Parser Char
+tab = satisfy isTab
+
 horizontalSpace :: Parser Char
 horizontalSpace = satisfy isHorizontalSpace
 
 verticalSpace :: Parser Char
 verticalSpace = satisfy isVerticalSpace
+
+anySpace :: Parser Char
+anySpace = satisfy isAnySpace
 
 endOfLine :: Parser ()
 endOfLine = void (char '\n') <|> void (string "\r\n")
@@ -135,6 +150,14 @@ endOfInput = Parser (\s ->
     'Slice'.isEmpty s
         ? Done s ()
         $ Fail s "endOfInput: there is more")
+
+blank :: Parser ()
+blank = skipWhile isAnySpace
+
+:: Indent :== Int
+
+indent :: Parser Indent
+indent = size <$> takeWhile isHorizontalSpace
 
 // endOfInput :: Parser ()
 // endOfInput = Parser $ \s ->
@@ -237,14 +260,17 @@ skipVerticalSpace1 = skipWhile1 isVerticalSpace
 decodeWithBase :: !Int !Int !Char -> Int
 decodeWithBase base last char = last * base + (toInt char - 48)
 
+binary :: Parser Int
+binary = 'String'.foldl` (decodeWithBase 2) 0 <$> takeWhile1 isBinDigit
+
+octal :: Parser Int
+octal = 'String'.foldl` (decodeWithBase 8) 0 <$> takeWhile1 isOctDigit
+
 decimal :: Parser Int
 decimal = 'String'.foldl` (decodeWithBase 10) 0 <$> takeWhile1 isDigit
 
 hexadecimal :: Parser Int
 hexadecimal = 'String'.foldl` (decodeWithBase 16) 0 <$> takeWhile1 isHexDigit
-
-octal :: Parser Int
-octal = 'String'.foldl` (decodeWithBase 8) 0 <$> takeWhile1 isOctDigit
 
 scientific :: Parser (Int, Int)
 scientific = go <$> signed decimal <*> option "" fraction <*> option 0 exponent
@@ -292,6 +318,10 @@ count n f
 option :: a (f a) -> f a | Alternative f
 option x f = f <|> pure x
 
+/// - Note: defined in Control.Applicative
+// optional :: (f a) -> f (Maybe a) | Alternative f
+// optional v = Just <$> v <|> pure Nothing
+
 many1 :: (f a) -> f [a] | Alternative f
 many1 f = some f
 
@@ -301,7 +331,8 @@ manyTill p end = scan
         where scan = (end *> pure []) <|> (\x xs -> [x:xs]) <$> p <*> scan
 
 // sepBy :: (Parser a) (Parser s) -> Parser [a]
-// sepBy :: (f a) (f s) -> f [a] | Alternative f
+sepBy :: (f a) (f s) -> f [a] | Alternative f
+sepBy p s = sepBy1 p s <|> pure []
 
 // sepBy1 :: (Parser a) (Parser s) -> Parser [a]
 sepBy1 :: (f a) (f s) -> f [a] | Alternative f

@@ -18,8 +18,14 @@ unpack :: !String -> [Char]
 /// # Basics
 ////////////////////////////////////////////////////////////////////////////////
 
+cons :: !Char !String -> String
 uncons :: !String -> Maybe (Char,String)
 unsafeUncons :: !String -> (Char,String)
+
+// snoc :: !String !Char -> String
+// unsnoc :: !String -> Maybe (Char, String)
+// unsafeUnsnoc :: !String -> Maybe (Char, String)
+
 null :: !String -> Bool
 length :: !String -> Int
 

@@ -8,11 +8,15 @@
 /// - Author: Tim Steenvoorden
 definition module Text.Parsers.String
 
+from Data.Char import isAlpha, isLetter, isUpper, isLower
+
 from Data.Either import :: Either
 from Data.Maybe import :: Maybe
 
-from Data.Functor import class Functor
-from Control.Applicative import class Applicative, class Alternative
+import Data.Functor
+import Control.Applicative
+// from Data.Functor import class Functor
+// from Control.Applicative import class Applicative, class Alternative
 
 from Data.String.Slice import :: Slice
 
@@ -79,14 +83,18 @@ digit :: Parser Char
 /// # Special characters
 ////////////////////////////////////////////////////////////////////////////////
 
+isSpace :: Char -> Bool
 isHorizontalSpace :: Char -> Bool
 isVerticalSpace :: Char -> Bool
+isAnySpace :: Char -> Bool
 isEndOfLine :: Char -> Bool
 
 space :: Parser Char
 horizontalSpace :: Parser Char
 verticalSpace :: Parser Char
+anySpace :: Parser Char
 
+blank :: Parser ()
 endOfLine :: Parser ()
 restOfLine :: Parser ()
 endOfInput :: Parser ()
@@ -135,6 +143,7 @@ skipTill1 :: (Char -> Bool) -> Parser ()
 skipSpace :: Parser ()
 skipHorizontalSpace :: Parser ()
 skipVerticalSpace :: Parser ()
+skipAnySpace :: Parser ()
 
 skipSpace1 :: Parser ()
 skipHorizontalSpace1 :: Parser ()

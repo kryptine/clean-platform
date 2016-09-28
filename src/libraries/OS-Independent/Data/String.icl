@@ -26,8 +26,8 @@ unpack string = fromString string
 ////////////////////////////////////////////////////////////////////////////////
 
 cons :: !Char !String -> String
-cons char string
-    = singleton char +++ string
+cons char string =
+    singleton char +++ string
 
 //TODO snoc :: !String !Char -> String
 
