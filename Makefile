@@ -5,4 +5,4 @@ Clean\ System\ Files/tty.o: tty.c
 	gcc -g -c $< -o "$@"
 
 clean:
-	$(RM) -r Clean\ System\ Files/* test sapl
+	$(RM) -r Clean\ System\ Files/* test

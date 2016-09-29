@@ -11,6 +11,7 @@
 #include "Clean.h"
 
 #define INITIAL_BUFFERSIZE 2
+#define DEVICE_TIMEOUT {5, 0}
 #define die(s) {perror(s);exit(EXIT_FAILURE);}
 
 static speed_t baudrates[] = {B0, B50, B75, B110, B134, B150, B200, B300, B600,
@@ -166,6 +167,20 @@ void ttyreadline(int fd, CleanString *result, int *fdo)
 	*fdo = fd;
 
 	free(buf);
+}
+
+void ttyavailable(int fd, int *r, int *fdo)
+{
+	fd_set fds;
+	struct timeval tv = DEVICE_TIMEOUT;
+
+	FD_ZERO(&fds);
+	FD_SET(fd, &fds);
+
+	*r = select(fd+1, &fds, NULL, NULL, NULL);
+	if(*r == -1)
+		die("select");
+	*fdo = fd;
 }
 
 int ttywrite(int fd, CleanString s)

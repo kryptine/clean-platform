@@ -46,22 +46,27 @@ TTYopen fn ts w = TTYopen2
 			}
 
 TTYclose :: !*TTY !*env -> (!Bool, !*env)
-TTYclose f w = code {
+TTYclose _ _ = code {
 		ccall ttyclose "I:I:A"
 	}
 
 TTYreadline :: !*TTY -> (!String, !*TTY)
-TTYreadline t = code {
+TTYreadline _ = code {
 		ccall ttyreadline "I:VSI"
 	}
 
 TTYwrite :: !*TTY !String -> *TTY
-TTYwrite s e = code {
+TTYwrite _ _ = code {
 		ccall ttywrite "IS:I"
 	}
 
+TTYavailable :: !*TTY -> (!Bool, !*TTY)
+TTYavailable _ = code {
+		ccall ttyavailable "I:VII"
+	}
+
 TTYerror :: !*env -> (!String, !*env)
-TTYerror w = code {
+TTYerror _ = code {
 		ccall ttyerror ":S:A"
 	}
 

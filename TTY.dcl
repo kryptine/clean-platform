@@ -20,12 +20,9 @@ from StdClass import class zero
 
 instance zero TTYSettings
 
-TTYopen :: !String !TTYSettings !*env -> (!Bool,!*TTY,!*env)
-
 TTYclose :: !*TTY !*env -> (!Bool, !*env)
-
-TTYreadline :: !*TTY -> (!String, !*TTY)
-
-TTYwrite :: !*TTY !String -> *TTY
-
 TTYerror :: !*env -> (!String, !*env)
+TTYopen :: !String !TTYSettings !*env -> (!Bool,!*TTY,!*env)
+TTYreadline :: !*TTY -> (!String, !*TTY)
+TTYavailable :: !*TTY -> (!Bool, !*TTY)
+TTYwrite :: !*TTY !String -> *TTY

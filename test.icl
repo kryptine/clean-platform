@@ -4,13 +4,23 @@ import StdEnv
 
 import TTY
 
-Start :: *World -> (!String, *World)
+TTYerrorclose :: !*File !*World -> *World
+TTYerrorclose f w
+# (err, w) = TTYerror w
+# (ok, w) = fclose (f <<< err <<< "\n") w
+| not ok = abort "Couldn't close file"
+= w
+
+Start :: *World -> *World
 Start w
-#! (ok, tty, w) = TTYopen "/dev/ttyUSB0" zero w
-| not ok = TTYerror w
+# (io, w) = stdio w
+# (ok, tty, w) = TTYopen "/dev/ttyUSB0" zero w
+| not ok = TTYerrorclose io w
 #! tty = TTYwrite tty "echo123\n"
-#! (c, tty) = TTYreadline tty
+#! (av, tty) = TTYavailable tty
+# io = io <<< ("Bytes available: " +++ toString av +++ "\n")
+#! (l, tty) = TTYreadline tty
+# io = io <<< ("Line read: " +++ l)
 #! (ok, w) = TTYclose tty w
-| not ok = TTYerror w
-#! (s, w) = TTYerror w
-= ("Read: " +++ c, w)
+| not ok = TTYerrorclose io w
+= snd (fclose io w)
