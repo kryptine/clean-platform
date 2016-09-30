@@ -1,15 +1,16 @@
-module Data.Graph.Inductive.Query (module Q) where
+definition module Data.Graph.Inductive.Query
 
-import Data.Graph.Inductive.Query.ArtPoint   as Q
-import Data.Graph.Inductive.Query.BCC        as Q
-import Data.Graph.Inductive.Query.BFS        as Q
-import Data.Graph.Inductive.Query.DFS        as Q
-import Data.Graph.Inductive.Query.Dominators as Q
-import Data.Graph.Inductive.Query.GVD        as Q
-import Data.Graph.Inductive.Query.Indep      as Q
-import Data.Graph.Inductive.Query.MaxFlow    as Q
-import Data.Graph.Inductive.Query.MaxFlow2   as Q
-import Data.Graph.Inductive.Query.Monad      as Q
-import Data.Graph.Inductive.Query.MST        as Q
-import Data.Graph.Inductive.Query.SP         as Q
-import Data.Graph.Inductive.Query.TransClos  as Q
+// TODO
+//import Data.Graph.Inductive.Query.ArtPoint
+//import Data.Graph.Inductive.Query.BCC
+//import Data.Graph.Inductive.Query.BFS
+//import Data.Graph.Inductive.Query.DFS
+//import Data.Graph.Inductive.Query.Dominators
+//import Data.Graph.Inductive.Query.GVD
+//import Data.Graph.Inductive.Query.Indep
+import Data.Graph.Inductive.Query.MaxFlow
+//import Data.Graph.Inductive.Query.MaxFlow2
+//import Data.Graph.Inductive.Query.Monad
+//import Data.Graph.Inductive.Query.MST
+//import Data.Graph.Inductive.Query.SP
+//import Data.Graph.Inductive.Query.TransClos
