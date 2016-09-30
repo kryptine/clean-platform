@@ -11,7 +11,7 @@ from Data.Monoid    import class Monoid, class Semigroup
 import qualified StdList as SL
 from Data.List import foldr
 from Data.Functor import class Functor (..)
-from Data.IntMap.Base import :: IntMap (..), :: Mask, :: Prefix
+from Data.IntMap.Base import :: IntMap (..), :: Mask, :: Prefix, minViewWithKey, maxViewWithKey, empty, lookup, instance == (IntMap a), equal
 
 null :: !(IntMap a) -> Bool
 
@@ -35,6 +35,35 @@ mapSize     :: !(IntMap v) -> Int
 * @return The modified mapping with the added value
 */
 put :: !Int !u:a !v:(IntMap u:a) -> w:(IntMap u:a), [w <= u,v <= w]
+
+// | /O(min(n,W))/. Insert a new key\/value pair in the map.
+// If the key is already present in the map, the associated value is
+// replaced with the supplied value, i.e. 'insert' is equivalent to
+// @'insertWith' 'const'@.
+//
+// > insert 5 'x' (fromList [(5,'a'), (3,'b')]) == fromList [(3, 'b'), (5, 'x')]
+// > insert 7 'x' (fromList [(5,'a'), (3,'b')]) == fromList [(3, 'b'), (5, 'a'), (7, 'x')]
+// > insert 5 'x' empty                         == singleton 5 'x'
+insert :: !Int !u:a !v:(IntMap u:a) -> w:(IntMap u:a), [w <= u,v <= w]
+// right-biased insertion, used by 'union'
+// | /O(min(n,W))/. Insert with a combining function.
+// @'insertWith' f key value mp@
+// will insert the pair (key, value) into @mp@ if key does
+// not exist in the map. If the key does exist, the function will
+// insert @f new_value old_value@.
+//
+// > insertWith (++) 5 "xxx" (fromList [(5,"a"), (3,"b")]) == fromList [(3, "b"), (5, "xxxa")]
+// > insertWith (++) 7 "xxx" (fromList [(5,"a"), (3,"b")]) == fromList [(3, "b"), (5, "a"), (7, "xxx")]
+// > insertWith (++) 5 "xxx" empty                         == singleton 5 "xxx"
+insertWith :: !(a a -> a) !Int !a !(IntMap a) -> IntMap a
+
+// | /O(min(n,W))/. Adjust a value at a specific key. When the key is not
+// a member of the map, the original map is returned.
+//
+// > adjust ("new " ++) 5 (fromList [(5,"a"), (3,"b")]) == fromList [(3, "b"), (5, "new a")]
+// > adjust ("new " ++) 7 (fromList [(5,"a"), (3,"b")]) == fromList [(3, "b"), (5, "a")]
+// > adjust ("new " ++) 7 empty                         == empty
+adjust :: !(a -> a) !Int !(IntMap a) -> IntMap a
 /**
 * Searches for a value at a given key position. Works only for non-unique
 * mappings.
@@ -56,6 +85,7 @@ getU :: !Int !*(IntMap a) -> *(.(Maybe a), *(IntMap a))
 * @return The modified mapping with the value/key removed
 */
 del :: !Int !(IntMap a) -> IntMap a
+delete :: !Int !(IntMap a) -> IntMap a
 
 keys  :: !.(IntMap a) -> [Int]
 elems :: !.(IntMap a) -> [a]
@@ -91,6 +121,17 @@ unions :: ![IntMap a] -> IntMap a
 
 instance Functor IntMap
 
+// | /O(n)/. Map a function over all values in the map.
+//
+// > map (++ "x") (fromList [(5,"a"), (3,"b")]) == fromList [(3, "bx"), (5, "ax")]
+map :: !(a -> b) !(IntMap a) -> IntMap b
+
+// | /O(n)/. Map a function over all values in the map.
+//
+// > let f key x = (show key) ++ ":" ++ x
+// > mapWithKey f (fromList [(5,"a"), (3,"b")]) == fromList [(3, "3:b"), (5, "5:a")]
+mapWithKey :: !(Int a -> b) !(IntMap a) -> IntMap b
+
 mapSt :: !(a *st -> *(!b, !*st)) !.(IntMap a) !*st -> *(!IntMap b, !*st)
 
 toList :: !(IntMap a) -> [(!Int, !a)]
@@ -98,3 +139,9 @@ toList :: !(IntMap a) -> [(!Int, !a)]
 toAscList :: !(IntMap a) -> [(!Int, !a)]
 
 fromList :: ![(!Int, !a)] -> IntMap a
+
+// | /O(n*min(n,W))/. Create a map from a list of key\/value pairs with a combining function. See also 'fromAscListWith'.
+//
+// > fromListWith (++) [(5,"a"), (5,"b"), (3,"b"), (3,"a"), (5,"a")] == fromList [(3, "ab"), (5, "aba")]
+// > fromListWith (++) [] == empty
+fromListWith :: !(a a -> a) ![(!Int, !a)] -> IntMap a

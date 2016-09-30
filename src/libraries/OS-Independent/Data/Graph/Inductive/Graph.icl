@@ -15,26 +15,6 @@ import Data.Maybe
 import Data.Functor
 import GenLexOrd
 
-
-// | Unlabeled node
-::  Node   :== Int
-// | Labeled node
-:: LNode a :== (Node,a)
-// | Quasi-unlabeled node
-:: UNode   :== LNode ()
-
-// | Unlabeled edge
-::  Edge   :== (Node,Node)
-// | Labeled edge
-:: LEdge b :== (Node,Node,b)
-// | Quasi-unlabeled edge
-:: UEdge   :== LEdge ()
-
-// | Unlabeled path
-:: Path    :== [Node]
-// | Labeled path
-:: LPath a = LP [LNode a]
-
 unLPath :: (LPath a) -> [LNode a]
 unLPath (LP xs) = xs
 
@@ -53,79 +33,30 @@ instance < (LPath a) | gLexOrd{|*|} a where
                                       _  -> False
   < _ _ = False
 
-// | Quasi-unlabeled path
-:: UPath   :== [UNode]
-
-// | Labeled links to or from a 'Node'.
-:: Adj b        :== [(b,Node)]
-// | Links to the 'Node', the 'Node' itself, a label, links from the 'Node'.
-:: Context a b  :== (Adj b,Node,a,Adj b) // Context a b "=" Context' a b "+" Node
-:: MContext a b :== Maybe (Context a b)
-// | 'Graph' decomposition - the context removed from a 'Graph', and the rest
-// of the 'Graph'.
-:: Decomp g a b :== (MContext a b,g a b)
-// | The same as 'Decomp', only more sure of itself.
-:: GDecomp g a b  :== (Context a b,g a b)
-
-// | Unlabeled context.
-:: UContext     :== ([Node],Node,[Node])
-// | Unlabeled decomposition.
-:: UDecomp g    :== (Maybe UContext,g)
-
-// | Minimum implementation: 'empty', 'isEmptyGraph', 'match', 'mkGraph', 'labNodes'
-class Graph gr where
-  // | An empty 'Graph'.
-  empty     :: gr a b
-
-  // | True if the given 'Graph' is empty.
-  isEmptyGraph   :: (gr a b) -> Bool
-
-  // | Decompose a 'Graph' into the 'MContext' found for the given node and the
-  // remaining 'Graph'.
-  match     :: Node (gr a b) -> Decomp gr a b
-
-  // | Create a 'Graph' from the list of 'LNode's and 'LEdge's.
-  //
-  //   For graphs that are also instances of 'DynGraph', @mkGraph ns
-  //   es@ should be equivalent to @('insEdges' es . 'insNodes' ns)
-  //   'empty'@.
-  mkGraph   :: [LNode a] [LEdge b] -> gr a b
-
-  // | A list of all 'LNode's in the 'Graph'.
-  labNodes  :: (gr a b) -> [LNode a]
-
 // | Decompose a graph into the 'Context' for an arbitrarily-chosen 'Node'
 // and the remaining 'Graph'.
-matchAny  :: (gr a b) -> GDecomp gr a b | Graph gr
-matchAny g = case labNodes g of
-               []        -> abort "Match Exception, Empty Graph"
-               [(v,_):_] -> (c,g`)
-                 where
-                   (Just c,g`) = match v g
+defMatchAny  :: (gr a b) -> GDecomp gr a b | Graph gr
+defMatchAny g = case labNodes g of
+                  []        -> abort "Match Exception, Empty Graph"
+                  [(v,_):_] -> (c,g`)
+                    where
+                      (Just c,g`) = match v g
 
 // | The number of 'Node's in a 'Graph'.
-noNodes   :: (gr a b) -> Int | Graph gr
-noNodes g = length (labNodes g)
+defNoNodes   :: (gr a b) -> Int | Graph gr
+defNoNodes g = length (labNodes g)
 
 // | The minimum and maximum 'Node' in a 'Graph'.
-nodeRange :: (gr a b) -> (Node,Node) | Graph gr
-nodeRange g
+defNodeRange :: (gr a b) -> (Node,Node) | Graph gr
+defNodeRange g
   | isEmptyGraph g = abort "nodeRange of empty graph"
   | otherwise = (minimum vs, maximum vs)
   where
     vs = nodes g
 
 // | A list of all 'LEdge's in the 'Graph'.
-labEdges  :: (gr a b) -> [LEdge b] | Graph gr
-labEdges g = ufold (\(_,v,_,s) xs -> map (\(l,w)->(v,w,l)) s ++ xs) [] g
-
-class DynGraph gr | Graph gr where
-  // | Merge the 'Context' into the 'DynGraph'.
-  //
-  //   Contexts should only refer to either a Node already in a graph
-  //   or the node in the Context itself (for loops).
-  (<&>) :: (Context a b) (gr a b) -> gr a b
-
+defLabEdges  :: (gr a b) -> [LEdge b] | Graph gr
+defLabEdges g = ufold (\(_,v,_,s) xs -> map (\(l,w)->(v,w,l)) s ++ xs) [] g
 
 // | The number of nodes in the graph.  An alias for 'noNodes'.
 order :: (gr a b) -> Int | Graph gr

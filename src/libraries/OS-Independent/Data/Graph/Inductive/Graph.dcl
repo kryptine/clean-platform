@@ -80,18 +80,18 @@ class Graph gr where
   // | A list of all 'LNode's in the 'Graph'.
   labNodes  :: (gr a b) -> [LNode a]
 
-// | Decompose a graph into the 'Context' for an arbitrarily-chosen 'Node'
-// and the remaining 'Graph'.
-matchAny  :: (gr a b) -> GDecomp gr a b | Graph gr
+  // | Decompose a graph into the 'Context' for an arbitrarily-chosen 'Node'
+  // and the remaining 'Graph'.
+  matchAny  :: (gr a b) -> GDecomp gr a b
 
-// | The number of 'Node's in a 'Graph'.
-noNodes   :: (gr a b) -> Int | Graph gr
+  // | The number of 'Node's in a 'Graph'.
+  noNodes   :: (gr a b) -> Int
 
-// | The minimum and maximum 'Node' in a 'Graph'.
-nodeRange :: (gr a b) -> (Node,Node) | Graph gr
+  // | The minimum and maximum 'Node' in a 'Graph'.
+  nodeRange :: (gr a b) -> (Node,Node)
 
-// | A list of all 'LEdge's in the 'Graph'.
-labEdges  :: (gr a b) -> [LEdge b] | Graph gr
+  // | A list of all 'LEdge's in the 'Graph'.
+  labEdges  :: (gr a b) -> [LEdge b]
 
 class DynGraph gr | Graph gr where
   // | Merge the 'Context' into the 'DynGraph'.
@@ -389,3 +389,13 @@ unOrdGr :: (OrdGr gr a b) -> gr a b
     //(compare `on` sort . labNodes) g1 g2
     //`mappend` (compare `on` sort . labEdges) g1 g2
 
+defMatchAny  :: (gr a b) -> GDecomp gr a b | Graph gr
+
+// | The number of 'Node's in a 'Graph'.
+defNoNodes   :: (gr a b) -> Int | Graph gr
+
+// | The minimum and maximum 'Node' in a 'Graph'.
+defNodeRange :: (gr a b) -> (Node,Node) | Graph gr
+
+// | A list of all 'LEdge's in the 'Graph'.
+defLabEdges  :: (gr a b) -> [LEdge b] | Graph gr
