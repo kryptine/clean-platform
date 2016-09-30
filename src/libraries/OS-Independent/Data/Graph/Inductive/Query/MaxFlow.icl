@@ -64,13 +64,10 @@ augmentGraph g = emap (\i->(i,zero,i)) (insEdges (getRevEdges (edges g)) g)
 //   residual capacity of that edge's label. Then return the updated
 //   list.
 updAdjList:: (Adj (b,b,b)) Node b Bool -> Adj (b,b,b) | < b & Ord b & Eq b & zero b & ~ b & + b & - b
-updAdjList s v cf fwd = rs ++ [((x,y+cf`,z-cf`),w) : rs`]
-  where
-    (rs, [((x,y,z),w):rs`]) = break ((\x -> v == x) o snd) s
-
-    cf` = if fwd
-             cf
-             (~ cf)
+updAdjList s v cf fwd =
+  case break ((\x -> v == x) o snd) s of
+    (rs, [((x,y,z),w):rs`]) -> let cf` = if fwd cf (~ cf) in rs ++ [((x,y+cf`,z-cf`),w) : rs`]
+    _ -> abort "updAdjList: fallthrough"
 
 // | Update flow and residual capacity along augmenting path from @s@ to @t@ in
 //   graph @@G. For a path @[u,v,w,...]@ find the node @u@ in @G@ and
