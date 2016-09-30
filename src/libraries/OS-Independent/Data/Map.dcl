@@ -34,6 +34,8 @@ import StdClass
 
 instance Monoid (Map k v) | < k
 
+instance == (Map k a) | == k & == a
+
 //Basic functions
 
 //null :: !(Map k a) -> Bool
