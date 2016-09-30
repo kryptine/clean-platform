@@ -8,14 +8,14 @@ from StdClass import class Eq
 from GenLexOrd import generic gLexOrd, :: LexOrd
 
 // | Unlabeled node
-::  Node   :== Int
+:: Node   :== Int
 // | Labeled node
 :: LNode a :== (Node,a)
 // | Quasi-unlabeled node
 :: UNode   :== LNode ()
 
 // | Unlabeled edge
-::  Edge   :== (Node,Node)
+:: Edge   :== (Node,Node)
 // | Labeled edge
 :: LEdge b :== (Node,Node,b)
 // | Quasi-unlabeled edge

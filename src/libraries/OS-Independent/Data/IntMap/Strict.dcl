@@ -106,6 +106,7 @@ findWithDefault :: a !Int !(IntMap a) -> a
 
 alter :: !((Maybe a) -> Maybe a) !Int !(IntMap a) -> IntMap a
 
+unionWith :: !(a a -> a) !(IntMap a) !(IntMap a) -> IntMap a
 unionsWith :: !(a a -> a) ![IntMap a] -> IntMap a
 
 mergeWithKey :: !(Int a b -> Maybe c) !((IntMap a) -> IntMap c) !((IntMap b) -> IntMap c)
