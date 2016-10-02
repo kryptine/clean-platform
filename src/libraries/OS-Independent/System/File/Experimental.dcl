@@ -1,6 +1,7 @@
 definition module System.File.Experimental
 
-from Data.Result import :: Result, :: Usually, :: Error
+from Data.String import class toString
+from Data.Result import :: Result, :: Usually, :: ErrorWitness
 from System.FilePath import :: FilePath
 
 from StdFile import class FileSystem(stdio), stderr
@@ -24,14 +25,16 @@ AbsoluteSeek :: SeekMode
 RelativeSeek :: SeekMode
 SeekFromEnd :: SeekMode
 
-:: Error
-	| FileDoesNotExist
+:: FileError
+	= FileDoesNotExist
 	| FileAlreadyExists
 	| PermissionDenied
 	| FileIsAtEnd
 	| FileIsFull
 	| IllegalFileOperation
-	| UserFileError [Char]
+	| UserFileError String
+
+instance toString FileError
 
 /// # Opening and Closing
 

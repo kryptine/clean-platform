@@ -2,6 +2,7 @@ definition module Data.String
 
 from StdString import class %(..), instance % {#Char}
 from StdString import class +++(..), instance +++ {#Char}
+from StdString import class toString(..), instance toString {#Char}
 
 from Data.Maybe import :: Maybe
 

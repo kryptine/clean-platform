@@ -1,5 +1,6 @@
 implementation module System.File.Experimental
 
+import qualified Data.String as String
 import Data.Result
 import Data.Bool
 
@@ -28,6 +29,17 @@ RelativeSeek = 1
 
 SeekFromEnd :: SeekMode
 SeekFromEnd  = 2
+
+instance toString FileError where
+	toString error = "File error: " +++ case error of
+        FileDoesNotExist -> "File does not exist"
+    	FileAlreadyExists -> "File already exists"
+    	PermissionDenied -> "Permission denied"
+    	FileIsAtEnd -> "At end of file"
+    	FileIsFull -> "File is full"
+    	IllegalFileOperation -> "Illegal IO operation"
+    	UserFileError message -> message
+
 
 /// # Opening and Closing
 
