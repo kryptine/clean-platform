@@ -10,8 +10,15 @@
 
 #include "Clean.h"
 
+#ifdef DEBUG
+#define debug(s) {puts(s); fflush(stdout);}
+#else
+#define debug(s) ;
+#endif
+
 #define INITIAL_BUFFERSIZE 2
-#define DEVICE_TIMEOUT {5, 0}
+#define DEVICE_TIMEOUT {0, 0}
+
 #define die(s) {perror(s);exit(EXIT_FAILURE);}
 
 static speed_t baudrates[] = {B0, B50, B75, B110, B134, B150, B200, B300, B600,
@@ -28,6 +35,14 @@ struct termioslist
 };
 
 struct termioslist *head = NULL;
+
+static void *my_malloc(size_t s)
+{
+	void *r = malloc(s);
+	if(r == NULL)
+		die("malloc");
+	return r;
+}
 
 static struct termios *getTermios(int fd)
 {
@@ -59,9 +74,7 @@ static void remTermios(int fd)
 static char *cleanStringToCString(CleanString s)
 {
 	unsigned long len = CleanStringLength(s);
-	char *cs = (char *)malloc(len+1);
-	if(cs == NULL)
-		die("malloc");
+	char *cs = (char *)my_malloc(len+1);
 	memcpy(cs, CleanStringCharacters(s), len);
 	cs[len] = '\0';
 	return cs;
@@ -69,9 +82,7 @@ static char *cleanStringToCString(CleanString s)
 
 static void addTermios(int fd, struct termios *t)
 {
-	struct termioslist *new = malloc(sizeof(struct termioslist));
-	if(new == NULL)
-		die("malloc");
+	struct termioslist *new = my_malloc(sizeof(struct termioslist));
 	new->fd = fd;
 	memcpy(&new->to, t, sizeof(struct termios));
 	new->next = NULL;
@@ -88,6 +99,7 @@ static void addTermios(int fd, struct termios *t)
 void ttyopen(CleanString fn, int baudrate, int bytesize, int parity,
 	int stopbits, int xonoff, int *status, int *fd)
 {
+	debug("ttyopen");
 	struct termios tio;
 	char *cs_fn = cleanStringToCString(fn);
 	*fd = open(cs_fn, O_RDWR | O_NOCTTY);
@@ -136,18 +148,27 @@ void ttyopen(CleanString fn, int baudrate, int bytesize, int parity,
 		error = strerror(errno);
 	}
 	free(cs_fn);
+	debug("ttyopen-done");
 }
 
+unsigned long *errcl = NULL;
 void ttyerror(CleanString *result)
 {
-	CleanStringVariable(clean_string, strlen(error));
-	*result = (CleanString) clean_string;
-	memcpy(CleanStringCharacters(clean_string), error, strlen(error));
-	CleanStringLength(clean_string) = strlen(error);
+	debug("ttyerror");
+	if(errcl == NULL)
+		free(errcl);
+	errcl = my_malloc(
+		sizeof(unsigned long)*CleanStringSizeInts(strlen(error)));
+	*result = (CleanString) errcl;
+	memcpy(CleanStringCharacters(errcl), error, strlen(error));
+	CleanStringLength(errcl) = strlen(error);
+	debug("ttyerror-done");
 }
 
+unsigned long *readlinecl = NULL;
 void ttyreadline(int fd, CleanString *result, int *fdo)
 {
+	debug("ttyreadline");
 	size_t bufsize = INITIAL_BUFFERSIZE;
 	char *buf = NULL;
 	ssize_t cr, charsread = 0; 
@@ -160,17 +181,22 @@ void ttyreadline(int fd, CleanString *result, int *fdo)
 	}
 	buf[charsread] = '\0';
 
-	CleanStringVariable(cleanOutput, charsread);
-	*result = (CleanString) cleanOutput;
-	memcpy(CleanStringCharacters(cleanOutput), buf, charsread);
-	CleanStringLength(cleanOutput) = charsread;
+	if(readlinecl == NULL)
+		free(readlinecl);
+	readlinecl = my_malloc(
+		sizeof(unsigned long)*CleanStringSizeInts(charsread));
+	*result = (CleanString) readlinecl;
+	memcpy(CleanStringCharacters(readlinecl), buf, charsread);
+	CleanStringLength(readlinecl) = charsread;
 	*fdo = fd;
 
 	free(buf);
+	debug("ttyreadline-done");
 }
 
 void ttyavailable(int fd, int *r, int *fdo)
 {
+	debug("ttyavailable");
 	fd_set fds;
 	struct timeval tv = DEVICE_TIMEOUT;
 
@@ -181,21 +207,26 @@ void ttyavailable(int fd, int *r, int *fdo)
 	if(*r == -1)
 		die("select");
 	*fdo = fd;
+	debug("ttyavailable-done");
 }
 
 int ttywrite(int fd, CleanString s)
 {
+	debug("ttywrite");
 	write(fd, CleanStringCharacters(s), CleanStringLength(s));
 	tcdrain(fd);
+	debug("ttywrite-done");
 	return fd;
 }
 
 int ttyclose(int fd)
 {
+	debug("ttyclose");
 	struct termios *to = getTermios(fd);
 	tcsetattr(fd, TCSANOW, to);
 	remTermios(fd);
 	int ret = close(fd);
 	error = strerror(errno);
+	debug("ttyclose-done");
 	return ret + 1;
 }

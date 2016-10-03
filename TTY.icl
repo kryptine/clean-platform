@@ -67,7 +67,7 @@ TTYavailable _ = code {
 
 TTYerror :: !*env -> (!String, !*env)
 TTYerror _ = code {
-		ccall ttyerror ":S:A"
+		ccall ttyerror ":VS:A"
 	}
 
 Start =0
