@@ -106,7 +106,7 @@ isRelative u = isReference u && not ('Text'.startsWith "/" u.uriPath)
 // Parser
 
 // sepBy version thet returns full parsed string
-sepByWSep p sep = sepByWSep1 p sep <!> return []
+sepByWSep p sep = sepByWSep1 p sep <!> pure []
 
 // Character classes
 
@@ -121,15 +121,15 @@ satisfiesAny fs a = or (map (\f -> f a) fs)
 
 sepByWSep1 p sep =
 	p >>= \first ->
-	<!*> pP >>= \rest -> return (flatten [first: rest])
+	<!*> pP >>= \rest -> pure (flatten [first: rest])
 where	
-	pP = sep >>= \sepV -> p >>= \pV -> return [sepV: pV]
+	pP = sep >>= \sepV -> p >>= \pV -> pure [sepV: pV]
 	
 percentEncodedP =
 	symbol '%' >>|
 	hexDigit >>= \d1 ->
 	hexDigit >>= \d2 ->
-	return (toChar (hdi d1*16+hdi d2))
+	pure (toChar (hdi d1*16+hdi d2))
 where
 	hdi d | isDigit d = digitToInt d
 	hdi d = (toInt (toLower d)) - (toInt 'a') + 10
@@ -146,10 +146,10 @@ option d p = <!?> p id d
 uriP = 
 	optionMaybe schemeP >>= \schemeV ->
 	hierPartP >>= \(authorityV, pathV) ->
-	return (fromMaybe (Nothing, Nothing, Nothing) authorityV) >>= \(userinfoV, hostV, portV) ->
+	pure (fromMaybe (Nothing, Nothing, Nothing) authorityV) >>= \(userinfoV, hostV, portV) ->
 	optionMaybe (symbol '?' >>| queryP) >>= \queryV ->
 	optionMaybe (symbol '#' >>| fragmentP) >>= \fragmentV ->
-	return 
+	pure 
 		{ uriScheme = fmap toString schemeV
 		, uriRegName = fmap toString hostV
 		, uriPort = portV
@@ -163,12 +163,12 @@ schemeP =
 	letter >>= \l ->
 	<!*> (alphaNum <!> oneOf ['+-.']) >>= \ls ->
 	symbol ':' >>|
-	return [l:ls]
+	pure [l:ls]
 
 hierPartP =
 	optionMaybe authP >>= \authorityV ->
 	pathP >>= \pathV ->
-	return (authorityV, pathV)
+	pure (authorityV, pathV)
 where
 	authP = token ['//'] >>| authorityP
 
@@ -177,26 +177,26 @@ pathP = choice [pathRootlessP, pathAbsoluteP, pathNoSchemeP, pathABEmptyP, pathE
 
 pathABEmptyP =
 	<!*> partP >>= \segs ->
-	return (flatten segs)
+	pure (flatten segs)
 where
-	partP = symbol '/' >>| segmentP >>= \segmentV -> return ['/': segmentV]
+	partP = symbol '/' >>| segmentP >>= \segmentV -> pure ['/': segmentV]
 
 pathAbsoluteP =
 	symbol '/' >>|
-	option [] segP >>= \rest -> return ['/': rest]
+	option [] segP >>= \rest -> pure ['/': rest]
 where
-	segP = segmentNZP >>= \s1 -> <!*> partP >>= \segs -> return (flatten [s1: segs])
-	partP = symbol '/' >>| segmentP >>= \v -> return ['/': v]
+	segP = segmentNZP >>= \s1 -> <!*> partP >>= \segs -> pure (flatten [s1: segs])
+	partP = symbol '/' >>| segmentP >>= \v -> pure ['/': v]
 	
 pathNoSchemeP =
 	segmentNZNCP >>= \first ->
 	sepByWSep segmentP (symbol '/') >>= \rest ->
-	return (first ++ rest)
+	pure (first ++ rest)
 
 pathRootlessP =
 	segmentNZP >>= \first ->
 	sepByWSep segmentP (symbol '/') >>= \rest ->
-	return (first ++ rest)
+	pure (first ++ rest)
 
 pathEmptyP = epsilon
 segmentP = <!*> pCharP
@@ -204,10 +204,10 @@ segmentNZP = <!+> pCharP
 segmentNZNCP = <!+> (subDelimP <!> unreservedP <!> oneOf ['@%'])
 
 authorityP =
-	optionMaybe (userinfoP >>= \result -> symbol '@' >>| return result) >>= \userinfoV ->
+	optionMaybe (userinfoP >>= \result -> symbol '@' >>| pure result) >>= \userinfoV ->
 	hostP >>= \hostV ->
 	optionMaybe (symbol ':' >>| portP) >>= \portV ->
-	return (userinfoV, (Just hostV), portV)
+	pure (userinfoV, (Just hostV), portV)
 
 hostP = ipLiteralP <|> ipv4AddressP <|> regNameP
 
@@ -216,7 +216,7 @@ ipLiteralP =
 	symbol '[' >>|
 	ipv6AddressP <|> ipvFutureP >>= \result ->
 	symbol ']' >>|
-	return result
+	pure result
 
 // Future IP parser
 ipvFutureP =
@@ -224,70 +224,70 @@ ipvFutureP =
 	<!+> hexDigit >>= \versionV ->
 	token ['.'] >>= \dot ->
 	<!+> (satisfy (satisfiesAny [isUnreserved, isSubDelim, ((==)':')])) >>= \datV ->
-	return (flatten [v, versionV, dot, datV])
+	pure (flatten [v, versionV, dot, datV])
 
 // Parse h16 followed by a colon, with no backtracking on failure.
 h16Colon =
 	h16 >>= \h ->
 	symbol ':' >>| 
-	return (h ++ [':'])
+	pure (h ++ [':'])
 
 // Process 0..n instances of the specified parser, backtracking on failure.
-h16n 0 = return []
+h16n 0 = pure []
 h16n n = sequence (intersperse (token [':']) [h16 \\ i<-[1..n]])
 upToh16 n = choice (reverse [h16n x \\ x <- [0..n]])
 
 ipv6AddressP = choice [
 		count 6 h16Colon >>= \hs -> 
 		ls32 >>= \s -> 
-		return (flatten hs ++ s),
+		pure (flatten hs ++ s),
 		
 		token ['::'] >>= \co -> 
 		count 5 h16Colon >>= \hs -> 
 		ls32 >>= \s -> 
-		return (co ++ flatten hs ++ s),
+		pure (co ++ flatten hs ++ s),
 		
 		option [] h16 >>= \p -> 
 		token ['::'] >>= \co -> 
 		count 4 h16Colon >>= \hs -> 
 		ls32 >>= \s -> 
-		return (p ++ co ++ flatten hs ++ s),
+		pure (p ++ co ++ flatten hs ++ s),
 
 		upToh16 2 >>= \ps ->
 		token ['::'] >>= \co -> 
 		count 3 h16Colon >>= \hs -> 
 		ls32 >>= \s -> 
-		return (flatten ps ++ co ++ flatten hs ++ s),
+		pure (flatten ps ++ co ++ flatten hs ++ s),
 		
 		upToh16 3 >>= \ps ->
 		token ['::'] >>= \co -> 
 		count 2 h16Colon >>= \hs -> 
 		ls32 >>= \s -> 
-		return (flatten ps ++ co ++ flatten hs ++ s),
+		pure (flatten ps ++ co ++ flatten hs ++ s),
 
 		upToh16 4 >>= \ps ->
 		token ['::'] >>= \co -> 
 		h16Colon >>= \h -> 
 		ls32 >>= \s -> 
-		return (flatten ps ++ co ++ h ++ s),
+		pure (flatten ps ++ co ++ h ++ s),
 
 		upToh16 5 >>= \ps ->
 		token ['::'] >>= \co -> 
 		ls32 >>= \s -> 
-		return (flatten ps ++ co ++ s),
+		pure (flatten ps ++ co ++ s),
 
 		upToh16 6 >>= \ps ->
 		token ['::'] >>= \co -> 
 		h16 >>= \h -> 
-		return (flatten ps ++ co ++ h),
+		pure (flatten ps ++ co ++ h),
 		
 		upToh16 7 >>= \ps ->
 		token ['::'] >>= \co -> 
-		return (flatten ps ++ co)]
+		pure (flatten ps ++ co)]
 
 h16 = choice [count x hexDigit \\ x <- [4,3,2,1]]
 ls32 = 
-	(h16n 2 >>= \r -> return (flatten r))
+	(h16n 2 >>= \r -> pure (flatten r))
 	<!>
 	ipv4AddressP
 
@@ -300,12 +300,12 @@ ipv4AddressP =
 	decOctetP >>= \d3 ->
 	symbol '.' >>|
 	decOctetP >>= \d4 ->
-	return (flatten [d1, ['.'], d2, ['.'], d3, ['.'], d4])
+	pure (flatten [d1, ['.'], d2, ['.'], d3, ['.'], d4])
 
 // decimal octet
 decOctetP =
-	countMinMax 1 3 digit >>= \a1 -> return a1
-//	if (toInt (toString a1) > 255) (abort "Decimal octet value too large") (return a1)
+	countMinMax 1 3 digit >>= \a1 -> pure a1
+//	if (toInt (toString a1) > 255) (abort "Decimal octet value too large") (pure a1)
 
 regNameP = <!*> (unreservedP <|> subDelimP <|> symbol '%')
 
@@ -313,12 +313,12 @@ regNameP = <!*> (unreservedP <|> subDelimP <|> symbol '%')
 countMinMax m n p | m > 0 =
 	p >>= \a1 ->
 	countMinMax (m-1) (n-1) p >>= \ar ->
-	return [a1:ar]
-countMinMax _ n _ | n <= 0 = return []
-countMinMax _ n p = option [] (p >>= \a1 -> countMinMax 0 (n-1) p >>= \ar -> return [a1:ar])
+	pure [a1:ar]
+countMinMax _ n _ | n <= 0 = pure []
+countMinMax _ n p = option [] (p >>= \a1 -> countMinMax 0 (n-1) p >>= \ar -> pure [a1:ar])
 
 // port
-portP =	<!*> digit >>= \digitV -> return (toInt (toString digitV))
+portP =	<!*> digit >>= \digitV -> pure (toInt (toString digitV))
 
 // userinfo
 userinfoP = <!*> (satisfy (satisfiesAny [isUnreserved, isSubDelim, ((==)':')]))

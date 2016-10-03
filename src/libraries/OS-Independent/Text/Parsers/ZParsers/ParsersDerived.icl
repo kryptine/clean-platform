@@ -24,7 +24,7 @@ import Control.Monad, Control.Applicative
 (<:&:>) p1 p2 = p1 <&> \r1 -> p2 <@ \r2 -> \rest -> [r1:r2 rest]
 
 count :: !Int (Parser s t r) -> (Parser s t [r])
-count n p | n <= 0 = return []
+count n p | n <= 0 = pure []
 count n p = sequence [p \\ i<-[1..n]]
 
 // PARSER TRANSFORMERS:
