@@ -61,7 +61,7 @@ import Control.Arrow
                     //. shows (labEdges g)
 
 instance Graph Gr where
-  empty           = Gr 'IM'.empty
+  emptyGraph           = Gr 'IM'.empty
 
   isEmptyGraph (Gr g)  = 'IM'.null g
 

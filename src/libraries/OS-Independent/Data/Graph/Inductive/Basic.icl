@@ -42,7 +42,7 @@ gsel p g = ufold (\c cs->if (p c) [c:cs] cs) [] g
 
 // | Filter based on edge property.
 efilter :: ((LEdge b) -> Bool) (gr a b) -> gr a b | DynGraph gr
-efilter f g = ufold cfilter empty g
+efilter f g = ufold cfilter emptyGraph g
             where cfilter (p,v,l,s) g = (p`,v,l,s`) <&> g
                    where p` = filter (\(b,u)->f (u,v,b)) p
                          s` = filter (\(b,w)->f (v,w,b)) s
