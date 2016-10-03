@@ -63,7 +63,7 @@ augmentGraph g = emap (\i->(i,zero,i)) (insEdges (getRevEdges (edges g)) g)
 //   the label corresponding to edge @(u,v)@ and update the flow and
 //   residual capacity of that edge's label. Then return the updated
 //   list.
-updAdjList:: (Adj (b,b,b)) Node b Bool -> Adj (b,b,b) | < b & Ord b & Eq b & zero b & ~ b & + b & - b
+updAdjList :: (Adj (b,b,b)) Node b Bool -> Adj (b,b,b) | < b & Ord b & Eq b & zero b & ~ b & + b & - b
 updAdjList s v cf fwd =
   case break ((\x -> v == x) o snd) s of
     (rs, [((x,y,z),w):rs`]) -> let cf` = if fwd cf (~ cf) in rs ++ [((x,y+cf`,z-cf`),w) : rs`]
@@ -78,12 +78,12 @@ updateFlow :: Path b (gr a (b,b,b)) -> gr a (b,b,b) | DynGraph gr & < b & Ord b 
 updateFlow []        _ g = g
 updateFlow [_]       _ g = g
 updateFlow [u:v:vs] cf g = case match u g of
-                             (Nothing,g`)         -> g`
-                             (Just (p,u`,l,s),g`) ->
-                               let g2 = updateFlow [v:vs] cf g`
-                                   s` = updAdjList s v cf True
-                                   p` = updAdjList p v cf False
-                               in  (p`,u`,l,s`) <&> g2
+                             (Nothing,g`) = g`
+                             (Just (p,u`,l,s),g`)
+                               # g2 = updateFlow [v:vs] cf g`
+                               # s` = updAdjList s v cf True
+                               # p` = updAdjList p v cf False
+                               = (p`,u`,l,s`) <&> g2
 
 // | Compute the flow from @s@ to @t@ on a graph whose edges are labeled with
 //   @(x,y,z)=(max capacity,current flow,residual capacity)@ and all

@@ -18,6 +18,7 @@ implementation module Data.Graph.Inductive.PatriciaTree
 
 import Data.Graph.Inductive.Graph
 
+from Control.Monad import class Monad (..), >>=, instance Monad []
 from           Control.Applicative import liftA2, class Applicative (..), instance Applicative [], instance Applicative Maybe
 import Data.Functor
 from           Data.IntMap.Strict         import :: IntMap, instance == (IntMap a), instance Functor IntMap
@@ -83,11 +84,10 @@ instance Graph Gr where
     where
       ix = fmap (fst o fst)
 
-  labEdges (Gr g) = [] // TODO
-  //labEdges (Gr g) = do (node, (_, _, s)) <- 'IM'.toList g
-                       //(next, labels)    <- 'IM'.toList s
-                       //label             <- labels
-                       //return (node, next, label)
+  labEdges (Gr g) =                       'IM'.toList g
+                >>= \(node, (_, _, s)) -> 'IM'.toList s
+                >>= \(next, labels)    -> labels
+                >>= \label             -> pure (node, next, label)
 
   matchAny g = defMatchAny g
 
