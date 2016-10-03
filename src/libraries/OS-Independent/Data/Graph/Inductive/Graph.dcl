@@ -61,7 +61,7 @@ instance < (LPath a) | gLexOrd{|*|} a
 // | Minimum implementation: 'empty', 'isEmptyGraph', 'match', 'mkGraph', 'labNodes'
 class Graph gr where
   // | An empty 'Graph'.
-  empty     :: gr a b
+  emptyGraph     :: gr a b
 
   // | True if the given 'Graph' is empty.
   isEmptyGraph   :: (gr a b) -> Bool

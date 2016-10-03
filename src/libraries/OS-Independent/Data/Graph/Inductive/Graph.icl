@@ -85,7 +85,7 @@ ufold f u g
 
 // | Map a function over the graph.
 gmap :: ((Context a b) -> Context c d) (gr a b) -> gr c d | DynGraph gr
-gmap f g = ufold (\c x -> f c <&> x) empty g
+gmap f g = ufold (\c x -> f c <&> x) emptyGraph g
 
 // | Map a function over the 'Node' labels in a graph.
 nmap :: (a -> c) (gr a b) -> gr c b | DynGraph gr
@@ -201,7 +201,7 @@ delEdges es g = foldl (flip delEdge) g es
 //   The list should be in the order such that earlier 'Context's
 //   depend upon later ones (i.e. as produced by @'ufold' (:) []@).
 buildGr :: [Context a b] -> gr a b | DynGraph gr
-buildGr cs = foldr (<&>) empty cs
+buildGr cs = foldr (<&>) emptyGraph cs
 
 // | Build a quasi-unlabeled 'Graph'.
 mkUGraph :: [Node] [Edge] -> gr () () | Graph gr
@@ -213,7 +213,7 @@ mkUGraph vs es = mkGraph (labUNodes vs) (labUEdges es)
 // | Build a graph out of the contexts for which the predicate is
 // true.
 gfiltermap :: ((Context a b) -> MContext c d) (gr a b) -> gr c d | DynGraph gr
-gfiltermap f gr = ufold (maybe id (<&>) o f) empty gr
+gfiltermap f gr = ufold (maybe id (<&>) o f) emptyGraph gr
 
 // | Returns the subgraph only containing the labelled nodes which
 // satisfy the given predicate.
