@@ -21,7 +21,6 @@ instance MonadPlus []
 
 instance MonadPlus Maybe
 
-return            :: a -> m a | Monad m
 (>>=) infixl 1    :: (m a) (a -> m b) -> m b | Monad m
 (`b`) infixl 1    :: (m a) (a -> m b) -> m b | Monad m
 (>>|) infixl 1    :: (m a) (m b) -> m b | Monad m

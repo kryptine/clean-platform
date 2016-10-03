@@ -28,9 +28,6 @@ instance MonadPlus Maybe where
   mplus Nothing ys  = ys
   mplus xs      _   = xs
 
-return :: a -> m a | Monad m
-return x = pure x
-
 (>>=) infixl 1 :: (m a) (a -> m b) -> m b | Monad m
 (>>=) ma a2mb = bind ma a2mb
 
