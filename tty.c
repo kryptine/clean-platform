@@ -17,7 +17,6 @@
 #endif
 
 #define INITIAL_BUFFERSIZE 2
-#define DEVICE_TIMEOUT {0, 0}
 
 #define die(s) {perror(s);exit(EXIT_FAILURE);}
 
@@ -102,8 +101,9 @@ void ttyopen(CleanString fn, int baudrate, int bytesize, int parity,
 	debug("ttyopen");
 	struct termios tio;
 	char *cs_fn = cleanStringToCString(fn);
-	*fd = open(cs_fn, O_RDWR | O_NOCTTY);
+	*fd = open(cs_fn, O_RDWR | O_NOCTTY | O_NDELAY | O_NONBLOCK);
 	*status = 0;
+	fcntl(*fd, F_SETFL, 0);
 	if(*fd < 0){
 		error = strerror(errno);
 	} else {
@@ -142,6 +142,9 @@ void ttyopen(CleanString fn, int baudrate, int bytesize, int parity,
 		//Set
 		tio.c_oflag = 0;
 		tio.c_lflag |= ICANON;
+
+		tio.c_cc[VMIN]=5;
+		tio.c_cc[VTIME]=0;
 		tcsetattr(*fd, TCSANOW, &tio);
 
 		*status = 1;
@@ -198,12 +201,14 @@ void ttyavailable(int fd, int *r, int *fdo)
 {
 	debug("ttyavailable");
 	fd_set fds;
-	struct timeval tv = DEVICE_TIMEOUT;
+	struct timeval tv;
+	tv.tv_sec = 0;
+	tv.tv_usec = 0;
 
 	FD_ZERO(&fds);
 	FD_SET(fd, &fds);
 
-	*r = select(fd+1, &fds, NULL, NULL, NULL);
+	*r = select(fd+1, &fds, NULL, NULL, &tv);
 	if(*r == -1)
 		die("select");
 	*fdo = fd;
