@@ -158,7 +158,7 @@ unsigned long *errcl = NULL;
 void ttyerror(CleanString *result)
 {
 	debug("ttyerror");
-	if(errcl == NULL)
+	if(errcl != NULL)
 		free(errcl);
 	errcl = my_malloc(
 		sizeof(unsigned long)*CleanStringSizeInts(strlen(error)));
@@ -184,7 +184,7 @@ void ttyreadline(int fd, CleanString *result, int *fdo)
 	}
 	buf[charsread] = '\0';
 
-	if(readlinecl == NULL)
+	if(readlinecl != NULL)
 		free(readlinecl);
 	readlinecl = my_malloc(
 		sizeof(unsigned long)*CleanStringSizeInts(charsread));
