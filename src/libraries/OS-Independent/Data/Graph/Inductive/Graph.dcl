@@ -368,6 +368,7 @@ context4l` :: (Context a b) -> Adj b
 
 // | Pretty-print the graph.  Note that this loses a lot of
 //   information, such as edge inverses, etc.
+//prettify :: (gr a b) -> String | DynGraph gr & Show a & Show b
 prettify :: (gr a b) -> String | DynGraph gr & toString a & toString b
 
 //--------------------------------------------------------------------

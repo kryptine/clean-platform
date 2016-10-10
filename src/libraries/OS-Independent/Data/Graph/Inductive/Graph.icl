@@ -440,11 +440,14 @@ context4l` (p,v,_,s) = s++filter ((\x -> x == v) o snd) p
 // | Pretty-print the graph.  Note that this loses a lot of
 //   information, such as edge inverses, etc.
 prettify :: (gr a b) -> String | DynGraph gr & toString a & toString b
-prettify g = "TODO FIXME" // TODO FIXME foldr (showsContext o context g) id (nodes g) ""
+prettify g = foldr (showsContext o context g) "" (nodes g)
+  where
+  showsContext (_,n,l,s) acc = toString n +++ " -> " +++ foldr (\(_, x) xs -> toString x +++ ", " +++ xs) "" s +++ "\n" +++ acc
+//prettify g = "TODO Prettify" [> foldr (showsContext o context g) id (nodes g) ""
   //where
-    //showsContext (_,n,l,s) sg = shows n o (':':) o shows l
+    //showsContext (_,n,l,s) sg = shows n o (\xs -> ":" +++ xs) o shows l
                                 //o showString "->" o shows s
-                                //o ('\n':) . sg
+                                //o (\xs -> "\n" +++ xs) o sg */
 
 //--------------------------------------------------------------------
 // Ordered Graph
