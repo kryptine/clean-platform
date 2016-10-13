@@ -2,7 +2,7 @@ implementation module TTY
 
 import StdClass
 
-import code from "tty."
+import code from "ctty."
 
 :: *TTY :== Int
 
@@ -69,5 +69,3 @@ TTYerror :: !*env -> (!String, !*env)
 TTYerror _ = code {
 		ccall ttyerror ":VS:A"
 	}
-
-Start =0
