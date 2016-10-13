@@ -16,6 +16,10 @@
 #define debug(s) ;
 #endif
 
+#ifdef __APPLE__
+int CMSPAR = 0;
+#endif
+
 #define INITIAL_BUFFERSIZE 2
 
 #define die(s) {perror(s);exit(EXIT_FAILURE);}
