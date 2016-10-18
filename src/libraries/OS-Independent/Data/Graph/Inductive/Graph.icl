@@ -442,7 +442,7 @@ context4l` (p,v,_,s) = s++filter ((\x -> x == v) o snd) p
 prettify :: (gr a b) -> String | DynGraph gr & toString a & toString b
 prettify g = foldr (showsContext o context g) "" (nodes g)
   where
-  showsContext (_,n,l,s) acc = toString n +++ " -> " +++ foldr (\(_, x) xs -> toString x +++ ", " +++ xs) "" s +++ "\n" +++ acc
+  showsContext (_,n,l,s) acc = toString n +++ " -> " +++ foldr (\(l, n) xs -> "(" +++ toString l +++ ", " +++ toString n +++ "); " +++ xs) "" s +++ "\n" +++ acc
 //prettify g = "TODO Prettify" [> foldr (showsContext o context g) id (nodes g) ""
   //where
     //showsContext (_,n,l,s) sg = shows n o (\xs -> ":" +++ xs) o shows l

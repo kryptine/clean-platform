@@ -1,6 +1,6 @@
 implementation module Data.Tree
 
-// Ported from Haskell's Data.RTree by Jurriën Stutterheim
+// Ported from Haskell's Data.Tree by Jurriën Stutterheim
 from Data.Functor import class Functor (..), <$>
 from Control.Applicative import class Applicative (..)
 from Control.Monad import class Monad (..), liftM, `b`, mapM
@@ -111,3 +111,8 @@ unfoldRTreeM f b =
 // | Monadic forest builder, in depth-first order
 unfoldRForestM :: (b -> m (a, [b])) [b] -> m (RForest a) | Monad m
 unfoldRForestM f xs = mapM (unfoldRTreeM f) xs
+
+foldTree :: (a [b] -> b) (RTree a) -> b
+foldTree f t = go t
+  where
+  go (RNode x ts) = f x (map go ts)

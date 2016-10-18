@@ -1,6 +1,6 @@
 definition module Data.Tree
 
-// Ported from Haskell's Data.RTree by Jurriën Stutterheim
+// Ported from Haskell's Data.Tree by Jurriën Stutterheim
 from Data.Functor import class Functor
 from Control.Applicative import class Applicative
 from Control.Monad import class Monad
@@ -61,3 +61,4 @@ unfoldRTreeM :: (b -> m (a, [b])) b -> m (RTree a) | Monad m
 // | Monadic forest builder, in depth-first order
 unfoldRForestM :: (b -> m (a, [b])) [b] -> m (RForest a) | Monad m
 
+foldTree :: (a [b] -> b) (RTree a) -> b
