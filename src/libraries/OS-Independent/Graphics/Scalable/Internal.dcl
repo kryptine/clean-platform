@@ -5,6 +5,7 @@ from Text.HTML import :: SVGColor
 from Data.Set import :: Set
 from Math.Geometry import :: Angle
 from StdOverloaded import class zero, class +, class -, class ~, class sign, class abs, class <, class ==, class toReal, class /, class *
+import Graphics.Layout
 
 :: Image m
   = { content             :: !ImageContent m    // the image elements
@@ -96,9 +97,9 @@ from StdOverloaded import class zero, class +, class -, class ~, class sign, cla
   | TextXSpan    !FontDef !String     // (TextXSpan a b) is width of text b written in font a
 
 :: Compose m
-  = AsGrid    !(!Int, !Int) ![[ImageOffset]] ![[ImageAlign]] ![[Image m]] // (AsGrid (noOfCols, noOfRows) alignments) composes elements in rows, using alignments per image
-  | AsCollage               ![ImageOffset]                   ![Image m]   // AsCollage composes elements in freestyle, framed in optional host
-  | AsOverlay               ![ImageOffset]   ![ImageAlign]   ![Image m]   // AsOverlay composes elements, framed in optional host or largest spans
+  = AsGrid    !(!Int, !Int) ![[ImageOffset]] ![[XYAlign]] ![[Image m]] // (AsGrid (noOfCols, noOfRows) alignments) composes elements in rows, using alignments per image
+  | AsCollage               ![ImageOffset]                ![Image m]   // AsCollage composes elements in freestyle, framed in optional host
+  | AsOverlay               ![ImageOffset]   ![XYAlign]   ![Image m]   // AsOverlay composes elements, framed in optional host or largest spans
 
 :: ImageAttr m
   = ImageStrokeAttr        !(StrokeAttr      m)
@@ -138,25 +139,9 @@ from StdOverloaded import class zero, class +, class -, class ~, class sign, cla
   = ImageTagUser !Int !String
   | ImageTagSystem !Int
 
-:: XAlign
-  = AtLeft
-  | AtMiddleX
-  | AtRight
-
-:: YAlign
-  = AtTop
-  | AtMiddleY
-  | AtBottom
-
-:: ImageAlign  :== (!XAlign, !YAlign)
 :: ImageOffset :== (!Span, !Span)
-:: GridDimension = Rows !Int | Columns !Int
-:: GridLayout  :== (!GridMajor, !GridXLayout, !GridYLayout)
-:: GridMajor     = ColumnMajor | RowMajor
-:: GridXLayout   = LeftToRight | RightToLeft
-:: GridYLayout   = TopToBottom | BottomToTop
 
-:: Host m :== Maybe (Image m)
+:: Host m = NoHost | Host (Image m)
 
 :: Slash = Slash | Backslash
 

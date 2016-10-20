@@ -5,17 +5,18 @@ definition module Graphics.Scalable
 	Jurrien Stutterheim
 	Rinus Plasmeijer
 */
-from Graphics.Scalable.Internal import :: Image, :: ImageTag, :: Span,
+from Graphics.Scalable.Internal import :: Image, :: ImageTag, :: Span, :: ImageSpan (..),
   :: FontDef {..}, :: ImageOffset, :: Angle, :: Markers {..}, :: ImageAttr,
   :: StrokeAttr {..}, :: StrokeWidthAttr {..}, :: XRadiusAttr {..},
   :: YRadiusAttr {..}, :: FillAttr {..}, :: OpacityAttr {..},
   :: OnClickAttr {..}, :: OnMouseDownAttr {..}, :: OnMouseUpAttr {..},
   :: OnMouseOverAttr {..}, :: OnMouseMoveAttr {..}, :: OnMouseOutAttr {..},
   :: DraggableAttr {..}, :: DashAttr {..}, :: NoAttr (..),
-  :: MaskAttr {..}, :: Slash (..), :: ImageAlign, :: XAlign (..), :: YAlign (..),
-  :: Host, :: GridLayout, :: GridMajor(..), :: GridXLayout (..), :: GridYLayout (..), :: GridDimension (..),
+  :: MaskAttr {..}, :: Slash (..), :: XYAlign, :: XAlign (..), :: YAlign (..),
+  :: Host (..), :: GridLayout, :: GridMajor(..), :: GridXLayout (..), :: GridYLayout (..), :: GridDimension (..),
   class /. (..), class *. (..), instance *. Span, instance /. Span,
   instance + Span, instance - Span, instance zero Span, instance ~ Span
+import Graphics.Layout
 from StdOverloaded import class zero (..), class + (..), class - (..),
   class ~ (..), class sign (..), class abs (..), class < (..), class == (..),
   class toReal (..), class / (..), class * (..)
@@ -74,11 +75,15 @@ flipy    :: !(Image m) -> Image m
 skewx    :: !Angle !(Image m) -> Image m
 skewy    :: !Angle !(Image m) -> Image m
 
-overlay ::                            ![ImageAlign] ![ImageOffset] ![Image m] !(Host m) -> Image m
-beside  ::                                ![YAlign] ![ImageOffset] ![Image m] !(Host m) -> Image m
-above   ::                                ![XAlign] ![ImageOffset] ![Image m] !(Host m) -> Image m
-grid    :: !GridDimension !GridLayout ![ImageAlign] ![ImageOffset] ![Image m] !(Host m) -> Image m
-collage ::                                          ![ImageOffset] ![Image m] !(Host m) -> Image m
+instance Layout Image ImageSpan ImageOffset Host
+instance Fit Image Span
+instance DimRef ImageTag Span
+
+overlay` ::                            ![XYAlign] ![ImageOffset] ![Image m] !(Host m) -> Image m
+beside`  ::                            ![YAlign]  ![ImageOffset] ![Image m] !(Host m) -> Image m
+above`   ::                            ![XAlign]  ![ImageOffset] ![Image m] !(Host m) -> Image m
+grid`    :: !GridDimension !GridLayout ![XYAlign] ![ImageOffset] ![Image m] !(Host m) -> Image m
+collage` ::                                       ![ImageOffset] ![Image m] !(Host m) -> Image m
 
 instance <  (ImageAttr m)
 instance == (ImageAttr m)
