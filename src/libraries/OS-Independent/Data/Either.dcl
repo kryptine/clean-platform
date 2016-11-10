@@ -17,5 +17,4 @@ instance Applicative (Either e)
 
 instance Monad (Either e)
 
-either :: (a -> c) (b -> c) (Either a b) -> c
-
+either :: (.a -> .c) (.b -> .c) (Either .a .b) -> .c
