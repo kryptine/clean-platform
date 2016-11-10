@@ -29,7 +29,9 @@ where
 		//Determine the number of full zero bytes we need to end up with a multiple of 64 bytes
 		numzerobytes = if (rembytes + 9 > 64) (119 - rembytes) (55 - rembytes)
 		//Encode size IN BITS as 64-bit big-endian in 8 bytes (size in bits == size in bytes times 8 (or << 3))
-		sizeAs64bit n = {toChar (if (b == 0) (n << 3) (n >> ((b * 8) - 3))) \\ b <- [7,6,5,4,3,2,1,0]}
+        sizeAs64bit n = IF_INT_64_OR_32
+            {toChar (if (b == 0) (n << 3) (n >> ((b * 8) - 3))) \\ b <- [7,6,5,4,3,2,1,0]}
+            {toChar (if (b > 3) 0 (if (b == 0) (n << 3) (n >> ((b * 8) - 3)))) \\ b <- [7,6,5,4,3,2,1,0]}
 
 	//Split the message into a list of 512-bit blocks (assumes a padded input)
 	chunk :: String -> [String]
