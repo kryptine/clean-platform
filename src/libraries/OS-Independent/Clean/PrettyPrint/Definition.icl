@@ -167,7 +167,7 @@ where
 instance print TypeContext
 where
 	print st tc
-		= print st (tc.tc_class :+: " " :+: join st ", " tc.tc_types)
+		= print st (tc.tc_class :+: " " :+: join st " " tc.tc_types)
 
 // Type definitions
 instance print RhsDefsOfType
