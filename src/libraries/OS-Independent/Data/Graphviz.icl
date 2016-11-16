@@ -4,11 +4,13 @@
 implementation module Data.Graphviz
 
 import StdArray, StdOverloaded, StdOrdList, StdTuple, StdString, StdBool, StdMisc
-import Data.Maybe, Data.List
-import GenPrint, GenEq
+import Data.Maybe
+import Data.List
+import GenPrint
+import GenEq
 
 derive gEq    EdgeStyle, NodeStyle, DirType, NodeShape, Side, ArrowShape,
-              Maybe, ArrowType, Arrow, Color
+              ArrowType, Arrow, Color
 derive gPrint EdgeStyle, NodeStyle, DirType, NodeShape, Side, ArrowShape,
               Maybe, CompassPoint, StartStyle, ClusterMode, OutputMode,
               PageDir, RankDir, RankType

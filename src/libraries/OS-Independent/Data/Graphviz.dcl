@@ -3,9 +3,9 @@
 
 definition module Data.Graphviz
 
-from   StdOverloaded import class toString
-import Data.Maybe
-import GenEq
+from StdOverloaded import class toString
+from Data.Maybe import :: Maybe
+from GenEq import generic gEq
 
 // A digraph contains a title and a list of node definitions
 :: Digraph
