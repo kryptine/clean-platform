@@ -4,35 +4,32 @@
 implementation module Data.Graphviz
 
 import StdArray, StdOverloaded, StdOrdList, StdTuple, StdString, StdBool, StdMisc
-import Data.Maybe
-import Data.List
-import GenPrint
-import GenEq
+import Data.Maybe, Data.List
+import GenPrint, GenEq
 
-derive gEq    EdgeStyle, NodeStyle, DirType, NodeShape, Side, ArrowShape,
-              ArrowType, Arrow, Color
+derive gEq    EdgeStyle, NodeStyle, DirType, NodeShape, Side, ArrowShape, ArrowType, Arrow, Color
 derive gPrint EdgeStyle, NodeStyle, DirType, NodeShape, Side, ArrowShape,
               Maybe, CompassPoint, StartStyle, ClusterMode, OutputMode,
               PageDir, RankDir, RankType
 derive printNameValuePair GraphAttribute, NodeAttribute, EdgeAttribute
 
 //  Almost regular toString instances:
-instance toString EdgeStyle      where toString es  =  /*quote*/ (skipXXX_InConstructorName (printToString es))
-instance toString NodeStyle      where toString ns  = quote (skipXXX_InConstructorName (printToString ns))
-instance toString DirType        where toString dir = quote (skipXXX_InConstructorName (printToString dir))
-instance toString NodeShape      where toString ns  = skipXXX_InConstructorName (printToString ns)
-instance toString Side           where toString s   = skipXXX_InConstructorName (printToString s)
-instance toString ArrowShape     where toString s   = skipXXX_InConstructorName (printToString s)
-instance toString CompassPoint   where toString cp  = quote (skipXXX_InConstructorName (printToString cp))
-instance toString ClusterMode    where toString cm  = quote (skipXXX_InConstructorName (printToString cm))
-instance toString OutputMode     where toString om  = quote (skipXXX_InConstructorName (printToString om))
-instance toString PageDir        where toString pd  = skipXXX_InConstructorName (printToString pd)
-instance toString RankDir        where toString rd  = skipXXX_InConstructorName (printToString rd)
-instance toString RankType       where toString rt  = skipXXX_InConstructorName (printToString rt)
-instance toString StartStyle     where toString ss  = skipXXX_InConstructorName (printToString ss)
-instance toString NodeAttribute  where toString na  = printNameValuePair{|*|} na
-instance toString EdgeAttribute  where toString ea  = printNameValuePair{|*|} ea
-instance toString GraphAttribute where toString ga  = printNameValuePair{|*|} ga
+instance toString EdgeStyle      where toString es  = quote (skipName "E" (printToString es))
+instance toString NodeStyle      where toString ns  = quote (skipName "NStyle" (printToString ns))
+instance toString DirType        where toString dir = quote (skipName "DT" (printToString dir))
+instance toString NodeShape      where toString ns  = skipName "NShape" (printToString ns)
+instance toString Side           where toString s   = skipName "Side" (printToString s)
+instance toString ArrowShape     where toString s   = skipName "AShape" (printToString s)
+instance toString CompassPoint   where toString cp  = quote (skipName "CP" (printToString cp))
+instance toString ClusterMode    where toString cm  = quote (skipName "CM" (printToString cm))
+instance toString OutputMode     where toString om  = quote (skipName "OM" (printToString om))
+instance toString PageDir        where toString pd  = quote (skipNameUp "PD" (printToString pd))
+instance toString RankDir        where toString rd  = quote (skipNameUp "RD" (printToString rd))
+instance toString RankType       where toString rt  = quote (skipName "RT" (printToString rt))
+instance toString StartStyle     where toString ss  = quote (skipName "SS" (printToString ss))
+instance toString NodeAttribute  where toString na  = printNameValuePair{|*|} "NAtt" na
+instance toString EdgeAttribute  where toString ea  = printNameValuePair{|*|} "EAtt" ea
+instance toString GraphAttribute where toString ga  = printNameValuePair{|*|} "GAtt" ga
 //  Less regular toString instances:
 instance toString Arrow where
   toString {open,side,shape}  = if open "o" "" +++ if (isJust side) (toString (fromJust side)) "" +++ toString shape
@@ -99,42 +96,42 @@ instance toString ViewPort where
                   if (isJust vpXY) ("," $> (fromJust vpXY)) ""
 
 //  Print name=value pairs for algebraic data types with unary data constructors in XXX_name constructor name format.
-generic printNameValuePair a :: a -> String
-printNameValuePair{|Int|}          x      = toString x
-printNameValuePair{|Real|}         x      = toString x
-printNameValuePair{|Char|}         x      = toString x
-printNameValuePair{|String|}       x      = quote    x
-printNameValuePair{|Bool|}         x      = firstCharLowerCase (toString x)
-printNameValuePair{|UNIT|}         x      = ""
-printNameValuePair{|PAIR|}   px py (PAIR x y)  = px x +++ " " +++ py y
-printNameValuePair{|EITHER|} pl pr (LEFT   x)  = pl x
-printNameValuePair{|EITHER|} pl pr (RIGHT  y)  = pr y
-printNameValuePair{|OBJECT|} px    (OBJECT x)  = px x
-printNameValuePair{|CONS of d|} px (CONS   x)  = skipXXX_InConstructorName d.gcd_name +++ "=" +++ px x
+generic printNameValuePair a :: !String !a -> String
+printNameValuePair{|Int|}          pre x      = toString x
+printNameValuePair{|Real|}         pre x      = toString x
+printNameValuePair{|Char|}         pre x      = toString x
+printNameValuePair{|String|}       pre x      = quote    x
+printNameValuePair{|Bool|}         pre x      = firstCharLowerCase (toString x)
+printNameValuePair{|UNIT|}         pre x      = ""
+printNameValuePair{|PAIR|}   px py pre (PAIR x y)  = px pre x +++ " " +++ py "" y
+printNameValuePair{|EITHER|} pl pr pre (LEFT   x)  = pl pre x
+printNameValuePair{|EITHER|} pl pr pre (RIGHT  y)  = pr pre y
+printNameValuePair{|OBJECT|} px    pre (OBJECT x)  = px pre x
+printNameValuePair{|CONS of d|} px pre (CONS   x)  = skipName pre d.gcd_name +++ "=" +++ px "" x
 // Specializations of printNameValuePair:
-printNameValuePair{|ArrowType|}    x      = toString x
-printNameValuePair{|Color|}        x      = toString x
-printNameValuePair{|ClusterMode|}  x      = toString x
-printNameValuePair{|CompassPoint|} x      = toString x
-printNameValuePair{|DirType|}      x      = toString x
-printNameValuePair{|DotPoint|}     x      = toString x
-printNameValuePair{|EdgeStyle|}    x      = toString x
-printNameValuePair{|LayerList|}    x      = toString x
-printNameValuePair{|LayerRange|}   x      = toString x
-printNameValuePair{|Margin|}       x      = toString x
-printNameValuePair{|NodeShape|}    x      = toString x
-printNameValuePair{|NodeStyle|}    x      = toString x
-printNameValuePair{|OutputMode|}   x      = toString x
-printNameValuePair{|Pad|}          x      = toString x
-printNameValuePair{|PageDir|}      x      = toString x
-printNameValuePair{|Pointf|}       x      = toString x
-printNameValuePair{|RankDir|}      x      = toString x
-printNameValuePair{|RankType|}     x      = toString x
-printNameValuePair{|Ratio|}        x      = toString x
-printNameValuePair{|Rect|}         x      = toString x
-printNameValuePair{|Sizef|}        x      = toString x    // PA++
-printNameValuePair{|StartType|}    x      = toString x
-printNameValuePair{|ViewPort|}     x      = toString x
+printNameValuePair{|ArrowType|}    pre x      = toString x
+printNameValuePair{|Color|}        pre x      = toString x
+printNameValuePair{|ClusterMode|}  pre x      = toString x
+printNameValuePair{|CompassPoint|} pre x      = toString x
+printNameValuePair{|DirType|}      pre x      = toString x
+printNameValuePair{|DotPoint|}     pre x      = toString x
+printNameValuePair{|EdgeStyle|}    pre x      = toString x
+printNameValuePair{|LayerList|}    pre x      = toString x
+printNameValuePair{|LayerRange|}   pre x      = toString x
+printNameValuePair{|Margin|}       pre x      = toString x
+printNameValuePair{|NodeShape|}    pre x      = toString x
+printNameValuePair{|NodeStyle|}    pre x      = toString x
+printNameValuePair{|OutputMode|}   pre x      = toString x
+printNameValuePair{|Pad|}          pre x      = toString x
+printNameValuePair{|PageDir|}      pre x      = toString x
+printNameValuePair{|Pointf|}       pre x      = toString x
+printNameValuePair{|RankDir|}      pre x      = toString x
+printNameValuePair{|RankType|}     pre x      = toString x
+printNameValuePair{|Ratio|}        pre x      = toString x
+printNameValuePair{|Rect|}         pre x      = toString x
+printNameValuePair{|Sizef|}        pre x      = toString x    // PA++
+printNameValuePair{|StartType|}    pre x      = toString x
+printNameValuePair{|ViewPort|}     pre x      = toString x
 
 instance == EdgeStyle where (==) a b      = gEq{|*|} a b
 instance == NodeStyle where (==) a b      = gEq{|*|} a b
@@ -171,7 +168,7 @@ printDigraph (Digraph title atts nodes _)    = map (\x->x+++"\n") (prelude title
 
 createGraphName :: !String -> String
 createGraphName ""                = "G"
-createGraphName x                = x
+createGraphName x                = quote x
 
 prelude :: !String ![String] ![String] -> [String]
 prelude title graphAtts contents        = [ "digraph " +++ createGraphName title +++ " {"
@@ -182,7 +179,7 @@ prelude title graphAtts contents        = [ "digraph " +++ createGraphName title
                           [ "overlap=false","}" ]
 
 graphAtts :: ![GraphAttribute] -> [String]
-graphAtts graphAtts                = map printNameValuePair{|*|} graphAtts
+graphAtts graphAtts                = map (printNameValuePair{|*|} "GAtt") graphAtts
 
 contents :: ![NodeDef] -> [String]
 contents nodeDefs                = map snd (mergeBy (\(x,_) (y,_)= x<y) nodes` edges`)
@@ -308,6 +305,17 @@ skipXXX_InConstructorName str
     underscoreName  = str % (n-length underscoreName+1,n-1)
 where
   n          = size str
+
+skipName :: !String !String -> String
+skipName pre str = {toLower c \\ c <-: skipNameUp pre str}
+
+skipNameUp :: !String !String -> String
+skipNameUp pre str | n >= m && pre == str % (0, m-1)
+	= str % (m, n-1)
+	= str
+where
+	n = size str
+	m = size pre
 
 firstCharLowerCase :: !String -> String
 firstCharLowerCase str
