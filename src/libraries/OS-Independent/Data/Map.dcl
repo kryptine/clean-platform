@@ -202,6 +202,12 @@ unionWith :: !(a a -> a) !(Map k a) !(Map k a) -> Map k a | < k
 
 unionWithKey :: !(k a a -> a) !(Map k a) !(Map k a) -> Map k a | < k
 
+intersection :: !(Map k a) !(Map k b) -> Map k a | < k
+
+intersectionWith :: !(a b -> c) !(Map k a) !(Map k b) -> Map k c | < k
+
+intersectionWithKey :: !(k a b -> c) !(Map k a) !(Map k b) -> Map k c | < k
+
 union :: !(Map k a) !(Map k a) -> Map k a | < k
 
 mergeWithKey :: !(k a b -> Maybe c) !((Map k a) -> Map k c) !((Map k b) -> Map k c)
