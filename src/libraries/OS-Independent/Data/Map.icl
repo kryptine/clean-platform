@@ -2563,5 +2563,5 @@ where
 */
 derive JSONEncode Map
 derive JSONDecode Map
-derive gEq Map
+gEq{|Map|} fk fv mx my = and [fk kx ky && fv vx vy \\ (kx,vx) <- toList mx & (ky,vy) <- toList my]
 
