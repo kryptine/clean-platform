@@ -38,7 +38,8 @@ count_escape_chars i s
 			| c <> '\\'
 				= count_escape_chars (i + 1) s
 				= count_more_escape_chars (i + 1) s 1
-			| c == '"' || c == '/' || c == '\b' || c == '\f' || c == '\n' || c == '\r' || c == '\t'
+			| isControl c = count_more_escape_chars (i + 1) s 5
+			| c == '"' || c == '/' || c == '\b' || c == '\f' || c == '\n' || c == '\r' || c == '\t' || isControl c
 				= count_more_escape_chars (i + 1) s 1
 				= count_escape_chars (i + 1) s
 		= 0
@@ -51,6 +52,7 @@ where
 				| c <> '\\'
 					= count_more_escape_chars (i + 1) s n
 					= count_more_escape_chars (i + 1) s (n+1)
+				| isControl c = count_more_escape_chars (i+1) s (n+5)
 				| c == '"' || c == '/' || c == '\b' || c == '\f' || c == '\n' || c == '\r' || c == '\t'
 					= count_more_escape_chars (i + 1) s (n+1)
 					= count_more_escape_chars (i + 1) s n
