@@ -377,26 +377,45 @@ findChars i s
 				= findChars (i + 1) s
 		= [!!]
 
+import StdDebug
+
 //Unescape a string
 jsonUnescape :: !String -> String
 jsonUnescape src
 	#! reps = findChars 0 src
 	= case reps of
 		[!!] -> src
-		reps -> copyAndReplaceChars 0 0 reps src (createArray (size src - length reps) '\0')
+		reps -> copyAndReplaceChars 0 0 reps src (createArray (size src - destSize reps) '\0')
 where
+	destSize :: [!(!Int, !Int, !Char)!] -> Int
+	destSize [!!] = 0
+	destSize [!(_,x,_):xs!] = x-1 + destSize xs
+
 	//Find the special characters
-	findChars :: !Int !String -> [!(!Int, !Char)!]
+	findChars :: !Int !String -> [!(!Int, !Int, !Char)!]
 	findChars i s
 		| i+1>=size s
 			= [!!]
 		#! c0 = s.[i]
 		| c0 == '\\'
 			#! c1 = s.[i+1]
+			| c1 == 'u'
+				#! rc = toChar (parseHex s (i+2))
+				= [!(i,6,rc):findChars (i+6) s!]
 			#! rc = rep c1
-			= [!(i,rc): findChars (i + 2) s!]
+			= [!(i,2,rc): findChars (i + 2) s!]
 			= findChars (i + 1) s
 	where
+			parseHex :: !String !Int -> Int
+			parseHex s i = ph s.[i] * 265^3 + ph s.[i+1] * 265^2 + 
+					ph s.[i+2] * 265 + ph s.[i+3] 
+				where 
+					ph c
+					| isDigit c = digitToInt c
+					| c <= 'f' && c >= 'a' = toInt c - 87
+					| c <= 'F' && c >= 'A' = toInt c - 55
+					= 0
+
             rep :: !Char -> Char
 			rep '\\'	= '\\'
 			rep '"'		= '"'
@@ -409,10 +428,11 @@ where
 			rep c		= c
 
 	//Build the escaped string from the original and the replacements		
-	copyAndReplaceChars :: !Int !Int ![!(!Int, !Char)!] !String !*String -> *String
-	copyAndReplaceChars is id reps=:[!(ir,c):rs!] src dest
+	copyAndReplaceChars :: !Int !Int ![!(!Int, !Int, !Char)!] !String !*String -> *String
+	copyAndReplaceChars is id reps=:[!(ir,il,c):rs!] src dest
+		//Copy until the replace
 		#! (is,id,src,dest) = copyCharsI is id ir src dest
-		=	copyAndReplaceChars (is + 2) (id + 1) rs src {dest & [id] = c}
+		=	copyAndReplaceChars (is + il) (id + 1) rs src {dest & [id] = c}
 	copyAndReplaceChars is id [!!] src dest
 		= copyRemainingChars is id src dest
 
@@ -425,12 +445,6 @@ copyRemainingChars :: !Int !Int !String !*String -> *String
 copyRemainingChars is id src dest
 	| is < size src	= copyRemainingChars (is + 1) (id + 1) src {dest & [id] = src.[is]}
 					= dest
-
-//Intersperse an element on a list
-intersperse :: !a ![a] -> [a]
-intersperse i [] = []
-intersperse i [x] = [x]
-intersperse i [x:xs] = [x,i:intersperse i xs]
 
 //-------------------------------------------------------------------------------------------
 
