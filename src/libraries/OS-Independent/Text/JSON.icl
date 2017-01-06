@@ -385,7 +385,6 @@ where
 	copyAndReplaceChars is id [!!] src dest
 		= copyRemainingChars is id src dest
 
-import StdDebug
 //Find the special characters
 findChars :: Int String -> [!(Int,String)!]
 findChars i s
