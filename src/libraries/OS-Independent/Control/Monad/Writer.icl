@@ -2,6 +2,7 @@ implementation module Control.Monad.Writer
 
 import Data.Functor.Identity
 import Control.Monad
+import Control.Applicative
 import Data.Monoid
 import Control.Monad.Trans
 from StdFunc import o

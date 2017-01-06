@@ -1,4 +1,4 @@
-implementation module RWST
+implementation module Control.Monad.RWST
 
 import StdTuple
 
