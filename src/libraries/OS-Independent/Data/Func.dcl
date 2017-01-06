@@ -1,7 +1,10 @@
 definition module Data.Func
 
-($) infixr 0 :: !(.a -> .b) !.a -> .b
-app          :: !(.a -> .b) !.a -> .b
+($) infixr 0
+($) f :== f
+
+app f :== f
+
 seqSt        :: !(a .st -> .st)       ![a] !.st -> .st
 mapSt        :: !(a .st -> (!b,!.st)) ![a] !.st -> (![b],!.st)
 fix          :: (a -> a) -> a
