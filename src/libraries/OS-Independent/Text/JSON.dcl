@@ -9,6 +9,7 @@ definition module Text.JSON
 */
 
 import StdGeneric, Data.Maybe, StdList, StdString
+from StdFile import class <<<
 
 :: JSONNode	= JSONNull
 			| JSONBool !Bool
@@ -27,6 +28,11 @@ instance toString JSONNode
 * Deserializing JSON structures is done with a fromString instance
 */
 instance fromString JSONNode
+
+/**
+* Serialize a JSON structure and write to a File
+*/
+instance <<< JSONNode
 
 /**
 * Encodes any value to JSON format.

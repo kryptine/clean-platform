@@ -1,6 +1,6 @@
 implementation module Text.JSON
 
-import StdGeneric, Data.Maybe, StdList, StdOrdList, StdString, _SystemArray, StdTuple, StdBool, StdFunc, StdOverloadedList
+import StdGeneric, Data.Maybe, StdList, StdOrdList, StdString, _SystemArray, StdTuple, StdBool, StdFunc, StdOverloadedList, StdFile
 import Text, Text.PPrint
 
 //Basic JSON serialization
@@ -336,6 +336,28 @@ where
 	reverse_append :: !*[.a] !*[.a] -> *[.a]
 	reverse_append [hd:tl] list	= reverse_append tl [hd:list]
 	reverse_append [] list		= list
+
+instance <<< JSONNode
+where
+	(<<<) f JSONNull            = f <<< "null"
+	(<<<) f (JSONBool True)     = f <<< "true"
+	(<<<) f (JSONBool False)    = f <<< "false"
+	(<<<) f (JSONInt i)         = f <<< i
+	(<<<) f (JSONReal r)        = f <<< r
+	(<<<) f (JSONString s)      = f <<< '"' <<< jsonEscape s <<< '"'
+	(<<<) f (JSONArray nodes)   = printNodes nodes (f <<< "[") <<< "]"
+	where
+		printNodes :: [JSONNode] *File -> *File
+		printNodes []         f = f
+		printNodes [n]        f = f <<< n
+		printNodes [n:ns]     f = printNodes ns (f <<< n <<< ",")
+	(<<<) f (JSONObject nodes)  = printNodes nodes (f <<< "{") <<< "}"
+	where
+		printNodes :: [(String,JSONNode)] *File -> *File
+		printNodes []         f = f
+		printNodes [(k,v)]    f = f <<< '"' <<< jsonEscape k <<< "\":" <<< v
+		printNodes [(k,v):ns] f = printNodes ns (f <<< '"' <<< jsonEscape k <<< "\":" <<< v <<< ",")
+	(<<<) f (JSONRaw s)         = f <<< s
 
 //Escape a string
 jsonEscape :: !String -> String
