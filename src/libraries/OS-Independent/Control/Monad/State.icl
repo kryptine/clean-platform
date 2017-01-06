@@ -8,7 +8,6 @@ import Control.Monad.Trans
 
 from StdFunc import o
 from StdTuple import fst, snd
-from StdMisc import abort, undef
 
 instance Functor (StateT s m) | Monad m where
   fmap f m = StateT (\s -> fmap (\(a, s`) -> (f a, s`)) (runStateT m s))
@@ -21,7 +20,7 @@ instance Monad (StateT s m) | Monad m where
   bind m k = StateT (\s -> (runStateT m s >>= \(a, s`) -> runStateT (k a) s`))
 
 instance MonadTrans (StateT s) where
-  liftT m = StateT (\s -> m >>= \a -> return (a, s))
+  liftT m = StateT (\s -> m >>= \a -> pure (a, s))
 
 state :: (s -> .(a, s)) -> StateT s m a | Monad m
 state f = StateT (\s -> pure (f s))
@@ -48,13 +47,13 @@ evalState :: .(StateT s Identity a) s -> a
 evalState m s = fst (runState m s)
 
 evalStateT :: .(StateT s m a) s -> m a | Monad m
-evalStateT m s = runStateT m s >>= \(a, _) -> return a
+evalStateT m s = runStateT m s >>= \(a, _) -> pure a
 
 execState :: .(StateT s Identity a) s -> s
 execState m s = snd (runState m s)
 
 execStateT :: .(StateT s m a) s -> m s | Monad m
-execStateT m s = runStateT m s >>= \(_, s`) -> return s`
+execStateT m s = runStateT m s >>= \(_, s`) -> pure s`
 
 mapState :: ((a, s) -> (b, s)) .(StateT s Identity a) -> StateT s Identity b
 mapState f st = mapStateT (Identity o f o runIdentity) st
