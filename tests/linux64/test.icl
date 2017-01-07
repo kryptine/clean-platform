@@ -135,9 +135,9 @@ import qualified Text.Unicode
 import qualified Text.Unicode.Encodings.JS
 import qualified Text.Unicode.Encodings.UTF8
 import qualified Text.Unicode.UChar
-import qualified Text.XML
 
 //Errors that need to be fixed
+import qualified Text.XML
 import qualified Internet.HTTP.CGI
 import qualified Database.SQL.RelationalMapping
 

@@ -279,7 +279,6 @@ showLitString cs
    // The sticking point is the recursive call to (showLitString cs), which
    // it can't figure out would be ok with arity 2.
 
-import StdMisc
 showMultiLineString :: String -> [String]
 // | Like 'showLitString' (expand escape characters using Haskell
 // escape conventions), but
@@ -288,12 +287,12 @@ showMultiLineString :: String -> [String]
 // Example:  @showMultiLineString "hello\ngoodbye\nblah"@
 // returns   @["\"hello\\n\\", "\\goodbye\n\\", "\\blah\""]@
 showMultiLineString str
-  = undef//go '\"' str
-//  where
-//    go ch s = case split "\n" s of
-//                (l, [_:s`]) | size s > 0 -> {ch} +++ showLitString l "\\n\\" +++ go '\\' s`
-//                (l, "\n")                -> {ch} +++ showLitString l "\\n\""
-//                (l, _)                   -> {ch} +++ showLitString l "\""
+  = go '\"' str
+  where
+    go ch s = case split "\n" s of
+                (l, [_:s`]) | size s > 0 -> {ch} +++ showLitString l "\\n\\" +++ go '\\' s`
+                (l, "\n")                -> {ch} +++ showLitString l "\\n\""
+                (l, _)                   -> {ch} +++ showLitString l "\""
 
 isDec :: Char -> Bool
 isDec c = c >= '0' && c <= '9'
