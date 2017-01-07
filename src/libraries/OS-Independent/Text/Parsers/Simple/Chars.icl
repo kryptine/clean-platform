@@ -5,7 +5,6 @@ import Control.Applicative
 import Control.Monad
 import Data.Either
 import Data.Func
-import Data.Functor
 import Data.List
 from StdFunc import o, const
 

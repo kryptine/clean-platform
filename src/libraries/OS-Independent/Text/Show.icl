@@ -1,6 +1,7 @@
 implementation module Text.Show
 
 import StdArray, StdBool, StdFunc, StdOverloaded, StdClass, StdList
+import StdString
 import Data.Maybe, Data.List
 import Text
 
@@ -91,11 +92,11 @@ class Show a where
     showList  :: [a] -> ShowS
 
 showList` :: (a -> ShowS) [a] -> ShowS
-showList` _     []     = \s -> "[]" ++ s
+showList` _     []     = \s -> "[]" +++ s
 showList` showx [x:xs] = \s -> "[" +++ showx x (showl xs s)
   where
     showl []     s = "]" +++ s
-    showl [y:ys] s = "," +++ showx y (showl ys)
+    showl [y:ys] s = "," +++ showx y (showl ys s)
 
         // Use unboxed stuff because we don't have overloaded numerics yet
 appPrec = 10        // Precedence of application:
@@ -126,7 +127,7 @@ instance  Show Char  where
   showsPrec _ c    = showChar '\'' o showLitChar c o showChar '\''
   show x = shows x ""
 
-  showList cs = showChar '"' o showLitString cs o showChar '"'
+  showList cs = showChar '"' o showLitString (toString cs) o showChar '"'
 
 instance Show Int where
   showsPrec x xs = \s -> showSignedInt x xs s
@@ -134,8 +135,10 @@ instance Show Int where
   showList ls = \s -> showList` shows ls s
 
 instance Show (Maybe a) | Show a where
-    showsPrec _ (Just x) = showString "Just" o shows x
-    showsPrec _ Nothing  = showString "Nothing"
+  showsPrec _ (Just x) = showString "Just" o shows x
+  showsPrec _ Nothing  = showString "Nothing"
+  show x = shows x ""
+  showList ls = \s -> showList` shows ls s
 
 //------------------------------------------------------------
 // Show instances for the first few tuple
@@ -149,40 +152,62 @@ instance Show (Maybe a) | Show a where
 
 instance Show (a,b) | Show a & Show b where
   showsPrec _ (a,b) = \s -> show_tuple [shows a, shows b] s
+  show x = shows x ""
+  showList ls = \s -> showList` shows ls s
 
 instance Show (a,b,c) | Show a & Show b & Show c where
   showsPrec _ (a,b,c) = \s -> show_tuple [shows a, shows b, shows c] s
+  show x = shows x ""
+  showList ls = \s -> showList` shows ls s
 
 instance Show (a,b,c,d) | Show a & Show b & Show c & Show d where
   showsPrec _ (a,b,c,d) = \s -> show_tuple [shows a, shows b, shows c, shows d] s
+  show x = shows x ""
+  showList ls = \s -> showList` shows ls s
 
 instance Show (a,b,c,d,e) | Show a & Show b & Show c & Show d & Show e where
   showsPrec _ (a,b,c,d,e) = \s -> show_tuple [shows a, shows b, shows c, shows d, shows e] s
+  show x = shows x ""
+  showList ls = \s -> showList` shows ls s
 
 instance Show (a,b,c,d,e,f) | Show a & Show b & Show c & Show d & Show e & Show f where
   showsPrec _ (a,b,c,d,e,f) = \s -> show_tuple [shows a, shows b, shows c, shows d, shows e, shows f] s
+  show x = shows x ""
+  showList ls = \s -> showList` shows ls s
 
 instance Show (a,b,c,d,e,f,g) | Show a & Show b & Show c & Show d & Show e & Show f & Show g where
   showsPrec _ (a,b,c,d,e,f,g) = \s -> show_tuple [shows a, shows b, shows c, shows d, shows e, shows f, shows g] s
+  show x = shows x ""
+  showList ls = \s -> showList` shows ls s
 
 instance Show (a,b,c,d,e,f,g,h) | Show a & Show b & Show c & Show d & Show e & Show f & Show g & Show h where
   showsPrec _ (a,b,c,d,e,f,g,h) = \s -> show_tuple [shows a, shows b, shows c, shows d, shows e, shows f, shows g, shows h] s
+  show x = shows x ""
+  showList ls = \s -> showList` shows ls s
 
 instance Show (a,b,c,d,e,f,g,h,i) | Show a & Show b & Show c & Show d & Show e & Show f & Show g & Show h & Show i where
   showsPrec _ (a,b,c,d,e,f,g,h,i) = \s -> show_tuple [shows a, shows b, shows c, shows d, shows e, shows f, shows g, shows h,
                       shows i] s
+  show x = shows x ""
+  showList ls = \s -> showList` shows ls s
 
 instance Show (a,b,c,d,e,f,g,h,i,j) | Show a & Show b & Show c & Show d & Show e & Show f & Show g & Show h & Show i & Show j where
   showsPrec _ (a,b,c,d,e,f,g,h,i,j) = \s -> show_tuple [shows a, shows b, shows c, shows d, shows e, shows f, shows g, shows h,
                       shows i, shows j] s
+  show x = shows x ""
+  showList ls = \s -> showList` shows ls s
 
 instance Show (a,b,c,d,e,f,g,h,i,j,k) | Show a & Show b & Show c & Show d & Show e & Show f & Show g & Show h & Show i & Show j & Show k where
   showsPrec _ (a,b,c,d,e,f,g,h,i,j,k) = \s -> show_tuple [shows a, shows b, shows c, shows d, shows e, shows f, shows g, shows h,
                       shows i, shows j, shows k] s
+  show x = shows x ""
+  showList ls = \s -> showList` shows ls s
 
 instance Show (a,b,c,d,e,f,g,h,i,j,k,l) | Show a & Show b & Show c & Show d & Show e & Show f & Show g & Show h & Show i & Show j & Show k & Show l where
   showsPrec _ (a,b,c,d,e,f,g,h,i,j,k,l) = \s -> show_tuple [shows a, shows b, shows c, shows d, shows e, shows f, shows g, shows h,
                       shows i, shows j, shows k, shows l] s
+  show x = shows x ""
+  showList ls = \s -> showList` shows ls s
 
 show_tuple :: [ShowS] -> ShowS
 show_tuple ss = showChar '('
@@ -234,8 +259,9 @@ showLitChar '\n'           = \s -> showString "\\n" s
 showLitChar '\r'           = \s -> showString "\\r" s
 showLitChar '\t'           = \s -> showString "\\t" s
 showLitChar '\v'           = \s -> showString "\\v" s
-showLitChar c | c == 14    = \s -> protectEsc (\x -> x == 'H') (showString "\\SO") s
-showLitChar c              = \s -> showString ("\\" +++ asciiTab.[toInt c]) s
+showLitChar c
+| c == toChar 14    = \s -> protectEsc (\x -> x == 'H') (showString "\\SO") s
+= \s -> showString ("\\" +++ asciiTab.[toInt c]) s
 
 showLitString :: String -> ShowS
 // | Same as 'showLitChar', but for strings
@@ -253,6 +279,7 @@ showLitString cs
    // The sticking point is the recursive call to (showLitString cs), which
    // it can't figure out would be ok with arity 2.
 
+import StdMisc
 showMultiLineString :: String -> [String]
 // | Like 'showLitString' (expand escape characters using Haskell
 // escape conventions), but
@@ -261,19 +288,19 @@ showMultiLineString :: String -> [String]
 // Example:  @showMultiLineString "hello\ngoodbye\nblah"@
 // returns   @["\"hello\\n\\", "\\goodbye\n\\", "\\blah\""]@
 showMultiLineString str
-  = go '\"' str
-  where
-    go ch s = case split "\n" s of
-                (l, [_:s`]) | size s > 0 -> {ch} +++ showLitString l "\\n\\" +++ go '\\' s`
-                (l, "\n")                -> {ch} +++ showLitString l "\\n\""
-                (l, _)                   -> {ch} +++ showLitString l "\""
+  = undef//go '\"' str
+//  where
+//    go ch s = case split "\n" s of
+//                (l, [_:s`]) | size s > 0 -> {ch} +++ showLitString l "\\n\\" +++ go '\\' s`
+//                (l, "\n")                -> {ch} +++ showLitString l "\\n\""
+//                (l, _)                   -> {ch} +++ showLitString l "\""
 
 isDec :: Char -> Bool
 isDec c = c >= '0' && c <= '9'
 
 protectEsc :: (Char -> Bool) ShowS -> ShowS
 protectEsc p f = f o cont
-                 where cont s | size s > 0 && p s.[0] = "\\&" ++ s
+                 where cont s | size s > 0 && p s.[0] = "\\&" +++ s
                        cont s                         = s
 
 

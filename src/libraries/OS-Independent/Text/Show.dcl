@@ -177,9 +177,9 @@ showMultiLineString :: String -> [String]
 
 isDec :: Char -> Bool
 
-protectEsc :: (Char -> Bool) -> ShowS -> ShowS
+protectEsc :: (Char -> Bool) ShowS -> ShowS
 
-asciiTab :: [String]
+asciiTab :: {String}
 
 showSignedInt :: Int Int -> ShowS
 
