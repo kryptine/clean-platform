@@ -9,4 +9,4 @@ More information about this project can be found on the Clean Wiki:
 http://wiki.clean.cs.ru.nl/Clean_platform
 
 The libraries are provided under the same license as the Clean System. Details can be found at:
-http://clean.cs.ru.nl/Download/License_Conditions/license_conditions.html
+http://wiki.clean.cs.ru.nl/Clean_license_conditions
