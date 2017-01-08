@@ -2,6 +2,7 @@ implementation module Control.Monad.Reader
 
 import Data.Functor.Identity
 import Control.Monad
+import Control.Applicative
 from StdFunc import o, const
 import Control.Monad.Trans
 
@@ -13,7 +14,7 @@ instance Functor (ReaderT r m) | Monad m where
   fmap f m = liftM f m
 
 instance Applicative (ReaderT r m) | Monad m where
-  pure x = (liftT o return) x
+  pure x = (liftT o pure) x
   <*> mf mx = ap mf mx
 
 instance Monad (ReaderT r m) | Monad m where
@@ -47,7 +48,7 @@ liftReaderT :: (a .b) -> .(ReaderT .c a .b)
 liftReaderT m = ReaderT (const m)
 
 ask :: .(ReaderT a b a) | Monad b
-ask = ReaderT return
+ask = ReaderT pure
 
 local :: u:((.a -> .b) -> v:(.(ReaderT .b .c .d) -> .(ReaderT .a .c .d))), [v <= u]
 local = withReaderT

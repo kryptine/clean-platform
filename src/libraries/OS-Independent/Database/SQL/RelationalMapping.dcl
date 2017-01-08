@@ -68,4 +68,4 @@ generic	relMap t ::
 		(!(Maybe MappingError), !(Maybe t),![RelMapFieldInfo],![RelMapToken],!*cur)	| SQLCursor cur
 
 // Instances for the standard data types
-derive 		relMap Int, Real, Bool, Char, String, UNIT, PAIR, EITHER, CONS, FIELD, OBJECT, {}, {!}, Maybe, []
+derive 		relMap Int, Real, Bool, Char, String, UNIT, PAIR, EITHER, CONS of d, FIELD of d, OBJECT, {}, {!}, Maybe, []

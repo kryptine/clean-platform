@@ -1,4 +1,4 @@
-definition module RWST
+definition module Control.Monad.RWST
 
 from Control.Applicative import class Applicative
 from Control.Monad import class Monad
