@@ -38,6 +38,7 @@ count_escape_chars i s
 			| c <> '\\'
 				= count_escape_chars (i + 1) s
 				= count_more_escape_chars (i + 1) s 1
+			| isControl c = count_more_escape_chars (i + 1) s 5
 			| c == '"' || c == '/' || c == '\b' || c == '\f' || c == '\n' || c == '\r' || c == '\t'
 				= count_more_escape_chars (i + 1) s 1
 				= count_escape_chars (i + 1) s
@@ -51,6 +52,7 @@ where
 				| c <> '\\'
 					= count_more_escape_chars (i + 1) s n
 					= count_more_escape_chars (i + 1) s (n+1)
+				| isControl c = count_more_escape_chars (i+1) s (n+5)
 				| c == '"' || c == '/' || c == '\b' || c == '\f' || c == '\n' || c == '\r' || c == '\t'
 					= count_more_escape_chars (i + 1) s (n+1)
 					= count_more_escape_chars (i + 1) s n
@@ -77,10 +79,13 @@ copyNode start (JSONString s) buffer
 		= (start+1, {buffer & [start] = '"'})
 	where
 		// Copy the escaped string from the original and the replacements		
-		copyAndReplaceChars :: !Int !Int ![!(Int,Char)!] !String !*String -> (!Int,!*String)
+		copyAndReplaceChars :: !Int !Int ![!(Int,String)!] !String !*String -> (!Int,!*String)
 		copyAndReplaceChars is id [!(ir,c):rs!] src dest
 			#! (is,id,src,dest) = copyCharsI is id ir src dest
-			= copyAndReplaceChars (is + 1) (id + 2) rs src {dest & [id] = '\\', [id + 1] = c}
+			#! dest = {dest & [id] = '\\', [id + 1] = c.[0]}
+			#! dest = if (size c == 1) dest
+				{dest & [id+2]=c.[1], [id+3]=c.[2], [id+4]=c.[3], [id+5]=c.[4]}
+			= copyAndReplaceChars (is + 1) (id + size c + 1) rs src dest
 		copyAndReplaceChars is id [!!] src dest
 			= copyRemainingChars is id src dest
 
@@ -365,39 +370,49 @@ jsonEscape src
 	#! reps = findChars 0 src
 	= case reps of
 		[!!] -> src
-		reps -> copyAndReplaceChars 0 0 reps src (createArray (size src + Length reps) '\0')
+		reps -> copyAndReplaceChars 0 0 reps src (createArray (size src + destSize reps) '\0')
 where
+	destSize [!!] = 0
+	destSize [!(_,x):xs!] = size x - 1 + destSize xs
 	//Build the escaped string from the original and the replacements		
-	copyAndReplaceChars :: !Int !Int ![!(!Int, !Char)!] !String !*String -> *String
+	copyAndReplaceChars :: !Int !Int ![!(!Int, !String)!] !String !*String -> *String
 	copyAndReplaceChars is id reps=:[!(ir,c):rs!] src dest
 		#! (is,id,src,dest) = copyCharsI is id ir src dest
-		= copyAndReplaceChars (is + 1) (id + 2) rs src {dest & [id] = '\\', [id + 1] = c}
+		#! dest = {dest & [id] = '\\', [id + 1] = c.[0]}
+		#! dest = if (size c == 1) dest
+			{dest & [id+2]=c.[1], [id+3]=c.[2], [id+4]=c.[3], [id+5]=c.[4]}
+		= copyAndReplaceChars (is + 1) (id + size c + 1) rs src dest
 	copyAndReplaceChars is id [!!] src dest
 		= copyRemainingChars is id src dest
 
 //Find the special characters
-findChars :: Int String -> [!(Int,Char)!]
+findChars :: Int String -> [!(Int,String)!]
 findChars i s
 	| i < size s
 		#! c = s.[i]
 		| c >= '0'
 			| c <> '\\'
 				= findChars (i + 1) s
-				= [!(i,c): findChars (i + 1) s!]
+				= [!(i,toString c): findChars (i + 1) s!]
 			| c == '"' || c == '/'
-				= [!(i,c): findChars (i + 1) s!]
+				= [!(i,toString c): findChars (i + 1) s!]
 			| c == '\b'
-				= [!(i,'b'): findChars (i + 1) s!]
+				= [!(i,"b"): findChars (i + 1) s!]
 			| c == '\f'
-				= [!(i,'f'): findChars (i + 1) s!]
+				= [!(i,"f"): findChars (i + 1) s!]
 			| c == '\n'
-				= [!(i,'n'): findChars (i + 1) s!]
+				= [!(i,"n"): findChars (i + 1) s!]
 			| c == '\r'
-				= [!(i,'r'): findChars (i + 1) s!]
+				= [!(i,"r"): findChars (i + 1) s!]
 			| c == '\t'
-				= [!(i,'t'): findChars (i + 1) s!]
+				= [!(i,"t"): findChars (i + 1) s!]
+			| isControl c
+				= [!(i,"u" +++ toHex (toInt c)): findChars (i + 1) s!]
 				= findChars (i + 1) s
 		= [!!]
+	where
+		toHex :: !Int -> !String
+		toHex c = {#'0', '0', toChar (c / 265 + 48), toChar (c rem 265 + 48)}
 
 //Unescape a string
 jsonUnescape :: !String -> String
@@ -405,20 +420,37 @@ jsonUnescape src
 	#! reps = findChars 0 src
 	= case reps of
 		[!!] -> src
-		reps -> copyAndReplaceChars 0 0 reps src (createArray (size src - length reps) '\0')
+		reps -> copyAndReplaceChars 0 0 reps src (createArray (size src - destSize reps) '\0')
 where
+	destSize :: [!(!Int, !Int, !Char)!] -> Int
+	destSize [!!] = 0
+	destSize [!(_,x,_):xs!] = x-1 + destSize xs
+
 	//Find the special characters
-	findChars :: !Int !String -> [!(!Int, !Char)!]
+	findChars :: !Int !String -> [!(!Int, !Int, !Char)!]
 	findChars i s
 		| i+1>=size s
 			= [!!]
 		#! c0 = s.[i]
 		| c0 == '\\'
 			#! c1 = s.[i+1]
+			| c1 == 'u'
+				#! rc = toChar (parseHex s (i+2))
+				= [!(i,6,rc):findChars (i+6) s!]
 			#! rc = rep c1
-			= [!(i,rc): findChars (i + 2) s!]
+			= [!(i,2,rc): findChars (i + 2) s!]
 			= findChars (i + 1) s
 	where
+			parseHex :: !String !Int -> Int
+			parseHex s i = ph s.[i] * 265^3 + ph s.[i+1] * 265^2 + 
+					ph s.[i+2] * 265 + ph s.[i+3] 
+				where 
+					ph c
+					| isDigit c = digitToInt c
+					| c <= 'f' && c >= 'a' = toInt c - 87
+					| c <= 'F' && c >= 'A' = toInt c - 55
+					= 0
+
             rep :: !Char -> Char
 			rep '\\'	= '\\'
 			rep '"'		= '"'
@@ -431,10 +463,11 @@ where
 			rep c		= c
 
 	//Build the escaped string from the original and the replacements		
-	copyAndReplaceChars :: !Int !Int ![!(!Int, !Char)!] !String !*String -> *String
-	copyAndReplaceChars is id reps=:[!(ir,c):rs!] src dest
+	copyAndReplaceChars :: !Int !Int ![!(!Int, !Int, !Char)!] !String !*String -> *String
+	copyAndReplaceChars is id reps=:[!(ir,il,c):rs!] src dest
+		//Copy until the replace
 		#! (is,id,src,dest) = copyCharsI is id ir src dest
-		=	copyAndReplaceChars (is + 2) (id + 1) rs src {dest & [id] = c}
+		=	copyAndReplaceChars (is + il) (id + 1) rs src {dest & [id] = c}
 	copyAndReplaceChars is id [!!] src dest
 		= copyRemainingChars is id src dest
 
@@ -447,12 +480,6 @@ copyRemainingChars :: !Int !Int !String !*String -> *String
 copyRemainingChars is id src dest
 	| is < size src	= copyRemainingChars (is + 1) (id + 1) src {dest & [id] = src.[is]}
 					= dest
-
-//Intersperse an element on a list
-intersperse :: !a ![a] -> [a]
-intersperse i [] = []
-intersperse i [x] = [x]
-intersperse i [x:xs] = [x,i:intersperse i xs]
 
 //-------------------------------------------------------------------------------------------
 
