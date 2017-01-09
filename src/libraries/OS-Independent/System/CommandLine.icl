@@ -42,15 +42,12 @@ where
 
 setReturnCode :: !Int !*World -> *World
 setReturnCode i world = code {
-    pushI 0
     pushLc return_code
     :xxx
-    pop_b 3
-|    mov dword ptr [rbx+r10],eax
-    instruction 66
+|    mov %eax,(%ebx)
     instruction 137
-    instruction 4
-    instruction 19
+    instruction 3
+    pop_b 2
     fill_a 0 1
     pop_a 1
 }
