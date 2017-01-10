@@ -92,6 +92,7 @@ import qualified Graphics.Layout
 import qualified Graphics.Scalable
 import qualified Graphics.Scalable.Internal
 import qualified Internet.HTTP
+import qualified Internet.HTTP.CGI
 import qualified Math.Geometry
 import qualified Math.Random
 import qualified Network.IP
@@ -138,7 +139,6 @@ import qualified Text.Unicode.UChar
 
 //Errors that need to be fixed
 import qualified Text.XML
-import qualified Internet.HTTP.CGI
 import qualified Database.SQL.RelationalMapping
 
 Start = "Hello World!"

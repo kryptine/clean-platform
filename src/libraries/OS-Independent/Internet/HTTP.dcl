@@ -98,5 +98,4 @@ badRequestResponse 	:: !String -> HTTPResponse
 staticResponse		:: !HTTPRequest !*World																				-> (!HTTPResponse, !*World)
 customResponse		:: ![((String -> Bool),(HTTPRequest *World -> (HTTPResponse, *World)))] !Bool !HTTPRequest !*World	-> (!HTTPResponse, !*World)
 
-
-
+encodeResponse :: !Bool !HTTPResponse !*World -> (!String,!*World)

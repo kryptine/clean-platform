@@ -283,3 +283,21 @@ customResponse [(pred,handler):rest] fallback request world
 									= handler request world							//Apply handler function
 									= customResponse rest fallback request world	//Search the rest of the list
 
+//Response utilities
+encodeResponse :: !Bool !HTTPResponse !*World -> (!String,!*World)
+encodeResponse withreply {rsp_headers = headers, rsp_data = data} world
+	# reply = if withreply
+		("HTTP/1.0 " +++ (default "200 OK" (lookup "Status" headers)) +++ "\r\n")
+		("Status: " +++ (default "200 OK" (lookup "Status" headers)) +++ "\r\n")
+	# reply = reply +++ ("Server: " +++ (default "Clean HTTP tools" (lookup "Server" headers)) +++ "\r\n") //Server identifier
+	# reply = reply +++ ("Content-Type: " +++ (default "text/html" (lookup "Content-Type" headers)) +++ "\r\n") //Content type header
+	# reply = reply +++ ("Content-Length: " +++ (toString (size data)) +++ "\r\n") //Content length header
+	# reply = reply +++ (foldr (+++) "" [(n +++ ": " +++ v +++ "\r\n") \\ (n,v) <- headers | not (skipHeader n)]) //Additional headers
+	# reply = reply +++ ("\r\n" +++ data) //Separator + data
+	= (reply, world)
+where
+	//Do not add these headers two times
+	default def mbval = case mbval of
+		Nothing = def
+		(Just val) = val
+	skipHeader s = isMember s ["Status","Date","Server","Content-Type","Content-Length","Last-Modified"]
