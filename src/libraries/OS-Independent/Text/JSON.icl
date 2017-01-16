@@ -374,7 +374,6 @@ jsonEscape src
 where
 	destSize [!!] = 0
 	destSize [!(_,x):xs!] = size x - 1 + destSize xs
-
 	//Build the escaped string from the original and the replacements		
 	copyAndReplaceChars :: !Int !Int ![!(!Int, !String)!] !String !*String -> *String
 	copyAndReplaceChars is id reps=:[!(ir,c):rs!] src dest
@@ -413,12 +412,7 @@ findChars i s
 		= [!!]
 	where
 		toHex :: !Int -> !String
-		toHex c = {#'0', '0', toHexDigit (c / 16), toHexDigit (c rem 16)}
-		toHexDigit c
-		| c > 15 = toHexDigit (c rem 16)
-		| c < 0 = toHexDigit (~c)
-		| c < 10 = toChar (c + 48)
-		| otherwise = toChar (c + 87)
+		toHex c = {#'0', '0', toChar (c / 265 + 48), toChar (c rem 265 + 48)}
 
 //Unescape a string
 jsonUnescape :: !String -> String
@@ -448,8 +442,8 @@ where
 			= findChars (i + 1) s
 	where
 			parseHex :: !String !Int -> Int
-			parseHex s i = ph s.[i] * 16^3 + ph s.[i+1] * 16^2 + 
-					ph s.[i+2] * 16 + ph s.[i+3] 
+			parseHex s i = ph s.[i] * 265^3 + ph s.[i+1] * 265^2 + 
+					ph s.[i+2] * 265 + ph s.[i+3] 
 				where 
 					ph c
 					| isDigit c = digitToInt c
