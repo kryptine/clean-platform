@@ -88,6 +88,7 @@ import qualified Database.SQL.MySQL
 import qualified Database.SQL.SQLite
 import qualified Database.SQL._MySQL
 import qualified Database.SQL._SQLite
+import qualified Database.SQL.RelationalMapping
 import qualified Graphics.Layout
 import qualified Graphics.Scalable
 import qualified Graphics.Scalable.Internal
@@ -139,6 +140,5 @@ import qualified Text.XML
 
 //Errors that need to be fixed
 import qualified Internet.HTTP.CGI
-import qualified Database.SQL.RelationalMapping
 
 Start = "Hello World!"
