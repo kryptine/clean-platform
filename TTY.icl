@@ -55,9 +55,9 @@ TTYreadline _ = code {
 		ccall ttyreadline "I:VSI"
 	}
 
-TTYwrite :: !*TTY !String -> *TTY
+TTYwrite :: !String !*TTY -> *TTY
 TTYwrite _ _ = code {
-		ccall ttywrite "IS:I"
+		ccall ttywrite "SI:I"
 	}
 
 TTYavailable :: !*TTY -> (!Bool, !*TTY)

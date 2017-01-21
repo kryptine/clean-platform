@@ -25,4 +25,4 @@ TTYerror :: !*env -> (!String, !*env)
 TTYopen :: !String !TTYSettings !*env -> (!Bool,!*TTY,!*env)
 TTYreadline :: !*TTY -> (!String, !*TTY)
 TTYavailable :: !*TTY -> (!Bool, !*TTY)
-TTYwrite :: !*TTY !String -> *TTY
+TTYwrite :: !String !*TTY -> *TTY

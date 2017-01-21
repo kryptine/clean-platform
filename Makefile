@@ -1,8 +1,8 @@
 test: test.icl TTY.icl TTY.dcl Clean\ System\ Files/ctty.o
-	clm $(basename $<) -o $@
+	clm -dynamics -l -no-pie -I /opt/clean/lib/Dynamics $(basename $<) -o $@
 
 Clean\ System\ Files/ctty.o: tty.c
-	gcc -c $< -o "$@"
+	gcc-5 -c $< -o "$@"
 
 clean:
 	$(RM) -r Clean\ System\ Files/* test

@@ -16,7 +16,7 @@ Start w
 # (io, w) = stdio w
 # (ok, tty, w) = TTYopen "/dev/ttyUSB0" zero w
 | not ok = TTYerrorclose io w
-#! tty = TTYwrite tty "echo123\n"
+#! tty = TTYwrite "echo123\n" tty
 #! (av, tty) = TTYavailable tty
 # io = io <<< ("Bytes available: " +++ toString av +++ "\n")
 #! (l, tty) = TTYreadline tty

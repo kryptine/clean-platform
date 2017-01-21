@@ -1,3 +1,4 @@
+#include <ctype.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <unistd.h>
@@ -203,7 +204,7 @@ void ttyreadline(int fd, CleanString *result, int *fdo)
 
 void ttyavailable(int fd, int *r, int *fdo)
 {
-	debug("ttyavailable");
+//	debug("ttyavailable");
 	fd_set fds;
 	struct timeval tv;
 	tv.tv_sec = 0;
@@ -216,10 +217,10 @@ void ttyavailable(int fd, int *r, int *fdo)
 	if(*r == -1)
 		die("select");
 	*fdo = fd;
-	debug("ttyavailable-done");
+//	debug("ttyavailable-done");
 }
 
-int ttywrite(int fd, CleanString s)
+int ttywrite(CleanString s, int fd)
 {
 	debug("ttywrite");
 	write(fd, CleanStringCharacters(s), CleanStringLength(s));
