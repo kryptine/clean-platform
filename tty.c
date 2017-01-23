@@ -198,6 +198,9 @@ void ttyreadline(int fd, CleanString *result, int *fdo)
 	CleanStringLength(readlinecl) = charsread;
 	*fdo = fd;
 
+	debug("Recv: ");
+	debug(buf);
+	debug("\n");
 	free(buf);
 	debug("ttyreadline-done");
 }
