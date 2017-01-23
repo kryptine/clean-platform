@@ -12,9 +12,9 @@
 #include "Clean.h"
 
 #ifdef DEBUG
-#define debug(s) {puts(s); fflush(stdout);}
+#define debug(s, ...) {printf(s "\n", #__VA_ARGS__); fflush(stdout);}
 #else
-#define debug(s) ;
+#define debug(s, ...) ;
 #endif
 
 #ifdef __APPLE__
@@ -198,10 +198,7 @@ void ttyreadline(int fd, CleanString *result, int *fdo)
 	CleanStringLength(readlinecl) = charsread;
 	*fdo = fd;
 
-	debug("Recv: ");
-	debug(buf);
-	debug("\n");
-	free(buf);
+	debug("Recv: '%s'", buf);
 	debug("ttyreadline-done");
 }
 
