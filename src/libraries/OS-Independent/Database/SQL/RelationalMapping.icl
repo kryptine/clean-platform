@@ -175,8 +175,8 @@ relMap{|PAIR|} fx fy mode pass (Just (PAIR x y)) info tokens cursor
 
 //Special CONS for RelMapInfo mode.
 relMap{|CONS of d|} f RelMapInfo _ _ info tokens cursor
-	| not (isEmpty d.gcd_fields)
-		= (Nothing, Nothing, [{emptyInfo & val_fields = [setFldInfo desc emptyInfo \\ desc <- d.gcd_fields] , val_id = isID d.gcd_name }], tokens, cursor)
+	| not (isEmpty d.gcd_type_def.gtd_conses)
+		= (Nothing, Nothing, [{emptyInfo & val_fields = [setFldInfo desc.gcd_name emptyInfo \\ desc <- d.gcd_type_def.gtd_conses] , val_id = isID d.gcd_name }], tokens, cursor)
 	| otherwise
 		# (mbErr, _, info, _, cursor)		= f RelMapInfo 0 Nothing info tokens cursor
 		| isJust mbErr						= (mbErr,Nothing,[],[],cursor)
@@ -184,7 +184,7 @@ relMap{|CONS of d|} f RelMapInfo _ _ info tokens cursor
 
 //Special CONS for RelMapRead mode.
 relMap{|CONS of d|} f RelMapRead _ _ info tokens cursor
-	| not (isEmpty d.gcd_fields)
+	| not (isEmpty d.gcd_type_def.gtd_conses)
 		# (_,_,info,_,cursor)	= f RelMapInfo 0 Nothing info tokens cursor							//Extract info about the fields in the record
 		# info					= map (setRecInfo info) info										//Add type info about this record
 		# (mbErr,tokx,cursor)	= readRecord info (hd tokens) cursor								//Read the extra tokens for this record
@@ -208,7 +208,7 @@ relMap{|CONS of d|} f RelMapRead _ _ info tokens cursor
 
 //Special CONS for RelMapCreate mode.
 relMap{|CONS of d|} f RelMapCreate pass (Just (CONS x)) info tokens cursor 
-	| not (isEmpty d.gcd_fields) && not (isID d.gcd_name)
+	| not (isEmpty d.gcd_type_def.gtd_conses) && not (isID d.gcd_name)
 		# (mbErr,_,info,_,cursor)	= f RelMapInfo 0 (Just x) info [] cursor							//Find type info of the individual fields
 		| isJust mbErr				= (mbErr,Nothing, [],[],cursor)
 		# info						= map (setRecInfo info) info 									//Add type info about this record
@@ -231,7 +231,7 @@ relMap{|CONS of d|} f RelMapCreate pass (Just (CONS x)) info tokens cursor
 
 //Special CONS for RelMapUpdate mode.
 relMap{|CONS of d|} f RelMapUpdate pass (Just (CONS x)) info tokens cursor
-	| not (isEmpty d.gcd_fields) && not (isID d.gcd_name)
+	| not (isEmpty d.gcd_type_def.gtd_conses) && not (isID d.gcd_name)
 		# (mbErr,_,info,_,cursor)	= f RelMapInfo 0 (Just x) info [] cursor							//Find type info of the individual fields
 		| isJust mbErr				= (mbErr,Nothing, [],[],cursor)
 		# info						= map (setRecInfo info) info									//Add type info about this record
@@ -261,7 +261,7 @@ relMap{|CONS of d|} f RelMapUpdate pass (Just (CONS x)) info tokens cursor
 
 //Special CONS for RelMapDelete mode.
 relMap{|CONS of d|} f RelMapDelete pass _ info tokens cursor
-	| not (isEmpty d.gcd_fields) && not (isID d.gcd_name)
+	| not (isEmpty d.gcd_type_def.gtd_conses) && not (isID d.gcd_name)
 		# (mbErr,_,info,_,cursor)	= f RelMapInfo 0 Nothing [] tokens cursor							//Extract info about the fields in the record
 		| isJust mbErr				= (mbErr,Nothing, [],[],cursor)
 		# info						= map (setRecInfo info) info									//Add type info about this record
@@ -339,7 +339,7 @@ relMap{|FIELD of d|} f RelMapInfo _ _ info tokens cursor
 	= case f RelMapInfo 0 Nothing info tokens cursor of
 		(mbErr,_, [x:xs], _, cursor)
 			| isJust mbErr		= (mbErr,Nothing, [],[],cursor)
-			= (Nothing, Nothing, [setFldInfo d x:xs], tokens, cursor)
+			= (Nothing, Nothing, [setFldInfo d.gfd_name x:xs], tokens, cursor)
 		(mbErr,_, info, _, cursor)
 			| isJust mbErr		= (mbErr,Nothing, [],[],cursor)
 			= (Nothing, Nothing, info, tokens, cursor)
@@ -614,9 +614,9 @@ emptyInfo :: RelMapFieldInfo
 emptyInfo = {fld_table = undef, fld_select = Nothing, fld_match = Nothing, rec_table = undef, rec_key = undef, val_list = False, val_maybe = False, val_fields = [], val_id = False}
 
 //Sets the information that is encoded in the field name in an info record
-setFldInfo :: !GenericFieldDescriptor !RelMapFieldInfo -> RelMapFieldInfo
+setFldInfo :: !String !RelMapFieldInfo -> RelMapFieldInfo
 setFldInfo desc info 
-	# parts = split FIELD_SEPARATOR desc.gfd_name
+	# parts = split FIELD_SEPARATOR desc
 	//Determine the table
 	# table = hd parts
 	# parts = tl parts

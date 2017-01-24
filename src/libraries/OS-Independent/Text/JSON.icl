@@ -34,29 +34,21 @@ count_escape_chars :: !Int !String -> Int
 count_escape_chars i s
 	| i < size s
 		#! c = s.[i]
-		| c >= '0'
-			| c <> '\\'
-				= count_escape_chars (i + 1) s
-				= count_more_escape_chars (i + 1) s 1
-			| isControl c = count_more_escape_chars (i + 1) s 5
-			| c == '"' || c == '/' || c == '\b' || c == '\f' || c == '\n' || c == '\r' || c == '\t'
-				= count_more_escape_chars (i + 1) s 1
-				= count_escape_chars (i + 1) s
-		= 0
+		| c == '"' || c == '/' || c == '\b' || c == '\f' || c == '\n' || c == '\r' || c == '\t' || c == '\\'
+			= count_more_escape_chars (i + 1) s 1
+		| isControl c = count_more_escape_chars (i + 1) s 5
+		= count_escape_chars (i + 1) s
+	= 0
 where
 	count_more_escape_chars :: !Int !String !Int -> Int
 	count_more_escape_chars i s n
 		| i < size s
 			#! c = s.[i]
-			| c >= '0'
-				| c <> '\\'
-					= count_more_escape_chars (i + 1) s n
-					= count_more_escape_chars (i + 1) s (n+1)
-				| isControl c = count_more_escape_chars (i+1) s (n+5)
-				| c == '"' || c == '/' || c == '\b' || c == '\f' || c == '\n' || c == '\r' || c == '\t'
-					= count_more_escape_chars (i + 1) s (n+1)
-					= count_more_escape_chars (i + 1) s n
-			= n
+			| c == '"' || c == '/' || c == '\b' || c == '\f' || c == '\n' || c == '\r' || c == '\t' || c == '\\'
+				= count_more_escape_chars (i + 1) s (n+1)
+			| isControl c = count_more_escape_chars (i + 1) s (n+5)
+			= count_more_escape_chars (i + 1) s n
+		= n
 
 //Copy structure to a string
 copyNode :: !Int !JSONNode !*{#Char} -> *(!Int, !*{#Char})
@@ -374,6 +366,7 @@ jsonEscape src
 where
 	destSize [!!] = 0
 	destSize [!(_,x):xs!] = size x - 1 + destSize xs
+
 	//Build the escaped string from the original and the replacements		
 	copyAndReplaceChars :: !Int !Int ![!(!Int, !String)!] !String !*String -> *String
 	copyAndReplaceChars is id reps=:[!(ir,c):rs!] src dest
@@ -390,29 +383,24 @@ findChars :: Int String -> [!(Int,String)!]
 findChars i s
 	| i < size s
 		#! c = s.[i]
-		| c >= '0'
-			| c <> '\\'
-				= findChars (i + 1) s
-				= [!(i,toString c): findChars (i + 1) s!]
-			| c == '"' || c == '/'
-				= [!(i,toString c): findChars (i + 1) s!]
-			| c == '\b'
-				= [!(i,"b"): findChars (i + 1) s!]
-			| c == '\f'
-				= [!(i,"f"): findChars (i + 1) s!]
-			| c == '\n'
-				= [!(i,"n"): findChars (i + 1) s!]
-			| c == '\r'
-				= [!(i,"r"): findChars (i + 1) s!]
-			| c == '\t'
-				= [!(i,"t"): findChars (i + 1) s!]
-			| isControl c
-				= [!(i,"u" +++ toHex (toInt c)): findChars (i + 1) s!]
-				= findChars (i + 1) s
-		= [!!]
+		| c == '\\' = [!(i,toString c): findChars (i + 1) s!]
+		| c == '"' || c == '/' = [!(i,toString c): findChars (i + 1) s!]
+		| c == '\b' = [!(i,"b"): findChars (i + 1) s!]
+		| c == '\f' = [!(i,"f"): findChars (i + 1) s!]
+		| c == '\n' = [!(i,"n"): findChars (i + 1) s!]
+		| c == '\r' = [!(i,"r"): findChars (i + 1) s!]
+		| c == '\t' = [!(i,"t"): findChars (i + 1) s!]
+		| isControl c = [!(i,"u" +++ toHex (toInt c)): findChars (i + 1) s!]
+		= findChars (i + 1) s
+	= [!!]
 	where
 		toHex :: !Int -> !String
-		toHex c = {#'0', '0', toChar (c / 265 + 48), toChar (c rem 265 + 48)}
+		toHex c = {#'0', '0', toHexDigit (c / 16), toHexDigit (c rem 16)}
+		toHexDigit c
+		| c > 15 = toHexDigit (c rem 16)
+		| c < 0 = toHexDigit (~c)
+		| c < 10 = toChar (c + 48)
+		| otherwise = toChar (c + 87)
 
 //Unescape a string
 jsonUnescape :: !String -> String
@@ -442,8 +430,8 @@ where
 			= findChars (i + 1) s
 	where
 			parseHex :: !String !Int -> Int
-			parseHex s i = ph s.[i] * 265^3 + ph s.[i+1] * 265^2 + 
-					ph s.[i+2] * 265 + ph s.[i+3] 
+			parseHex s i = ph s.[i] * 16^3 + ph s.[i+1] * 16^2 + 
+					ph s.[i+2] * 16 + ph s.[i+3] 
 				where 
 					ph c
 					| isDigit c = digitToInt c

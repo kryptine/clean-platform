@@ -1,6 +1,6 @@
 CLEAN_HOME?=/opt/clean
 CLM:=clm
-override CLMFLAGS+=-dynamics -l -no-pie
+override CLMFLAGS+=-dynamics
 CLMLIBS:=\
 	-I ../../src/libraries/OS-Independent\
 	-I ../../src/libraries/OS-Independent/Deprecated/StdLib\
@@ -11,6 +11,11 @@ CLMLIBS:=\
 	-I $(CLEAN_HOME)/lib/Generics\
 	-I $(CLEAN_HOME)/lib/Dynamics\
 	-I $(CLEAN_HOME)/lib/TCPIP\
+
+GCCVERSIONGTEQ6:=$(shell expr `gcc -dumpversion | cut -f1 -d.` \>= 6)
+ifeq "$(GCCVERSIONGTEQ6)" "1"
+	override CLMFLAGS+=-l -no-pie
+endif
 
 BINARIES:=test
 
