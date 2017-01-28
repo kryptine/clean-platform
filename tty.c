@@ -146,7 +146,8 @@ void ttyopen(CleanString fn, int baudrate, int bytesize, int parity,
 			tio.c_cflag &= ~IXON;
 		//Set
 		tio.c_oflag = 0;
-		tio.c_lflag |= ICANON;
+		tio.c_lflag &= ~(ECHO | ECHONL | ICANON | IEXTEN | ISIG);
+//		tio.c_lflag |= ICANON;
 
 		tio.c_cc[VMIN]=5;
 		tio.c_cc[VTIME]=0;
@@ -173,33 +174,17 @@ void ttyerror(CleanString *result)
 	debug("ttyerror-done");
 }
 
-unsigned long *readlinecl = NULL;
-void ttyreadline(int fd, CleanString *result, int *fdo)
+void ttyread(int fd, int *ch, int *fdo)
 {
-	debug("ttyreadline");
-	size_t bufsize = INITIAL_BUFFERSIZE;
-	char *buf = NULL;
-	ssize_t cr, charsread = 0; 
-	while(buf == NULL || buf[charsread-1] != '\n'){
-		if((buf = realloc(buf, (bufsize*=2)+1)) == NULL)
-			die("realloc");
-		if((cr = read(fd, buf+charsread, bufsize-charsread)) < 0)
-			die("read");
-		charsread += cr;
+	debug("ttyread");
+	unsigned int c;
+	if(read(fd, &c, 1) == -1){
+		die("read");
 	}
-	buf[charsread] = '\0';
-
-	if(readlinecl != NULL)
-		free(readlinecl);
-	readlinecl = my_malloc(
-		sizeof(unsigned long)*CleanStringSizeInts(charsread));
-	*result = (CleanString) readlinecl;
-	memcpy(CleanStringCharacters(readlinecl), buf, charsread);
-	CleanStringLength(readlinecl) = charsread;
+	printf("read: %o\n", c);
+	*ch = (int)c;
 	*fdo = fd;
-
-	free(buf);
-	debug("ttyreadline-done");
+	debug("ttyread done");
 }
 
 void ttyavailable(int fd, int *r, int *fdo)
@@ -223,7 +208,11 @@ void ttyavailable(int fd, int *r, int *fdo)
 int ttywrite(CleanString s, int fd)
 {
 	debug("ttywrite");
-	write(fd, CleanStringCharacters(s), CleanStringLength(s));
+	for(int i = 0; i< CleanStringLength(s); i++){
+		unsigned char c = ((unsigned char*)CleanStringCharacters(s))[i];
+		printf("%02x(%u) ", c, c);
+	}
+	write(fd, (void *)CleanStringCharacters(s), CleanStringLength(s));
 	tcdrain(fd);
 	debug("ttywrite-done");
 	return fd;

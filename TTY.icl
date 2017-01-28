@@ -1,6 +1,9 @@
 implementation module TTY
 
+import _SystemArray
 import StdClass
+import StdString
+import StdChar
 
 import code from "ctty."
 
@@ -50,10 +53,17 @@ TTYclose _ _ = code {
 		ccall ttyclose "I:I:A"
 	}
 
-TTYreadline :: !*TTY -> (!String, !*TTY)
-TTYreadline _ = code {
-		ccall ttyreadline "I:VSI"
+TTYread :: !*TTY -> (!Int, !*TTY)
+TTYread _ = code {
+		ccall ttyread "I:VII"
 	}
+
+TTYreadline :: !*TTY -> (!String, !*TTY)
+TTYreadline tty = case TTYread tty of
+	(10, tty) = ("", tty)
+	(c, tty)
+	# (rest, tty) = TTYreadline tty
+	= ({#toChar c} +++ rest, tty)
 
 TTYwrite :: !String !*TTY -> *TTY
 TTYwrite _ _ = code {

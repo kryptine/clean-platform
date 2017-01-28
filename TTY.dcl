@@ -23,6 +23,7 @@ instance zero TTYSettings
 TTYclose :: !*TTY !*env -> (!Bool, !*env)
 TTYerror :: !*env -> (!String, !*env)
 TTYopen :: !String !TTYSettings !*env -> (!Bool,!*TTY,!*env)
+TTYread :: !*TTY -> (!Int, !*TTY)
 TTYreadline :: !*TTY -> (!String, !*TTY)
 TTYavailable :: !*TTY -> (!Bool, !*TTY)
 TTYwrite :: !String !*TTY -> *TTY
