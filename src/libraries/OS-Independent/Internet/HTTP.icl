@@ -9,7 +9,7 @@ newHTTPRequest
 			= {	req_method		= HTTP_GET
 			  ,	req_path		= ""
 			  ,	req_query		= ""
-			  ,	req_version		= ""
+			  ,	req_version		= "HTTP/1.1"
 			  ,	req_protocol	= HTTPProtoHTTP
 			  ,	req_headers		= newMap
 			  ,	req_data		= ""
@@ -18,7 +18,7 @@ newHTTPRequest
 			  ,	arg_cookies		= newMap
 			  ,	arg_uploads		= newMap
 			  ,	server_name		= ""
-			  ,	server_port		= 0
+			  ,	server_port		= 80
 			  ,	client_name		= ""
 			  }
 		
