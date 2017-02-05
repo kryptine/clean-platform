@@ -9,7 +9,7 @@ newHTTPRequest
 			= {	req_method		= HTTP_GET
 			  ,	req_path		= ""
 			  ,	req_query		= ""
-			  ,	req_version		= "HTTP/1.1"
+			  ,	req_version		= "HTTP/1.0"
 			  ,	req_protocol	= HTTPProtoHTTP
 			  ,	req_headers		= newMap
 			  ,	req_data		= ""
