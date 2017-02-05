@@ -83,35 +83,14 @@ where
 				 ("OPTIONS", HTTP_OPTIONS),
 				 ("TRACE", HTTP_TRACE),
 				 ("CONNECT", HTTP_TRACE)]
-			 
+
 instance toString HTTPRequest
-where
-	toString {	req_method
-			 ,	req_path
-	 		 ,	req_query
-			 ,	req_version
-			 ,	req_protocol
-			 ,	req_headers	
-			 ,	req_data		
-			 ,	arg_get
-			 ,	arg_post
-			 ,	arg_cookies
-			 ,	arg_uploads	
-			 ,	server_name
-			 ,	server_port
-			 ,	client_name
-			 }
-			 = "Method: " +++ toString req_method +++ "\n" +++
-			   "Path: " +++ req_path +++ "\n" +++
-			   "Query: " +++ req_query +++ "\n" +++
-			   "Version: " +++ req_version +++ "\n" +++
-			   "Protocol: " +++  toString req_protocol +++ "\n" +++
-			   "---Begin headers---\n" +++
-			   (foldr (+++) "" [ n +++ ": " +++ v +++ "\n" \\ (n,v) <- toList req_headers]) +++
-			   "---End headers---\n" +++
-			   "---Begin data---\n" +++
-			   req_data +++
-			   "--- End data---\n"
+where toString {req_method,req_path,req_query,req_version,req_headers,req_data,server_name}
+		= toString req_method +++ " " +++ req_path +++ req_query +++
+			" " +++ req_version +++ "\r\n" +++
+			foldl (+++) "" [n +++ ": " +++ v +++ "\r\n" \\ (n,v) <- toList req_headers] +++
+			"Host: " +++ server_name +++ "\r\n\r\n" +++
+			req_data
 
 instance toString HTTPResponse
 where
