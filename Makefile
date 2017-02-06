@@ -2,7 +2,7 @@ test: test.icl TTY.icl TTY.dcl Clean\ System\ Files/ctty.o
 	clm -dynamics -l -no-pie -I /opt/clean/lib/Dynamics $(basename $<) -o $@
 
 Clean\ System\ Files/ctty.o: tty.c
-	if hash gcc-5;\
+	if hash gcc-5 2>/dev/null;\
 	then gcc-5 -DDEBUG -c $< -o "$@"; \
 	else gcc -DDEBUG -c $< -o "$@"; \
 	fi

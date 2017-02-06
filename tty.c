@@ -208,7 +208,8 @@ void ttyavailable(int fd, int *r, int *fdo)
 int ttywrite(CleanString s, int fd)
 {
 	debug("ttywrite");
-	for(int i = 0; i< CleanStringLength(s); i++){
+	int i;
+	for(i = 0; i< CleanStringLength(s); i++){
 		unsigned char c = ((unsigned char*)CleanStringCharacters(s))[i];
 		printf("%02x(%u) ", c, c);
 	}
