@@ -20,7 +20,8 @@ sizeOf (JSONBool True)  = 4
 sizeOf (JSONBool False) = 5
 sizeOf (JSONInt x)      = size (toString x)
 sizeOf (JSONReal x)     = size (toString x)
-sizeOf (JSONString x)   = size x + 2 + count_escape_chars 0 x
+//For strings we need to allocate extra size for the enclosing double quotes and the escaping of special characters
+sizeOf (JSONString x)   = size x + 2 + sizeOfEscapeChars x
 sizeOf (JSONArray x)
   #! len = length x
   = (if (len > 0) (foldl (\s x -> s + sizeOf x) (len - 1) x) 0) + 2
@@ -30,24 +31,18 @@ sizeOf (JSONObject x)
 sizeOf (JSONRaw x)      = size x
 sizeOf (JSONError)      = 0
 
-count_escape_chars :: !Int !String -> Int
-count_escape_chars i s
-	| i < size s
-		#! c = s.[i]
-		| c == '"' || c == '/' || c == '\b' || c == '\f' || c == '\n' || c == '\r' || c == '\t' || c == '\\'
-			= count_more_escape_chars (i + 1) s 1
-		| isControl c = count_more_escape_chars (i + 1) s 5
-		= count_escape_chars (i + 1) s
-	= 0
+sizeOfEscapeChars :: !String -> Int
+sizeOfEscapeChars s = count 0 s 0
 where
-	count_more_escape_chars :: !Int !String !Int -> Int
-	count_more_escape_chars i s n
+	count :: !Int !String !Int -> Int
+	count i s n
 		| i < size s
 			#! c = s.[i]
 			| c == '"' || c == '/' || c == '\b' || c == '\f' || c == '\n' || c == '\r' || c == '\t' || c == '\\'
-				= count_more_escape_chars (i + 1) s (n+1)
-			| isControl c = count_more_escape_chars (i + 1) s (n+5)
-			= count_more_escape_chars (i + 1) s n
+				= count (i + 1) s (n + 1) //We'll add a '\' to escape
+			| isControl c
+				= count (i + 1) s (n + 5) //We'll replace the character by '\uXXXX'
+			= count(i + 1) s n
 		= n
 
 //Copy structure to a string
@@ -62,6 +57,11 @@ copyNode start (JSONReal x) buffer
   #! s = toString x
   = (start + size s, copyChars start (size s) s buffer)
 copyNode start (JSONString s) buffer
+/*
+  #! (start,buffer)	= (start + 1, {buffer & [start] = '"'})
+  #! (start,buffer)	= copyAndEscapeChars start (size s) buffer
+  = (start + 1, {buffer & [start] = '"'})
+*/
 	#! reps = findChars 0 s
 	| reps=:[!!]
 		#! len = size s
@@ -114,24 +114,29 @@ where
 copyNode start (JSONRaw x) buffer	= (start + size x, copyChars start (size x) x buffer) 	
 copyNode start _ buffer				= (start,buffer)
 
+//Straightforward copying of strings, with some optimization
 copyChars :: !Int !Int !String !*String -> *String
-copyChars offset i src dst
-	| i>3
-		#! di = offset + i
-		#! dst & [di-4] = src.[i-4]
-		#! dst & [di-3] = src.[i-3]
-		#! dst & [di-2] = src.[i-2]
-		#! dst & [di-1] = src.[i-1]
-		= copyChars offset (i-4) src dst
-	| i>1
+copyChars offset num src dst
+	| num > 3
+		#! di = offset + num
+		#! dst & [di-4] = src.[num-4]
+		#! dst & [di-3] = src.[num-3]
+		#! dst & [di-2] = src.[num-2]
+		#! dst & [di-1] = src.[num-1]
+		= copyChars offset (num - 4) src dst
+	| num > 1
 		#! dst & [offset] = src.[0]
 		#! dst & [offset+1] = src.[1]
-		| i==3
+		| num == 3
 			= {dst & [offset+2] = src.[2]}
-			= dst
-		| i==1
-			= {dst & [offset] = src.[0]}
-			= dst
+		= dst
+	| num == 1
+		= {dst & [offset] = src.[0]}
+	= dst
+
+//Copying strings with escaping of special characters (not optimized)
+//copyAndEscapeChars :: !Int !Int !String !*String -> *String
+//copyAndEscapeChars offset num src dst
 
 //Basic JSON deserialization (just structure)
 instance fromString JSONNode
@@ -394,7 +399,7 @@ findChars i s
 		= findChars (i + 1) s
 	= [!!]
 	where
-		toHex :: !Int -> !String
+		toHex :: !Int -> String
 		toHex c = {#'0', '0', toHexDigit (c / 16), toHexDigit (c rem 16)}
 		toHexDigit c
 		| c > 15 = toHexDigit (c rem 16)
