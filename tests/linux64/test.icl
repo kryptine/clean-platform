@@ -93,6 +93,7 @@ import qualified Graphics.Layout
 import qualified Graphics.Scalable
 import qualified Graphics.Scalable.Internal
 import qualified Internet.HTTP
+import qualified Internet.HTTP.CGI
 import qualified Math.Geometry
 import qualified Math.Random
 import qualified Network.IP
@@ -137,8 +138,5 @@ import qualified Text.Unicode.Encodings.JS
 import qualified Text.Unicode.Encodings.UTF8
 import qualified Text.Unicode.UChar
 import qualified Text.XML
-
-//Errors that need to be fixed
-import qualified Internet.HTTP.CGI
 
 Start = "Hello World!"

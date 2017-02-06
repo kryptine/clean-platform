@@ -1,7 +1,7 @@
 implementation module Internet.HTTP.CGI
 
 import StdFile, StdInt, StdBool, StdArray
-import Data.Maybe, Internet.HTTP, Text, System.Environment, Data.Map
+import Data.Maybe, Data.Tuple, Internet.HTTP, Text, System.Environment, Data.Map
 
 //Http headers which should be polled in the environment
 CGI_HEADERS :== [ ("Content-Type","CONTENT_TYPE")
@@ -22,7 +22,7 @@ startCGI options handlers world
 	# (ok,console)			= freopen console FReadData
 	# (datalength, world)	= getDataLength world
 	# (data, console)		= getData datalength console											//Read post data
-	# (req_method, world)	= getFromEnv "REQUEST_METHOD" world										//Read environment data
+	# (req_method, world)	= appFst fromString (getFromEnv "REQUEST_METHOD" world) //Read environment data
 	# (req_path, world)		= getFromEnv "SCRIPT_NAME" world
 	# (req_query, world)	= getFromEnv "QUERY_STRING" world
 	# (req_version, world)	= getFromEnv "SERVER_PROTOCOL" world
