@@ -20,34 +20,31 @@ sizeOf (JSONBool True)  = 4
 sizeOf (JSONBool False) = 5
 sizeOf (JSONInt x)      = size (toString x)
 sizeOf (JSONReal x)     = size (toString x)
-sizeOf (JSONString x)   = size x + 2 + count_escape_chars 0 x
+//For strings we need to allocate extra size for the enclosing double quotes and the escaping of special characters
+sizeOf (JSONString x)   = size x + 2 + sizeOfEscapeChars x
+//For arrays we need to allocate extra size for the enclosing brackets and comma's
 sizeOf (JSONArray x)
   #! len = length x
   = (if (len > 0) (foldl (\s x -> s + sizeOf x) (len - 1) x) 0) + 2
+//For objects we need to allocate extra size for the enclosing braces, comma's and labels
 sizeOf (JSONObject x)
   #! len = length x
   = (if (len > 0) (foldl (\s (l,o) -> s + size l + 2 + 1 + sizeOf o) (len - 1) x) 0) + 2
 sizeOf (JSONRaw x)      = size x
 sizeOf (JSONError)      = 0
 
-count_escape_chars :: !Int !String -> Int
-count_escape_chars i s
-	| i < size s
-		#! c = s.[i]
-		| c == '"' || c == '/' || c == '\b' || c == '\f' || c == '\n' || c == '\r' || c == '\t' || c == '\\'
-			= count_more_escape_chars (i + 1) s 1
-		| isControl c = count_more_escape_chars (i + 1) s 5
-		= count_escape_chars (i + 1) s
-	= 0
+sizeOfEscapeChars :: !String -> Int
+sizeOfEscapeChars s = count 0 s 0
 where
-	count_more_escape_chars :: !Int !String !Int -> Int
-	count_more_escape_chars i s n
+	count :: !Int !String !Int -> Int
+	count i s n
 		| i < size s
 			#! c = s.[i]
 			| c == '"' || c == '/' || c == '\b' || c == '\f' || c == '\n' || c == '\r' || c == '\t' || c == '\\'
-				= count_more_escape_chars (i + 1) s (n+1)
-			| isControl c = count_more_escape_chars (i + 1) s (n+5)
-			= count_more_escape_chars (i + 1) s n
+				= count (i + 1) s (n + 1) //We'll add a '\' to escape
+			| isControl c
+				= count (i + 1) s (n + 5) //We'll replace the character by '\uXXXX'
+			= count(i + 1) s n
 		= n
 
 //Copy structure to a string
@@ -62,30 +59,9 @@ copyNode start (JSONReal x) buffer
   #! s = toString x
   = (start + size s, copyChars start (size s) s buffer)
 copyNode start (JSONString s) buffer
-	#! reps = findChars 0 s
-	| reps=:[!!]
-		#! len = size s
-		= (start + len + 2, copyChars (start + 1) len s {buffer & [start] = '"', [start + len + 1] = '"'})
-		#! buffer & [start] = '"'
-		#! (start,buffer) = copyAndReplaceChars 0 (start+1) reps s buffer
-		= (start+1, {buffer & [start] = '"'})
-	where
-		// Copy the escaped string from the original and the replacements		
-		copyAndReplaceChars :: !Int !Int ![!(Int,String)!] !String !*String -> (!Int,!*String)
-		copyAndReplaceChars is id [!(ir,c):rs!] src dest
-			#! (is,id,src,dest) = copyCharsI is id ir src dest
-			#! dest = {dest & [id] = '\\', [id + 1] = c.[0]}
-			#! dest = if (size c == 1) dest
-				{dest & [id+2]=c.[1], [id+3]=c.[2], [id+4]=c.[3], [id+5]=c.[4]}
-			= copyAndReplaceChars (is + 1) (id + size c + 1) rs src dest
-		copyAndReplaceChars is id [!!] src dest
-			= copyRemainingChars is id src dest
-
-		copyRemainingChars :: !Int !Int !String !*String -> (!Int,!*String)
-		copyRemainingChars is id src dest
-			| is < size src
-				= copyRemainingChars (is + 1) (id + 1) src {dest & [id] = src.[is]}
-				= (id,dest)
+  #! (start,buffer)	= (start + 1, {buffer & [start] = '"'})
+  #! (start,buffer) = (start + size s + sizeOfEscapeChars s, copyAndEscapeChars 0 start (size s) s buffer)
+  = (start + 1, {buffer & [start] = '"'})
 copyNode start (JSONArray items) buffer
 	#! (start,buffer)	= (start + 1, {buffer & [start] = '['})
 	#! (start,buffer)	= copyArrayItems start items buffer
@@ -114,24 +90,90 @@ where
 copyNode start (JSONRaw x) buffer	= (start + size x, copyChars start (size x) x buffer) 	
 copyNode start _ buffer				= (start,buffer)
 
+//Straightforward copying of strings, with some optimization
 copyChars :: !Int !Int !String !*String -> *String
-copyChars offset i src dst
-	| i>3
-		#! di = offset + i
-		#! dst & [di-4] = src.[i-4]
-		#! dst & [di-3] = src.[i-3]
-		#! dst & [di-2] = src.[i-2]
-		#! dst & [di-1] = src.[i-1]
-		= copyChars offset (i-4) src dst
-	| i>1
+copyChars offset num src dst
+	| num > 3
+		#! di = offset + num
+		#! dst & [di-4] = src.[num-4]
+		#! dst & [di-3] = src.[num-3]
+		#! dst & [di-2] = src.[num-2]
+		#! dst & [di-1] = src.[num-1]
+		= copyChars offset (num - 4) src dst
+	| num > 1
 		#! dst & [offset] = src.[0]
 		#! dst & [offset+1] = src.[1]
-		| i==3
+		| num == 3
 			= {dst & [offset+2] = src.[2]}
-			= dst
-		| i==1
-			= {dst & [offset] = src.[0]}
-			= dst
+		= dst
+	| num == 1
+		= {dst & [offset] = src.[0]}
+	= dst
+
+//Copying strings with escaping of special characters (not optimized)
+copyAndEscapeChars :: !Int !Int !Int !String !*String -> *String
+copyAndEscapeChars soffset doffset num src dst
+	| num > 0
+		#! c = src.[soffset]
+		//Check for special characters
+		| c == '"' || c == '/' || c == '\b' || c == '\f' || c == '\n' || c == '\r' || c == '\t' || c == '\\'
+			#! dst & [doffset] = '\\'
+			#! dst & [doffset + 1] = charOf c
+			= copyAndEscapeChars (soffset + 1) (doffset + 2) (num - 1) src dst	
+		| isControl c
+            #! cint = toInt c
+			#! dst & [doffset] = '\\'
+			#! dst & [doffset + 1] = 'u'
+			//Put the hexadecimal representation of the character in the following 4 characters
+			#! dst & [doffset + 2] = '0'
+			#! dst & [doffset + 3] = '0'
+			#! dst & [doffset + 4] = toHexDigit ((cint >> 4) bitand 15)
+			#! dst & [doffset + 5] = toHexDigit (cint bitand 15)
+			= copyAndEscapeChars (soffset + 1) (doffset + 6) (num - 1) src dst	
+		| otherwise	
+			#! dst & [doffset] = c
+			= copyAndEscapeChars (soffset + 1) (doffset + 1) (num - 1) src dst	
+	= dst
+where
+	charOf '"' = '"'
+	charOf '/' = '/'
+	charOf '\b' = 'b'
+	charOf '\f' = 'f'
+	charOf '\n' = 'n'
+	charOf '\r' = 'r'
+	charOf '\t' = 't'
+	charOf '\\' = '\\'
+	
+	toHexDigit c
+		| c < 10 = toChar (c + 48)
+	 			 = toChar (c + 87)
+
+//Escape a string
+jsonEscape :: !String -> String
+jsonEscape src
+	= copyAndEscapeChars 0 0 (size src) src (createArray (size src + sizeOfEscapeChars src) '\0')
+
+instance <<< JSONNode
+where
+	(<<<) f JSONNull            = f <<< "null"
+	(<<<) f (JSONBool True)     = f <<< "true"
+	(<<<) f (JSONBool False)    = f <<< "false"
+	(<<<) f (JSONInt i)         = f <<< i
+	(<<<) f (JSONReal r)        = f <<< r
+	(<<<) f (JSONString s)      = f <<< '"' <<< jsonEscape s <<< '"'
+	(<<<) f (JSONArray nodes)   = printNodes nodes (f <<< "[") <<< "]"
+	where
+		printNodes :: [JSONNode] *File -> *File
+		printNodes []         f = f
+		printNodes [n]        f = f <<< n
+		printNodes [n:ns]     f = printNodes ns (f <<< n <<< ",")
+	(<<<) f (JSONObject nodes)  = printNodes nodes (f <<< "{") <<< "}"
+	where
+		printNodes :: [(String,JSONNode)] *File -> *File
+		printNodes []         f = f
+		printNodes [(k,v)]    f = f <<< '"' <<< jsonEscape k <<< "\":" <<< v
+		printNodes [(k,v):ns] f = printNodes ns (f <<< '"' <<< jsonEscape k <<< "\":" <<< v <<< ",")
+	(<<<) f (JSONRaw s)         = f <<< s
 
 //Basic JSON deserialization (just structure)
 instance fromString JSONNode
@@ -334,140 +376,66 @@ where
 	reverse_append [hd:tl] list	= reverse_append tl [hd:list]
 	reverse_append [] list		= list
 
-instance <<< JSONNode
+//For strings that contain escaped characters, the destination string will be smaller
+//This function determines 
+sizeOfExtraCharsOfEscapes :: !String -> Int
+sizeOfExtraCharsOfEscapes s = count 0 s 0
 where
-	(<<<) f JSONNull            = f <<< "null"
-	(<<<) f (JSONBool True)     = f <<< "true"
-	(<<<) f (JSONBool False)    = f <<< "false"
-	(<<<) f (JSONInt i)         = f <<< i
-	(<<<) f (JSONReal r)        = f <<< r
-	(<<<) f (JSONString s)      = f <<< '"' <<< jsonEscape s <<< '"'
-	(<<<) f (JSONArray nodes)   = printNodes nodes (f <<< "[") <<< "]"
-	where
-		printNodes :: [JSONNode] *File -> *File
-		printNodes []         f = f
-		printNodes [n]        f = f <<< n
-		printNodes [n:ns]     f = printNodes ns (f <<< n <<< ",")
-	(<<<) f (JSONObject nodes)  = printNodes nodes (f <<< "{") <<< "}"
-	where
-		printNodes :: [(String,JSONNode)] *File -> *File
-		printNodes []         f = f
-		printNodes [(k,v)]    f = f <<< '"' <<< jsonEscape k <<< "\":" <<< v
-		printNodes [(k,v):ns] f = printNodes ns (f <<< '"' <<< jsonEscape k <<< "\":" <<< v <<< ",")
-	(<<<) f (JSONRaw s)         = f <<< s
+	count :: !Int !String !Int -> Int
+	count i s n
+		| i < (size s - 1)
+			#! cc = s.[i]
+			#! cn = s.[i + 1]
+			| cc == '\\'
+				| cn == 'u' = count (i + 6) s (n + 5)
+							= count (i + 2) s (n + 1)
+			= count (i + 1) s n
+		= n
 
-//Escape a string
-jsonEscape :: !String -> String
-jsonEscape src
-	#! reps = findChars 0 src
-	= case reps of
-		[!!] -> src
-		reps -> copyAndReplaceChars 0 0 reps src (createArray (size src + destSize reps) '\0')
+//Copying strings with escaping of special characters (not optimized)
+copyAndUnescapeChars :: !Int !Int !Int !String !*String -> *String
+copyAndUnescapeChars soffset doffset num src dst
+	| num > 0
+		#! cc = src.[soffset]
+		//Check for escapes
+		| cc == '\\' && num > 1
+			#! cn = src.[soffset + 1]
+			| cn == '"' || cn == '/' || cn == 'b' || cn == 'f' || cn == 'n' || cn == 'r' || cn == 't' || cn == '\\'
+				#! dst & [doffset] = charOf cn
+				= copyAndUnescapeChars (soffset + 2) (doffset + 1) (num - 2) src dst	
+			| cn == 'u' && num > 5
+				// The escape is in the form \uXXXX
+				// Use the last two hex numbers to reconstruct the character value
+				#! dst & [doffset] = toChar (((fromHexDigit src.[soffset + 4]) << 4) + (fromHexDigit src.[soffset + 5]))
+				= copyAndUnescapeChars (soffset + 6) (doffset + 1) (num - 6) src dst	
+			| otherwise
+				#! dst & [doffset] = cc
+				= copyAndUnescapeChars (soffset + 1) (doffset + 1) (num - 1) src dst	
+		| otherwise
+			#! dst & [doffset] = cc
+			= copyAndUnescapeChars (soffset + 1) (doffset + 1) (num - 1) src dst
+	= dst
 where
-	destSize [!!] = 0
-	destSize [!(_,x):xs!] = size x - 1 + destSize xs
-
-	//Build the escaped string from the original and the replacements		
-	copyAndReplaceChars :: !Int !Int ![!(!Int, !String)!] !String !*String -> *String
-	copyAndReplaceChars is id reps=:[!(ir,c):rs!] src dest
-		#! (is,id,src,dest) = copyCharsI is id ir src dest
-		#! dest = {dest & [id] = '\\', [id + 1] = c.[0]}
-		#! dest = if (size c == 1) dest
-			{dest & [id+2]=c.[1], [id+3]=c.[2], [id+4]=c.[3], [id+5]=c.[4]}
-		= copyAndReplaceChars (is + 1) (id + size c + 1) rs src dest
-	copyAndReplaceChars is id [!!] src dest
-		= copyRemainingChars is id src dest
-
-//Find the special characters
-findChars :: Int String -> [!(Int,String)!]
-findChars i s
-	| i < size s
-		#! c = s.[i]
-		| c == '\\' = [!(i,toString c): findChars (i + 1) s!]
-		| c == '"' || c == '/' = [!(i,toString c): findChars (i + 1) s!]
-		| c == '\b' = [!(i,"b"): findChars (i + 1) s!]
-		| c == '\f' = [!(i,"f"): findChars (i + 1) s!]
-		| c == '\n' = [!(i,"n"): findChars (i + 1) s!]
-		| c == '\r' = [!(i,"r"): findChars (i + 1) s!]
-		| c == '\t' = [!(i,"t"): findChars (i + 1) s!]
-		| isControl c = [!(i,"u" +++ toHex (toInt c)): findChars (i + 1) s!]
-		= findChars (i + 1) s
-	= [!!]
-	where
-		toHex :: !Int -> !String
-		toHex c = {#'0', '0', toHexDigit (c / 16), toHexDigit (c rem 16)}
-		toHexDigit c
-		| c > 15 = toHexDigit (c rem 16)
-		| c < 0 = toHexDigit (~c)
-		| c < 10 = toChar (c + 48)
-		| otherwise = toChar (c + 87)
+	charOf '"' = '"'
+	charOf '/' = '/'
+	charOf 'b' = '\b'
+	charOf 'f' = '\f'
+	charOf 'n' = '\n'
+	charOf 'r' = '\r'
+	charOf 't' = '\t'
+	charOf '\\' = '\\'
+	
+	fromHexDigit :: Char -> Int
+	fromHexDigit c
+		| isDigit c = digitToInt c
+		| c <= 'f' && c >= 'a' = toInt c - 87
+		| c <= 'F' && c >= 'A' = toInt c - 55
+		= 0
 
 //Unescape a string
 jsonUnescape :: !String -> String
 jsonUnescape src
-	#! reps = findChars 0 src
-	= case reps of
-		[!!] -> src
-		reps -> copyAndReplaceChars 0 0 reps src (createArray (size src - destSize reps) '\0')
-where
-	destSize :: [!(!Int, !Int, !Char)!] -> Int
-	destSize [!!] = 0
-	destSize [!(_,x,_):xs!] = x-1 + destSize xs
-
-	//Find the special characters
-	findChars :: !Int !String -> [!(!Int, !Int, !Char)!]
-	findChars i s
-		| i+1>=size s
-			= [!!]
-		#! c0 = s.[i]
-		| c0 == '\\'
-			#! c1 = s.[i+1]
-			| c1 == 'u'
-				#! rc = toChar (parseHex s (i+2))
-				= [!(i,6,rc):findChars (i+6) s!]
-			#! rc = rep c1
-			= [!(i,2,rc): findChars (i + 2) s!]
-			= findChars (i + 1) s
-	where
-			parseHex :: !String !Int -> Int
-			parseHex s i = ph s.[i] * 16^3 + ph s.[i+1] * 16^2 + 
-					ph s.[i+2] * 16 + ph s.[i+3] 
-				where 
-					ph c
-					| isDigit c = digitToInt c
-					| c <= 'f' && c >= 'a' = toInt c - 87
-					| c <= 'F' && c >= 'A' = toInt c - 55
-					= 0
-
-            rep :: !Char -> Char
-			rep '\\'	= '\\'
-			rep '"'		= '"'
-			rep '/'		= '/'
-			rep 'b'		= '\b'
-			rep 'f'		= '\f'
-			rep 'n'		= '\n'
-			rep 'r'		= '\r'
-			rep 't'		= '\t'
-			rep c		= c
-
-	//Build the escaped string from the original and the replacements		
-	copyAndReplaceChars :: !Int !Int ![!(!Int, !Int, !Char)!] !String !*String -> *String
-	copyAndReplaceChars is id reps=:[!(ir,il,c):rs!] src dest
-		//Copy until the replace
-		#! (is,id,src,dest) = copyCharsI is id ir src dest
-		=	copyAndReplaceChars (is + il) (id + 1) rs src {dest & [id] = c}
-	copyAndReplaceChars is id [!!] src dest
-		= copyRemainingChars is id src dest
-
-copyCharsI :: !Int !Int !Int !String !*String -> (!Int,!Int,!String,!*String)
-copyCharsI is id iend src dest
-	| is < iend		= copyCharsI (is + 1) (id + 1) iend src {dest & [id] = src.[is]}
-					= (is,id,src,dest)
-
-copyRemainingChars :: !Int !Int !String !*String -> *String
-copyRemainingChars is id src dest
-	| is < size src	= copyRemainingChars (is + 1) (id + 1) src {dest & [id] = src.[is]}
-					= dest
+	= copyAndUnescapeChars 0 0 (size src) src (createArray (size src - sizeOfExtraCharsOfEscapes src) '\0')
 
 //-------------------------------------------------------------------------------------------
 
