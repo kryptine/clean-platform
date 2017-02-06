@@ -22,9 +22,11 @@ sizeOf (JSONInt x)      = size (toString x)
 sizeOf (JSONReal x)     = size (toString x)
 //For strings we need to allocate extra size for the enclosing double quotes and the escaping of special characters
 sizeOf (JSONString x)   = size x + 2 + sizeOfEscapeChars x
+//For arrays we need to allocate extra size for the enclosing brackets and comma's
 sizeOf (JSONArray x)
   #! len = length x
   = (if (len > 0) (foldl (\s x -> s + sizeOf x) (len - 1) x) 0) + 2
+//For objects we need to allocate extra size for the enclosing braces, comma's and labels
 sizeOf (JSONObject x)
   #! len = length x
   = (if (len > 0) (foldl (\s (l,o) -> s + size l + 2 + 1 + sizeOf o) (len - 1) x) 0) + 2
@@ -57,35 +59,9 @@ copyNode start (JSONReal x) buffer
   #! s = toString x
   = (start + size s, copyChars start (size s) s buffer)
 copyNode start (JSONString s) buffer
-/*
   #! (start,buffer)	= (start + 1, {buffer & [start] = '"'})
-  #! (start,buffer)	= copyAndEscapeChars start (size s) buffer
+  #! (start,buffer) = (start + size s + sizeOfEscapeChars s, copyAndEscapeChars 0 start (size s) s buffer)
   = (start + 1, {buffer & [start] = '"'})
-*/
-	#! reps = findChars 0 s
-	| reps=:[!!]
-		#! len = size s
-		= (start + len + 2, copyChars (start + 1) len s {buffer & [start] = '"', [start + len + 1] = '"'})
-		#! buffer & [start] = '"'
-		#! (start,buffer) = copyAndReplaceChars 0 (start+1) reps s buffer
-		= (start+1, {buffer & [start] = '"'})
-	where
-		// Copy the escaped string from the original and the replacements		
-		copyAndReplaceChars :: !Int !Int ![!(Int,String)!] !String !*String -> (!Int,!*String)
-		copyAndReplaceChars is id [!(ir,c):rs!] src dest
-			#! (is,id,src,dest) = copyCharsI is id ir src dest
-			#! dest = {dest & [id] = '\\', [id + 1] = c.[0]}
-			#! dest = if (size c == 1) dest
-				{dest & [id+2]=c.[1], [id+3]=c.[2], [id+4]=c.[3], [id+5]=c.[4]}
-			= copyAndReplaceChars (is + 1) (id + size c + 1) rs src dest
-		copyAndReplaceChars is id [!!] src dest
-			= copyRemainingChars is id src dest
-
-		copyRemainingChars :: !Int !Int !String !*String -> (!Int,!*String)
-		copyRemainingChars is id src dest
-			| is < size src
-				= copyRemainingChars (is + 1) (id + 1) src {dest & [id] = src.[is]}
-				= (id,dest)
 copyNode start (JSONArray items) buffer
 	#! (start,buffer)	= (start + 1, {buffer & [start] = '['})
 	#! (start,buffer)	= copyArrayItems start items buffer
@@ -135,8 +111,33 @@ copyChars offset num src dst
 	= dst
 
 //Copying strings with escaping of special characters (not optimized)
-//copyAndEscapeChars :: !Int !Int !String !*String -> *String
-//copyAndEscapeChars offset num src dst
+copyAndEscapeChars :: !Int !Int !Int !String !*String -> *String
+copyAndEscapeChars soffset doffset num src dst
+	| num > 0
+		#! c = src.[soffset]
+		//Check for special characters
+		| c == '"' || c == '/' || c == '\b' || c == '\f' || c == '\n' || c == '\r' || c == '\t' || c == '\\'
+			#! dst & [doffset] = '\\'
+			#! dst & [doffset + 1] = c
+			= copyAndEscapeChars (soffset + 1) (doffset + 2) (num - 1) src dst	
+		| isControl c
+            #! cint = toInt c
+			#! dst & [doffset] = '\\'
+			#! dst & [doffset + 1] = 'u'
+			//Put the hexadecimal representation of the character in the following 4 characters
+			#! dst & [doffset + 2] = '0'
+			#! dst & [doffset + 3] = '0'
+			#! dst & [doffset + 4] = hexDigit ((cint >> 4) bitand 15)
+			#! dst & [doffset + 5] = hexDigit (cint bitand 15)
+			= copyAndEscapeChars (soffset + 1) (doffset + 6) (num - 1) src dst	
+		| otherwise	
+			#! dst & [doffset] = c
+			= copyAndEscapeChars (soffset + 1) (doffset + 1) (num - 1) src dst	
+	= dst
+where
+	hexDigit c
+		| c < 10 = toChar (c + 48)
+	 			 = toChar (c + 87)
 
 //Basic JSON deserialization (just structure)
 instance fromString JSONNode
@@ -364,48 +365,7 @@ where
 //Escape a string
 jsonEscape :: !String -> String
 jsonEscape src
-	#! reps = findChars 0 src
-	= case reps of
-		[!!] -> src
-		reps -> copyAndReplaceChars 0 0 reps src (createArray (size src + destSize reps) '\0')
-where
-	destSize [!!] = 0
-	destSize [!(_,x):xs!] = size x - 1 + destSize xs
-
-	//Build the escaped string from the original and the replacements		
-	copyAndReplaceChars :: !Int !Int ![!(!Int, !String)!] !String !*String -> *String
-	copyAndReplaceChars is id reps=:[!(ir,c):rs!] src dest
-		#! (is,id,src,dest) = copyCharsI is id ir src dest
-		#! dest = {dest & [id] = '\\', [id + 1] = c.[0]}
-		#! dest = if (size c == 1) dest
-			{dest & [id+2]=c.[1], [id+3]=c.[2], [id+4]=c.[3], [id+5]=c.[4]}
-		= copyAndReplaceChars (is + 1) (id + size c + 1) rs src dest
-	copyAndReplaceChars is id [!!] src dest
-		= copyRemainingChars is id src dest
-
-//Find the special characters
-findChars :: Int String -> [!(Int,String)!]
-findChars i s
-	| i < size s
-		#! c = s.[i]
-		| c == '\\' = [!(i,toString c): findChars (i + 1) s!]
-		| c == '"' || c == '/' = [!(i,toString c): findChars (i + 1) s!]
-		| c == '\b' = [!(i,"b"): findChars (i + 1) s!]
-		| c == '\f' = [!(i,"f"): findChars (i + 1) s!]
-		| c == '\n' = [!(i,"n"): findChars (i + 1) s!]
-		| c == '\r' = [!(i,"r"): findChars (i + 1) s!]
-		| c == '\t' = [!(i,"t"): findChars (i + 1) s!]
-		| isControl c = [!(i,"u" +++ toHex (toInt c)): findChars (i + 1) s!]
-		= findChars (i + 1) s
-	= [!!]
-	where
-		toHex :: !Int -> String
-		toHex c = {#'0', '0', toHexDigit (c / 16), toHexDigit (c rem 16)}
-		toHexDigit c
-		| c > 15 = toHexDigit (c rem 16)
-		| c < 0 = toHexDigit (~c)
-		| c < 10 = toChar (c + 48)
-		| otherwise = toChar (c + 87)
+	= copyAndEscapeChars 0 0 (size src) src (createArray (size src + sizeOfEscapeChars src) '\0')
 
 //Unescape a string
 jsonUnescape :: !String -> String
@@ -473,6 +433,30 @@ copyRemainingChars :: !Int !Int !String !*String -> *String
 copyRemainingChars is id src dest
 	| is < size src	= copyRemainingChars (is + 1) (id + 1) src {dest & [id] = src.[is]}
 					= dest
+
+//Find the special characters
+findChars :: Int String -> [!(Int,String)!]
+findChars i s
+	| i < size s
+		#! c = s.[i]
+		| c == '\\' = [!(i,toString c): findChars (i + 1) s!]
+		| c == '"' || c == '/' = [!(i,toString c): findChars (i + 1) s!]
+		| c == '\b' = [!(i,"b"): findChars (i + 1) s!]
+		| c == '\f' = [!(i,"f"): findChars (i + 1) s!]
+		| c == '\n' = [!(i,"n"): findChars (i + 1) s!]
+		| c == '\r' = [!(i,"r"): findChars (i + 1) s!]
+		| c == '\t' = [!(i,"t"): findChars (i + 1) s!]
+		| isControl c = [!(i,"u" +++ toHex (toInt c)): findChars (i + 1) s!]
+		= findChars (i + 1) s
+	= [!!]
+	where
+		toHex :: !Int -> String
+		toHex c = {#'0', '0', toHexDigit (c / 16), toHexDigit (c rem 16)}
+		toHexDigit c
+		| c > 15 = toHexDigit (c rem 16)
+		| c < 0 = toHexDigit (~c)
+		| c < 10 = toChar (c + 48)
+		| otherwise = toChar (c + 87)
 
 //-------------------------------------------------------------------------------------------
 
