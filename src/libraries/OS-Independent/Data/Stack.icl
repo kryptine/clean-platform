@@ -7,11 +7,15 @@ newStack = Stack []
 
 instance length Stack
 where
-	length Stack a = length a
+	length (Stack a) = length a
 
 push :: a (Stack a) -> (Stack a)
-push a as = [a : as]
+push a (Stack as) = Stack [a : as]
 
 pop :: (Stack a) -> (Maybe a, Stack a)
 pop (Stack []) = (Nothing, newStack)
 pop (Stack [a : as]) = (Just a, Stack as)
+
+peek :: (Stack a) -> (Maybe a)
+peek (Stack []) = Nothing
+peek (Stack [a : as]) = Just a

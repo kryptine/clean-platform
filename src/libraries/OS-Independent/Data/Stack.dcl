@@ -6,7 +6,7 @@ from StdOverloaded import class length
 
 newStack :: Stack a
 
-empty a :== case q of
+empty a :== case a of
 	Stack [] -> True
 	_	 -> False
 
@@ -16,4 +16,8 @@ instance length Stack
 push :: a (Stack a) -> (Stack a)
 
 // Remove element from the Stack and return it if the Stack is not empty
-pop :: (Stack a) -> (Maybe a, LIFO a)
+pop :: (Stack a) -> (Maybe a, Stack a)
+
+// Peek the top of the Stack
+peek :: (Stack a) -> (Maybe a)
+
