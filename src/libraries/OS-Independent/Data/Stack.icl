@@ -1,0 +1,17 @@
+implementation module Data.Stack
+import Data.Maybe
+import StdList, StdOverloaded
+
+newStack :: Stack a
+newStack = Stack []
+
+instance length Stack
+where
+	length Stack a = length a
+
+push :: a (Stack a) -> (Stack a)
+push a as = [a : as]
+
+pop :: (Stack a) -> (Maybe a, Stack a)
+pop (Stack []) = (Nothing, newStack)
+pop (Stack [a : as]) = (Just a, Stack as)
