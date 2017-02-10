@@ -13,11 +13,11 @@ empty a :== case a of
 instance length Stack
 
 // Add element to the Stack
-push :: a (Stack a) -> (Stack a)
+push :: a (Stack a) -> Stack a
 
 // Remove element from the Stack and return it if the Stack is not empty
 pop :: (Stack a) -> (Maybe a, Stack a)
 
 // Peek the top of the Stack
-peek :: (Stack a) -> (Maybe a)
+peek :: (Stack a) -> Maybe a
 
