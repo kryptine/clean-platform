@@ -24,7 +24,7 @@ newHTTPRequest
 		
 newHTTPResponse :: !Int !String -> HTTPResponse
 newHTTPResponse rspcode reason 
-	= {HTTPResponse | rsp_code = rspcode, rsp_reason = reason, rsp_headers = [], rsp_data = toString rspcode +++ " - " +++ reason}
+	= {HTTPResponse | rsp_version = "HTTP/1.0", rsp_code = rspcode, rsp_reason = reason, rsp_headers = [], rsp_data = toString rspcode +++ " - " +++ reason}
 		
 okResponse :: HTTPResponse
 okResponse = newHTTPResponse 200 "OK" 
@@ -94,13 +94,14 @@ where toString {req_method,req_path,req_query,req_version,req_headers,req_data,s
 
 instance toString HTTPResponse
 where
-	toString { rsp_code
+	toString { rsp_version
+			 , rsp_code
 			 , rsp_reason	
 			 , rsp_headers
 			 , rsp_data
 			 }
 	= join "\r\n" (
-		["HTTP/1.0 " +++ toString rsp_code +++ " " +++ rsp_reason] ++
+		[rsp_version +++ " " +++ toString rsp_code +++ " " +++ rsp_reason] ++
 		[(n +++ ": " +++ v) \\ (n,v) <- rsp_headers] ++
 		["",rsp_data])
 			   	
@@ -134,11 +135,12 @@ parseResponse rsp | startsWith "HTTP/" rsp
 		= Nothing
 	| length code_words < 2
 		= Nothing
-	= Just {rsp_code = rsp_code, rsp_reason = rsp_reason, rsp_headers = rsp_headers, rsp_data = rsp_data} 
+	= Just {rsp_version = rsp_version, rsp_code = rsp_code, rsp_reason = rsp_reason, rsp_headers = rsp_headers, rsp_data = rsp_data} 
 where
 	lines 		 = split "\n" rsp
 
 	code_words 	 = split " " (hd lines)
+	rsp_version  = hd code_words
 	rsp_code     = toInt (hd (tl code_words))
 	rsp_reason   = join " " (tl (tl code_words))
 	

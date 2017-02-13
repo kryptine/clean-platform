@@ -47,11 +47,13 @@ instance fromString HTTPMethod
 
 :: HTTPProtocol	= HTTPProtoHTTP | HTTPProtoHTTPS				// The protocol used for a request
 
-:: HTTPResponse	= {	rsp_code		::  Int
-				,	rsp_reason		::  String
-				,	rsp_headers		::	[(String,String)]		// Extra return headers that should be sent (eg. ("Content-Type","text/plain"))
-				,	rsp_data		::	String					// The body of the response. (eg. html code or file data)
-				}
+:: HTTPResponse	=
+	{ rsp_version   :: String  				// The http version (eg. HTTP/1.0 or HTTP/1.1)
+	, rsp_code      ::  Int
+	, rsp_reason    ::  String
+	, rsp_headers 	::	[(String,String)]		// Extra return headers that should be sent (eg. ("Content-Type","text/plain"))
+	, rsp_data		::	String					// The body of the response. (eg. html code or file data)
+	}
 
 //A raw response header
 :: HTTPResponseHeader =
