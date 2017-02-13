@@ -85,7 +85,7 @@ where
 	print ia (Func [] r []) = print ia r
 	print _ (Func [] r cc) = r -- " " -- cc
 	print ia (Func ts r []) = parens ia (printersperse True " " ts -- " -> " -- r)
-	print _ (Func ts r cc) = (Func ts r []) -- " " -- cc
+	print _ (Func ts r cc) = (Func ts r []) -- " | " -- cc
 	print ia (Cons tv [])  = print ia tv
 	print ia (Cons tv ats) = parens ia (tv -- " " -- printersperse True " " ats)
 	print _ (Uniq t)       = "*" -+ t
