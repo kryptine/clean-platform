@@ -16,7 +16,6 @@ from Graphics.Scalable.Internal import :: Image, :: ImageTag, :: Span, :: ImageS
   :: Host (..), :: GridLayout, :: GridMajor(..), :: GridXLayout (..), :: GridYLayout (..), :: GridDimension (..),
   class /. (..), class *. (..), instance *. Span, instance /. Span,
   instance + Span, instance - Span, instance zero Span, instance ~ Span
-import Graphics.Layout
 from StdOverloaded import class zero (..), class + (..), class - (..),
   class ~ (..), class sign (..), class abs (..), class < (..), class == (..),
   class toReal (..), class / (..), class * (..)
@@ -75,15 +74,11 @@ flipy    :: !(Image m) -> Image m
 skewx    :: !Angle !(Image m) -> Image m
 skewy    :: !Angle !(Image m) -> Image m
 
-instance Layout Image ImageSpan ImageOffset Host
-instance Fit Image Span
-instance DimRef ImageTag Span
-
-overlay` ::                            ![XYAlign] ![ImageOffset] ![Image m] !(Host m) -> Image m
-beside`  ::                            ![YAlign]  ![ImageOffset] ![Image m] !(Host m) -> Image m
-above`   ::                            ![XAlign]  ![ImageOffset] ![Image m] !(Host m) -> Image m
-grid`    :: !GridDimension !GridLayout ![XYAlign] ![ImageOffset] ![Image m] !(Host m) -> Image m
-collage` ::                                       ![ImageOffset] ![Image m] !(Host m) -> Image m
+overlay ::                            ![XYAlign] ![ImageOffset] ![Image m] !(Host m) -> Image m
+beside  ::                            ![YAlign]  ![ImageOffset] ![Image m] !(Host m) -> Image m
+above   ::                            ![XAlign]  ![ImageOffset] ![Image m] !(Host m) -> Image m
+grid    :: !GridDimension !GridLayout ![XYAlign] ![ImageOffset] ![Image m] !(Host m) -> Image m
+collage ::                                       ![ImageOffset] ![Image m] !(Host m) -> Image m
 
 instance <  (ImageAttr m)
 instance == (ImageAttr m)

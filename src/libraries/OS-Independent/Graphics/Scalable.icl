@@ -98,9 +98,9 @@ instance margin (!Span, !Span, !Span) where
   margin (sp1, sp2, sp3) im = margin (sp1, sp2, sp3, sp2) im
 
 instance margin (!Span, !Span, !Span, !Span) where
-  margin (sp1, sp2, sp3, sp4) im = above` (repeat AtMiddleX) []
+  margin (sp1, sp2, sp3, sp4) im = above (repeat AtMiddleX) []
                                      [ empty zero sp1
-                                     , beside` (repeat AtMiddleY) [] [empty sp4 zero, im, empty sp2 zero] NoHost
+                                     , beside (repeat AtMiddleY) [] [empty sp4 zero, im, empty sp2 zero] NoHost
                                      , empty zero sp3
                                      ] NoHost
 
@@ -306,10 +306,10 @@ skewy yskew image=:{Image | transform = ts}
                    = [SkewYImage yskew` : ts]
       = {Image | image & transform = ts`}
 
-overlay` :: ![XYAlign] ![ImageOffset] ![Image m] !(Host m) -> Image m
-overlay` _      _       []   (Host img) = img
-overlay` _      _       []   _          = empty (px 0.0) (px 0.0)
-overlay` aligns offsets imgs host
+overlay :: ![XYAlign] ![ImageOffset] ![Image m] !(Host m) -> Image m
+overlay _      _       []   (Host img) = img
+overlay _      _       []   _          = empty (px 0.0) (px 0.0)
+overlay aligns offsets imgs host
   #! l        = length imgs
   #! offsets` = take l (offsets ++ repeat (zero, zero))
   #! aligns`  = take l (aligns ++ repeat (AtLeft, AtTop))
@@ -317,20 +317,20 @@ overlay` aligns offsets imgs host
                        , compose = AsOverlay offsets` aligns` imgs
                        })
 
-beside` :: ![YAlign] ![ImageOffset] ![Image m] !(Host m) -> Image m
-beside` ylayouts offsets imgs host
+beside :: ![YAlign] ![ImageOffset] ![Image m] !(Host m) -> Image m
+beside ylayouts offsets imgs host
   #! l = length imgs
-  = grid` (Rows 1) (RowMajor, LeftToRight, TopToBottom) (take l [(AtLeft, ylayout) \\ ylayout <- ylayouts]) (take l offsets) imgs host
+  = grid (Rows 1) (RowMajor, LeftToRight, TopToBottom) (take l [(AtLeft, ylayout) \\ ylayout <- ylayouts]) (take l offsets) imgs host
 
-above` :: ![XAlign] ![ImageOffset] ![Image m] !(Host m) -> Image m
-above` xlayouts offsets imgs host
+above :: ![XAlign] ![ImageOffset] ![Image m] !(Host m) -> Image m
+above xlayouts offsets imgs host
   #! l = length imgs
-  = grid` (Columns 1) (ColumnMajor, LeftToRight, TopToBottom) (take l [(xlayout, AtTop) \\ xlayout <- xlayouts]) (take l offsets) imgs host
+  = grid (Columns 1) (ColumnMajor, LeftToRight, TopToBottom) (take l [(xlayout, AtTop) \\ xlayout <- xlayouts]) (take l offsets) imgs host
 
-grid` :: !GridDimension !GridLayout ![XYAlign] ![ImageOffset] ![Image m] !(Host m) -> Image m
-grid` _ _ _ _ [] (Host img) = img
-grid` _ _ _ _ [] _          = empty (px 0.0) (px 0.0)
-grid` dimension (major,xlayout,ylayout) aligns offsets imgs host
+grid :: !GridDimension !GridLayout ![XYAlign] ![ImageOffset] ![Image m] !(Host m) -> Image m
+grid _ _ _ _ [] (Host img) = img
+grid _ _ _ _ [] _          = empty (px 0.0) (px 0.0)
+grid dimension (major,xlayout,ylayout) aligns offsets imgs host
   #! noOfImgs        = length imgs
   #! (cols, rows)    = case dimension of
                          Rows no
@@ -368,10 +368,10 @@ grid` dimension (major,xlayout,ylayout) aligns offsets imgs host
   arrangeLayout (LeftToRight, BottomToTop) xs = reverseTR xs
   arrangeLayout (RightToLeft, BottomToTop) xs = strictTRMapRev reverseTR xs
 
-collage` :: ![ImageOffset] ![Image m] !(Host m) -> Image m
-collage` _       []   (Host img) = img
-collage` _       []   _          = empty (px 0.0) (px 0.0)
-collage` offsets imgs host
+collage :: ![ImageOffset] ![Image m] !(Host m) -> Image m
+collage _       []   (Host img) = img
+collage _       []   _          = empty (px 0.0) (px 0.0)
+collage offsets imgs host
   #! offsets` = take (length imgs) (offsets ++ repeat (zero, zero))
   = mkImage (Composite { host    = host
                        , compose = AsCollage offsets` imgs
@@ -498,19 +498,3 @@ derive gEq FontDef
 normalFontDef :: !String !Real -> FontDef // (normalFontDef family size) sets all other fields to "normal"
 normalFontDef family size
   = {fontfamily = family, fontysize = size, fontstretch = "normal", fontstyle = "normal", fontvariant = "normal", fontweight = "normal"}
-
-instance Layout Image ImageSpan ImageOffset Host where
-  collage            offsets images host = collage` offsets images host
-  overlay   xyaligns offsets images host = overlay` xyaligns offsets images host
-  beside  _ yaligns  offsets images host = beside` yaligns offsets images host
-  above   _ xaligns  offsets images host = above` xaligns offsets images host
-  grid    dim lay _ _ xyaligns offsets images host = grid` dim lay xyaligns offsets images host
-
-instance Fit Image Span where
-  fitXY x y img = fit  x y img
-  fitX  x   img = fitx x   img
-  fitY    y img = fity   y img
-
-instance DimRef ImageTag Span where
-  xdim tag = imagexspan tag
-  ydim tag = imageyspan tag

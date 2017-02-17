@@ -5,7 +5,6 @@ from Text.HTML import :: SVGColor
 from Data.Set import :: Set
 from Math.Geometry import :: Angle
 from StdOverloaded import class zero, class +, class -, class ~, class sign, class abs, class <, class ==, class toReal, class /, class *
-import Graphics.Layout
 
 :: Image m
   = { content             :: !ImageContent m    // the image elements
@@ -95,6 +94,25 @@ import Graphics.Layout
   | ImageXSpan   !ImageTag     // (ImageXSpan as) is x-span of image tagged with superset of as
   | ImageYSpan   !ImageTag     // (ImageYSpan as) is y-span of image tagged with superset of as
   | TextXSpan    !FontDef !String     // (TextXSpan a b) is width of text b written in font a
+
+:: GridDimension = Rows !Int | Columns !Int
+:: GridLayout  :== (!GridMajor, !GridXLayout, !GridYLayout)
+:: GridMajor     = ColumnMajor | RowMajor
+:: GridXLayout   = LeftToRight | RightToLeft
+:: GridYLayout   = TopToBottom | BottomToTop
+
+:: XAlign
+  = AtLeft
+  | AtMiddleX
+  | AtRight
+
+:: YAlign
+  = AtTop
+  | AtMiddleY
+  | AtBottom
+
+:: XYAlign :== (!XAlign, !YAlign)
+
 
 :: Compose m
   = AsGrid    !(!Int, !Int) ![[ImageOffset]] ![[XYAlign]] ![[Image m]] // (AsGrid (noOfCols, noOfRows) alignments) composes elements in rows, using alignments per image
