@@ -11,6 +11,7 @@ import code from "ctty."
 
 instance zero TTYSettings where
 	zero = {TTYSettings |
+		devicePath = "/dev/ttyACM0",
 		baudrate = B9600,
 		bytesize = BytesizeEight,
 		parity = ParityNone,
@@ -33,9 +34,9 @@ instance toInt Parity where
 		ParityNone = 0; ParityOdd = 1; ParityEven = 2; ParitySpace = 3;
 		ParityMark = 4
 
-TTYopen :: !String !TTYSettings !*env -> (!Bool, !*TTY, !*env)
-TTYopen fn ts w = TTYopen2
-	fn
+TTYopen :: !TTYSettings !*env -> (!Bool, !*TTY, !*env)
+TTYopen ts w = TTYopen2
+	ts.devicePath
 	(toInt ts.baudrate)
 	(toInt ts.bytesize)
 	(toInt ts.parity)

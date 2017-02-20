@@ -11,6 +11,7 @@ from StdClass import class zero
 	B115200 | B230400
 
 :: TTYSettings = {
+		devicePath :: String,
 		baudrate :: BaudRate,
 		bytesize :: ByteSize,
 		parity :: Parity,
@@ -22,7 +23,7 @@ instance zero TTYSettings
 
 TTYclose :: !*TTY !*env -> (!Bool, !*env)
 TTYerror :: !*env -> (!String, !*env)
-TTYopen :: !String !TTYSettings !*env -> (!Bool,!*TTY,!*env)
+TTYopen :: !TTYSettings !*env -> (!Bool,!*TTY,!*env)
 TTYread :: !*TTY -> (!Int, !*TTY)
 TTYreadline :: !*TTY -> (!String, !*TTY)
 TTYavailable :: !*TTY -> (!Bool, !*TTY)

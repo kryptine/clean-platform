@@ -31,11 +31,11 @@ getTTYDevices w = case readDirectory "/dev" w of
 		isTTY s = not (isEmpty (filter (flip startsWith s) prefixes))
 		prefixes = ["ttyS", "ttyACM", "ttyUSB", "tty.usbserial"]
 
-syncSerialChannel :: String TTYSettings (b -> String) (String -> a) (Shared ([a],[b],Bool)) -> Task () | iTask a & iTask b
-syncSerialChannel dev opts enc dec rw = Task eval
+syncSerialChannel :: TTYSettings (b -> String) (String -> a) (Shared ([a],[b],Bool)) -> Task () | iTask a & iTask b
+syncSerialChannel opts enc dec rw = Task eval
 	where
 		eval event evalOpts tree=:(TCInit taskId ts) iworld=:{IWorld|world}
-		= case TTYopen dev opts world of
+		= case TTYopen opts world of
 			(False, _, world)
 			# (err, world) = TTYerror world
 			= (ExceptionResult (exception err), {iworld & world=world})

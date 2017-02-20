@@ -14,7 +14,7 @@ TTYerrorclose f w
 Start :: *World -> *World
 Start w
 # (io, w) = stdio w
-# (ok, tty, w) = TTYopen "/dev/ttyUSB0" zero w
+# (ok, tty, w) = TTYopen {zero & devicePath="/dev/ttyUSB0"} w
 | not ok = TTYerrorclose io w
 #! tty = TTYwrite "echo123\n" tty
 #! (av, tty) = TTYavailable tty
