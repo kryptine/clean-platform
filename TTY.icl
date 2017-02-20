@@ -34,6 +34,10 @@ instance toInt Parity where
 		ParityNone = 0; ParityOdd = 1; ParityEven = 2; ParitySpace = 3;
 		ParityMark = 4
 
+makeTTYSettings :: String BaudRate ByteSize Parity Bool Bool -> TTYSettings
+makeTTYSettings dp br bs pr sb xx = {TTYSettings | devicePath=dp, baudrate=br,
+	bytesize=bs, parity=pr, stop2bits=sb, xonxoff=xx}
+
 TTYopen :: !TTYSettings !*env -> (!Bool, !*TTY, !*env)
 TTYopen ts w = TTYopen2
 	ts.devicePath

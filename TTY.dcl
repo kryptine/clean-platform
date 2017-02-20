@@ -21,6 +21,8 @@ from StdClass import class zero
 
 instance zero TTYSettings
 
+makeTTYSettings :: String BaudRate ByteSize Parity Bool Bool -> TTYSettings
+
 TTYclose :: !*TTY !*env -> (!Bool, !*env)
 TTYerror :: !*env -> (!String, !*env)
 TTYopen :: !TTYSettings !*env -> (!Bool,!*TTY,!*env)
