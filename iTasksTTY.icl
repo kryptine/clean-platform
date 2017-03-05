@@ -84,7 +84,9 @@ serialDeviceBackgroundTask enc dec rw iworld
 		# iworld = {iworld & resources=Just (TTYd tty bgid)}
 		= case write (r++ml,[],False) rw iworld of
 			(Error e, iworld) = (Error $ exception "share couldn't be written", iworld)
-			(Ok _, iworld) = case notify rw iworld of
+			(Ok _, iworld)
+			| isEmpty r = (Ok (), iworld)
+			= case notify rw iworld of
 				(Error e, iworld) = (Error $ exception "share couldn't be notified", iworld)
 				(Ok _, iworld) = (Ok (), iworld)
 	where

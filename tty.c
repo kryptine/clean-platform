@@ -106,6 +106,7 @@ void ttyopen(CleanString fn, int baudrate, int bytesize, int parity,
 	debug("ttyopen");
 	struct termios tio;
 	char *cs_fn = cleanStringToCString(fn);
+	debug(cs_fn);
 	*fd = open(cs_fn, O_RDWR | O_NOCTTY | O_NONBLOCK);
 	*status = 0;
 	fcntl(*fd, F_SETFL, 0);
