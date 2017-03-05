@@ -18,14 +18,10 @@ where
 		st` = { st & cpp_indent = st.cpp_indent + 1 }
 		context = if (isEmpty cd.class_context) "" (" | " +++ join st " & " cd.class_context)
 		args = if (isEmpty cd.class_args) "" (join_start st " " cd.class_args)
-    print st (PD_Instance {pim_pi={pi_ident,pi_types,pi_context},pim_members})
-		= print st ("instance " :+: pi_ident :+: " " :+: join st ", " pi_types :+: pi_context` :+: members)
-	where
-		pi_context` = if (isEmpty pi_context) PrintNil (" | " :+: join st " & " pi_context)
-		members = if (isEmpty pim_members) PrintNil (" where" :+: join_start st` ("\n" :+: st`) pim_members)
-		st` = {st & cpp_indent = st.cpp_indent + 1}
+    print st (PD_Instance pim)
+		= print st pim
     print st (PD_Instances pis=:[{pim_pi={pi_ident}}:_])
-		= print st ("instance " :+: pi_ident :+: " " :+: join st ", " (map (\i -> i.pim_pi.pi_types) pis))
+		= join st ("\n" :+: st) pis
 	print st (PD_Generic {gen_ident,gen_type,gen_vars})
 		= print st ("generic " :+: gen_ident :+: join_start st " " gen_vars :+: " :: " :+: gen_type)
 	print st (PD_Derive gencasedefs)
@@ -202,6 +198,18 @@ where
 		= print st (gtc_generic.glob_object.ds_ident.id_name :+: "{|" :+: gtc_kind :+: "|}")
 	print st _
 		= abort "UNKNOWN_TCCLASS"
+
+instance print ParsedInstanceAndMembers
+where
+	print st {pim_pi={pi_pos,pi_ident,pi_types,pi_context},pim_members}
+		= print st (pos :+: ": " :+: "instance " :+: pi_ident :+: " " :+: join st " " pi_types :+: pi_context` :+: members)
+	where
+		pi_context` = if (isEmpty pi_context) PrintNil (" | " :+: join st " & " pi_context)
+		members = if (isEmpty pim_members) PrintNil (" where" :+: join_start st` ("\n" :+: st`) pim_members)
+		st` = {st & cpp_indent = st.cpp_indent + 1}
+		pos = case pi_pos of
+			(FunPos f l n) = "<" :+: f :+: ";" :+: l :+: ";" :+: n :+: ">"
+			(LinePos f l) = "<" :+: f :+: ";" :+: l :+: ">"
 
 // Generics
 instance print GenericCaseDef
