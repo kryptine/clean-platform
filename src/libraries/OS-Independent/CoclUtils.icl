@@ -60,6 +60,7 @@ where
 	toType (TFAC tvas t cc) = 'T'.Forall (map 'T'.toType tvas) ('T'.toType t) ('T'.toClassContext cc)
 	toType TArrow = 'T'.Arrow Nothing
 	toType (TArrow1 t) = 'T'.Arrow (Just ('T'.toType t))
+	toType (TQualifiedIdent _ s ts) = 'T'.Type s (map 'T'.toType ts)
 	toType _ = abort "CoclUtils: unimplemented Type\n"
 
 instance toType SymbolType
