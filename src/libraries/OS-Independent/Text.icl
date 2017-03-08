@@ -162,3 +162,6 @@ instance Text String
 instance + String
 where
 	(+) s1 s2 = s1 +++ s2
+
+(<+) infixr 5 :: a b -> String | toString a & toString b
+(<+) x y = toString x + toString y
