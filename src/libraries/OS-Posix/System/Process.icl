@@ -191,11 +191,11 @@ where
 
 openPipe :: !*World -> (MaybeOSError (Int, Int), !*World)
 openPipe world
-    # ptr = malloc (IF_INT_64_OR_32 16 8)
+    # ptr = malloc 8
     | ptr == 0 = abort "malloc failed"
     # (res, world) = pipe ptr world
     # rEnd = readInt ptr 0
-    # wEnd = readInt ptr (IF_INT_64_OR_32 4 4)
+    # wEnd = readInt ptr 4
     # _    = free ptr
     | res == -1 = getLastOSError world
     = (Ok (rEnd, wEnd), world)
