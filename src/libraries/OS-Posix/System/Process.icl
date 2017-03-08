@@ -83,6 +83,123 @@ where
 			fillArgv arg_n [] argv args_memory
 				= {argv & [arg_n]=0}
 
+runProcessIO :: !FilePath ![String] !(Maybe String) !*World -> (MaybeOSError (ProcessHandle, ProcessIO), *World)
+runProcessIO path args mCurrentDirectory world //TODO: Use mCurrentDirectory argument
+	//Check if path exists 
+	# (ok,world)	= fileExists path world
+	| not ok
+		= (Error (1,"File " +++ path +++ " does not exist"),world)
+    // StdIn
+    # (pipeStdIn, world) = openPipe world
+    | isError pipeStdIn = (liftError pipeStdIn, world)
+    # (pipeStdInOut, pipeStdInIn) = fromOk pipeStdIn
+    // StdOut
+    # (pipeStdOut, world) = openPipe world
+    | isError pipeStdOut = (liftError pipeStdOut, world)
+    # (pipeStdOutOut, pipeStdOutIn) = fromOk pipeStdOut
+    // StdErr
+    # (pipeStdErr, world) = openPipe world
+    | isError pipeStdErr = (liftError pipeStdErr, world)
+    # (pipeStdErrOut, pipeStdErrIn) = fromOk pipeStdErr
+	//Fork
+	# (pid, world)			= fork world
+	| pid == 0
+        //redirect stdin/out/err to pipes
+        # (res, world)          = dup2 pipeStdInOut STDIN_FILENO world
+        | res == -1             = getLastOSError world
+        # (res, world)          = close pipeStdInIn world
+        | res == -1             = getLastOSError world
+
+        # (res, world)          = dup2 pipeStdOutIn STDOUT_FILENO world
+        | res == -1             = getLastOSError world
+        # (res, world)          = close pipeStdOutOut world
+        | res == -1             = getLastOSError world
+
+        # (res, world)          = dup2 pipeStdErrIn STDERR_FILENO world
+        | res == -1             = getLastOSError world
+        # (res, world)          = close pipeStdErrOut world
+        | res == -1             = getLastOSError world
+		//Exec
+		# (argv, args_memory)	= makeArgv [path:args]
+		# (res, world)			= execvp (path +++ "\0") argv world
+		= (exit 1 world)
+	| pid > 0
+        # (res, world)          = close pipeStdInOut world
+        | res == -1             = getLastOSError world
+        # (res, world)          = close pipeStdOutIn world
+        | res == -1             = getLastOSError world
+        # (res, world)          = close pipeStdErrIn world
+        | res == -1             = getLastOSError world
+		= ( Ok ( { ProcessHandle
+                 | pid = pid
+                 }
+               , { stdIn  = pipeStdInIn
+                 , stdOut = pipeStdOutOut
+                 , stdErr = pipeStdErrOut
+                 }
+               )
+          , world
+          )
+	| otherwise
+		= getLastOSError world
+where
+	makeArgv :: [String] -> (!{#Pointer},!Pointer)
+	makeArgv argv_list
+		# args_size = argvLength argv_list 0
+		  args_string = createArgsString args_size argv_list
+		  args_memory = malloc args_size
+		| args_memory == 0
+			= abort "malloc failed"
+		# args_memory = memcpy_string_to_pointer args_memory args_string args_size
+		  argv = createArgv argv_list args_memory
+		= (argv,args_memory)
+	where
+		argvLength [a:as] l
+			= argvLength as (l+((size a +(IF_INT_64_OR_32 8 4)) bitand (IF_INT_64_OR_32 -8 -4)))
+		argvLength [] l
+			= l
+
+    	createArgsString args_size argv_list
+			# s = createArray args_size '\0'
+			= copyArgs argv_list 0 s
+		where
+			copyArgs [a:as] i s
+				# s = copyChars 0 a i s
+				= copyArgs as (i+((size a +(IF_INT_64_OR_32 8 4)) bitand (IF_INT_64_OR_32 -8 -4))) s
+			copyArgs [] i s
+				= s
+    
+			copyChars :: !Int !{#Char} !Int !*{#Char} -> *{#Char}
+			copyChars ai a si s
+				| ai<size a
+					# s = {s & [si]=a.[ai]}
+					= copyChars (ai+1) a (si+1) s
+				= s
+
+		createArgv argv_list args_memory
+			# n_args = length argv_list
+			# argv = createArray (n_args+1) 0;
+			= fillArgv 0 argv_list argv args_memory 
+		where
+			fillArgv :: !Int ![{#Char}] !*{#Pointer} !Int -> *{#Pointer}
+			fillArgv arg_n [a:as] argv args_memory
+				# argv = {argv & [arg_n]=args_memory}
+				  args_memory = args_memory + ((size a +(IF_INT_64_OR_32 8 4)) bitand (IF_INT_64_OR_32 -8 -4))
+				= fillArgv (arg_n+1) as argv args_memory
+			fillArgv arg_n [] argv args_memory
+				= {argv & [arg_n]=0}
+
+openPipe :: !*World -> (MaybeOSError (Int, Int), !*World)
+openPipe world
+    # ptr = malloc (IF_INT_64_OR_32 16 8)
+    | ptr == 0 = abort "malloc failed"
+    # (res, world) = pipe ptr world
+    # rEnd = readInt ptr 0
+    # wEnd = readInt ptr (IF_INT_64_OR_32 4 4)
+    # _    = free ptr
+    | res == -1 = getLastOSError world
+    = (Ok (rEnd, wEnd), world)
+
 checkProcess :: !ProcessHandle !*World -> (MaybeOSError (Maybe Int), *World)
 checkProcess {pid} world
 	# status		= createArray 1 0

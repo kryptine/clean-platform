@@ -14,6 +14,11 @@ Not yet implemented:
 :: ProcessHandle = { pid :: Int
 				   }
 
+:: ProcessIO = { stdIn  :: Int
+               , stdOut :: Int
+               , stdErr :: Int
+               }
+
 /**
 * runs a new process
 * @param Path to the executable
@@ -22,6 +27,16 @@ Not yet implemented:
 * @return Process handle to the process
 */
 runProcess :: !FilePath ![String] !(Maybe String) !*World -> (MaybeOSError ProcessHandle, *World)
+
+/**
+* runs a new process
+* @param Path to the executable
+* @param a list of command-line arguments
+* @param (optional) startup directory
+* @return Process handle to the process and pipes for IO
+*/
+runProcessIO :: !FilePath ![String] !(Maybe String) !*World -> (MaybeOSError (ProcessHandle, ProcessIO), *World)
+
 /**
 * Check if a process is still running
 * @param Process handle to the process
