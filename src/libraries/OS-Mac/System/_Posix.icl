@@ -76,6 +76,20 @@ readdir	:: !Pointer !*w -> (!Pointer,!*w)
 readdir dir world = code {
 	ccall readdir "p:p:A"
 }
+pipe :: !Pointer !*w -> (!Int, !*w)
+pipe arr world = code {
+    ccall pipe "p:I:A"
+}
+
+dup2 :: !Int !Int !*w -> (!Int, !*w)
+dup2 old new world = code {
+    ccall dup2 "II:I:A"
+}
+
+close :: !Int !*w -> (!Int, !*w)
+close fd world = code {
+    ccall close "I:I:A"
+}
 
 malloc :: !Int -> Pointer
 malloc num = code {

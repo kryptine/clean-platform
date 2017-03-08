@@ -19,6 +19,10 @@ S_IFLNK		:== 0120000
 S_IFSOCK	:== 0140000
 S_IFWHT		:== 0160000
 
+STDIN_FILENO  :== 0
+STDOUT_FILENO :== 1
+STDERR_FILENO :== 2
+
 //Posix API calls
 errno		:: !*w -> (!Int,!*w)
 strerr		:: !Int -> Pointer
@@ -36,6 +40,9 @@ rename		:: !{#Char} !{#Char} !*w -> (!Int,!*w)
 opendir		:: !{#Char} !*w -> (!Pointer,!*w)
 closedir	:: !Pointer !*w -> (!Int,!*w)
 readdir		:: !Pointer !*w -> (!Pointer,!*w)
+pipe        :: !Pointer !*w -> (!Int, !*w)
+dup2        :: !Int !Int !*w -> (!Int, !*w)
+close       :: !Int !*w -> (!Int, !*w)
 
 //Memory (impure)
 malloc	:: !Int -> Pointer
