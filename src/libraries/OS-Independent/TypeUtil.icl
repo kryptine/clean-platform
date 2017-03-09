@@ -181,7 +181,8 @@ resolve_synonyms tds (Type t ts)
 				>>= assignAll [(a,r) \\ a <- newargs & r <- ts]
 			| length td_args <> length ts
 				# (Type r rs) = t
-				= ([syn:syns], Type r $ rs ++ drop (length td_args) ts)
+				# t = Type r $ rs ++ drop (length td_args) ts
+				= appFst ((++) [syn:syns]) $ resolve_synonyms tds t
 			= ([syn:syns], t)
 where
 	candidates = [td \\ td=:{td_rhs=TDRSynonym syn} <- tds
