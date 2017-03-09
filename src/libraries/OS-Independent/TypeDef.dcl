@@ -13,7 +13,12 @@ from Data.Maybe import :: Maybe
 
 :: TypeVar :== String
 :: TVAssignment :== (TypeVar, Type)
-:: Unifier :== ([TVAssignment], [TVAssignment])
+
+:: Unifier =
+	{ left_to_right :: [TVAssignment]
+	, right_to_left :: [TVAssignment]
+	, used_synonyms :: [TypeDef]
+	}
 
 :: ClassContext :== [ClassRestriction]
 :: ClassRestriction :== (ClassOrGeneric, Type)
@@ -99,3 +104,5 @@ td_name :: TypeDef -> String
 typedef :: String Bool [Type] TypeDefRhs -> TypeDef
 constructor :: String [Type] [TypeVar] ClassContext (Maybe Priority) -> Constructor
 recordfield :: String Type -> RecordField
+
+removeDupTypedefs :: [TypeDef] -> [TypeDef]

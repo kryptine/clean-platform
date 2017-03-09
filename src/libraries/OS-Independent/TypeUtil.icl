@@ -2,12 +2,16 @@ implementation module TypeUtil
 
 import TypeDef
 
-import StdArray, StdOrdList, StdString, StdTuple
-from StdFunc import o
+import StdArray, StdBool, StdOrdList, StdString, StdTuple
+from StdFunc import flip, o
 
+import Control.Applicative
+import Control.Monad
 from Data.Func import $
+import Data.Functor
 import Data.List
 import Data.Maybe
+import Data.Tuple
 from Text import class Text (concat), instance Text String
 from GenEq import generic gEq, ===
 
@@ -159,4 +163,71 @@ propagate_uniqueness (Cons v ts)
 	= if (any isUniq ts) (Uniq (Cons v ts)) (Cons v ts)
 propagate_uniqueness (Forall vs t cc)
 	= Forall vs (propagate_uniqueness t) cc
-propagate_uniqueness t = t
+propagate_uniqueness t
+	= t
+
+import StdMisc
+
+resolve_synonyms :: [TypeDef] Type -> ([TypeDef], Type)
+resolve_synonyms tds (Type t ts)
+	# (syns, ts) = appFst (removeDupTypedefs o flatten) $ unzip $ map (resolve_synonyms tds) ts
+	= case candidates of
+		[]
+			= (syns, Type t ts)
+		[syn=:{td_args, td_rhs=TDRSynonym synt}:_]
+			# newargs = map ((+++) "__" o fromVar) td_args
+			# (Just t)
+				= assignAll [(fromVar a, Var n) \\ a <- td_args & n <- newargs] synt
+				>>= assignAll [(a,r) \\ a <- newargs & r <- ts]
+			| length td_args <> length ts
+				# (Type r rs) = t
+				= ([syn:syns], Type r $ rs ++ drop (length td_args) ts)
+			= ([syn:syns], t)
+where
+	candidates = [td \\ td=:{td_rhs=TDRSynonym syn} <- tds
+		| td.td_name == t && length td.td_args <= length ts
+		&& (isType syn || length td.td_args == length ts)]
+resolve_synonyms tds (Func is r cc)
+	# (syns, [r:is]) = appFst (removeDupTypedefs o flatten) $ unzip $ map (resolve_synonyms tds) [r:is]
+	= (syns, Func is r cc)
+resolve_synonyms tds (Cons v ts)
+	# (syns, ts) = appFst (removeDupTypedefs o flatten) $ unzip $ map (resolve_synonyms tds) ts
+	= (syns, Cons v ts)
+resolve_synonyms tds (Forall vs t cc)
+	# (syns, t) = resolve_synonyms tds t
+	= (syns, Forall vs t cc)
+resolve_synonyms tds (Arrow (Just t))
+	= appSnd (Arrow o pure) $ resolve_synonyms tds t
+resolve_synonyms tds t
+	= ([], t)
+
+// Apply a TVAssignment to a Type
+assign :: !TVAssignment !Type -> Maybe Type
+assign va (Type s ts) = Type s <$^> map (assign va) ts
+assign va (Func ts r cc) = Func <$^> map (assign va) ts
+		>>= (\f->f <$> assign va r) >>= (\f->pure $ f cc) // TODO cc
+assign (v,a) (Var v`) = pure $ if (v == v`) a (Var v`)
+assign va=:(v,Type s ts) (Cons v` ts`)
+	| v == v`   = Type s <$^> map (assign va) (ts ++ ts`)
+	| otherwise = Cons v` <$^> map (assign va) ts`
+assign va=:(v,Cons c ts) (Cons v` ts`)
+	| v == v`   = Cons c <$^> map (assign va) (ts ++ ts`)
+	| otherwise = Cons v` <$^> map (assign va) ts`
+assign va=:(v,Var v`) (Cons v`` ts)
+	| v == v``  = Cons v` <$^> map (assign va) ts
+	| otherwise = Cons v`` <$^> map (assign va) ts
+assign va=:(v,_) (Cons v` ts)
+	| v == v` = empty
+	| otherwise = Cons v` <$^> map (assign va) ts
+assign va (Uniq t) = Uniq <$> (assign va t)
+assign va=:(v,Var v`) (Forall tvs t cc)
+	= Forall <$^> map (assign va) tvs >>= (\f -> flip f cc <$> assign va t)
+assign va=:(v,_) (Forall tvs t cc)
+	| isMember (Var v) tvs = empty
+	| otherwise = flip (Forall tvs) cc <$> assign va t
+
+(<$^>) infixl 4 //:: ([a] -> b) [Maybe a] -> Maybe b
+(<$^>) f mbs :== ifM (all isJust mbs) $ f $ map fromJust mbs
+
+//ifM :: Bool a -> m a | Alternative m
+ifM b x :== if b (pure x) empty

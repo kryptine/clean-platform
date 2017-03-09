@@ -108,3 +108,8 @@ constructor name args exi_vars cc pri
 
 recordfield :: String Type -> RecordField
 recordfield selector type = {rf_name=selector, rf_type=type}
+
+removeDupTypedefs :: [TypeDef] -> [TypeDef]
+removeDupTypedefs [] = []
+removeDupTypedefs [td:tds]
+	= [td:removeDupTypedefs $ filter (\d -> d.td_name <> td.td_name) tds]

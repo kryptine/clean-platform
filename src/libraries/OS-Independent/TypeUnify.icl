@@ -20,23 +20,24 @@ import Control.Monad
 
 derive gEq ClassOrGeneric, Type, Kind
 
-prepare_unification :: !Bool !Type -> Type
-prepare_unification b (Func [] t _) = prepare_unification b t
-prepare_unification isleft t
+prepare_unification :: !Bool /* is left */ [TypeDef] !Type -> ([TypeDef], Type)
+prepare_unification b db (Func [] t _) = prepare_unification b db t
+prepare_unification isleft db t
+# (syns, t) = resolve_synonyms db t
 # t = propagate_uniqueness t
 # t = reduceArities t
 # t = appendToVars (if isleft "l" "r") t
-= t
+= (syns, t)
 where
 	appendToVars :: String Type -> Type
 	appendToVars s t = fromJust $ assignAll (map rename $ allVars t) t
 	where rename v = (v, Var (v+++s))
 
-finish_unification :: ![TVAssignment] -> Unifier
-finish_unification tvs
+finish_unification :: ![TypeDef] ![TVAssignment] -> Unifier
+finish_unification syns tvs
 # (tvs1, tvs2) = (filter (endsWith "l") tvs, filter (endsWith "r") tvs)
 # (tvs1, tvs2) = (map removeEnds tvs1, map removeEnds tvs2)
-= (tvs1, tvs2)
+= {left_to_right=tvs1, right_to_left=tvs2, used_synonyms=removeDupTypedefs syns}
 where
 	endsWith :: String TVAssignment -> Bool
 	endsWith n (h,_) = h % (size h - size n, size h - 1) == n
@@ -46,7 +47,7 @@ where
 	                   assignAll (map (\v->(v,Var (rm v))) $ allVars t) t)
 
 unify :: ![Instance] !Type !Type -> Maybe [TVAssignment]
-unify is t1 t2 //TODO instances ignored; class context not considered
+unify _ t1 t2 //TODO instances ignored; class context not considered
 	= unify2 $ toMESystem t1 t2
 
 :: MultiEq = ME ![TypeVar] ![Type]
@@ -228,37 +229,6 @@ where
 //-----------------------//
 // Unification utilities //
 //-----------------------//
-
-// Apply a TVAssignment to a Type
-assign :: !TVAssignment !Type -> Maybe Type
-assign va (Type s ts) = Type s <$^> map (assign va) ts
-assign va (Func ts r cc) = Func <$^> map (assign va) ts 
-		>>= (\f->f <$> assign va r) >>= (\f->pure $ f cc) // TODO cc
-assign (v,a) (Var v`) = pure $ if (v == v`) a (Var v`)
-assign va=:(v,Type s ts) (Cons v` ts`)
-	| v == v`   = Type s <$^> map (assign va) (ts ++ ts`)
-	| otherwise = Cons v` <$^> map (assign va) ts`
-assign va=:(v,Cons c ts) (Cons v` ts`)
-	| v == v`   = Cons c <$^> map (assign va) (ts ++ ts`)
-	| otherwise = Cons v` <$^> map (assign va) ts`
-assign va=:(v,Var v`) (Cons v`` ts)
-	| v == v``  = Cons v` <$^> map (assign va) ts
-	| otherwise = Cons v`` <$^> map (assign va) ts
-assign va=:(v,_) (Cons v` ts)
-	| v == v` = empty
-	| otherwise = Cons v` <$^> map (assign va) ts
-assign va (Uniq t) = Uniq <$> (assign va t)
-assign va=:(v,Var v`) (Forall tvs t cc)
-	= Forall <$^> map (assign va) tvs >>= (\f -> flip f cc <$> assign va t)
-assign va=:(v,_) (Forall tvs t cc)
-	| isMember (Var v) tvs = empty
-	| otherwise = flip (Forall tvs) cc <$> assign va t
-
-(<$^>) infixl 4 //:: ([a] -> b) [Maybe a] -> Maybe b
-(<$^>) f mbs :== ifM (all isJust mbs) $ f $ map fromJust mbs
-
-//ifM :: Bool a -> m a | Alternative m
-ifM b x :== if b (pure x) empty
 
 // Make all functions arity 1 by transforming a b -> c to a -> b -> c
 reduceArities :: !Type -> Type
