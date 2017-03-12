@@ -49,7 +49,7 @@ where
 instance toType Type
 where
 	toType (TA tsi ats) = case tsi.type_ident.id_name of
-		"_String" = 'T'.Type "_#Array" ['T'.Type "Char" []]
+		"_String" = 'T'.Type "String" []
 		type_name = 'T'.Type tsi.type_ident.id_name (map 'T'.toType ats)
 	toType (TAS tsi ats _) = 'T'.Type tsi.type_ident.id_name (map 'T'.toType ats)
 	toType (TB bt) = 'T'.Type (toString bt) []
