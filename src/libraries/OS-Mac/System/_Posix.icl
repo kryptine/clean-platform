@@ -91,6 +91,26 @@ close fd world = code {
     ccall close "I:I:A"
 }
 
+ioctl :: !Int !Int !Pointer !*w -> (!Int, !*w)
+ioctl fd op ptr world = code {
+    ccall ioctl "IIp:I:A"
+}
+
+read :: !Int !Pointer !Int !*w -> (!Int, !*w)
+read fd buffer nBuffer world = code {
+    ccall read "IpI:I:A"
+}
+
+write :: !Int !{#Char} !Int !*w -> (!Int, !*w)
+write fd buffer nBuffer world = code {
+    ccall write "IsI:I:A"
+}
+
+select_ :: !Int !Pointer !Pointer !Pointer !Pointer !*w -> (!Int, !*w)
+select_ nfds readfds writefds exceptfds timeout world = code {
+    ccall select "Ipppp:I:A"
+}
+
 malloc :: !Int -> Pointer
 malloc num = code {
 	ccall malloc "p:p"

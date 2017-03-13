@@ -14,10 +14,13 @@ Not yet implemented:
 :: ProcessHandle = { pid :: Int
 				   }
 
-:: ProcessIO = { stdIn  :: Int
-               , stdOut :: Int
-               , stdErr :: Int
+:: ProcessIO = { stdIn  :: WritePipe
+               , stdOut :: ReadPipe
+               , stdErr :: ReadPipe
                }
+
+:: WritePipe
+:: ReadPipe
 
 /**
 * runs a new process
@@ -59,3 +62,10 @@ waitForProcess :: !ProcessHandle !*World -> (!MaybeOSError Int, !*World)
 * @return Exit code of the process
 */
 callProcess :: !FilePath ![String] !(Maybe String) !*World -> (MaybeOSError Int, *World)
+
+readPipeNonBlocking   :: !ReadPipe   !*World -> (!MaybeOSError String,   !*World)
+readPipeBlocking      :: !ReadPipe   !*World -> (!MaybeOSError String,   !*World)
+//readPipeBlockingMulti :: ![ReadPipe] !*World -> (!MaybeOSError [String], !*World)
+
+//writePipe :: !String !WritePipe !*World -> (!MaybeOSError (), !*World)
+

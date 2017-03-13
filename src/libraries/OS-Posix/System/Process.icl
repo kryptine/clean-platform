@@ -8,6 +8,7 @@ import StdInt
 import StdList
 import StdString
 import StdMisc
+import StdFunc
 
 //Data
 import Data.Maybe
@@ -19,6 +20,9 @@ import System.OSError
 import System._Pointer
 import System._Posix
 
+:: WritePipe = WritePipe !Int
+:: ReadPipe  = ReadPipe  !Int
+
 runProcess :: !FilePath ![String] !(Maybe String) !*World -> (MaybeOSError ProcessHandle, *World)
 runProcess path args mCurrentDirectory world //TODO: Use mCurrentDirectory argument
 	//Check if path exists 
@@ -29,7 +33,7 @@ runProcess path args mCurrentDirectory world //TODO: Use mCurrentDirectory argum
 	# (pid, world)			= fork world
 	| pid == 0
 		//Exec
-		# (argv,args_memory)	= makeArgv [path:args]
+		# (argv,args_memory, world) = makeArgv [path:args] world
 		# (res,world)			= execvp (path +++ "\0") argv world
 		= (exit 1 world)
 	| pid > 0
@@ -37,8 +41,8 @@ runProcess path args mCurrentDirectory world //TODO: Use mCurrentDirectory argum
 	| otherwise
 		= getLastOSError world
 where
-	makeArgv :: [String] -> (!{#Pointer},!Pointer)
-	makeArgv argv_list
+	makeArgv :: [String] *World -> (!{#Pointer},!Pointer, *World)
+	makeArgv argv_list world
 		# args_size = argvLength argv_list 0
 		  args_string = createArgsString args_size argv_list
 		  args_memory = malloc args_size
@@ -46,7 +50,7 @@ where
 			= abort "malloc failed"
 		# args_memory = memcpy_string_to_pointer args_memory args_string args_size
 		  argv = createArgv argv_list args_memory
-		= (argv,args_memory)
+		= (argv,args_memory, world)
 	where
 		argvLength [a:as] l
 			= argvLength as (l+((size a +(IF_INT_64_OR_32 8 4)) bitand (IF_INT_64_OR_32 -8 -4)))
@@ -120,7 +124,7 @@ runProcessIO path args mCurrentDirectory world //TODO: Use mCurrentDirectory arg
         # (res, world)          = close pipeStdErrOut world
         | res == -1             = getLastOSError world
 		//Exec
-		# (argv, args_memory)	= makeArgv [path:args]
+		# (argv, args_memory, world) = makeArgv [path:args] world
 		# (res, world)			= execvp (path +++ "\0") argv world
 		= (exit 1 world)
 	| pid > 0
@@ -133,9 +137,9 @@ runProcessIO path args mCurrentDirectory world //TODO: Use mCurrentDirectory arg
 		= ( Ok ( { ProcessHandle
                  | pid = pid
                  }
-               , { stdIn  = pipeStdInIn
-                 , stdOut = pipeStdOutOut
-                 , stdErr = pipeStdErrOut
+               , { stdIn  = WritePipe pipeStdInIn
+                 , stdOut = ReadPipe  pipeStdOutOut
+                 , stdErr = ReadPipe  pipeStdErrOut
                  }
                )
           , world
@@ -143,8 +147,8 @@ runProcessIO path args mCurrentDirectory world //TODO: Use mCurrentDirectory arg
 	| otherwise
 		= getLastOSError world
 where
-	makeArgv :: [String] -> (!{#Pointer},!Pointer)
-	makeArgv argv_list
+	makeArgv :: [String] *World -> (!{#Pointer},!Pointer, *World)
+	makeArgv argv_list world
 		# args_size = argvLength argv_list 0
 		  args_string = createArgsString args_size argv_list
 		  args_memory = malloc args_size
@@ -152,7 +156,7 @@ where
 			= abort "malloc failed"
 		# args_memory = memcpy_string_to_pointer args_memory args_string args_size
 		  argv = createArgv argv_list args_memory
-		= (argv,args_memory)
+		= (argv,args_memory, world)
 	where
 		argvLength [a:as] l
 			= argvLength as (l+((size a +(IF_INT_64_OR_32 8 4)) bitand (IF_INT_64_OR_32 -8 -4)))
@@ -191,13 +195,17 @@ where
 
 openPipe :: !*World -> (MaybeOSError (Int, Int), !*World)
 openPipe world
-    # ptr = malloc 8
+    #! ptr = malloc 8
     | ptr == 0 = abort "malloc failed"
-    # (res, world) = pipe ptr world
-    # rEnd = readInt ptr 0
-    # wEnd = readInt ptr 4
-    # _    = free ptr
-    | res == -1 = getLastOSError world
+    #! (res, world) = pipe ptr world
+    | res == -1
+        # fRes         = free ptr
+        | fRes <> fRes = undef
+        = getLastOSError world
+    # (rEnd, ptr)  = readP (\ptr -> readInt4S ptr 0) ptr
+    # (wEnd, ptr)  = readP (\ptr -> readInt4S ptr 4) ptr
+    #! fRes         = free ptr
+    | fRes <> fRes = undef
     = (Ok (rEnd, wEnd), world)
 
 checkProcess :: !ProcessHandle !*World -> (MaybeOSError (Maybe Int), *World)
@@ -229,3 +237,44 @@ callProcess path args mCurrentDirectory world
 	= case res of 
 		Ok handle	= waitForProcess handle world
 		Error e		= (Error e, world)
+
+readPipeNonBlocking :: !ReadPipe !*World -> (!MaybeOSError String, !*World)
+readPipeNonBlocking (ReadPipe fd) world
+    # ptr           = malloc 4
+    #! (res, world) = ioctl fd FIONREAD ptr world
+    | res == -1
+        #! fRes        = free ptr
+        | fRes <> fRes = undef
+        = getLastOSError world
+    # (n, ptr)     = readIntP ptr 0
+    #! fRes         = free ptr
+    | fRes <> fRes = undef
+    | n == 0    = (Ok "", world)
+    # buffer       = malloc n
+    #! (res, world) = read fd buffer n world
+    | res == -1
+        #! fRes        = free ptr
+        | fRes <> fRes = undef
+        = getLastOSError world
+    #(str, ptr)    = readP derefString buffer
+    #!fRes         = free ptr
+    | fRes <> fRes = undef
+    = (Ok str, world)
+
+readPipeBlocking :: !ReadPipe !*World -> (!MaybeOSError String, !*World)
+readPipeBlocking pipe=:(ReadPipe fd) world
+    # readfds = malloc 128
+    // init array
+    # readfds = seq [\ptr -> writeIntElemOffset ptr i 0 \\ i <- [0..IF_INT_64_OR_32 16 32]] readfds
+    # offset  = fromInt fd / IF_INT_64_OR_32 64 32
+    # val = (readIntElemOffset readfds offset) bitor (1 << (fd rem IF_INT_64_OR_32 64 32))
+    # readfds = writeIntElemOffset readfds offset val
+    #! (res, world) = select_ (fd + 1) readfds 0 0 0 world
+    | res == -1
+        #!fRes         = free readfds
+        | fRes <> fRes = undef
+        = getLastOSError world
+    #!fRes         = free readfds
+    | fRes <> fRes = undef
+    = readPipeNonBlocking pipe world
+

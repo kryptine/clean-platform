@@ -24,6 +24,8 @@ STDIN_FILENO  :== 0
 STDOUT_FILENO :== 1
 STDERR_FILENO :== 2
 
+FIONREAD :== 0x541B
+
 //Posix API calls
 errno		:: !*w -> (!Int,!*w)
 strerr		:: !Int -> Pointer
@@ -44,6 +46,10 @@ readdir		:: !Pointer !*w -> (!Pointer,!*w)
 pipe        :: !Pointer !*w -> (!Int, !*w)
 dup2        :: !Int !Int !*w -> (!Int, !*w)
 close       :: !Int !*w -> (!Int, !*w)
+ioctl       :: !Int !Int !Pointer !*w -> (!Int, !*w)
+read        :: !Int !Pointer !Int !*w -> (!Int, !*w)
+write       :: !Int !{#Char} !Int !*w -> (!Int, !*w)
+select_     :: !Int !Pointer !Pointer !Pointer !Pointer !*w -> (!Int, !*w)
 
 //Memory (impure)
 malloc	:: !Int -> Pointer
