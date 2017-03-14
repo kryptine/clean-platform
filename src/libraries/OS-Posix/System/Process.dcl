@@ -65,7 +65,7 @@ callProcess :: !FilePath ![String] !(Maybe String) !*World -> (MaybeOSError Int,
 
 readPipeNonBlocking   :: !ReadPipe   !*World -> (!MaybeOSError String,   !*World)
 readPipeBlocking      :: !ReadPipe   !*World -> (!MaybeOSError String,   !*World)
-//readPipeBlockingMulti :: ![ReadPipe] !*World -> (!MaybeOSError [String], !*World)
+readPipeBlockingMulti :: ![ReadPipe] !*World -> (!MaybeOSError [String], !*World)
 
-//writePipe :: !String !WritePipe !*World -> (!MaybeOSError (), !*World)
+writePipe :: !String !WritePipe !*World -> (!MaybeOSError (), !*World)
 

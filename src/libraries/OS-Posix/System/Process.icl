@@ -12,6 +12,7 @@ import StdFunc
 
 //Data
 import Data.Maybe
+from Data.List import maximum
 
 //System
 import System.FilePath
@@ -246,7 +247,7 @@ readPipeNonBlocking (ReadPipe fd) world
         #! fRes        = free ptr
         | fRes <> fRes = undef
         = getLastOSError world
-    # (n, ptr)     = readIntP ptr 0
+    # (n, ptr)     = readP (\ptr -> readInt4Z ptr 0) ptr
     #! fRes         = free ptr
     | fRes <> fRes = undef
     | n == 0    = (Ok "", world)
@@ -256,7 +257,7 @@ readPipeNonBlocking (ReadPipe fd) world
         #! fRes        = free ptr
         | fRes <> fRes = undef
         = getLastOSError world
-    #(str, ptr)    = readP derefString buffer
+    #(str, ptr)    = readP (\ptr -> derefCharArray ptr n) buffer
     #!fRes         = free ptr
     | fRes <> fRes = undef
     = (Ok str, world)
@@ -266,9 +267,11 @@ readPipeBlocking pipe=:(ReadPipe fd) world
     # readfds = malloc 128
     // init array
     # readfds = seq [\ptr -> writeIntElemOffset ptr i 0 \\ i <- [0..IF_INT_64_OR_32 16 32]] readfds
+    // set bit for fd
     # offset  = fromInt fd / IF_INT_64_OR_32 64 32
     # val = (readIntElemOffset readfds offset) bitor (1 << (fd rem IF_INT_64_OR_32 64 32))
     # readfds = writeIntElemOffset readfds offset val
+    // wait
     #! (res, world) = select_ (fd + 1) readfds 0 0 0 world
     | res == -1
         #!fRes         = free readfds
@@ -277,4 +280,41 @@ readPipeBlocking pipe=:(ReadPipe fd) world
     #!fRes         = free readfds
     | fRes <> fRes = undef
     = readPipeNonBlocking pipe world
+
+readPipeBlockingMulti :: ![ReadPipe] !*World -> (!MaybeOSError [String], !*World)
+readPipeBlockingMulti pipes world
+    #readfds = malloc 128
+    // init array
+    #readfds = seq [\ptr -> writeIntElemOffset ptr i 0 \\ i <- [0..IF_INT_64_OR_32 16 32]] readfds
+    // set bits for fds
+    #readfds = seq [setFdBit fd \\ ReadPipe fd <- pipes] readfds
+    // wait
+    #!(res, world) = select_ (maxFd + 1) readfds 0 0 0 world
+    | res == -1
+        #!fRes         = free readfds
+        | fRes <> fRes = undef
+        = getLastOSError world
+    #!fRes         = free readfds
+    | fRes <> fRes = undef
+    = seq [ \(res, world) -> case res of
+                Ok res`
+                    #(r, world) = readPipeNonBlocking pipe world
+                    = (seqErrors r (\r` -> Ok [r`:res`]), world)
+                error =  (error, world)
+            \\ pipe <- reverse pipes
+          ]
+          (Ok [], world)
+where
+    maxFd = maximum [fd \\ ReadPipe fd <- pipes]
+
+    setFdBit fd ptr
+        #offset  = fromInt fd / IF_INT_64_OR_32 64 32
+        #val = (readIntElemOffset ptr offset) bitor (1 << (fd rem IF_INT_64_OR_32 64 32))
+        = writeIntElemOffset ptr offset val
+
+writePipe :: !String !WritePipe !*World -> (!MaybeOSError (), !*World)
+writePipe str (WritePipe fd) world
+    #(res, world) = write fd str (size str) world
+    | res == -1 = getLastOSError world
+    = (Ok (), world)
 

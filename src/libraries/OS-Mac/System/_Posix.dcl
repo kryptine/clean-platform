@@ -23,7 +23,7 @@ STDIN_FILENO  :== 0
 STDOUT_FILENO :== 1
 STDERR_FILENO :== 2
 
-FIONREAD :== 0x541B
+FIONREAD :== 0x4004667F
 
 //Posix API calls
 errno		:: !*w -> (!Int,!*w)
