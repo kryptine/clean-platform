@@ -147,7 +147,9 @@ where
 		lookup "_Unit"             = Yes ("()" :+: PrintNil)
 		lookup "_List"             = Yes ("["  :+: join st " " ats :+:  "]")
 		lookup "_!List"            = Yes ("[!" :+: join st " " ats :+:  "]")
-		lookup "_List!"            = Yes ("["  :+: join st " " ats :+: "!]")
+		lookup "_List!"
+		| isEmpty ats              = Yes ("[ !]" :+: PrintNil)
+		| otherwise                = Yes ("["  :+: join st " " ats :+: "!]")
 		lookup "_!List!"           = Yes ("[!" :+: join st " " ats :+: "!]")
 		lookup "_|List"            = Yes ("[|" :+: join st " " ats :+:  "]")
 		lookup "_#List"            = Yes ("[#" :+: join st " " ats :+:  "]")
