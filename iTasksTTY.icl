@@ -75,6 +75,8 @@ serialDeviceBackgroundTask :: (b -> String) (String -> a) (Shared ([a],[b],Bool)
 serialDeviceBackgroundTask enc dec rw iworld
 	= case read rw iworld of
 		(Error e, iworld) = (Error $ exception "share couldn't be read", iworld)
+		//We need to stop
+		(Ok (_,_,True), iworld) = (Error $ exception "I have to stop...", iworld)
 		(Ok (r,s,ss), iworld)
 		# (Just (TTYd tty bgid)) = iworld.resources
 		# tty = writet (map enc s) tty
@@ -82,13 +84,10 @@ serialDeviceBackgroundTask enc dec rw iworld
 			(False, tty) = ([], tty)
 			(_, tty) = appFst (pure o dec) $ TTYreadline tty
 		# iworld = {iworld & resources=Just (TTYd tty bgid)}
+		| isEmpty ml = (Ok (), iworld)
 		= case write (r++ml,[],False) rw iworld of
 			(Error e, iworld) = (Error $ exception "share couldn't be written", iworld)
-			(Ok _, iworld)
-			| isEmpty r = (Ok (), iworld)
-			= case notify rw iworld of
-				(Error e, iworld) = (Error $ exception "share couldn't be notified", iworld)
-				(Ok _, iworld) = (Ok (), iworld)
+			(Ok _, iworld) = (Ok (), iworld)
 	where
 		writet :: [String] -> (*TTY -> *TTY)
 		writet [] = id
