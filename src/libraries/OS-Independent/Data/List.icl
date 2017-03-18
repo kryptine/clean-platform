@@ -204,7 +204,7 @@ select p x (ts, fs)
   | p x       = ([x:ts], fs)
   | otherwise = (ts, [x:fs])
 
-foldr` :: !(a .b -> .b) !.b !.[a] -> !.b
+foldr` :: !(a .b -> .b) !.b !.[a] -> .b
 foldr` _ acc []       = acc
 foldr` f acc [x : xs]
   #! tmp = foldr` f acc xs
