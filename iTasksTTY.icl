@@ -90,6 +90,6 @@ serialDeviceBackgroundTask enc dec rw iworld
 			(Error e, iworld) = (Error $ exception "share couldn't be written", iworld)
 			(Ok _, iworld) = (Ok (), iworld)
 	where
-		writet :: [String] -> (!*TTY -> !*TTY)
+		writet :: [String] -> (*TTY -> *TTY)
 		writet [] = id
 		writet [x:xs] = writet xs o TTYwrite x
