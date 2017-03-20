@@ -76,7 +76,7 @@ serialDeviceBackgroundTask enc dec rw iworld
 	= case read rw iworld of
 		(Error e, iworld) = (Error $ exception "share couldn't be read", iworld)
 		//We need to stop
-		(Ok (_,_,True), iworld) = (Error $ exception "I have to stop...", iworld)
+		(Ok (_,_,True), iworld) = (Ok (), iworld)
 
 		(Ok (r,s,ss), iworld)
 		# (Just (TTYd tty bgid)) = iworld.resources
@@ -90,6 +90,6 @@ serialDeviceBackgroundTask enc dec rw iworld
 			(Error e, iworld) = (Error $ exception "share couldn't be written", iworld)
 			(Ok _, iworld) = (Ok (), iworld)
 	where
-		writet :: [String] -> (*TTY -> *TTY)
+		writet :: [String] -> (!*TTY -> !*TTY)
 		writet [] = id
 		writet [x:xs] = writet xs o TTYwrite x
