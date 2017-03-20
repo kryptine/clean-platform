@@ -4,6 +4,7 @@ from Control.Applicative import class Applicative (..), class Alternative (..), 
 from Control.Monad import class Monad (..), class MonadPlus (..)
 from Data.Either import :: Either (..)
 from Data.Functor import class Functor (..), <$>
+from StdOverloaded import class ==
 
 :: Error :== String
 :: Parser t a
