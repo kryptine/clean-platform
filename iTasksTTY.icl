@@ -32,17 +32,23 @@ getTTYDevices w = case readDirectory "/dev" w of
 	(Ok entries, w) = (map ((+++) "/dev/") (filter isTTY entries), w)
 	where
 		isTTY s = not (isEmpty (filter (flip startsWith s) prefixes))
-		prefixes = ["ttyS", "ttyACM", "ttyUSB", "tty.usbserial"]
+		prefixes = ["ttyS", "ttyACM", "ttyUSB", "tty.usbserial", "rfcomm"]
 
 enterTTYSettings :: Task TTYSettings
 enterTTYSettings = accWorld getTTYDevices
-	>>= \ds->(((((enterChoice "Device" [] ds
-	-&&- updateInformation "Baudrate" [] B9600)
-	-&&- updateInformation "Bytesize" [] BytesizeEight)
-	-&&- updateInformation "Parity" [] ParityNone)
-	-&&- updateInformation "Stop2bits" [] False)
-	-&&- updateInformation "Xonoff" [] False)
-	@ (uncurry o uncurry o uncurry o uncurry o uncurry) makeTTYSettings
+	>>= \ds->(
+				enterChoice "Device" [] ds 
+			-&&- updateInformation "Baudrate" [] B9600
+			<<@ ArrangeHorizontal)
+		-&&- (
+				updateInformation "Bytesize" [] BytesizeEight
+			-&&- updateInformation "Parity" [] ParityNone
+			<<@ ArrangeHorizontal)
+		-&&- (
+				updateInformation "Stop2bits" [] False
+			-&&- updateInformation "Xonoff" [] False
+			<<@ ArrangeHorizontal)
+	@ \((dev, br), ((bs, pr), (st, xo)))->makeTTYSettings dev br bs pr st xo
 
 syncSerialChannel :: TTYSettings (b -> String) (String -> a) (Shared ([a],[b],Bool)) -> Task () | iTask a & iTask b
 syncSerialChannel opts enc dec rw = Task eval
@@ -80,16 +86,10 @@ serialDeviceBackgroundTask enc dec rw iworld
 
 		(Ok (r,s,ss), iworld)
 		# (Just (TTYd tty bgid)) = iworld.resources
-		# tty = writet (map enc s) tty
+		# tty = foldr TTYwrite tty $ map enc s
 		# (ml, tty) = case TTYavailable tty of
 			(False, tty) = ([], tty)
 			(_, tty) = appFst (pure o dec) $ TTYreadline tty
 		# iworld = {iworld & resources=Just (TTYd tty bgid)}
 		| isEmpty ml && isEmpty s = (Ok (), iworld)
-		= case write (r++ml,[],False) rw iworld of
-			(Error e, iworld) = (Error $ exception "share couldn't be written", iworld)
-			(Ok _, iworld) = (Ok (), iworld)
-	where
-		writet :: [String] -> (*TTY -> *TTY)
-		writet [] = id
-		writet [x:xs] = writet xs o TTYwrite x
+		= write (r++ml,[],False) rw iworld

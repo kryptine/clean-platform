@@ -182,7 +182,6 @@ void ttyread(int fd, int *ch, int *fdo)
 	if(read(fd, &c, 1) == -1){
 		die("read");
 	}
-	printf("read: %o\n", c);
 	*ch = (int)c;
 	*fdo = fd;
 	debug("ttyread done");
