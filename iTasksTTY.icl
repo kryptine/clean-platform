@@ -86,7 +86,7 @@ serialDeviceBackgroundTask enc dec rw iworld
 
 		(Ok (r,s,ss), iworld)
 		# (Just (TTYd tty bgid)) = iworld.resources
-		# tty = foldr TTYwrite tty $ map enc s
+		# tty = foldr TTYwrite tty $ reverse $ map enc s
 		# (ml, tty) = case TTYavailable tty of
 			(False, tty) = ([], tty)
 			(_, tty) = appFst (pure o dec) $ TTYreadline tty
