@@ -158,7 +158,14 @@ where
 		lookup "_#Array"           = Yes ("{#" :+: join st " " ats :+:  "}")
 		lookup "_!Array"           = Yes ("{!" :+: join st " " ats :+:  "}")
 		lookup name
-		| name % (0,5) == "_Tuple" = Yes ("(" :+: join st "," [if s "!" "" :+: a \\ a <- ats & s <- strict] :+: ")")
+		| name % (0,5) == "_Tuple"
+			| length ats == arity  = Yes ("(" :+: join st "," types :+: ")")
+			| isEmpty ats          = Yes (tupleString :+: PrintNil)
+			| otherwise            = Yes (tupleString :+: " " :+: join st " " types)
+		where
+			tupleString = "(" +++ toString (repeatn (arity-1) ',') +++ ")"
+			types = [if s "!" "" :+: a \\ a <- ats & s <- strict]
+			arity = toInt (name % (6,size name-1))
 		lookup _                   = No
 
 // Type contexts
