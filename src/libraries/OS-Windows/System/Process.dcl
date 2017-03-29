@@ -68,7 +68,7 @@ readPipeNonBlocking   :: !ReadPipe   !*World -> (!MaybeOSError String,   !*World
 //readPipeBlocking      :: !ReadPipe   !*World -> (!MaybeOSError String,   !*World)
 //readPipeBlockingMulti :: ![ReadPipe] !*World -> (!MaybeOSError [String], !*World)
 
-//writePipe :: !String !WritePipe !*World -> (!MaybeOSError (), !*World)
+writePipe :: !String !WritePipe !*World -> (!MaybeOSError (), !*World)
 
 /**
  * Dummy function to be API-compatible with the Posix module

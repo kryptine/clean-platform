@@ -33,10 +33,10 @@ readFile hFile lpBuffer nNumberOfBytesToRead lpNumberOfBytesRead lpOverlapped wo
 		ccall ReadFile@20 "PIpIpp:I:I"
 	}
 	
-writeFile :: !HANDLE !LPVOID !DWORD !LPDWORD !LPOVERLAPPED !*w -> (!Bool, !*w)
+writeFile :: !HANDLE !String !DWORD !LPDWORD !LPOVERLAPPED !*w -> (!Bool, !*w)
 writeFile hFile lpBuffer nNumberOfBytesToWrite lpNumberOfBytesWritten lpOverlapped world
 	= code {
-		ccall WriteFile@20 "PIpIpp:I:I"
+		ccall WriteFile@20 "PIsIpp:I:I"
 	}
 	
 setEndOfFile :: !HANDLE !*w -> (!Bool, !*w)

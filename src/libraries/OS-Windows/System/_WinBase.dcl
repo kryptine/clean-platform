@@ -116,7 +116,7 @@ createFileA :: !String !DWORD !DWORD !LPSECURITY_ATTRIBUTES
 	
 readFile :: !HANDLE !LPVOID !DWORD !LPDWORD !LPOVERLAPPED !*w -> (!Bool, !*w)
 
-writeFile :: !HANDLE !LPVOID !DWORD !LPDWORD !LPOVERLAPPED !*w -> (!Bool, !*w)
+writeFile :: !HANDLE !String !DWORD !LPDWORD !LPOVERLAPPED !*w -> (!Bool, !*w)
 
 setEndOfFile :: !HANDLE !*w -> (!Bool, !*w)
 

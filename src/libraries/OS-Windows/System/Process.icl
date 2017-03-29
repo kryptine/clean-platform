@@ -176,3 +176,9 @@ readPipeNonBlocking (ReadPipe hPipe) world
 	# (str, buf) = readP (\ptr -> derefCharArray ptr nBytes) buf
 	# (_, world) = heapFree heap 0 buf world
 	= (Ok str, world)
+
+writePipe :: !String !WritePipe !*World -> (!MaybeOSError (), !*World)
+writePipe str (WritePipe hPipe) world
+	# (ok, world) = writeFile hPipe str (size str) NULL NULL world
+    | not ok = getLastOSError world
+    = (Ok (), world)
