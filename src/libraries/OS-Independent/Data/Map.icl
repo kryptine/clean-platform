@@ -2563,5 +2563,8 @@ where
 */
 derive JSONEncode Map
 derive JSONDecode Map
-gEq{|Map|} fk fv mx my = and [fk kx ky && fv vx vy \\ (kx,vx) <- toList mx & (ky,vy) <- toList my]
+gEq{|Map|} fk fv mx my = length mxl == length myl && and [fk kx ky && fv vx vy \\ (kx,vx) <- mxl & (ky,vy) <- myl]
+where
+	mxl = toList mx
+	myl = toList my
 
