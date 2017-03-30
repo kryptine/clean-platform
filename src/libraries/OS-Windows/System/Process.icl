@@ -27,11 +27,15 @@ import Text
 
 runProcess :: !FilePath ![String] !(Maybe String) !*World -> (MaybeOSError ProcessHandle, *World)
 runProcess path args mCurrentDirectory world
-	# commandLine = packString (foldr (\a b -> a +++ " " +++ b) "" (map escape [path:args]))
 	# startupInfo = { createArray STARTUPINFO_size_int 0
 	  			 	& [STARTUPINFO_cb_int_offset] 		 = STARTUPINFO_size_bytes
 				 	, [STARTUPINFO_dwFlags_int_offset]	 = STARTF_USESTDHANDLES
 					}
+	= runProcess` path args mCurrentDirectory startupInfo world
+
+runProcess` :: !FilePath ![String] !(Maybe String) !LPSTARTUPINFO !*World -> (MaybeOSError ProcessHandle, *World)
+runProcess` path args mCurrentDirectory startupInfo world
+	# commandLine = packString (foldr (\a b -> a +++ " " +++ b) "" (map escape [path:args]))
 	# processInformation = createArray PROCESS_INFORMATION_size_int 0
 	# (ok, world) = case mCurrentDirectory of
 		Just dir	-> createProcessA_dir (packString path) commandLine 0 0 True DETACHED_PROCESS 0 (packString dir) startupInfo processInformation world
@@ -41,12 +45,12 @@ runProcess path args mCurrentDirectory world
 					  , threadHandle = processInformation.[PROCESS_INFORMATION_hThread_int_offset]
 					  }
 	= (Ok processHandle, world)
-	where
-		escape :: !String -> String
-		escape s | indexOf " " s == -1                                    = s
-				 | size s >= 2 && s.[0] == '"' && (s.[size s - 1] == '"') = s
-				 | otherwise                                              = "\"" +++ s +++ "\""
-
+where
+	escape :: !String -> String
+	escape s | indexOf " " s == -1                                    = s
+	         | size s >= 2 && s.[0] == '"' && (s.[size s - 1] == '"') = s
+			 | otherwise                                              = "\"" +++ s +++ "\""
+	
 runProcessIO :: !FilePath ![String] !(Maybe String) !*World -> (MaybeOSError (ProcessHandle, ProcessIO), *World)
 runProcessIO path args mCurrentDirectory world
 	// StdIn
@@ -68,23 +72,16 @@ runProcessIO path args mCurrentDirectory world
     # (ok, world) = setHandleInformation pipeStdErrOut HANDLE_FLAG_INHERIT 0 world
     | not ok = getLastOSError world
     // runProcess
-	# commandLine = packString (foldr (\a b -> a +++ " " +++ b) "" (map escape [path:args]))
-	# startupInfo = { createArray STARTUPINFO_size_int 0
+    # startupInfo = { createArray STARTUPINFO_size_int 0
 	  			 	& [STARTUPINFO_cb_int_offset] 		  = STARTUPINFO_size_bytes
 	  			 	, [STARTUPINFO_hStdInput_int_offset]  = pipeStdInOut
 	  			 	, [STARTUPINFO_hStdOutput_int_offset] = pipeStdOutIn
 	  			 	, [STARTUPINFO_hStdError_int_offset]  = pipeStdErrIn
 				 	, [STARTUPINFO_dwFlags_int_offset]	  = STARTF_USESTDHANDLES
 					}
-	# processInformation = createArray PROCESS_INFORMATION_size_int 0
-	# (ok, world) = case mCurrentDirectory of
-		Just dir	-> createProcessA_dir (packString path) commandLine 0 0 True DETACHED_PROCESS 0 (packString dir) startupInfo processInformation world
-		Nothing 	-> createProcessA     (packString path) commandLine 0 0 True DETACHED_PROCESS 0 0                startupInfo processInformation world
-	| not ok = getLastOSError world
-	# processHandle = { processHandle = processInformation.[PROCESS_INFORMATION_hProcess_int_offset]
-					  , threadHandle = processInformation.[PROCESS_INFORMATION_hThread_int_offset]
-					  } 
-	= ( Ok ( processHandle
+	# (processHandle, world) = runProcess` path args mCurrentDirectory startupInfo world
+	| isError processHandle = (liftError processHandle, world)
+	= ( Ok ( fromOk processHandle
 	       , { stdIn  = WritePipe pipeStdInIn
              , stdOut = ReadPipe  pipeStdOutOut
              , stdErr = ReadPipe  pipeStdErrOut
@@ -93,11 +90,6 @@ runProcessIO path args mCurrentDirectory world
       , world
       )
 	where
-		escape :: !String -> String
-		escape s | indexOf " " s == -1                                    = s
-				 | size s >= 2 && s.[0] == '"' && (s.[size s - 1] == '"') = s
-				 | otherwise                                              = "\"" +++ s +++ "\""
-
 		openPipe :: !*World -> (MaybeOSError (HANDLE, HANDLE), !*World)
 		openPipe world
 			# (heap, world) = getProcessHeap world
@@ -116,7 +108,13 @@ runProcessIO path args mCurrentDirectory world
     	                     & [SECURITY_ATTRIBUTES_nLength_INT_OFFSET]        = SECURITY_ATTRIBUTES_SIZE_BYTES
 	  			 	         , [SECURITY_ATTRIBUTES_bInheritHandle_INT_OFFSET] = TRUE
 					         }
-    
+
+runProcessEscape :: !String -> String
+runProcessEscape s | indexOf " " s == -1                                    = s
+	               | size s >= 2 && s.[0] == '"' && (s.[size s - 1] == '"') = s
+				   | otherwise                                              = "\"" +++ s +++ "\""
+           
+ 
 checkProcess :: !ProcessHandle !*World -> (MaybeOSError (Maybe Int), *World)
 checkProcess handle=:{processHandle} world
 	# (ok, exitCode, world)		= getExitCodeProcess processHandle world
