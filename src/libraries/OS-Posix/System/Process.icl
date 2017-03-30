@@ -31,62 +31,16 @@ runProcess path args mCurrentDirectory world //TODO: Use mCurrentDirectory argum
 	| not ok
 		= (Error (1,"File " +++ path +++ " does not exist"),world)
 	//Fork
-	# (pid, world)			= fork world
+	# (pid, world) = fork world
 	| pid == 0
 		//Exec
-		# (argv,args_memory, world) = makeArgv [path:args] world
-		# (res,world)			= execvp (path +++ "\0") argv world
+		# (argv, world) = runProcessMakeArgv [path:args] world
+		# (res,world)	= execvp (path +++ "\0") argv world
 		= (exit 1 world)
 	| pid > 0
 		= (Ok {ProcessHandle| pid = pid}, world)
 	| otherwise
 		= getLastOSError world
-where
-	makeArgv :: [String] *World -> (!{#Pointer},!Pointer, *World)
-	makeArgv argv_list world
-		# args_size = argvLength argv_list 0
-		  args_string = createArgsString args_size argv_list
-		  args_memory = malloc args_size
-		| args_memory == 0
-			= abort "malloc failed"
-		# args_memory = memcpy_string_to_pointer args_memory args_string args_size
-		  argv = createArgv argv_list args_memory
-		= (argv,args_memory, world)
-	where
-		argvLength [a:as] l
-			= argvLength as (l+((size a +(IF_INT_64_OR_32 8 4)) bitand (IF_INT_64_OR_32 -8 -4)))
-		argvLength [] l
-			= l
-
-    	createArgsString args_size argv_list
-			# s = createArray args_size '\0'
-			= copyArgs argv_list 0 s
-		where
-			copyArgs [a:as] i s
-				# s = copyChars 0 a i s
-				= copyArgs as (i+((size a +(IF_INT_64_OR_32 8 4)) bitand (IF_INT_64_OR_32 -8 -4))) s
-			copyArgs [] i s
-				= s
-    
-			copyChars :: !Int !{#Char} !Int !*{#Char} -> *{#Char}
-			copyChars ai a si s
-				| ai<size a
-					# s = {s & [si]=a.[ai]}
-					= copyChars (ai+1) a (si+1) s
-				= s
-
-		createArgv argv_list args_memory
-			# n_args = length argv_list
-			# argv = createArray (n_args+1) 0;
-			= fillArgv 0 argv_list argv args_memory 
-		where
-			fillArgv :: !Int ![{#Char}] !*{#Pointer} !Int -> *{#Pointer}
-			fillArgv arg_n [a:as] argv args_memory
-				# argv = {argv & [arg_n]=args_memory}
-				  args_memory = args_memory + ((size a +(IF_INT_64_OR_32 8 4)) bitand (IF_INT_64_OR_32 -8 -4))
-				= fillArgv (arg_n+1) as argv args_memory
-			fillArgv arg_n [] argv args_memory
-				= {argv & [arg_n]=0}
 
 runProcessIO :: !FilePath ![String] !(Maybe String) !*World -> (MaybeOSError (ProcessHandle, ProcessIO), *World)
 runProcessIO path args mCurrentDirectory world //TODO: Use mCurrentDirectory argument
@@ -125,8 +79,8 @@ runProcessIO path args mCurrentDirectory world //TODO: Use mCurrentDirectory arg
         # (res, world)          = close pipeStdErrOut world
         | res == -1             = getLastOSError world
 		//Exec
-		# (argv, args_memory, world) = makeArgv [path:args] world
-		# (res, world)			= execvp (path +++ "\0") argv world
+		# (argv, world)         = runProcessMakeArgv [path:args] world
+		# (res, world)			 = execvp (path +++ "\0") argv world
 		= (exit 1 world)
 	| pid > 0
         # (res, world)          = close pipeStdInOut world
@@ -147,52 +101,54 @@ runProcessIO path args mCurrentDirectory world //TODO: Use mCurrentDirectory arg
           )
 	| otherwise
 		= getLastOSError world
+
+runProcessMakeArgv :: [String] *World -> (!{#Pointer}, *World)
+runProcessMakeArgv argv_list world
+	# args_size = argvLength argv_list 0
+	  args_string = createArgsString args_size argv_list
+	  args_memory = malloc args_size
+	| args_memory == 0
+		= abort "malloc failed"
+	# args_memory = memcpy_string_to_pointer args_memory args_string args_size
+	# argv = createArgv argv_list args_memory
+    #!fRes         = free args_memory
+    | fRes <> fRes = undef
+	= (argv, world)
 where
-	makeArgv :: [String] *World -> (!{#Pointer},!Pointer, *World)
-	makeArgv argv_list world
-		# args_size = argvLength argv_list 0
-		  args_string = createArgsString args_size argv_list
-		  args_memory = malloc args_size
-		| args_memory == 0
-			= abort "malloc failed"
-		# args_memory = memcpy_string_to_pointer args_memory args_string args_size
-		  argv = createArgv argv_list args_memory
-		= (argv,args_memory, world)
+	argvLength [a:as] l
+		= argvLength as (l+((size a +(IF_INT_64_OR_32 8 4)) bitand (IF_INT_64_OR_32 -8 -4)))
+	argvLength [] l
+		= l
+
+	createArgsString args_size argv_list
+		# s = createArray args_size '\0'
+		= copyArgs argv_list 0 s
 	where
-		argvLength [a:as] l
-			= argvLength as (l+((size a +(IF_INT_64_OR_32 8 4)) bitand (IF_INT_64_OR_32 -8 -4)))
-		argvLength [] l
-			= l
+		copyArgs [a:as] i s
+			# s = copyChars 0 a i s
+			= copyArgs as (i+((size a +(IF_INT_64_OR_32 8 4)) bitand (IF_INT_64_OR_32 -8 -4))) s
+		copyArgs [] i s
+			= s
 
-    	createArgsString args_size argv_list
-			# s = createArray args_size '\0'
-			= copyArgs argv_list 0 s
-		where
-			copyArgs [a:as] i s
-				# s = copyChars 0 a i s
-				= copyArgs as (i+((size a +(IF_INT_64_OR_32 8 4)) bitand (IF_INT_64_OR_32 -8 -4))) s
-			copyArgs [] i s
-				= s
-    
-			copyChars :: !Int !{#Char} !Int !*{#Char} -> *{#Char}
-			copyChars ai a si s
-				| ai<size a
-					# s = {s & [si]=a.[ai]}
-					= copyChars (ai+1) a (si+1) s
-				= s
+		copyChars :: !Int !{#Char} !Int !*{#Char} -> *{#Char}
+		copyChars ai a si s
+			| ai<size a
+				# s = {s & [si]=a.[ai]}
+				= copyChars (ai+1) a (si+1) s
+			= s
 
-		createArgv argv_list args_memory
-			# n_args = length argv_list
-			# argv = createArray (n_args+1) 0;
-			= fillArgv 0 argv_list argv args_memory 
-		where
-			fillArgv :: !Int ![{#Char}] !*{#Pointer} !Int -> *{#Pointer}
-			fillArgv arg_n [a:as] argv args_memory
-				# argv = {argv & [arg_n]=args_memory}
-				  args_memory = args_memory + ((size a +(IF_INT_64_OR_32 8 4)) bitand (IF_INT_64_OR_32 -8 -4))
-				= fillArgv (arg_n+1) as argv args_memory
-			fillArgv arg_n [] argv args_memory
-				= {argv & [arg_n]=0}
+	createArgv argv_list args_memory
+		# n_args = length argv_list
+		# argv = createArray (n_args+1) 0;
+		= fillArgv 0 argv_list argv args_memory 
+	where
+		fillArgv :: !Int ![{#Char}] !*{#Pointer} !Int -> *{#Pointer}
+		fillArgv arg_n [a:as] argv args_memory
+			# argv = {argv & [arg_n]=args_memory}
+			  args_memory = args_memory + ((size a +(IF_INT_64_OR_32 8 4)) bitand (IF_INT_64_OR_32 -8 -4))
+			= fillArgv (arg_n+1) as argv args_memory
+		fillArgv arg_n [] argv args_memory
+			= {argv & [arg_n]=0}
 
 openPipe :: !*World -> (MaybeOSError (Int, Int), !*World)
 openPipe world
