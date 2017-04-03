@@ -1,15 +1,15 @@
 implementation module Data.Tuple
 
-tuple :: !a !b -> (!a,!b)
+tuple :: a b -> (a,b)
 tuple a b = (a,b)
 
-tuple3 :: !a !b !c -> (!a,!b,!c)
+tuple3 :: a b c -> (a,b,c)
 tuple3 a b c = (a,b,c)
 
-appFst	:: (.a -> .c) !(.a,.b) -> (.c,.b)
+appFst:: (.a -> .c) !(.a,.b) -> (.c,.b)
 appFst f (a,b) = (f a,b)
 
-appSnd	:: (.b -> .c) !(.a,.b) -> (.a,.c)
+appSnd :: (.b -> .c) !(.a,.b) -> (.a,.c)
 appSnd f (a,b) = (a,f b)
 
 appFst3 :: (.a -> .d) !(.a,.b,.c) -> (.d,.b,.c)
