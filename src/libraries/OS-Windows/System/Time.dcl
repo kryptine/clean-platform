@@ -9,7 +9,7 @@ import StdOverloaded
 /**
 * The resolution of the system clock ticks
 */
-CLK_PER_SEC	:== 100
+CLK_PER_SEC	:== 1000
 
 /**
 * The Tm record structure contains date and time information
