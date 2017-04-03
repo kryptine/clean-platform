@@ -9,3 +9,6 @@ UnlockFile@20
 GetProcessHeap@0
 HeapAlloc@12
 HeapFree@12
+CreatePipe@16
+PeekNamedPipe@24
+SetHandleInformation@12

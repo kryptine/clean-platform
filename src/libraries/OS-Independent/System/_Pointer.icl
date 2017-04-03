@@ -593,3 +593,7 @@ forceEval _ world = world
 
 forceEvalPointer :: !Pointer !*env -> *env
 forceEvalPointer _ world = world
+
+readP :: !(Pointer -> a) !Pointer -> (!a, !Pointer)
+readP f ptr = (f ptr, ptr)
+
