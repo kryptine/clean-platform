@@ -95,3 +95,17 @@ readPipeBlockingMulti :: ![ReadPipe] !*World -> (!MaybeOSError [String], !*World
 */
 writePipe :: !String !WritePipe !*World -> (!MaybeOSError (), !*World)
 
+/**
+* kills the process if it is still running and releases the process handle resources.
+* @param the process handle.
+* @return ()
+*/
+closeProcess :: !ProcessHandle !*World -> (!MaybeOSError (), !*World)
+
+/**
+* closes the IO channels of the process.
+* @param the io channels
+* @return ()
+*/
+closeProcessIO :: !ProcessIO !*World -> (!MaybeOSError (), !*World)
+

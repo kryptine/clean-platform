@@ -112,6 +112,11 @@ select_ nfds readfds writefds exceptfds timeout world = code {
     ccall select "Ipppp:I:A"
 }
 
+kill :: !Int !Int !*w -> (!Int, !*w)
+kill pid sig world = code {
+    ccall kill "II:I:A"
+}
+
 malloc :: !Int -> Pointer
 malloc num = code {
 	ccall malloc "p:p"

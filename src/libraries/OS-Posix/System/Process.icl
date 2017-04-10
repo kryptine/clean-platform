@@ -274,3 +274,19 @@ writePipe str (WritePipe fd) world
     | res == -1 = getLastOSError world
     = (Ok (), world)
 
+closeProcess :: !ProcessHandle !*World -> (!MaybeOSError (), !*World)
+closeProcess {pid} world
+    # (res, world) = kill pid 15 world // Termination signal
+    | res == -1    = getLastOSError world
+    = (Ok (), world)
+
+closeProcessIO :: !ProcessIO !*World -> (!MaybeOSError (), !*World)
+closeProcessIO {stdIn = WritePipe fdStdIn, stdOut = ReadPipe fdStdOut, stdErr = ReadPipe fdStdErr} world
+    # (res, world) = close fdStdIn world
+    | res == -1    = getLastOSError world
+    # (res, world) = close fdStdOut world
+    | res == -1    = getLastOSError world
+    # (res, world) = close fdStdErr world
+    | res == -1    = getLastOSError world
+    = (Ok (), world)
+
