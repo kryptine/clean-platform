@@ -274,9 +274,13 @@ writePipe str (WritePipe fd) world
     | res == -1 = getLastOSError world
     = (Ok (), world)
 
-closeProcess :: !ProcessHandle !*World -> (!MaybeOSError (), !*World)
-closeProcess {pid} world
+terminateProcess :: !ProcessHandle !*World -> (!MaybeOSError (), !*World)
+terminateProcess pHandle=:{pid} world
     # (res, world) = kill pid 15 world // Termination signal
+    | res == -1    = getLastOSError world
+    // otherwise process will remain as zombie
+    # status       = createArray 1 0
+    # (res, world) = waitpid pid status 0 world
     | res == -1    = getLastOSError world
     = (Ok (), world)
 
