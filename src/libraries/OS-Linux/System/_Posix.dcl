@@ -50,6 +50,7 @@ ioctl       :: !Int !Int !Pointer !*w -> (!Int, !*w)
 read        :: !Int !Pointer !Int !*w -> (!Int, !*w)
 write       :: !Int !{#Char} !Int !*w -> (!Int, !*w)
 select_     :: !Int !Pointer !Pointer !Pointer !Pointer !*w -> (!Int, !*w)
+kill        :: !Int !Int !*w -> (!Int, !*w)
 
 //Memory (impure)
 malloc	:: !Int -> Pointer

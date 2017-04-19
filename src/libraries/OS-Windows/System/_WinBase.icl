@@ -78,7 +78,12 @@ createProcessA_dir lpApplicationName commandLine lpProcessAttributes lpThreadAtt
 	= code {
 		ccall CreateProcessA@40 "PssIIIIIsAA:I:I"
 	}
-	
+
+terminateProcess :: !HANDLE !Int !*w -> (!Bool, !*w)
+terminateProcess hProc exitCode world = code inline {
+	ccall TerminateProcess@8 "PII:I:I"
+}
+
 deleteFileA :: !String !*w -> (!Int, !*w)
 deleteFileA path world = code inline {
 	ccall DeleteFileA@4 "Ps:I:I"

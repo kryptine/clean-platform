@@ -19,6 +19,7 @@ import System.OSError
 import System._Pointer
 
 import System._Windows
+import qualified System._WinBase as WinBase
 
 import Text
 
@@ -145,11 +146,6 @@ callProcess path args mCurrentDirectory world
 	= case res of
 		Error e		= (Error e,world)
 		Ok handle	= waitForProcess handle world
-		
-exit		:: !Int !*World -> (.a,!*World)
-exit _ world = (undef`, world)
-
-undef` = undef`
 
 readPipeNonBlocking :: !ReadPipe !*World -> (!MaybeOSError String, !*World)
 readPipeNonBlocking (ReadPipe hPipe) world
@@ -180,3 +176,23 @@ writePipe str (WritePipe hPipe) world
 	# (ok, world) = writeFile hPipe str (size str) NULL NULL world
     | not ok = getLastOSError world
     = (Ok (), world)
+
+terminateProcess :: !ProcessHandle !*World -> (!MaybeOSError (), !*World)
+terminateProcess hProc=:{processHandle} world
+	# (ok, world) = 'WinBase'.terminateProcess processHandle 0 world
+	= closeProcessHandle hProc world
+
+closeProcessIO :: !ProcessIO !*World -> (!MaybeOSError (), !*World)
+closeProcessIO {stdIn = WritePipe hStdIn, stdOut = ReadPipe hStdOut, stdErr = ReadPipe hStdErr} world
+	# (ok, world) = closeHandle hStdIn world
+	| not ok = getLastOSError world
+	# (ok, world) = closeHandle hStdOut world
+	| not ok = getLastOSError world
+	# (ok, world) = closeHandle hStdErr world
+	| not ok = getLastOSError world
+	= (Ok (), world)
+
+exit		:: !Int !*World -> (.a,!*World)
+exit _ world = (undef`, world)
+
+undef` = undef`
