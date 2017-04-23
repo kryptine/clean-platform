@@ -80,7 +80,7 @@ runProcessIO path args mCurrentDirectory world //TODO: Use mCurrentDirectory arg
         | res == -1             = getLastOSError world
 		//Exec
 		# (argv, world)         = runProcessMakeArgv [path:args] world
-		# (res, world)			 = execvp (path +++ "\0") argv world
+		# (res, world)			= execvp (path +++ "\0") argv world
 		= (exit 1 world)
 	| pid > 0
         # (res, world)          = close pipeStdInOut world
@@ -111,8 +111,8 @@ runProcessMakeArgv argv_list world
 		= abort "malloc failed"
 	# args_memory = memcpy_string_to_pointer args_memory args_string args_size
 	# argv = createArgv argv_list args_memory
-    #!fRes         = free args_memory
-    | fRes <> fRes = undef
+    //#!fRes         = free args_memory
+    //| fRes <> fRes = undef
 	= (argv, world)
 where
 	argvLength [a:as] l
