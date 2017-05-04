@@ -115,7 +115,9 @@ tagSize (TspanTag a t)		= 15 + (attrsSize a) + (tagsSize t)
 tagSize (TtTag a t)			=  9 + (attrsSize a) + (tagsSize t) 
 tagSize (UTag a t)			=  7 + (attrsSize a) + (tagsSize t) 
 tagSize (UlTag a t)			=  9 + (attrsSize a) + (tagsSize t) 
-tagSize (VarTag a t)		= 11 + (attrsSize a) + (tagsSize t) 
+tagSize (VarTag a t)		= 11 + (attrsSize a) + (tagsSize t)
+tagSize (DetailsTag a t)    = 19 + (attrsSize a) + (tagsSize t)
+tagSize (SummaryTag a t)    = 19 + (attrsSize a) + (tagsSize t)
 
 tagsSize :: ![HtmlTag] -> Int
 tagsSize tags = intsum tagSize tags
@@ -361,6 +363,8 @@ serializeTag (TtTag a t) s i			= writeTag "tt" a t s i
 serializeTag (UTag a t) s i				= writeTag "u" a t s i
 serializeTag (UlTag a t) s i			= writeTag "ul" a t s i
 serializeTag (VarTag a t) s i			= writeTag "var" a t s i
+serializeTag (DetailsTag a t) s i       = writeTag "details" a t s i
+serializeTag (SummaryTag a t) s i       = writeTag "summary" a t s i
 
 serializeTags :: ![HtmlTag] !*{#Char} !Int -> (!*{#Char}, !Int)
 serializeTags [] dest dest_i = (dest,dest_i)

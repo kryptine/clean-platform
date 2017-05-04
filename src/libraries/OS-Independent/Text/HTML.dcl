@@ -115,6 +115,8 @@ import StdString, Data.Maybe
 			| UTag				![HtmlAttr] ![HtmlTag]
 			| UlTag	 			![HtmlAttr] ![HtmlTag]
 			| VarTag			![HtmlAttr] ![HtmlTag]
+            | DetailsTag        ![HtmlAttr] ![HtmlTag]
+            | SummaryTag        ![HtmlAttr] ![HtmlTag]
 
 /**
 * This type provides an enumeration of all attributes that can occur in html tags.
