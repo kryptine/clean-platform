@@ -2,7 +2,7 @@ definition module TTY
 
 from StdClass import class zero
 
-:: *TTY
+:: *TTY (:== Int)
 
 :: ByteSize = BytesizeFive | BytesizeSix | BytesizeSeven | BytesizeEight
 :: Parity = ParityNone | ParityOdd | ParityEven | ParitySpace | ParityMark
