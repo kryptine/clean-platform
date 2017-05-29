@@ -4,7 +4,7 @@ definition module Text
 * It also gives an implementation for the String type which
 * is assumed to be an ASCII string
 */
-from StdOverloaded import class +
+from StdOverloaded import class +, class toString
 
 /*
 * This class defines the basic operations for manipulating pieces of text.
@@ -148,3 +148,5 @@ class Text s
 */
 instance Text String
 instance + String
+
+(<+) infixr 5 :: a b -> String | toString a & toString b
