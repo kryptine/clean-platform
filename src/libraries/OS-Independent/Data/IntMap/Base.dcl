@@ -1,5 +1,6 @@
 definition module Data.IntMap.Base
 
+from StdOverloaded import class ==
 from Data.Maybe import :: Maybe
 
 // A map of integers to values @a@.
