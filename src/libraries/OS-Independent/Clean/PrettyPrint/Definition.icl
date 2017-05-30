@@ -73,11 +73,14 @@ where
 instance print SymbolType
 where
 	print st t
-		= print st (if (isEmpty t.st_args) PrintNil (args` :+: " -> ") :+: t.st_result :+: st_context` :+: st_env`)
+		= print st (if (isEmpty t.st_args) PrintNil (args` :+: " -> ")) +++
+			print stnp (t.st_result :+: st_context` :+: st_env`)
 	where
-		st_context` = if (isEmpty t.st_context) PrintNil (" | " :+: join st " & " t.st_context)
-		st_env` = if (isEmpty t.st_attr_env) PrintNil (", [" :+: join st ", " t.st_attr_env :+: "]")
-		args` = join st " " [if s "!" "" :+: a \\ a <- t.st_args & s <- strictnessListToBools t.st_args_strictness]
+		stp = {st & cpp_parens=True}
+		stnp = {st & cpp_parens=False}
+		st_context` = if (isEmpty t.st_context) PrintNil (" | " :+: join stp " & " t.st_context)
+		st_env` = if (isEmpty t.st_attr_env) PrintNil (", [" :+: join stnp ", " t.st_attr_env :+: "]")
+		args` = join stp " " [if s "!" "" :+: a \\ a <- t.st_args & s <- strictnessListToBools t.st_args_strictness]
 
 strictnessListToBools :: StrictnessList -> [Bool]
 strictnessListToBools NotStrict        = repeat False
@@ -91,13 +94,13 @@ where
 	print st (TAS tsi ats slist)
 		= print st (tsi, ats, strictnessListToBools slist)
 	print st (at1 --> at2)
-		= print st ("(" :+: at1 :+: " -> " :+: at2 :+: ")")
+		= printp st (at1 :+: " -> " :+: print {st & cpp_parens=False} at2)
 	print st TArrow
 		= "(->)"
 	print st (TArrow1 at)
-		= print st ("((->) " :+: at :+: ")")
+		= print {st & cpp_parens=True} ("((->) " :+: at :+: ")")
 	print st (cv :@: ats)
-		= print st ("(" :+: cv :+: " " :+: join st " " ats :+: ")")
+		= printp st (cv :+: " " :+: join {st & cpp_parens=True} " " ats)
 	print st (TB bt)
 		= print st bt
 	//print st (TFA atvs type)
@@ -111,7 +114,7 @@ where
 	print st (TQualifiedIdent id s [])
 		= print st ("'" :+: id :+: "'." :+: s)
 	print st (TQualifiedIdent id s ats)
-		= print st ("('" :+: id :+: "'." :+: s :+: join_start st " " ats :+: ")")
+		= printp st ("'" :+: id :+: "'." :+: s :+: join_start st " " ats)
 	//|	TGenericFunctionInDictionary !(Global DefinedSymbol) !TypeKind !GlobalIndex /*GenericDict*/
 	//|	TE
 	print st _
@@ -140,33 +143,38 @@ where
 			(Yes s) = s
 			No      = case ats of
 				[]  = tsi :+: PrintNil
-				_   = "(" :+: tsi :+: " " :+: join st " " ats :+: ")"
+				_   = if st.cpp_parens
+					("(" :+: tsi :+: " " :+: join stp " " ats :+: ")")
+					(        tsi :+: " " :+: join stp " " ats        )
 		)
 	where
 		lookup "_String"           = Yes ("String" :+: PrintNil)
 		lookup "_Unit"             = Yes ("()" :+: PrintNil)
-		lookup "_List"             = Yes ("["  :+: join st " " ats :+:  "]")
-		lookup "_!List"            = Yes ("[!" :+: join st " " ats :+:  "]")
+		lookup "_List"             = Yes ("["  :+: join stnp " " ats :+:  "]")
+		lookup "_!List"            = Yes ("[!" :+: join stnp " " ats :+:  "]")
 		lookup "_List!"
 		| isEmpty ats              = Yes ("[ !]" :+: PrintNil)
-		| otherwise                = Yes ("["  :+: join st " " ats :+: "!]")
-		lookup "_!List!"           = Yes ("[!" :+: join st " " ats :+: "!]")
-		lookup "_|List"            = Yes ("[|" :+: join st " " ats :+:  "]")
-		lookup "_#List"            = Yes ("[#" :+: join st " " ats :+:  "]")
-		lookup "_#List!"           = Yes ("[#" :+: join st " " ats :+: "!]")
-		lookup "_Array"            = Yes ("{"  :+: join st " " ats :+:  "}")
-		lookup "_#Array"           = Yes ("{#" :+: join st " " ats :+:  "}")
-		lookup "_!Array"           = Yes ("{!" :+: join st " " ats :+:  "}")
+		| otherwise                = Yes ("["  :+: join stnp " " ats :+: "!]")
+		lookup "_!List!"           = Yes ("[!" :+: join stnp " " ats :+: "!]")
+		lookup "_|List"            = Yes ("[|" :+: join stnp " " ats :+:  "]")
+		lookup "_#List"            = Yes ("[#" :+: join stnp " " ats :+:  "]")
+		lookup "_#List!"           = Yes ("[#" :+: join stnp " " ats :+: "!]")
+		lookup "_Array"            = Yes ("{"  :+: join stnp " " ats :+:  "}")
+		lookup "_#Array"           = Yes ("{#" :+: join stnp " " ats :+:  "}")
+		lookup "_!Array"           = Yes ("{!" :+: join stnp " " ats :+:  "}")
 		lookup name
 		| name % (0,5) == "_Tuple"
-			| length ats == arity  = Yes ("(" :+: join st "," types :+: ")")
+			| length ats == arity  = Yes ("(" :+: join stnp "," types :+: ")")
 			| isEmpty ats          = Yes (tupleString :+: PrintNil)
-			| otherwise            = Yes (tupleString :+: " " :+: join st " " types)
+			| otherwise            = Yes (tupleString :+: " " :+: join stp " " types)
 		where
 			tupleString = "(" +++ toString (repeatn (arity-1) ',') +++ ")"
 			types = [if s "!" "" :+: a \\ a <- ats & s <- strict]
 			arity = toInt (name % (6,size name-1))
 		lookup _                   = No
+
+		stp  = {st & cpp_parens=True}
+		stnp = {st & cpp_parens=False}
 
 // Type contexts
 instance print TypeContext
