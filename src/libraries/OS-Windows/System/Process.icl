@@ -196,3 +196,19 @@ exit		:: !Int !*World -> (.a,!*World)
 exit _ world = (undef`, world)
 
 undef` = undef`
+
+instance closePipe WritePipe
+where
+    closePipe :: !WritePipe !*World -> (!MaybeOSError (), !*World)
+    closePipe (WritePipe pipe) world = closePipe` pipe world
+
+instance closePipe ReadPipe
+where
+    closePipe :: !ReadPipe !*World -> (!MaybeOSError (), !*World)
+    closePipe (ReadPipe pipe) world = closePipe` pipe world
+
+closePipe` :: !Int !*World -> (!MaybeOSError (), !*World)
+closePipe` pipe world
+	# (res, world) = closeHandle pipe world
+	| res <> 0     = getLastOSError world
+	= (Ok (), world)

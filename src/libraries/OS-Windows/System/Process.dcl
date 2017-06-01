@@ -101,3 +101,13 @@ closeProcessIO :: !ProcessIO !*World -> (!MaybeOSError (), !*World)
  * Dummy function to be API-compatible with the Posix module
  */
 exit		:: !Int !*World -> (.a,!*World)
+
+/**
+* closes an individual IO channel
+* @param the channel to close
+* @return ()
+*/
+class closePipe a :: !a !*World -> (!MaybeOSError (), !*World)
+
+instance closePipe WritePipe
+instance closePipe ReadPipe
