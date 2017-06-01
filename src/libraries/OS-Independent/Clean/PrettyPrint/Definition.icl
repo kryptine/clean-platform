@@ -128,7 +128,7 @@ instance print AType
 where
 	print st {at_attribute=TA_Var {av_ident},at_type=TV {tv_ident}}
 	| av_ident.id_name == tv_ident.id_name = "." +++ tv_ident.id_name
-	print st at = print st (at.at_attribute :+: at.at_type)
+	print st at = print {st & cpp_parens=True} (at.at_attribute :+: at.at_type)
 
 instance print ATypeVar
 where
