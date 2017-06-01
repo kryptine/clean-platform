@@ -80,7 +80,7 @@ runProcessIO path args mCurrentDirectory world //TODO: Use mCurrentDirectory arg
         | res == -1             = getLastOSError world
 		//Exec
 		# (argv, world)         = runProcessMakeArgv [path:args] world
-		# (res, world)			= execvp (path +++ "\0") argv world
+		# (res, world)          = execvp (path +++ "\0") argv world
 		= (exit 1 world)
 	| pid > 0
         # (res, world)          = close pipeStdInOut world
@@ -294,3 +294,18 @@ closeProcessIO {stdIn = WritePipe fdStdIn, stdOut = ReadPipe fdStdOut, stdErr = 
     | res == -1    = getLastOSError world
     = (Ok (), world)
 
+instance closePipe WritePipe
+where
+    closePipe :: !WritePipe !*World -> (!MaybeOSError (), !*World)
+    closePipe (WritePipe pipe) world = closePipe` pipe world
+
+instance closePipe ReadPipe
+where
+    closePipe :: !ReadPipe !*World -> (!MaybeOSError (), !*World)
+    closePipe (ReadPipe pipe) world = closePipe` pipe world
+
+closePipe` :: !Int !*World -> (!MaybeOSError (), !*World)
+closePipe` pipe world
+	# (res, world) = close pipe world
+	| res <> 0     = getLastOSError world
+	= (Ok (), world)
