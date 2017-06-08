@@ -109,3 +109,12 @@ terminateProcess :: !ProcessHandle !*World -> (!MaybeOSError (), !*World)
 */
 closeProcessIO :: !ProcessIO !*World -> (!MaybeOSError (), !*World)
 
+/**
+* closes an individual IO channel
+* @param the channel to close
+* @return ()
+*/
+class closePipe a :: !a !*World -> (!MaybeOSError (), !*World)
+
+instance closePipe WritePipe
+instance closePipe ReadPipe
