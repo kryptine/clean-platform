@@ -1,16 +1,21 @@
 definition module CleanPrettyPrint.Util
 
+/**
+ * Utility functions for the pretty-printer. Normally, these need not be used
+ * directly, as the cpp class in CleanPrettyPrint is sufficient for most use
+ * cases.
+ */
+
 from StdOverloaded import class zero, class +++(+++)
 
-from StdList import isEmpty
+:: CPPState
+	= { cpp_indent :: Int
+	  , cpp_parens :: Bool
+	  }
 
-:: CPPState =
-	{ cpp_indent :: Int
-	, cpp_parens :: Bool
-	}
-
-:: PrintList = PrintNil
-             | E.t u: (:+:) infixl 0 t u & print t & print u
+:: PrintList
+	= PrintNil
+	| E.t u: (:+:) infixl 0 t u & print t & print u
 
 class print t where
 	print :: CPPState t -> String

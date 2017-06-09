@@ -6,4 +6,8 @@ from syntax import :: ParsedExpr, :: Rhs, :: OptGuardedAlts
 
 instance print ParsedExpr, Rhs
 
-compound_rhs :: OptGuardedAlts -> Bool // True iff no guards or #-lets
+/**
+ * True iff the right-hand side is a GuardedAlts or UnguardedExpr with at least
+ * one ewl_node.
+ */
+compound_rhs :: OptGuardedAlts -> Bool
