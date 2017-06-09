@@ -67,9 +67,6 @@ toMESystem t1 t2
 
 instance == MultiEq where (==) (ME a b) (ME c d) = a == c && b == d
 
-// Implementation of 'Algorithm 3', described by Martelli, Montanari in An
-// Efficient Unification Algorithm, 1982, section 2. It has been modified a bit
-// to be able to deal with constructor variables and universal quantifiers.
 unify2 :: !MESystem -> Maybe [TVAssignment]
 unify2 {solved,unsolved}
 # unsolved = sortBy (\(a,b) (c,d) -> a < c) unsolved

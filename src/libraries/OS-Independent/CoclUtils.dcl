@@ -1,5 +1,9 @@
 definition module CoclUtils
 
+/**
+ * Functions to transform types in the Clean compiler into types in TypeDef.
+ */
+
 from TypeDef import class toType, class toTypeVar, class toTypeDef,
 	class toTypeDefRhs, class toConstructor, class toRecordField,
 	class toClassContext, class toMaybePriority

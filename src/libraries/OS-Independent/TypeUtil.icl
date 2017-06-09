@@ -210,7 +210,7 @@ resolve_synonyms tds t
 assign :: !TVAssignment !Type -> Maybe Type
 assign va (Type s ts) = Type s <$^> map (assign va) ts
 assign va (Func ts r cc) = Func <$^> map (assign va) ts
-		>>= (\f->f <$> assign va r) >>= (\f->pure $ f cc) // TODO cc
+		>>= (\f->f <$> assign va r) >>= (\f -> pure $ f cc) // TODO cc
 assign (v,a) (Var v`) = pure $ if (v == v`) a (Var v`)
 assign va=:(v,Type s ts) (Cons v` ts`)
 	| v == v`   = Type s <$^> map (assign va) (ts ++ ts`)

@@ -1,4 +1,7 @@
 definition module Type
 
-import TypeDef, TypeUnify, TypeUtil, TypeParse
+/**
+ * Meta-module including the type unifier modules
+ */
 
+import TypeDef, TypeUnify, TypeUtil, TypeParse

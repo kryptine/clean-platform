@@ -24,12 +24,12 @@ subtypes t=:(Uniq t`) = removeDup [t : subtypes t`]
 subtypes t=:(Forall vs t` cc) = removeDup [t : flatten (map subtypes [t`:vs])]
 subtypes t=:(Var _) = [t]
 
-// All the type and constructor variables in a type
-allVars :: Type -> [TypeVar]
-allVars t = map varName $ filter (\t -> isCons t || isVar t) $ subtypes t
+allVars :: (Type -> [TypeVar])
+allVars = removeDup o map name o filter (\t -> isCons t || isVar t) o subtypes
 where
-	varName :: Type -> TypeVar
-	varName (Cons v _) = v; varName (Var v) = v
+	name :: Type -> TypeVar
+	name (Cons v _) = v
+	name (Var v) = v
 
 allUniversalVars :: Type -> [TypeVar]
 allUniversalVars (Forall vs t cc) = removeDup (flatten (map allVars vs) ++ allUniversalVars t)
@@ -48,7 +48,7 @@ fromVar (Var v) = v
 fromVarLenient :: Type -> TypeVar
 fromVarLenient (Var v) = v
 fromVarLenient (Cons v _) = v
-fromVarLenient (Uniq (Var v)) = v
+fromVarLenient (Uniq t) = fromVarLenient t
 
 isCons :: Type -> Bool
 isCons (Cons _ _) = True; isCons _ = False
