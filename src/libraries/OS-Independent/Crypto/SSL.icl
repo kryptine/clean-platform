@@ -7,6 +7,7 @@ import code from "ssl_help."
 import StdBool
 import StdInt
 import StdList
+import StdMisc
 import StdString
 import StdTuple
 
@@ -19,93 +20,54 @@ import System.FilePath
 :: SSLCTX :== Pointer
 :: BIO :== Pointer
 
-Start w = initialise HOST PORT w
+
+Start w
+# (bio,w)  = initSSL host port w
+# w        = BIO_puts bio (toString req) w
+# (resp,w) = BIO_read_all bio w
+= resp
 where
-	HOST = "www.random.org"
-	PORT = 443
-import StdDebug
-
-initialise :: !String !Int !*World -> *(!String, !*World)
-initialise host port w
-# w = trace_i 0 host w
-# w        = setup w
-# w = trace_i 1 host w
-# (meth,w) = SSLv23_method w
-# w = trace_i 2 host w
-| meth == 0 = ("Method was 0", w)
-# w = trace_i 3 host w
-# (ctx,w)  = SSL_CTX_new meth w
-# w = trace_i 4 host w
-| ctx == 0  = ("CTX was 0", w)
-# w        = SSL_CTX_set_verify ctx SSL_VERIFY_PEER w
-# w = trace_i 5 host w
-# w        = SSL_CTX_set_verify_depth ctx 4 w
-# w = trace_i 6 host w
-# w        = SSL_CTX_set_options ctx [SSL_OP_NO_SSLv2, SSL_OP_NO_SSLv3, SSL_OP_NO_COMPRESSION] w
-# w = trace_i 7 host w
-# (res,w)  = SSL_CTX_load_verify_locations_file ctx "/etc/ssl/certs/ca-certificates.crt" w
-| res <> 1  = ("LV Res was not 1", w)
-# (web,w)  = BIO_new_ssl_connect ctx w
-| web == 0  = ("BIO was 0", w)
-# w = trace_i 8 host w
-# (res,w)  = BIO_set_conn_hostname web host port w
-# w = trace_i 9 host w
-| res <> 1  = ("CH Res was not 1", w)
-# (ssl,w)  = BIO_get_ssl web w
-| ssl == 0  = ("SSL was 0", w)
-# (res,w)  = SSL_set_cipher_list ssl "HIGH:!aNULL:!kRSA:!PSK:!SRP:!MD5:!RC4" w
-| res <> 1  = ("CL Res was not 1", w)
-# (res,w)  = SSL_set_tlsext_host_name ssl host w
-| res <> 1  = ("TH Res was not 1", w)
-# (res,w)  = BIO_do_connect web w
-| res <> 1  = ("DC was not 1", w)
-# (res,w)  = BIO_do_handshake web w
-| res <> 1  = ("DH was not 1", w)
-# w        = BIO_puts web (toString req) w
-# (resp,w) = BIO_read_all web w
-= (resp, w)
-where
-	setup :: !*World -> *World
-	setup w
-	# w = trace_i 100 host w
-	# (_,w) = SSL_library_init w
-	# w = trace_i 101 host w
-	# w     = SSL_load_error_strings w
-	# w = trace_i 102 host w
-	# w      = OPENSSL_config 0 w
-	# w = trace_i 103 host w
-	= w
-	/*= code {
-		ccall SSL_library_init ":I:A"
-		ccall SSL_load_error_strings ":V:A"
-		pop_b 1
-		pushI 0
-		ccall OPENSSL_config "p:V:A"
-	}*/
-
-	trace_i :: !Int !a !.b -> .b | toString a
-	trace_i i n w = trace_n (toString i +++ "\t" +++ toString n) w
-
-	SSL_library_init :: !*World -> *(!Int, !*World)
-	SSL_library_init w = code {
-		ccall SSL_library_init ":I:A"
-	}
-
-	SSL_load_error_strings :: !*World -> *World
-	SSL_load_error_strings w = code {
-		ccall SSL_load_error_strings_dummy ":V:A"
-	}
-
-	OPENSSL_config :: !Pointer !*World -> *World
-	OPENSSL_config p w = code {
-		ccall OPENSSL_config_dummy "p:V:A"
-	}
+	host = "www.random.org"
+	port = 443
 
 	req = { newHTTPRequest
 		& req_path = "/cgi-bin/randbyte?nbytes=32&format=h"
 		, server_name = host
 		, server_port = port
 		}
+
+initSSL :: !String !Int !*World -> *(!BIO, !*World)
+initSSL host port w
+#! (_,w)    = SSL_library_init w
+#! (meth,w) = SSLv23_method w
+| meth == 0 = abort "Method was 0\n"
+#! (ctx,w)  = SSL_CTX_new meth w
+| ctx == 0  = abort "CTX was 0\n"
+//#! w        = SSL_CTX_set_verify ctx SSL_VERIFY_PEER w
+//#! w        = SSL_CTX_set_verify_depth ctx 4 w
+#! w        = SSL_CTX_set_options ctx [SSL_OP_NO_SSLv2, SSL_OP_NO_SSLv3, SSL_OP_NO_COMPRESSION] w
+#! (res,w)  = SSL_CTX_load_verify_locations_file ctx "/etc/ssl/certs/ca-certificates.crt" w
+| res <> 1  = abort "LV Res was not 1\n"
+#! (web,w)  = BIO_new_ssl_connect ctx w
+| web == 0  = abort "BIO was 0\n"
+#! (res,w)  = BIO_set_conn_hostname web host port w
+| res <> 1  = abort "CH Res was not 1\n"
+#! (ssl,w)  = BIO_get_ssl web w
+| ssl == 0  = abort "SSL was 0\n"
+#! (res,w)  = SSL_set_cipher_list ssl "HIGH:!aNULL:!kRSA:!PSK:!SRP:!MD5:!RC4" w
+| res <> 1  = abort "CL Res was not 1\n"
+//#! (res,w)  = SSL_set_tlsext_host_name ssl host w
+//| res <> 1  = abort "TH Res was not 1\n"
+#! (res,w)  = BIO_do_connect web w
+| res <> 1  = abort ("DC was not 1: " +++ toString res +++ "\n")
+#! (res,w)  = BIO_do_handshake web w
+| res <> 1  = abort "DH was not 1\n"
+= (web,w)
+where
+	SSL_library_init :: !*World -> *(!Int, !*World)
+	SSL_library_init w = code {
+		ccall SSL_library_init ":I:A"
+	}
 
 SSLv23_method :: !*World -> *(!SSLMethod, !*World)
 SSLv23_method w = code {
