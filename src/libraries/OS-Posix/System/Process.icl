@@ -35,7 +35,7 @@ runProcess path args mCurrentDirectory world //TODO: Use mCurrentDirectory argum
 	| pid == 0
 		//Chdir
 		# (res,world) = case mCurrentDirectory of
-			Just dir -> chdir dir world
+			Just dir -> chdir (packString dir) world
 			Nothing  -> (0, world)
 		| res <> 0 = getLastOSError world
 		//Exec
@@ -74,7 +74,7 @@ runProcessIO path args mCurrentDirectory world //TODO: Use mCurrentDirectory arg
 	| pid == 0
 		//Chdir
 		# (res,world) = case mCurrentDirectory of
-			Just dir -> chdir dir world
+			Just dir -> chdir (packString dir) world
 			Nothing  -> (0, world)
 		| res <> 0              = getLastOSError world
         //redirect stdin/out/err to pipes
