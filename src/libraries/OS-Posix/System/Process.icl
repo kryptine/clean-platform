@@ -27,12 +27,17 @@ import System._Posix
 runProcess :: !FilePath ![String] !(Maybe String) !*World -> (MaybeOSError ProcessHandle, *World)
 runProcess path args mCurrentDirectory world //TODO: Use mCurrentDirectory argument
 	//Check if path exists 
-	# (ok,world)	= fileExists path world
+	# (ok,world)	= fileExists fullPath world
 	| not ok
-		= (Error (1,"File " +++ path +++ " does not exist"),world)
+		= (Error (1,"File " +++ fullPath +++ " does not exist"),world)
 	//Fork
 	# (pid, world) = fork world
 	| pid == 0
+		//Chdir
+		# (res,world) = case mCurrentDirectory of
+			Just dir -> chdir (packString dir) world
+			Nothing  -> (0, world)
+		| res <> 0 = getLastOSError world
 		//Exec
 		# (argv, world) = runProcessMakeArgv [path:args] world
 		# (res,world)	= execvp (path +++ "\0") argv world
@@ -41,13 +46,17 @@ runProcess path args mCurrentDirectory world //TODO: Use mCurrentDirectory argum
 		= (Ok {ProcessHandle| pid = pid}, world)
 	| otherwise
 		= getLastOSError world
+	where
+		fullPath = case mCurrentDirectory of
+			Just dir -> dir </> path
+			Nothing  -> path
 
 runProcessIO :: !FilePath ![String] !(Maybe String) !*World -> (MaybeOSError (ProcessHandle, ProcessIO), *World)
 runProcessIO path args mCurrentDirectory world //TODO: Use mCurrentDirectory argument
 	//Check if path exists 
-	# (ok,world)	= fileExists path world
+	# (ok,world)	= fileExists fullPath world
 	| not ok
-		= (Error (1,"File " +++ path +++ " does not exist"),world)
+		= (Error (1,"File " +++ fullPath +++ " does not exist"),world)
     // StdIn
     # (pipeStdIn, world) = openPipe world
     | isError pipeStdIn = (liftError pipeStdIn, world)
@@ -63,6 +72,11 @@ runProcessIO path args mCurrentDirectory world //TODO: Use mCurrentDirectory arg
 	//Fork
 	# (pid, world)			= fork world
 	| pid == 0
+		//Chdir
+		# (res,world) = case mCurrentDirectory of
+			Just dir -> chdir (packString dir) world
+			Nothing  -> (0, world)
+		| res <> 0              = getLastOSError world
         //redirect stdin/out/err to pipes
         # (res, world)          = dup2 pipeStdInOut STDIN_FILENO world
         | res == -1             = getLastOSError world
@@ -101,6 +115,10 @@ runProcessIO path args mCurrentDirectory world //TODO: Use mCurrentDirectory arg
           )
 	| otherwise
 		= getLastOSError world
+	where
+		fullPath = case mCurrentDirectory of
+			Just dir -> dir </> path
+			Nothing  -> path
 
 runProcessMakeArgv :: [String] *World -> (!{#Pointer}, *World)
 runProcessMakeArgv argv_list world
