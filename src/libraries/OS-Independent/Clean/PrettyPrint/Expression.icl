@@ -21,7 +21,7 @@ where
 	where
 		rest = print st a +++ ":" +++ print st b +++ "]"
 	print st (PE_List pes)
-		= printp st pes
+		= printp {st & cpp_parens=True} pes
 	print st (PE_Ident id)
 		= print st id
 	print st (PE_QualifiedIdent id s)
@@ -45,7 +45,7 @@ where
 	print st (PE_ListCompr cons nil pe qs)
 		= print st ("[" :+: pe :+: " \\\\ " :+: join st ", " qs :+: "]")
 	print st (PE_If _ c i e)
-		= "if " +++ join { st & cpp_parens=True } " " [c,i,e]
+		= printp st ("if " +++ join { st & cpp_parens=True } " " [c,i,e])
 	print st (PE_Case _ pe alts)
 		= "case " +++ print {st & cpp_parens=True} pe +++ " of" +++ join_start st` ("\n" :+: st`) alts
 	where
