@@ -64,5 +64,5 @@ where
 			_            = ""
 	print st (ID_Instance cls _ (ts, tcs))
 		= print st (cls :+: join_start st " " ts :+: if (isEmpty tcs) "" (" | " +++ join st " & " tcs))
-	print st _
-		= abort "UNKNOWN_IMPORTDECLARATION"
+	print st (ID_Generic id _)
+		= print st ("generic " :+: id)

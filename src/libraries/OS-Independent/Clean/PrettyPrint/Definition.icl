@@ -41,10 +41,12 @@ where
 			(Yes t) = " :: " :+: t
 			No      = PrintNil
 	print st (PD_NodeDef _ l r)
-		= print st (l :+: " = " :+: r)
+		= print {st & cpp_parens=False} (l :+: " = " :+: r)
 	print st (PD_Function _ id isinfix args rhs fk)
-		= print st (id` :+: join_start st " " args :+: if show_eq eq "" :+: rhs)
+		= print stnp (id` :+: join_start stp " " args :+: if show_eq eq "" :+: rhs)
 	where
+		stnp = {st & cpp_parens=False}
+		stp = {st & cpp_parens=True}
 		id` = if isinfix ("(" :+: id :+: ")") (id :+: PrintNil)
 		show_eq = not (compound_rhs rhs.rhs_alts)
 		eq = case fk of FK_Macro = " :== "; _ = " = "

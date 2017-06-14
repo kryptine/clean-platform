@@ -21,7 +21,7 @@ where
 	where
 		rest = print st a +++ ":" +++ print st b +++ "]"
 	print st (PE_List pes)
-		= printp {st & cpp_parens=True} pes
+		= printp st (print {st & cpp_parens=True} pes)
 	print st (PE_Ident id)
 		= print st id
 	print st (PE_QualifiedIdent id s)
