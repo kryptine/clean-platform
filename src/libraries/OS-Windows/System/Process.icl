@@ -210,5 +210,5 @@ where
 closePipe` :: !Int !*World -> (!MaybeOSError (), !*World)
 closePipe` pipe world
 	# (res, world) = closeHandle pipe world
-	| res <> 0     = getLastOSError world
+	| not res      = getLastOSError world
 	= (Ok (), world)
