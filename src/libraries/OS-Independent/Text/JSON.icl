@@ -158,8 +158,8 @@ where
 	(<<<) f JSONNull            = f <<< "null"
 	(<<<) f (JSONBool True)     = f <<< "true"
 	(<<<) f (JSONBool False)    = f <<< "false"
-	(<<<) f (JSONInt i)         = f <<< i
-	(<<<) f (JSONReal r)        = f <<< r
+	(<<<) f (JSONInt i)         = f <<< toString i
+	(<<<) f (JSONReal r)        = f <<< toString r
 	(<<<) f (JSONString s)      = f <<< '"' <<< jsonEscape s <<< '"'
 	(<<<) f (JSONArray nodes)   = printNodes nodes (f <<< "[") <<< "]"
 	where
