@@ -236,3 +236,61 @@ assign va=:(v,_) (Forall tvs t cc)
 
 //ifM :: Bool a -> m a | Alternative m
 ifM b x :== if b (pure x) empty
+
+/**
+ * Normalise a type, that is, rewrite it to an equivalent type that can be
+ * compared to other types for equality using ==. The transformations applied:
+ *
+ * - Resolve synonyms.
+ * - Propagate uniqueness.
+ * - Rewrite Conses without arguments to Vars.
+ * - Rewrite functions to arity 1.
+ * - Rewrite variablesto v1, v2, v3, ... s.t. a left first depth first
+ *   iteration over the node does not introduce higher variables before lower
+ *   ones (i.e., you will encounter v2 before v3).
+ */
+normalise_type :: ![TypeDef] !Type -> (!Type, ![TypeDef], ![TypeVar])
+normalise_type tds t
+# (syns,t) = resolve_synonyms tds t
+# t        = propagate_uniqueness t
+# t        = optConses t
+# (t,vars) = rename t
+= (t,syns,vars)
+where
+	rename :: !Type -> (!Type, ![TypeVar])
+	rename t = (renameVars t, map fst renames)
+	where
+		renames :: ![(TypeVar, TypeVar)]
+		renames = [(o, "v" +++ toString n) \\ o <- removeDup $ allVars t & n <- [1..]]
+
+		renameVars :: !Type -> Type
+		renameVars (Type s ts)      = Type s $ map renameVars ts
+		renameVars (Func is r cc)   = Func (map renameVars is) (renameVars r) $ map (appSnd renameVars) cc
+		renameVars (Var tv)         = Var $ fromJust $ lookup tv renames
+		renameVars (Cons cv ts)     = Cons (fromJust $ lookup cv renames) $ map renameVars ts
+		renameVars (Uniq t)         = Uniq $ renameVars t
+		renameVars (Forall vs t cc) = Forall (map renameVars vs) (renameVars t) $ map (appSnd renameVars) cc
+		renameVars (Arrow t)        = Arrow $ renameVars <$> t
+
+		allVars :: !Type -> [TypeVar]
+		allVars (Type _ ts)      = allVars` ts
+		allVars (Func is r _)    = allVars` is ++ allVars r
+		allVars (Var tv)         = [tv]
+		allVars (Cons cv ts)     = [cv:allVars` ts]
+		allVars (Uniq t)         = allVars t
+		allVars (Forall vs t _)  = allVars` vs ++ allVars t
+		allVars (Arrow (Just t)) = allVars t
+		allVars (Arrow Nothing)  = []
+
+		allVars` :: ([Type] -> [TypeVar])
+		allVars` = concatMap allVars
+
+	optConses :: !Type -> Type
+	optConses (Type s ts)      = Type s $ map optConses ts
+	optConses (Func is r cc)   = Func (map optConses is) (optConses r) $ map (appSnd optConses) cc
+	optConses (Var v)          = Var v
+	optConses (Cons c [])      = Var c
+	optConses (Cons c ts)      = Cons c $ map optConses ts
+	optConses (Uniq t)         = Uniq $ optConses t
+	optConses (Forall vs t cc) = Forall (map optConses vs) (optConses t) $ map (appSnd optConses) cc
+	optConses (Arrow t)        = Arrow $ optConses <$> t

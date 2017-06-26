@@ -62,3 +62,17 @@ assign :: !TVAssignment !Type -> Maybe Type
  * @type [TVAssignment] Type -> Maybe Type
  */
 assignAll :== flip (foldM (flip assign))
+
+/**
+ * Normalise a type, that is, rewrite it to an equivalent type that can be
+ * compared to other types for equality using ==. The transformations applied:
+ *
+ * - Resolve synonyms.
+ * - Propagate uniqueness.
+ * - Rewrite Conses without arguments to Vars.
+ * - Rewrite functions to arity 1.
+ * - Rewrite variablesto v1, v2, v3, ... s.t. a left first depth first
+ *   iteration over the node does not introduce higher variables before lower
+ *   ones (i.e., you will encounter v2 before v3).
+ */
+normalise_type :: ![TypeDef] !Type -> (!Type, ![TypeDef], ![TypeVar])
