@@ -133,7 +133,7 @@ packTm64 tm =   { tm.sec  + tm.min  << 32
                 , tm.hour + tm.mday << 32
                 , tm.mon  + tm.year << 32
                 , tm.wday + tm.yday << 32
-                , if tm.isdst 1 0
+                , tm.isdst
                 }
 
 packTm32 :: !Tm -> {#Int}
@@ -145,7 +145,7 @@ packTm32 tm =   { tm.sec
                 , tm.year
                 , tm.wday
                 , tm.yday
-                , if tm.isdst 1 0
+                , tm.isdst
                 }
 
 unpackTm :: !{#Char} !Int -> Tm
@@ -158,7 +158,7 @@ unpackTm buf off =
 	, year  = unpackInt4S buf (off + 20)
 	, wday  = unpackInt4S buf (off + 24)
 	, yday  = unpackInt4S buf (off + 28)
-	, isdst = unpackBool buf (off + 32)
+	, isdst = unpackInt4S buf (off + 32)
 	}
 
 sizeOfTm :: Int
