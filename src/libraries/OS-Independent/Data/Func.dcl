@@ -11,4 +11,4 @@ fix          :: (a -> a) -> a
 on           :: (b b -> c) (a -> b) -> (a a -> c)
 
 //Evaluate the expression
-hyperstrict  :: !a -> a
+hyperstrict  :: !.a -> .a
