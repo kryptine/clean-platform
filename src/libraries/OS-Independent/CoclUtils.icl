@@ -22,9 +22,7 @@ where
 		kind :: TypeKind -> 'T'.Kind
 		kind KindConst = 'T'.KStar
 		kind (KindArrow []) = 'T'.KStar
-		kind (KindArrow ks) = foldr1 (\x y->x 'T'.KArrow y) (map kind ks)
-
-foldr1 f [x:xs] = foldr f x xs
+		kind (KindArrow [k:ks]) = kind k 'T'.KArrow kind (KindArrow ks)
 
 instance 'T'.toTypeContext TypeContext where toTypeContext tc = 'T'.toTypeContext [tc]
 
