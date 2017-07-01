@@ -32,6 +32,7 @@ instance print (Maybe a) | print a
 instance print TypeRestriction
 instance print TypeContext
 instance print Type
+instance print Kind
 instance print TypeDef
 instance print Priority
 

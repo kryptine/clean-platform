@@ -56,8 +56,8 @@ from Data.Maybe import :: Maybe
  * The kind of a Clean type
  */
 :: Kind
-	= KindConst
-	| KindArrow [Kind]
+	= KStar
+	| KArrow infixr 1 Kind Kind
 
 /**
  * A Clean type definition

@@ -20,8 +20,11 @@ where
 		     \\ {tc_class=(TCGeneric {gtc_generic,gtc_kind}),tc_types=[t]} <- context]
 	where
 		kind :: TypeKind -> 'T'.Kind
-		kind KindConst = 'T'.KindConst
-		kind (KindArrow ks) = 'T'.KindArrow (map kind ks)
+		kind KindConst = 'T'.KStar
+		kind (KindArrow []) = 'T'.KStar
+		kind (KindArrow ks) = foldr1 (\x y->x 'T'.KArrow y) (map kind ks)
+
+foldr1 f [x:xs] = foldr f x xs
 
 instance 'T'.toTypeContext TypeContext where toTypeContext tc = 'T'.toTypeContext [tc]
 

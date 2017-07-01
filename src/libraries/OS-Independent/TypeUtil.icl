@@ -40,8 +40,8 @@ where print _ Nothing = []; print b (Just x) = print b x
 
 instance print Kind
 where
-	print _ KindConst = ["*"]
-	print b (KindArrow ks) = parlft -- printersperse True "->" (ks ++ [KindConst]) -- parrgt
+	print _ KStar = ["*"]
+	print b (k1 KArrow k2) = parlft -- print True k1 ++ ["->"] ++ print b k2 -- parrgt
 	where (parlft,parrgt) = if b ("(",")") ("","")
 
 instance print TypeRestriction
