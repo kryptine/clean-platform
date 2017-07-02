@@ -92,4 +92,6 @@ serialDeviceBackgroundTask enc dec rw iworld
 			(_, tty) = appFst (pure o dec) $ TTYreadline tty
 		# iworld = {iworld & resources=Just (TTYd tty bgid)}
 		| isEmpty ml && isEmpty s = (Ok (), iworld)
+		# (merr, iworld) = notify rw iworld
+		| isError merr = (Error $ fromError merr, iworld)
 		= write (r++ml,[],False) rw iworld
