@@ -16,10 +16,21 @@ from syntax import
  * Pretty-printer
  *
  * @var The type to print
- * @param The value to print
- * @result A string representation of the parameter
  */
-class cpp t :: t -> String
+class cpp t where
+	/**
+	 * Normal pretty-printer
+	 * @param The value to print
+	 * @result A string representation of the parameter
+	 */
+	cpp :: t -> String
+
+	/**
+	 * Pretty-printer which places parentheses around the result if necessary
+	 * @param The value to print
+	 * @result A string representation of the parameter
+	 */
+	cppp :: t -> String
 
 instance cpp
 	AType,
