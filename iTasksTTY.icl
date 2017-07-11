@@ -7,6 +7,7 @@ from StdFunc import o, flip
 import StdMisc
 import StdString
 import Data.List
+import qualified Data.Map as DM
 
 import System.Directory
 import iTasks
@@ -22,7 +23,7 @@ import iTasks._Framework.TaskServer
 import iTasks._Framework.IWorld
 import iTasks._Framework.Store
 
-:: *Resource | TTYd !*TTY Int
+:: *Resource | TTYd *[*(String,Int,!*TTY)]
 
 derive class iTask TTYSettings, Parity, BaudRate, ByteSize
 
@@ -32,7 +33,7 @@ getTTYDevices w = case readDirectory "/dev" w of
 	(Ok entries, w) = (map ((+++) "/dev/") (filter isTTY entries), w)
 	where
 		isTTY s = not (isEmpty (filter (flip startsWith s) prefixes))
-		prefixes = ["ttyS", "ttyACM", "ttyUSB", "tty.usbserial", "rfcomm"]
+		prefixes = ["tty", "rfcomm"]
 
 enterTTYSettings :: Task TTYSettings
 enterTTYSettings = accWorld getTTYDevices
@@ -60,37 +61,51 @@ syncSerialChannel opts enc dec rw = Task eval
 			= (ExceptionResult (exception err), {iworld & world=world})
 			(True, tty, world)
 			# iworld = {iworld & world=world}
-			= case addBackgroundTask (BackgroundTask (serialDeviceBackgroundTask enc dec rw)) iworld of
+			= case addBackgroundTask (BackgroundTask (serialDeviceBackgroundTask opts.devicePath enc dec rw)) iworld of
 				(Error e, iworld) = (ExceptionResult (exception "h"), iworld)
-				(Ok bgid, iworld) = (ValueResult NoValue {TaskEvalInfo|lastEvent=ts,removedTasks=[],refreshSensitive=True} rep (TCBasic taskId ts JSONNull False), {iworld & resources=Just (TTYd tty bgid)})
+				(Ok bgid, iworld) = case iworld.resources of
+					Nothing = (ValueResult NoValue {TaskEvalInfo|lastEvent=ts,removedTasks=[],refreshSensitive=True} rep (TCBasic taskId ts JSONNull False),
+						{iworld & resources=Just $ TTYd [(opts.devicePath, bgid, tty)]})
+					Just (TTYd m) = (ValueResult NoValue {TaskEvalInfo|lastEvent=ts,removedTasks=[],refreshSensitive=True} rep (TCBasic taskId ts JSONNull False),
+						{iworld & resources=Just $ TTYd [(opts.devicePath, bgid, tty):m]})
 
 		eval _ _ tree=:(TCBasic _ ts _ _) iworld
 		= (ValueResult NoValue {TaskEvalInfo|lastEvent=ts,removedTasks=[],refreshSensitive=False} rep tree, iworld)
 
 		eval event evalOpts tree=:(TCDestroy _) iworld=:{IWorld|resources,world}
-		# (TTYd tty bgid) = fromJust resources
+		# (Just (TTYd ttys)) = resources
+		# ((tty, bgid), ttys) = flt opts.devicePath ttys
 		# (ok, world) = TTYclose tty world
-		# iworld = {iworld & world=world,resources=Nothing}
+		# iworld = {iworld & world=world,resources=Just $ TTYd ttys}
 		= case removeBackgroundTask bgid iworld of
 			(Error e, iworld) = (ExceptionResult (exception "h"), iworld)
 			(Ok _, iworld) = (DestroyedResult, iworld)
 
 		rep = ReplaceUI $ stringDisplay $ "Serial client " <+++ opts.devicePath
 
-serialDeviceBackgroundTask :: (b -> String) (String -> a) (Shared ([a],[b],Bool)) !*IWorld -> (MaybeError TaskException (), *IWorld) | iTask a & iTask b
-serialDeviceBackgroundTask enc dec rw iworld
+flt :: String [(String, Int, *TTY)] -> ((*TTY, Int), [(String, Int, *TTY)])
+flt m [] = abort "not found"
+flt m [(p,b,t):ps]
+| p == m = ((t, b), ps)
+# (tty, pps) = flt m ps 
+= (tty, [(p,b,t):pps])
+
+import StdDebug, StdMisc
+serialDeviceBackgroundTask :: String (b -> String) (String -> a) (Shared ([a],[b],Bool)) !*IWorld -> (MaybeError TaskException (), *IWorld) | iTask a & iTask b
+serialDeviceBackgroundTask dp enc dec rw iworld
 	= case read rw iworld of
 		(Error e, iworld) = (Error $ exception "share couldn't be read", iworld)
 		//We need to stop
 		(Ok (_,_,True), iworld) = (Ok (), iworld)
 
 		(Ok (r,s,ss), iworld)
-		# (Just (TTYd tty bgid)) = iworld.resources
+		# (Just (TTYd ttys)) = iworld.resources
+		# ((tty, bgid), ttys) = flt dp ttys
 		# tty = foldr TTYwrite tty $ reverse $ map enc s
 		# (ml, tty) = case TTYavailable tty of
 			(False, tty) = ([], tty)
 			(_, tty) = appFst (pure o dec) $ TTYreadline tty
-		# iworld = {iworld & resources=Just (TTYd tty bgid)}
+		# iworld = {iworld & resources=Just (TTYd [(dp, bgid, tty):ttys])}
 		| isEmpty ml && isEmpty s = (Ok (), iworld)
 		# (merr, iworld) = notify rw iworld
 		| isError merr = (Error $ fromError merr, iworld)
