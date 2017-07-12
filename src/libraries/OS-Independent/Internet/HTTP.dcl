@@ -4,6 +4,7 @@ definition module Internet.HTTP
 import StdString
 import Data.Maybe
 from Data.Map import :: Map
+from Data.Error import :: MaybeErrorString, :: MaybeError
 
 :: HTTPMethod = HTTP_GET 
 			  | HTTP_HEAD 
@@ -14,6 +15,23 @@ from Data.Map import :: Map
 			  | HTTP_TRACE
 			  | HTTP_CONNECT
 			  | HTTP_CUSTOM !String
+
+/* Do an HTTP request and return the response
+ *
+ * @param The request
+ * @param Timeout in milliseconds
+ * @param The world
+ */
+doHTTPRequest :: HTTPRequest Int *World -> *(MaybeErrorString HTTPResponse, *World)
+
+/* Do an HTTP request and follow redirects
+ *
+ * @param The request
+ * @param Timeout in milliseconds
+ * @param The maximum number of redirects
+ * @param The world
+ */
+doHTTPRequestL :: HTTPRequest Int Int *World -> *(MaybeErrorString HTTPResponse, *World)
 
 instance toString   HTTPMethod
 instance fromString HTTPMethod
