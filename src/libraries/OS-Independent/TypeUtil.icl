@@ -260,7 +260,7 @@ where
 	rename :: !Type -> (!Type, ![TypeVar])
 	rename t = (renameVars t, map fst renames)
 	where
-		renames :: ![(TypeVar, TypeVar)]
+		renames :: [(TypeVar, TypeVar)]
 		renames = [(o, "v" +++ toString n) \\ o <- removeDup $ allVars t & n <- [1..]]
 
 		renameVars :: !Type -> Type
