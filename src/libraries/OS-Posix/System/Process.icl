@@ -25,11 +25,7 @@ import System._Posix
 :: ReadPipe  = ReadPipe  !Int
 
 runProcess :: !FilePath ![String] !(Maybe String) !*World -> (MaybeOSError ProcessHandle, *World)
-runProcess path args mCurrentDirectory world //TODO: Use mCurrentDirectory argument
-	//Check if path exists 
-	# (ok,world)	= fileExists fullPath world
-	| not ok
-		= (Error (1,"File " +++ fullPath +++ " does not exist"),world)
+runProcess path args mCurrentDirectory world
 	//Fork
 	# (pid, world) = fork world
 	| pid == 0
@@ -46,17 +42,9 @@ runProcess path args mCurrentDirectory world //TODO: Use mCurrentDirectory argum
 		= (Ok {ProcessHandle| pid = pid}, world)
 	| otherwise
 		= getLastOSError world
-	where
-		fullPath = case mCurrentDirectory of
-			Just dir -> dir </> path
-			Nothing  -> path
 
 runProcessIO :: !FilePath ![String] !(Maybe String) !*World -> (MaybeOSError (ProcessHandle, ProcessIO), *World)
-runProcessIO path args mCurrentDirectory world //TODO: Use mCurrentDirectory argument
-	//Check if path exists 
-	# (ok,world)	= fileExists fullPath world
-	| not ok
-		= (Error (1,"File " +++ fullPath +++ " does not exist"),world)
+runProcessIO path args mCurrentDirectory world
     // StdIn
     # (pipeStdIn, world) = openPipe world
     | isError pipeStdIn = (liftError pipeStdIn, world)
@@ -115,10 +103,6 @@ runProcessIO path args mCurrentDirectory world //TODO: Use mCurrentDirectory arg
           )
 	| otherwise
 		= getLastOSError world
-	where
-		fullPath = case mCurrentDirectory of
-			Just dir -> dir </> path
-			Nothing  -> path
 
 runProcessMakeArgv :: [String] *World -> (!{#Pointer}, *World)
 runProcessMakeArgv argv_list world
