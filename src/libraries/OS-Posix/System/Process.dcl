@@ -6,9 +6,7 @@ from System._Posix import exit
 
 /*
 Not yet implemented:
-- Pass startup directory
 - Passsing environment, i.e. [(!String,!String)], to created process
-- Ability to redirect standard input, standard output, standard error
 */
 
 :: ProcessHandle = { pid :: !Int
