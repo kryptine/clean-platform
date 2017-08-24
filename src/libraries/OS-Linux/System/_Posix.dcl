@@ -26,6 +26,9 @@ STDERR_FILENO :== 2
 
 FIONREAD :== 0x541B
 
+F_SETFD   :== 2
+O_CLOEXEC :== 02000000
+
 //Posix API calls
 errno		:: !*w -> (!Int,!*w)
 strerr		:: !Int -> Pointer
@@ -47,6 +50,8 @@ pipe        :: !Pointer !*w -> (!Int, !*w)
 dup2        :: !Int !Int !*w -> (!Int, !*w)
 close       :: !Int !*w -> (!Int, !*w)
 ioctl       :: !Int !Int !Pointer !*w -> (!Int, !*w)
+// variant requiring an argument as third parameter
+fcntlArg    :: !Int !Int !Int !*w -> (!Int, !*w)
 read        :: !Int !Pointer !Int !*w -> (!Int, !*w)
 write       :: !Int !{#Char} !Int !*w -> (!Int, !*w)
 select_     :: !Int !Pointer !Pointer !Pointer !Pointer !*w -> (!Int, !*w)

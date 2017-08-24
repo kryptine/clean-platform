@@ -25,23 +25,10 @@ import System._Posix
 :: ReadPipe  = ReadPipe  !Int
 
 runProcess :: !FilePath ![String] !(Maybe String) !*World -> (MaybeOSError ProcessHandle, *World)
-runProcess path args mCurrentDirectory world
-	//Fork
-	# (pid, world) = fork world
-	| pid == 0
-		//Chdir
-		# (res,world) = case mCurrentDirectory of
-			Just dir -> chdir (packString dir) world
-			Nothing  -> (0, world)
-		| res <> 0 = getLastOSError world
-		//Exec
-		# (argv, world) = runProcessMakeArgv [path:args] world
-		# (res,world)	= execvp (path +++ "\0") argv world
-		= (exit 1 world)
-	| pid > 0
-		= (Ok {ProcessHandle| pid = pid}, world)
-	| otherwise
-		= getLastOSError world
+runProcess path args mCurrentDirectory world = runProcessFork
+    (runProcessChildProcessExec path args mCurrentDirectory)
+    runProcessParentProcessCheckError
+    world
 
 runProcessIO :: !FilePath ![String] !(Maybe String) !*World -> (MaybeOSError (ProcessHandle, ProcessIO), *World)
 runProcessIO path args mCurrentDirectory world
@@ -57,43 +44,42 @@ runProcessIO path args mCurrentDirectory world
     # (pipeStdErr, world) = openPipe world
     | isError pipeStdErr = (liftError pipeStdErr, world)
     # (pipeStdErrOut, pipeStdErrIn) = fromOk pipeStdErr
-	//Fork
-	# (pid, world)			= fork world
-	| pid == 0
-		//Chdir
-		# (res,world) = case mCurrentDirectory of
-			Just dir -> chdir (packString dir) world
-			Nothing  -> (0, world)
-		| res <> 0              = getLastOSError world
+    = runProcessFork (childProcess  pipeStdInOut pipeStdInIn pipeStdOutOut pipeStdOutIn pipeStdErrOut pipeStdErrIn)
+                     (parentProcess pipeStdInOut pipeStdInIn pipeStdOutOut pipeStdOutIn pipeStdErrOut pipeStdErrIn)
+                     world
+where
+    childProcess :: !Int !Int!Int !Int!Int !Int !Int !Int !*World -> (!MaybeOSError (!ProcessHandle, !ProcessIO), !*World)
+    childProcess pipeStdInOut pipeStdInIn pipeStdOutOut pipeStdOutIn pipeStdErrOut pipeStdErrIn pipeExecErrorOut pipeExecErrorIn world
         //redirect stdin/out/err to pipes
-        # (res, world)          = dup2 pipeStdInOut STDIN_FILENO world
-        | res == -1             = getLastOSError world
-        # (res, world)          = close pipeStdInIn world
-        | res == -1             = getLastOSError world
+        # (res, world) = dup2 pipeStdInOut STDIN_FILENO world
+        | res == -1    = getLastOSError world
+        # (res, world) = close pipeStdInIn world
+        | res == -1    = getLastOSError world
 
-        # (res, world)          = dup2 pipeStdOutIn STDOUT_FILENO world
-        | res == -1             = getLastOSError world
-        # (res, world)          = close pipeStdOutOut world
-        | res == -1             = getLastOSError world
+        # (res, world) = dup2 pipeStdOutIn STDOUT_FILENO world
+        | res == -1    = getLastOSError world
+        # (res, world) = close pipeStdOutOut world
+        | res == -1    = getLastOSError world
 
-        # (res, world)          = dup2 pipeStdErrIn STDERR_FILENO world
-        | res == -1             = getLastOSError world
-        # (res, world)          = close pipeStdErrOut world
-        | res == -1             = getLastOSError world
-		//Exec
-		# (argv, world)         = runProcessMakeArgv [path:args] world
-		# (res, world)          = execvp (path +++ "\0") argv world
-		= (exit 1 world)
-	| pid > 0
-        # (res, world)          = close pipeStdInOut world
-        | res == -1             = getLastOSError world
-        # (res, world)          = close pipeStdOutIn world
-        | res == -1             = getLastOSError world
-        # (res, world)          = close pipeStdErrIn world
-        | res == -1             = getLastOSError world
-		= ( Ok ( { ProcessHandle
-                 | pid = pid
-                 }
+        # (res, world) = dup2 pipeStdErrIn STDERR_FILENO world
+        | res == -1    = getLastOSError world
+        # (res, world) = close pipeStdErrOut world
+        | res == -1    = getLastOSError world
+		# (_, world)   = runProcessChildProcessExec path args mCurrentDirectory pipeExecErrorOut pipeExecErrorIn world
+        // this is never executed as 'childProcessExec' never returns
+        = (undef, world)
+
+    parentProcess :: !Int !Int!Int !Int!Int !Int !Int !Int !Int !*World -> (!MaybeOSError (!ProcessHandle, !ProcessIO), !*World)
+    parentProcess pipeStdInOut pipeStdInIn pipeStdOutOut pipeStdOutIn pipeStdErrOut pipeStdErrIn pid pipeExecErrorOut pipeExecErrorIn world
+        # (res, world)       = close pipeStdInOut world
+        | res == -1          = getLastOSError world
+        # (res, world)       = close pipeStdOutIn world
+        | res == -1          = getLastOSError world
+        # (res, world)       = close pipeStdErrIn world
+        | res == -1          = getLastOSError world
+        # (mbPHandle, world) = runProcessParentProcessCheckError pid pipeExecErrorOut pipeExecErrorIn world
+        | isError mbPHandle  = (liftError mbPHandle, world)
+		= ( Ok ( fromOk mbPHandle
                , { stdIn  = WritePipe pipeStdInIn
                  , stdOut = ReadPipe  pipeStdOutOut
                  , stdErr = ReadPipe  pipeStdErrOut
@@ -101,8 +87,62 @@ runProcessIO path args mCurrentDirectory world
                )
           , world
           )
-	| otherwise
-		= getLastOSError world
+
+runProcessFork :: !(    Int Int *World -> (!MaybeOSError a, !*World))
+                  !(Int Int Int *World -> (!MaybeOSError a, !*World))
+                  !*World
+               -> (!MaybeOSError a, !*World)
+runProcessFork childProcess parentProcess world
+    // create pipe to pass errors of 'execvp' from child to parent
+    # (pipeExecError, world) = openPipe world
+    | isError pipeExecError = (liftError pipeExecError, world)
+    # (pipeExecErrorOut, pipeExecErrorIn) = fromOk pipeExecError
+	//Fork
+	# (pid, world) = fork world
+    | pid == 0  = childProcess      pipeExecErrorOut pipeExecErrorIn world
+    | pid > 0   = parentProcess pid pipeExecErrorOut pipeExecErrorIn world
+    | otherwise = getLastOSError world
+import StdDebug
+// this function never returns, as the process is replaced by 'execvp'
+// all errors before 'execvp' succeeds are passed on to the parent process
+runProcessChildProcessExec :: !FilePath ![String] !(Maybe String) !Int !Int !*World -> (!MaybeOSError ProcessHandle, !*World)
+runProcessChildProcessExec path args mCurrentDirectory pipeExecErrorOut pipeExecErrorIn world
+    # (res, world) = close pipeExecErrorOut world
+    | res == -1    = passLastOSErrorToParent pipeExecErrorIn world
+    // set O_CLOEXEC such that parent is informed if 'execvp' succeeds
+    # (res, world) = fcntlArg pipeExecErrorIn F_SETFD O_CLOEXEC world
+    | res == -1    = passLastOSErrorToParent pipeExecErrorIn world
+	//Chdir
+	# (res,world) = case mCurrentDirectory of
+		Just dir -> chdir (packString dir) world
+		Nothing  -> (0, world)
+	| res <> 0 = passLastOSErrorToParent pipeExecErrorIn world
+	//Exec
+	# (argv, world) = runProcessMakeArgv [path:args] world
+	# (res, world)  = execvp (path +++ "\0") argv world
+    // this part is only executed if 'execvp' failed
+    // in this case the error is passed to the parent
+    = passLastOSErrorToParent pipeExecErrorIn world
+where
+    passLastOSErrorToParent :: !Int !*World -> (MaybeOSError ProcessHandle, *World)
+    passLastOSErrorToParent pipe world
+        # (errno, world) = errno world
+        # (mbErr, world) = writePipe (toString errno) (WritePipe pipe) world
+        | isError mbErr  = (liftError mbErr, world)
+	    = exit errno world
+
+runProcessParentProcessCheckError :: !Int !Int !Int !*World -> (!MaybeOSError ProcessHandle, !*World)
+runProcessParentProcessCheckError pid pipeExecErrorOut pipeExecErrorIn world
+        # (res, world)     = close pipeExecErrorIn world
+        | res == -1        = getLastOSError world
+        // this blocks until either an error is written to the pipe or 'execvp' succeeds
+        # (mbErrno, world) = readPipeBlocking (ReadPipe pipeExecErrorOut) world
+        | isError mbErrno  = (liftError mbErrno, world)
+        # errno            = fromOk mbErrno
+        | errno <> ""      = (Error (osErrorCodeToOSError (toInt errno)), world)
+        # (res, world)     = close pipeExecErrorOut world
+        | res == -1        = getLastOSError world
+		= (Ok {ProcessHandle| pid = pid}, world)
 
 runProcessMakeArgv :: [String] *World -> (!{#Pointer}, *World)
 runProcessMakeArgv argv_list world
