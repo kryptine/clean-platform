@@ -4,6 +4,73 @@ import StdOverloaded, StdString, StdList, StdArray, StdFile, StdBool
 import Data.Maybe, Data.List, Text, Text.Encodings.UrlEncoding, Text.Encodings.MIME
 from Data.Map import get, put, :: Map (..), newMap, fromList, toList, toAscList, foldrWithKey
 
+from StdFunc import id
+from Data.Func import $
+import Data.Error
+import Text.URI
+import Data.Functor
+
+import Control.Applicative
+from Control.Monad import class Monad, instance Monad Maybe
+import qualified Control.Monad as CM
+import TCPIP
+
+doHTTPRequest :: HTTPRequest Int *World -> *(MaybeErrorString HTTPResponse, *World)
+doHTTPRequest req timeout w
+# (ip,w) = lookupIPAddress req.server_name w
+| isNothing ip
+	= (Error $ "DNS lookup for " + req.server_name + " failed.", w)
+# (Just ip) = ip
+# (rpt,chan,w) = connectTCP_MT (Just timeout) (ip, req.server_port) w
+| rpt == TR_Expired
+	= (Error $ "Connection to " + toString ip + " timed out.", w)
+| rpt == TR_NoSuccess
+	= (Error $ "Could not connect to " + req.server_name + ".", w)
+# (Just {sChannel,rChannel}) = chan
+# (rpt,i,sChannel,w) = send_MT (Just timeout) (toByteSeq req) sChannel w
+| rpt <> TR_Success
+	= (Error $ "Could not send request to " + req.server_name + ".", w)
+# (rpt,resp,rChannel,w) = receive_MT (Just timeout) rChannel w
+| rpt <> TR_Success
+	= (Error $ "Did not receive a reply from " + req.server_name + ".", w)
+# resp = 'CM'.join $ parseResponse <$> toString <$> resp
+| isNothing resp
+	# w = closeChannel sChannel (closeRChannel rChannel w)
+	= (Error $ "Server did not respond with HTTP.", w)
+# (resp,rChannel,w) = receiveRest (fromJust resp) rChannel w
+# w = closeChannel sChannel (closeRChannel rChannel w)
+= (resp,w)
+where
+	receiveRest resp chan w
+	# cl = lookup "Content-Length" resp.HTTPResponse.rsp_headers
+	| isNothing cl
+		= (Ok resp, chan, w)
+	| size resp.rsp_data >= toInt (fromJust cl)
+		= (Ok resp, chan, w)
+	# (rpt,newresp,chan,w) = receive_MT (Just timeout) chan w
+	| rpt <> TR_Success
+		= (Error $ req.server_name + " hung up during transmission.", chan, w)
+	= receiveRest {resp & rsp_data=resp.rsp_data + toString (fromJust newresp)} chan w
+
+doHTTPRequestFollowRedirects :: HTTPRequest Int Int *World -> *(MaybeErrorString HTTPResponse, *World)
+doHTTPRequestFollowRedirects req timeout 0 w = (Error "Maximal redirect number exceeded", w)
+doHTTPRequestFollowRedirects req timeout maxRedirects w
+# (er, w) = doHTTPRequest req timeout w
+| isError er = (er, w)
+# resp = fromOk er
+| isMember resp.HTTPResponse.rsp_code [301, 302, 303, 307, 308]
+	= case lookup "Location" resp.HTTPResponse.rsp_headers of
+		Nothing = (Error $ "Redirect given but no Location header", w)
+		Just loc = case parseURI loc of
+			Nothing = (Error $ "Redirect URI couldn't be parsed", w)
+			Just uri = doHTTPRequestFollowRedirects {req 
+				& server_name = maybe loc id uri.uriRegName
+				, server_port = maybe 80 id uri.uriPort
+				, req_path = uri.uriPath
+				, req_query = maybe "" ((+++) "?") uri.uriQuery
+				} timeout (maxRedirects-1) w
+= (er, w)
+
 newHTTPRequest :: HTTPRequest
 newHTTPRequest 
 			= {	req_method		= HTTP_GET
