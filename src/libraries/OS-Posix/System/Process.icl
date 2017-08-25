@@ -102,7 +102,7 @@ runProcessFork childProcess parentProcess world
     | pid == 0  = childProcess      pipeExecErrorOut pipeExecErrorIn world
     | pid > 0   = parentProcess pid pipeExecErrorOut pipeExecErrorIn world
     | otherwise = getLastOSError world
-import StdDebug
+
 // this function never returns, as the process is replaced by 'execvp'
 // all errors before 'execvp' succeeds are passed on to the parent process
 runProcessChildProcessExec :: !FilePath ![String] !(Maybe String) !Int !Int !*World -> (!MaybeOSError ProcessHandle, !*World)
