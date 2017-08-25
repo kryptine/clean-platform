@@ -31,7 +31,7 @@ doHTTPRequest :: HTTPRequest Int *World -> *(MaybeErrorString HTTPResponse, *Wor
  * @param The maximum number of redirects
  * @param The world
  */
-doHTTPRequestL :: HTTPRequest Int Int *World -> *(MaybeErrorString HTTPResponse, *World)
+doHTTPRequestFollowRedirects :: HTTPRequest Int Int *World -> *(MaybeErrorString HTTPResponse, *World)
 
 instance toString   HTTPMethod
 instance fromString HTTPMethod

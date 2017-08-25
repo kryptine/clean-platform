@@ -52,9 +52,9 @@ where
 		= (Error $ req.server_name + " hung up during transmission.", chan, w)
 	= receiveRest {resp & rsp_data=resp.rsp_data + toString (fromJust newresp)} chan w
 
-doHTTPRequestL :: HTTPRequest Int Int *World -> *(MaybeErrorString HTTPResponse, *World)
-doHTTPRequestL req timeout 0 w = (Error "Maximal redirect number exceeded", w)
-doHTTPRequestL req timeout maxRedirects w
+doHTTPRequestFollowRedirects :: HTTPRequest Int Int *World -> *(MaybeErrorString HTTPResponse, *World)
+doHTTPRequestFollowRedirects req timeout 0 w = (Error "Maximal redirect number exceeded", w)
+doHTTPRequestFollowRedirects req timeout maxRedirects w
 # (er, w) = doHTTPRequest req timeout w
 | isError er = (er, w)
 # resp = fromOk er
@@ -63,7 +63,7 @@ doHTTPRequestL req timeout maxRedirects w
 		Nothing = (Error $ "Redirect given but no Location header", w)
 		Just loc = case parseURI loc of
 			Nothing = (Error $ "Redirect URI couldn't be parsed", w)
-			Just uri = doHTTPRequestL {req 
+			Just uri = doHTTPRequestFollowRedirects {req 
 				& server_name = maybe loc id uri.uriRegName
 				, server_port = maybe 80 id uri.uriPort
 				, req_path = uri.uriPath
