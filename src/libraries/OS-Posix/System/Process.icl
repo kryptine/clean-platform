@@ -264,7 +264,7 @@ readPipeBlocking :: !ReadPipe !*World -> (!MaybeOSError String, !*World)
 readPipeBlocking pipe=:(ReadPipe fd) world
     # readfds = malloc 128
     // init array
-    # readfds = seq [\ptr -> writeIntElemOffset ptr i 0 \\ i <- [0..IF_INT_64_OR_32 16 32]] readfds
+    # readfds = seq [\ptr -> writeIntElemOffset ptr i 0 \\ i <- [0..IF_INT_64_OR_32 15 31]] readfds
     // set bit for fd
     # offset  = fromInt fd / IF_INT_64_OR_32 64 32
     # val = (readIntElemOffset readfds offset) bitor (1 << (fd rem IF_INT_64_OR_32 64 32))
@@ -280,7 +280,7 @@ readPipeBlockingMulti :: ![ReadPipe] !*World -> (!MaybeOSError [String], !*World
 readPipeBlockingMulti pipes world
     #readfds = malloc 128
     // init array
-    #readfds = seq [\ptr -> writeIntElemOffset ptr i 0 \\ i <- [0..IF_INT_64_OR_32 16 32]] readfds
+    #readfds = seq [\ptr -> writeIntElemOffset ptr i 0 \\ i <- [0..IF_INT_64_OR_32 15 31]] readfds
     // set bits for fds
     #readfds = seq [setFdBit fd \\ ReadPipe fd <- pipes] readfds
     // wait
