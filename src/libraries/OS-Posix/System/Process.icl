@@ -127,8 +127,8 @@ where
     passLastOSErrorToParent :: !Int !*World -> (MaybeOSError ProcessHandle, *World)
     passLastOSErrorToParent pipe world
         # (errno, world) = errno world
-        # (mbErr, world) = writePipe (toString errno) (WritePipe pipe) world
-        | isError mbErr  = (liftError mbErr, world)
+        # (_, world)     = writePipe (toString errno) (WritePipe pipe) world
+        // potential error of 'writePipe' cannot be handled properly
 	    = exit errno world
 
 runProcessParentProcessCheckError :: !Int !Int !Int !*World -> (!MaybeOSError ProcessHandle, !*World)
@@ -152,9 +152,9 @@ runProcessMakeArgv argv_list world
 	| args_memory == 0
 		= abort "malloc failed"
 	# args_memory = memcpy_string_to_pointer args_memory args_string args_size
-	# argv = createArgv argv_list args_memory
-    //#!fRes         = free args_memory
-    //| fRes <> fRes = undef
+	# (argv, args_memory) = readP (createArgv argv_list) args_memory
+    #!fRes = free args_memory
+    | fRes <> fRes = undef
 	= (argv, world)
 where
 	argvLength [a:as] l
@@ -203,7 +203,7 @@ openPipe world
         = getLastOSError world
     # (rEnd, ptr)  = readP (\ptr -> readInt4S ptr 0) ptr
     # (wEnd, ptr)  = readP (\ptr -> readInt4S ptr 4) ptr
-    #! fRes         = free ptr
+    #! fRes        = free ptr
     | fRes <> fRes = undef
     = (Ok (rEnd, wEnd), world)
 
@@ -245,11 +245,11 @@ readPipeNonBlocking (ReadPipe fd) world
         #! fRes        = free ptr
         | fRes <> fRes = undef
         = getLastOSError world
-    # (n, ptr)     = readP (\ptr -> readInt4Z ptr 0) ptr
+    # (n, ptr)      = readP (\ptr -> readInt4Z ptr 0) ptr
     #! fRes         = free ptr
-    | fRes <> fRes = undef
-    | n == 0    = (Ok "", world)
-    # buffer       = malloc n
+    | fRes <> fRes  = undef
+    | n == 0        = (Ok "", world)
+    # buffer        = malloc n
     #! (res, world) = read fd buffer n world
     | res == -1
         #! fRes        = free buffer
@@ -271,12 +271,9 @@ readPipeBlocking pipe=:(ReadPipe fd) world
     # readfds = writeIntElemOffset readfds offset val
     // wait
     #! (res, world) = select_ (fd + 1) readfds 0 0 0 world
-    | res == -1
-        #!fRes         = free readfds
-        | fRes <> fRes = undef
-        = getLastOSError world
     #!fRes         = free readfds
     | fRes <> fRes = undef
+    | res == -1 = getLastOSError world
     = readPipeNonBlocking pipe world
 
 readPipeBlockingMulti :: ![ReadPipe] !*World -> (!MaybeOSError [String], !*World)
@@ -288,12 +285,9 @@ readPipeBlockingMulti pipes world
     #readfds = seq [setFdBit fd \\ ReadPipe fd <- pipes] readfds
     // wait
     #!(res, world) = select_ (maxFd + 1) readfds 0 0 0 world
-    | res == -1
-        #!fRes         = free readfds
-        | fRes <> fRes = undef
-        = getLastOSError world
     #!fRes         = free readfds
     | fRes <> fRes = undef
+    | res == -1 = getLastOSError world
     = seq [ \(res, world) -> case res of
                 Ok res`
                     #(r, world) = readPipeNonBlocking pipe world
