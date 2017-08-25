@@ -252,11 +252,11 @@ readPipeNonBlocking (ReadPipe fd) world
     # buffer       = malloc n
     #! (res, world) = read fd buffer n world
     | res == -1
-        #! fRes        = free ptr
+        #! fRes        = free buffer
         | fRes <> fRes = undef
         = getLastOSError world
-    #(str, ptr)    = readP (\ptr -> derefCharArray ptr n) buffer
-    #!fRes         = free ptr
+    #(str, buffer) = readP (\ptr -> derefCharArray ptr n) buffer
+    #!fRes         = free buffer
     | fRes <> fRes = undef
     = (Ok str, world)
 
