@@ -96,6 +96,11 @@ ioctl fd op ptr world = code {
     ccall ioctl "IIp:I:A"
 }
 
+fcntlArg :: !Int !Int !Int !*w -> (!Int, !*w)
+fcntlArg fd op arg world = code {
+    ccall fcntl "III:I:A"
+}
+
 read :: !Int !Pointer !Int !*w -> (!Int, !*w)
 read fd buffer nBuffer world = code {
     ccall read "IpI:I:A"

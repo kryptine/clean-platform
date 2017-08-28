@@ -12,3 +12,6 @@ import Data.Error
 getLastOSError :: *w -> (MaybeOSError .a, *w)
 
 getLastOSErrorCode :: *w -> (MaybeOSErrorCode .a, *w)
+
+osErrorCodeToOSError :: OSErrorCode -> OSError
+
