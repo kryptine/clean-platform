@@ -156,7 +156,7 @@ filetimeToTm filetime world
 			, year	= toInt systemtime.[SYSTEMTIME_wYear_offset]		+ (toInt systemtime.[SYSTEMTIME_wYear_offset + 1]		<< 8) - 1900
 			, wday	= toInt systemtime.[SYSTEMTIME_wDayOfWeek_offset]	+ (toInt systemtime.[SYSTEMTIME_wDayOfWeek_offset + 1]	<< 8)
 			, yday	= -1	//Not implemented
-			, isdst	= False //Not implemented
+			, isdst	= 0     //Not implemented
 			}
 	= (Ok tm, world)
 

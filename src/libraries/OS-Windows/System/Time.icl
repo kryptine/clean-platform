@@ -126,7 +126,7 @@ derefTm tm =	{ sec	= readInt4S tm 0
 				, year	= readInt4S tm 20
 				, wday	= readInt4S tm 24
 				, yday	= readInt4S tm 28 
-				, isdst	= readInt4S tm 32 <> 0
+				, isdst	= readInt4S tm 32
 				}
 
 packTm :: !Tm -> {#Int}
@@ -137,7 +137,7 @@ packTm64 tm = 	{ tm.sec  + tm.min  << 32
 				, tm.hour + tm.mday << 32
 				, tm.mon  + tm.year << 32
 				, tm.wday + tm.yday << 32
-				, if tm.isdst 1 0
+				, tm.isdst
 				}
 				
 packTm32 :: !Tm -> {#Int}
@@ -149,5 +149,5 @@ packTm32 tm = 	{ tm.sec
 				, tm.year
 				, tm.wday
 				, tm.yday
-				, if tm.isdst 1 0
+				, tm.isdst
 				}
