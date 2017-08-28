@@ -23,7 +23,7 @@ CLK_PER_SEC	:== 1000
 		  , year	:: Int	// Years since 1900
 		  , wday	:: Int	// Day of the week (0-6, 0 is Sunday)
 		  , yday	:: Int	// Day of the year (0-365)
-		  , isdst	:: Bool // Daylight saving time flag
+		  , isdst	:: Int  // Daylight saving time flag
 		  }
 
 /**
@@ -77,7 +77,7 @@ toLocalTime	:: !Timestamp !*World -> (!Tm,!*World)
 /**
 * Convert a timestamp to a Tm record (GMT time)
 */
-toGmTime	:: !Timestamp -> Tm
+toGmTime :: !Timestamp -> Tm
 
 derefTm :: !Int -> Tm
 packTm :: !Tm -> {#Int}
