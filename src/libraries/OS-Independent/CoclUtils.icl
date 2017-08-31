@@ -16,13 +16,8 @@ where
 	toTypeContext context
 		= ['T'.Instance gds.glob_object.ds_ident.id_name (map 'T'.toType tc_types)
 		     \\ {tc_class=(TCClass gds),tc_types} <- context] ++
-		  ['T'.Derivation gtc_generic.glob_object.ds_ident.id_name /*(kind gtc_kind)*/ ('T'.toType t)
-		     \\ {tc_class=(TCGeneric {gtc_generic,gtc_kind}),tc_types=[t]} <- context]
-	where
-		kind :: TypeKind -> 'T'.Kind
-		kind KindConst = 'T'.KStar
-		kind (KindArrow []) = 'T'.KStar
-		kind (KindArrow [k:ks]) = kind k 'T'.KArrow kind (KindArrow ks)
+		  ['T'.Derivation gtc_generic.glob_object.ds_ident.id_name ('T'.toType t)
+		     \\ {tc_class=(TCGeneric {gtc_generic}),tc_types=[t]} <- context]
 
 instance 'T'.toTypeContext TypeContext where toTypeContext tc = 'T'.toTypeContext [tc]
 
