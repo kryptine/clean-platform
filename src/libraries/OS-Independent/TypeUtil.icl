@@ -44,20 +44,20 @@ where
 	print b (KindArrow ks) = parlft -- printersperse True "->" (ks ++ [KindConst]) -- parrgt
 	where (parlft,parrgt) = if b ("(",")") ("","")
 
-instance print ClassOrGeneric
+instance print TypeRestriction
 where
-	print _ (Class s) = [s]
-	print _ (Generic n k) = n -- "{|" -- k -- "|}"
+	print _ (Instance c ts)  = "instance " -- c -- " " -- ts
+	print _ (Derivation g t) = "derive " -- g -- " " -- t
 
-instance print ClassRestriction where print _ (cog, v) = cog -- " " -- v
-
-instance print ClassContext
+instance print TypeContext
 where
 	print _ [] = []
 	print _ crs = printersperse False " & "
-		[printersperse False ", " (map fst gr) -- " " -- snd (hd gr) \\ gr <- grps]
+		[printersperse False ", " (map corg gr) -- " " -- printersperse False " " (types $ hd gr) \\ gr <- grps]
 	where
-		grps = groupBy (\a b -> snd a == snd b) crs
+		grps = groupBy (\a b -> types a == types b && length (types a) == 1) crs
+		types (Instance _ ts) = ts; types (Derivation _ t) = [t]
+		corg (Instance c _) = c; corg (Derivation g _) = g
 
 instance print Type
 where
@@ -87,14 +87,14 @@ where
 		| otherwise      = parens isArg (s -- " " -- printersperse True " " vs)
 	print _ (Var v) = [v]
 	print ia (Func [] r []) = print ia r
-	print _ (Func [] r cc) = r -- " " -- cc
+	print _ (Func [] r tc) = r -- " " -- tc
 	print ia (Func ts r []) = parens ia (printersperse True " " ts -- " -> " -- r)
-	print _ (Func ts r cc) = (Func ts r []) -- " | " -- cc
+	print _ (Func ts r tc) = (Func ts r []) -- " | " -- tc
 	print ia (Cons tv [])  = print ia tv
 	print ia (Cons tv ats) = parens ia (tv -- " " -- printersperse True " " ats)
 	print _ (Uniq t)       = "*" -+ t
 	print _ (Forall tvs t []) = "(A." -- printersperse True " " tvs -- ": " -- t -- ")"
-	print _ (Forall tvs t cc) = "(A." -- printersperse True " " tvs -- ": " -- t -- " " -- cc -- ")"
+	print _ (Forall tvs t tc) = "(A." -- printersperse True " " tvs -- ": " -- t -- " " -- tc -- ")"
 	print _ (Arrow Nothing)  = ["(->)"]
 	print _ (Arrow (Just t)) = "((->) " -+ t +- ")"
 
@@ -160,13 +160,13 @@ propagate_uniqueness :: Type -> Type
 propagate_uniqueness (Type t ts)
 	# ts = map propagate_uniqueness ts
 	= if (any isUniq ts) (Uniq (Type t ts)) (Type t ts)
-propagate_uniqueness (Func is r cc)
-	= Func (map propagate_uniqueness is) (propagate_uniqueness r) cc
+propagate_uniqueness (Func is r tc)
+	= Func (map propagate_uniqueness is) (propagate_uniqueness r) tc
 propagate_uniqueness (Cons v ts)
 	# ts = map propagate_uniqueness ts
 	= if (any isUniq ts) (Uniq (Cons v ts)) (Cons v ts)
-propagate_uniqueness (Forall vs t cc)
-	= Forall vs (propagate_uniqueness t) cc
+propagate_uniqueness (Forall vs t tc)
+	= Forall vs (propagate_uniqueness t) tc
 propagate_uniqueness t
 	= t
 
@@ -192,15 +192,15 @@ where
 	candidates = [td \\ td=:{td_rhs=TDRSynonym syn} <- tds
 		| td.td_name == t && length td.td_args <= length ts
 		&& (isType syn || length td.td_args == length ts)]
-resolve_synonyms tds (Func is r cc)
+resolve_synonyms tds (Func is r tc)
 	# (syns, [r:is]) = appFst (removeDupTypedefs o flatten) $ unzip $ map (resolve_synonyms tds) [r:is]
-	= (syns, Func is r cc)
+	= (syns, Func is r tc)
 resolve_synonyms tds (Cons v ts)
 	# (syns, ts) = appFst (removeDupTypedefs o flatten) $ unzip $ map (resolve_synonyms tds) ts
 	= (syns, Cons v ts)
-resolve_synonyms tds (Forall vs t cc)
+resolve_synonyms tds (Forall vs t tc)
 	# (syns, t) = resolve_synonyms tds t
-	= (syns, Forall vs t cc)
+	= (syns, Forall vs t tc)
 resolve_synonyms tds (Arrow (Just t))
 	= appSnd (Arrow o pure) $ resolve_synonyms tds t
 resolve_synonyms tds t
@@ -209,8 +209,8 @@ resolve_synonyms tds t
 // Apply a TVAssignment to a Type
 assign :: !TVAssignment !Type -> Maybe Type
 assign va (Type s ts) = Type s <$^> map (assign va) ts
-assign va (Func ts r cc) = Func <$^> map (assign va) ts
-		>>= (\f->f <$> assign va r) >>= (\f -> pure $ f cc) // TODO cc
+assign va (Func ts r tc) = Func <$^> map (assign va) ts
+		>>= (\f->f <$> assign va r) >>= (\f -> pure $ f tc) // TODO tc
 assign (v,a) (Var v`) = pure $ if (v == v`) a (Var v`)
 assign va=:(v,Type s ts) (Cons v` ts`)
 	| v == v`   = Type s <$^> map (assign va) (ts ++ ts`)
@@ -225,11 +225,11 @@ assign va=:(v,_) (Cons v` ts)
 	| v == v` = empty
 	| otherwise = Cons v` <$^> map (assign va) ts
 assign va (Uniq t) = Uniq <$> (assign va t)
-assign va=:(v,Var v`) (Forall tvs t cc)
-	= Forall <$^> map (assign va) tvs >>= (\f -> flip f cc <$> assign va t)
-assign va=:(v,_) (Forall tvs t cc)
+assign va=:(v,Var v`) (Forall tvs t tc)
+	= Forall <$^> map (assign va) tvs >>= (\f -> flip f tc <$> assign va t)
+assign va=:(v,_) (Forall tvs t tc)
 	| isMember (Var v) tvs = empty
-	| otherwise = flip (Forall tvs) cc <$> assign va t
+	| otherwise = flip (Forall tvs) tc <$> assign va t
 
 (<$^>) infixl 4 //:: ([a] -> b) [Maybe a] -> Maybe b
 (<$^>) f mbs :== ifM (all isJust mbs) $ f $ map fromJust mbs
@@ -265,12 +265,16 @@ where
 
 		renameVars :: !Type -> Type
 		renameVars (Type s ts)      = Type s $ map renameVars ts
-		renameVars (Func is r cc)   = Func (map renameVars is) (renameVars r) $ map (appSnd renameVars) cc
+		renameVars (Func is r tc)   = Func (map renameVars is) (renameVars r) $ map renameVarsInTC tc
 		renameVars (Var tv)         = Var $ fromJust $ lookup tv renames
 		renameVars (Cons cv ts)     = Cons (fromJust $ lookup cv renames) $ map renameVars ts
 		renameVars (Uniq t)         = Uniq $ renameVars t
-		renameVars (Forall vs t cc) = Forall (map renameVars vs) (renameVars t) $ map (appSnd renameVars) cc
+		renameVars (Forall vs t tc) = Forall (map renameVars vs) (renameVars t) $ map renameVarsInTC tc
 		renameVars (Arrow t)        = Arrow $ renameVars <$> t
+
+		renameVarsInTC :: TypeRestriction -> TypeRestriction
+		renameVarsInTC (Instance c ts)  = Instance c $ map renameVars ts
+		renameVarsInTC (Derivation g t) = Derivation g $ renameVars t
 
 		allVars :: !Type -> [TypeVar]
 		allVars (Type _ ts)      = allVars` ts
@@ -287,10 +291,14 @@ where
 
 	optConses :: !Type -> Type
 	optConses (Type s ts)      = Type s $ map optConses ts
-	optConses (Func is r cc)   = Func (map optConses is) (optConses r) $ map (appSnd optConses) cc
+	optConses (Func is r tc)   = Func (map optConses is) (optConses r) $ map optConsesInTR tc
 	optConses (Var v)          = Var v
 	optConses (Cons c [])      = Var c
 	optConses (Cons c ts)      = Cons c $ map optConses ts
 	optConses (Uniq t)         = Uniq $ optConses t
-	optConses (Forall vs t cc) = Forall (map optConses vs) (optConses t) $ map (appSnd optConses) cc
+	optConses (Forall vs t tc) = Forall (map optConses vs) (optConses t) $ map optConsesInTR tc
 	optConses (Arrow t)        = Arrow $ optConses <$> t
+
+	optConsesInTR :: TypeRestriction -> TypeRestriction
+	optConsesInTR (Instance c ts)  = Instance c $ map optConses ts
+	optConsesInTR (Derivation g t) = Derivation g $ optConses t

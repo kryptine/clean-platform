@@ -77,14 +77,14 @@ where
 	isFunny c = isMember c ['~@#$%^?!+-*<>\\/|&=:']
 
 type :: Parser Token Type
-type = liftM3 Func (some argtype) (item TArrow *> type) (pure []) // no CC for now
+type = liftM3 Func (some argtype) (item TArrow *> type) (pure []) // no TC for now
 	<|> liftM2 Cons cons (some argtype)
 	<|> (item (TIdent "String") >>| pure (Type "_#Array" [Type "Char" []]))
 	<|> liftM2 Type ident (many argtype)
 	<|> liftM3 Forall
 		(item TUniversalQuantifier *> some argtype <* item TColon)
 		type
-		(pure []) // No CC for now
+		(pure []) // No TC for now
 	<|> argtype
 where
 	argtype :: Parser Token Type

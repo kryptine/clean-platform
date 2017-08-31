@@ -29,9 +29,8 @@ instance print Int
 instance print [a] | print a
 instance print (Maybe a) | print a
 
-instance print ClassOrGeneric
-instance print ClassRestriction
-instance print ClassContext
+instance print TypeRestriction
+instance print TypeContext
 instance print Type
 instance print TypeDef
 instance print Priority

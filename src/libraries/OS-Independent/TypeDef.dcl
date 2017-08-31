@@ -12,11 +12,11 @@ from Data.Maybe import :: Maybe
  */
 :: Type
 	= Type String [Type]             //* Concrete type with arguments
-	| Func [Type] Type ClassContext  //* A function with parameters, a result and class context (no uniqueness unequalities yet)
+	| Func [Type] Type TypeContext   //* A function with parameters, a result and class context (no uniqueness unequalities yet)
 	| Var TypeVar                    //* A type variable
 	| Cons TypeVar [Type]            //* A constructor variable with arguments
 	| Uniq Type                      //* A unique type
-	| Forall [Type] Type ClassContext //* Universally quantified variables
+	| Forall [Type] Type TypeContext //* Universally quantified variables
 	| Arrow (Maybe Type)             //* (->) and ((->) t)
 
 /**
@@ -41,23 +41,16 @@ from Data.Maybe import :: Maybe
 	  }
 
 /**
- * A class context
+ * A type context
  */
-:: ClassContext :== [ClassRestriction]
+:: TypeContext :== [TypeRestriction]
 
 /**
- * A class restriction on a type
- * @representation The class and the type (usually a type variable) on which
- *   the restriction is placed
+ * A restriction on a type
  */
-:: ClassRestriction :== (ClassOrGeneric, Type)
-
-/**
- * The left-hand side of a class restriction
- */
-:: ClassOrGeneric
-	= Class String
-	| Generic String Kind
+:: TypeRestriction
+	= Instance String [Type]
+	| Derivation String Type
 
 /**
  * The kind of a Clean type
@@ -65,11 +58,6 @@ from Data.Maybe import :: Maybe
 :: Kind
 	= KindConst
 	| KindArrow [Kind]
-
-/**
- * An instance of a class and types for the class variables
- */
-:: Instance = Instance String [Type]
 
 /**
  * A Clean type definition
@@ -100,7 +88,7 @@ from Data.Maybe import :: Maybe
 	= { cons_name     :: String         //* The name of the constructor
 	  , cons_args     :: [Type]         //* The arguments of the constructor
 	  , cons_exi_vars :: [TypeVar]      //* Existentially quantified variables
-	  , cons_context  :: ClassContext   //* The class context of the constructor
+	  , cons_context  :: TypeContext    //* The class context of the constructor
 	  , cons_priority :: Maybe Priority //* Priority, if this is an infix constructor
 	  }
 
@@ -120,12 +108,12 @@ from Data.Maybe import :: Maybe
 	  , rf_type :: Type   //* The type of the field
 	  }
 
-instance == Type, Instance
+instance == Type
 
 class toType a :: a -> Type
 class toTypeVar a :: a -> TypeVar
 
-class toClassContext a :: a -> ClassContext
+class toTypeContext a :: a -> TypeContext
 
 class toTypeDef a :: a -> TypeDef
 class toTypeDefRhs a :: a -> TypeDefRhs
@@ -251,7 +239,7 @@ typedef :: String Bool [Type] TypeDefRhs -> TypeDef
 /**
  * Function to create a Constructor record
  */
-constructor :: String [Type] [TypeVar] ClassContext (Maybe Priority) -> Constructor
+constructor :: String [Type] [TypeVar] TypeContext (Maybe Priority) -> Constructor
 
 /**
  * Function to create a RecordField record

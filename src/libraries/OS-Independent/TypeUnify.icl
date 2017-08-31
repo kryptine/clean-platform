@@ -18,7 +18,7 @@ import Data.Maybe
 import Control.Applicative
 import Control.Monad
 
-derive gEq ClassOrGeneric, Type, Kind
+derive gEq Type, TypeRestriction, Kind
 
 prepare_unification :: !Bool /* is left */ [TypeDef] !Type -> ([TypeDef], Type)
 prepare_unification b db (Func [] t _) = prepare_unification b db t
@@ -46,8 +46,8 @@ where
 	removeEnds (v,t) = let rm s = s % (0, size s - 2) in (rm v, fromJust $
 	                   assignAll (map (\v->(v,Var (rm v))) $ allVars t) t)
 
-unify :: ![Instance] !Type !Type -> Maybe [TVAssignment]
-unify _ t1 t2 //TODO instances ignored; class context not considered
+unify :: !Type !Type -> Maybe [TVAssignment]
+unify t1 t2
 	= unify2 $ toMESystem t1 t2
 
 :: MultiEq = ME ![TypeVar] ![Type]
@@ -229,11 +229,11 @@ where
 
 // Make all functions arity 1 by transforming a b -> c to a -> b -> c
 reduceArities :: !Type -> Type
-reduceArities (Func ts r cc)
-	| length ts > 1 = Func [reduceArities $ hd ts] (reduceArities $ Func (tl ts) r cc) cc
-	| otherwise = Func (map reduceArities ts) (reduceArities r) cc
+reduceArities (Func ts r tc)
+	| length ts > 1 = Func [reduceArities $ hd ts] (reduceArities $ Func (tl ts) r tc) tc
+	| otherwise = Func (map reduceArities ts) (reduceArities r) tc
 reduceArities (Type s ts) = Type s $ map reduceArities ts
 reduceArities (Cons v ts) = Cons v $ map reduceArities ts
 reduceArities (Uniq t) = Uniq $ reduceArities t
 reduceArities (Var v) = Var v
-reduceArities (Forall tvs t cc) = Forall tvs (reduceArities t) cc
+reduceArities (Forall tvs t tc) = Forall tvs (reduceArities t) tc

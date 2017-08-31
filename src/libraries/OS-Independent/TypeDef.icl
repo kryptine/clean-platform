@@ -11,17 +11,16 @@ from GenEq import generic gEq, ===
 from Data.Func import $
 import Data.Maybe
 
-derive gEq ClassOrGeneric, Type, Instance, Kind
+derive gEq Type, TypeRestriction, Kind
 
 instance == Type where (==) a b = a === b
-instance == Instance where (==) a b = a === b
 
 subtypes :: Type -> [Type]
 subtypes t=:(Type s ts) = removeDup [t : flatten (map subtypes ts)]
-subtypes t=:(Func is r cc) = removeDup [t : flatten (map subtypes [r:is])]
+subtypes t=:(Func is r tc) = removeDup [t : flatten (map subtypes [r:is])]
 subtypes t=:(Cons c ts) = removeDup [t : flatten (map subtypes ts)]
 subtypes t=:(Uniq t`) = removeDup [t : subtypes t`]
-subtypes t=:(Forall vs t` cc) = removeDup [t : flatten (map subtypes [t`:vs])]
+subtypes t=:(Forall vs t` tc) = removeDup [t : flatten (map subtypes [t`:vs])]
 subtypes t=:(Var _) = [t]
 
 allVars :: (Type -> [TypeVar])
@@ -32,7 +31,7 @@ where
 	name (Var v) = v
 
 allUniversalVars :: Type -> [TypeVar]
-allUniversalVars (Forall vs t cc) = removeDup (flatten (map allVars vs) ++ allUniversalVars t)
+allUniversalVars (Forall vs t tc) = removeDup (flatten (map allVars vs) ++ allUniversalVars t)
 allUniversalVars (Type _ ts) = removeDup (flatten (map allUniversalVars ts))
 allUniversalVars (Func is r _) = removeDup (flatten (map allUniversalVars [r:is]))
 allUniversalVars (Cons _ ts) = removeDup (flatten (map allUniversalVars ts))
@@ -102,9 +101,9 @@ typedef :: String Bool [Type] TypeDefRhs -> TypeDef
 typedef name uniq args rhs
 	= {td_name=name, td_uniq=uniq, td_args=args, td_rhs=rhs}
 
-constructor :: String [Type] [TypeVar] ClassContext (Maybe Priority) -> Constructor
-constructor name args exi_vars cc pri
-	= {cons_name=name, cons_args=args, cons_exi_vars=exi_vars, cons_context=cc, cons_priority=pri}
+constructor :: String [Type] [TypeVar] TypeContext (Maybe Priority) -> Constructor
+constructor name args exi_vars tc pri
+	= {cons_name=name, cons_args=args, cons_exi_vars=exi_vars, cons_context=tc, cons_priority=pri}
 
 recordfield :: String Type -> RecordField
 recordfield selector type = {rf_name=selector, rf_type=type}

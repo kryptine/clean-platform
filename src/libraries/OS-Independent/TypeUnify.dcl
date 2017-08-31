@@ -36,9 +36,8 @@ finish_unification :: ![TypeDef] ![TVAssignment] -> Unifier
  * It has been modified slightly to deal with constructor variables, universal
  * quantifiers and uniqueness.
  *
- * @param Instances, to match class contexts. Currently ignored.
  * @param The left type
  * @param The right type
  * @result A list of type variable assignments, or Nothing if unification failed
  */
-unify :: ![Instance] !Type !Type -> Maybe [TVAssignment]
+unify :: !Type !Type -> Maybe [TVAssignment]
