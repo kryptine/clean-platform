@@ -46,7 +46,7 @@ where
 
 instance print TypeRestriction
 where
-	print _ (Instance c ts)  = "instance " -- c -- " " -- ts
+	print _ (Instance c ts)  = "instance " -- c -- " " -- printersperse False " " ts
 	print _ (Derivation g t) = "derive " -- g -- " " -- t
 
 instance print TypeContext
