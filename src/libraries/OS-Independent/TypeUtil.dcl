@@ -71,7 +71,7 @@ assignAll :== flip (foldM (flip assign))
  * - Propagate uniqueness.
  * - Rewrite Conses without arguments to Vars.
  * - Rewrite functions to arity 1.
- * - Rewrite variablesto v1, v2, v3, ... s.t. a left first depth first
+ * - Rewrite variables to v1, v2, v3, ... s.t. a left first depth first
  *   iteration over the node does not introduce higher variables before lower
  *   ones (i.e., you will encounter v2 before v3).
  */
