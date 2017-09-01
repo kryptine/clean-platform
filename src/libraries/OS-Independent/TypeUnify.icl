@@ -1,24 +1,37 @@
 implementation module TypeUnify
 
-import TypeDef, TypeUtil
-
-import StdOrdList
-
-from StdFunc import o, flip
-from StdMisc import abort
+import StdArray
 import StdBool
+from StdFunc import o, flip
 import StdList
+from StdMisc import abort
+import StdOrdList
 import StdString
 import StdTuple
-import StdArray
+
+import Control.Applicative
+import Control.Monad
 from Data.Func import $
 import Data.Functor
 import Data.List
 import Data.Maybe
-import Control.Applicative
-import Control.Monad
+
+import TypeDef
+import TypeUtil
 
 derive gEq Type, TypeRestriction, Kind
+
+(generalises) infix 4 :: !Type !Type -> Bool
+(generalises) a b = case unify a` b` of
+	Nothing  -> False
+	Just tvs -> let unif = finish_unification [] tvs in
+		all (isVar o snd) unif.right_to_left
+where
+	(_, a`) = prepare_unification True  [] a
+	(_, b`) = prepare_unification False [] b
+
+(specialises) infix 4 :: !Type !Type -> Bool
+(specialises) a b = b generalises a
 
 prepare_unification :: !Bool /* is left */ [TypeDef] !Type -> ([TypeDef], Type)
 prepare_unification b db (Func [] t _) = prepare_unification b db t

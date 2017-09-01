@@ -9,6 +9,16 @@ import TypeDef
 from Data.Maybe import ::Maybe
 
 /**
+ * True iff the first type is more general or equal to the second type
+ */
+(generalises) infix 4 :: !Type !Type -> Bool
+
+/**
+ * True iff the first type is more specific or equal to the second type
+ */
+(specialises) infix 4 :: !Type !Type -> Bool
+
+/**
  * Prepare a type for unification. Unification always happens between a 'left'
  * and a 'right' type. Unification of two left or two right types may yield
  * incorrect results.
