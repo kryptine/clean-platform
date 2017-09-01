@@ -230,6 +230,8 @@ assign va=:(v,Var v`) (Forall tvs t tc)
 assign va=:(v,_) (Forall tvs t tc)
 	| isMember (Var v) tvs = empty
 	| otherwise = flip (Forall tvs) tc <$> assign va t
+assign va (Arrow (Just t)) = Arrow o Just <$> assign va t
+assign va (Arrow Nothing) = Just $ Arrow Nothing
 
 (<$^>) infixl 4 //:: ([a] -> b) [Maybe a] -> Maybe b
 (<$^>) f mbs :== ifM (all isJust mbs) $ f $ map fromJust mbs

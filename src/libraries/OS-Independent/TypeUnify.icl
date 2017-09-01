@@ -50,6 +50,7 @@ finish_unification :: ![TypeDef] ![TVAssignment] -> Unifier
 finish_unification syns tvs
 # (tvs1, tvs2) = (filter (endsWith "l") tvs, filter (endsWith "r") tvs)
 # (tvs1, tvs2) = (map removeEnds tvs1, map removeEnds tvs2)
+# (tvs1, tvs2) = (sortBy order tvs1, sortBy order tvs2)
 = {left_to_right=tvs1, right_to_left=tvs2, used_synonyms=removeDupTypedefs syns}
 where
 	endsWith :: String TVAssignment -> Bool
@@ -58,6 +59,12 @@ where
 	removeEnds :: TVAssignment -> TVAssignment
 	removeEnds (v,t) = let rm s = s % (0, size s - 2) in (rm v, fromJust $
 	                   assignAll (map (\v->(v,Var (rm v))) $ allVars t) t)
+
+	order :: TVAssignment TVAssignment -> Bool
+	order (v1,t1) (v2,t2)
+	| isMember v1 (allVars t2) = False
+	| isMember v2 (allVars t1) = True
+	| otherwise                = True // don't care
 
 unify :: !Type !Type -> Maybe [TVAssignment]
 unify t1 t2
@@ -250,3 +257,4 @@ reduceArities (Cons v ts) = Cons v $ map reduceArities ts
 reduceArities (Uniq t) = Uniq $ reduceArities t
 reduceArities (Var v) = Var v
 reduceArities (Forall tvs t tc) = Forall tvs (reduceArities t) tc
+reduceArities (Arrow mt) = Arrow (reduceArities <$> mt)
