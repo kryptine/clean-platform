@@ -13,7 +13,8 @@ import Data.Maybe
 
 derive gEq Type, TypeRestriction, Kind
 
-instance == Type where (==) a b = a === b
+instance == Type where == a b = a === b
+instance == TypeRestriction where == a b = a === b
 
 subtypes :: Type -> [Type]
 subtypes t=:(Type s ts) = removeDup [t : flatten (map subtypes ts)]

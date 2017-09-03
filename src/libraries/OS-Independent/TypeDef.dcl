@@ -109,6 +109,7 @@ from Data.Maybe import :: Maybe
 	  }
 
 instance == Type
+instance == TypeRestriction
 
 class toType a :: a -> Type
 class toTypeVar a :: a -> TypeVar
