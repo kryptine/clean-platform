@@ -1,19 +1,17 @@
 implementation module TypeUnify
 
 import StdArray
-import StdBool
-from StdFunc import o, flip
+from StdFunc import o
 import StdList
-from StdMisc import abort
 import StdOrdList
-import StdString
 import StdTuple
+import StdString
 
 import Control.Applicative
 import Control.Monad
+import Control.Monad.State
 from Data.Func import $
 import Data.Functor
-import Data.List
 import Data.Maybe
 
 import TypeDef
@@ -39,25 +37,33 @@ prepare_unification isleft db t
 # (syns, t) = resolve_synonyms db t
 # t = propagate_uniqueness t
 # t = reduceArities t
-# t = appendToVars (if isleft "l" "r") t
+# t = renameVars t
 = (syns, t)
 where
-	appendToVars :: String Type -> Type
-	appendToVars s t = fromJust $ assignAll (map rename $ allVars t) t
-	where rename v = (v, Var (v+++s))
+	prep = if isleft "l" "r"
+	renameVars :: Type -> Type
+	renameVars (Var v) = Var (prep +++ v)
+	renameVars (Cons c ts) = Cons (prep +++ c) $ map renameVars ts
+	renameVars (Type t ts) = Type t $ map renameVars ts
+	renameVars (Func is r tc) = Func (map renameVars is) (renameVars r) tc
+	renameVars (Uniq t) = Uniq $ renameVars t
+	renameVars (Arrow t) = Arrow (renameVars <$> t)
+	renameVars (Forall vs t tc) = fromJust $
+		assignAll [(v,Var ("_"+++v)) \\ v <- map fromVarLenient vs] $
+		Forall (map renameVars vs) (renameVars t) tc
 
 finish_unification :: ![TypeDef] ![TVAssignment] -> Unifier
 finish_unification syns tvs
-# (tvs1, tvs2) = (filter (endsWith "l") tvs, filter (endsWith "r") tvs)
+# (tvs1, tvs2) = (filter (endsWith 'l') tvs, filter (endsWith 'r') tvs)
 # (tvs1, tvs2) = (map removeEnds tvs1, map removeEnds tvs2)
 # (tvs1, tvs2) = (sortBy order tvs1, sortBy order tvs2)
 = {left_to_right=tvs1, right_to_left=tvs2, used_synonyms=removeDupTypedefs syns}
 where
-	endsWith :: String TVAssignment -> Bool
-	endsWith n (h,_) = h % (size h - size n, size h - 1) == n
+	endsWith :: Char TVAssignment -> Bool
+	endsWith c (h,_) = h.[0] == c
 
 	removeEnds :: TVAssignment -> TVAssignment
-	removeEnds (v,t) = let rm s = s % (0, size s - 2) in (rm v, fromJust $
+	removeEnds (v,t) = let rm s = s % (1, size s - 1) in (rm v, fromJust $
 	                   assignAll (map (\v->(v,Var (rm v))) $ allVars t) t)
 
 	order :: TVAssignment TVAssignment -> Bool
@@ -66,191 +72,90 @@ where
 	| isMember v2 (allVars t1) = True
 	| otherwise                = True // don't care
 
+:: UnificationState =
+	{ assignments :: ![TVAssignment]
+	, goals       :: ![(!Type, !Type)]
+	}
+assignments s :== s.assignments
+goals       s :== s.goals
+
+:: UnifyM t :== StateT UnificationState Maybe t
+
+fail :: UnifyM a
+fail = StateT \_ -> Nothing
+
+succeed :: UnifyM ()
+succeed = pure ()
+
+applyAssignment :: !TypeVar !Type -> UnifyM ()
+applyAssignment v t =
+	checkUniversalisedVariables v t >>= \t ->
+	checkCircularAssignment v t >>|
+	gets goals >>= mapM (assign` (v,t)) >>= \goals ->
+	modify \s ->
+	{ s
+	& assignments = [(v,t):s.assignments]
+	, goals = goals
+	}
+where
+	checkUniversalisedVariables :: !TypeVar !Type -> UnifyM Type
+	checkUniversalisedVariables v t
+	| v.[0] <> '_' = pure t
+	| otherwise = case t of
+		Var v -> applyInGoals (v,Var ("_"+++v)) >>| pure (Var ("_" +++ v))
+		_     -> fail
+	where
+		applyInGoals :: !TVAssignment -> UnifyM ()
+		applyInGoals tva =
+			gets goals >>=
+			mapM (\(t,u) -> case (assign tva t, assign tva u) of
+				(Just t`, Just u`) -> pure (t`,u`)
+				_                  -> fail) >>= \gs ->
+			modify (\s -> {s & goals=gs})
+
+	checkCircularAssignment :: !TypeVar !Type -> UnifyM ()
+	checkCircularAssignment v t
+	| isMember v (allVars t) = fail
+	| otherwise              = succeed
+
+	assign` :: !TVAssignment !(!Type,!Type) -> UnifyM (!Type,!Type)
+	assign` a=:(v,_) (t,u) = case (assign a t, assign a u) of
+		(Just t, Just u) -> pure (t,u)
+		_                -> fail
+
 unify :: !Type !Type -> Maybe [TVAssignment]
-unify t1 t2
-	= unify2 $ toMESystem t1 t2
-
-:: MultiEq = ME ![TypeVar] ![Type]
-
-:: MESystem = { solved   :: ![MultiEq]
-              , unsolved :: ![(Int, MultiEq)]
-              }
-
-allAssignments :: MultiEq -> [TVAssignment]
-allAssignments (ME vs ts) = [(v,t) \\ v <- vs, t <- ts]
-
-toMESystem :: !Type !Type -> MESystem
-toMESystem t1 t2
-	= { solved   = []
-	  , unsolved = [(0, ME ["type"] [t1,t2])]
-	  }
-
-instance == MultiEq where (==) (ME a b) (ME c d) = a == c && b == d
-
-unify2 :: !MESystem -> Maybe [TVAssignment]
-unify2 {solved,unsolved}
-# unsolved = sortBy (\(a,b) (c,d) -> a < c) unsolved
-| isEmpty unsolved     = Just $ solution solved
-# (count, me=:(ME vars types)) = hd unsolved
-| count <> 0           = Nothing // cycle
-# unsolved             = tl unsolved
-| isEmpty types
-	= unify2 {solved=[me:solved],unsolved=removeFromCounters vars unsolved}
-# cPaF                 = commonPartAndFrontier types
-| isNothing cPaF       = Nothing // clash
-# (cPart,frontier)     = fromJust cPaF
-// MultiEq reduction
-# unsolved             = updateCounters $ compactify $
-                         unsolved ++ [(0,f) \\ f <- frontier]
-# solved               = [ME vars [cPart]:solved]
-// Check universal quantifiers
-# univars              = flatten $ map allUniversalVars types
-| any
-	(\(v,t) -> not (isVar t) && isMember v univars)
-	(flatten (map (allAssignments o snd) unsolved))
-                       = Nothing // Universally quantified var was assigned
-= unify2 {solved=solved,unsolved=unsolved}
+unify t u = evalStateT loopUntilDone {assignments=[], goals=[(t,u)]}
 where
-	solution :: [MultiEq] -> [TVAssignment]
-	solution [] = []
-	solution [ME [v:vs] ts:mes]
-		= [(v,t) \\ t <- ts] ++ [(v`,Var v) \\ v` <- vs] ++ solution mes
+	loopUntilDone :: UnifyM [TVAssignment]
+	loopUntilDone = gets goals >>= \goals -> case goals of
+		[(t1,t2):_] -> modify (\s -> {s & goals=tl s.goals}) >>| uni t1 t2 >>| loopUntilDone
+		[]          -> gets assignments
 
-	removeFromCounters :: ![TypeVar] ![(Int,MultiEq)] -> [(Int,MultiEq)]
-	removeFromCounters vs [] = []
-	removeFromCounters vs [(i,me=:(ME _ ts)):mes]
-		= [(i - sum (map (count vs) ts),me):removeFromCounters vs mes]
-	where
-		count :: ![TypeVar] !Type -> Int
-		count vs (Var v) = if (isMember v vs) 1 0
-		count vs (Cons v ts) = if (isMember v vs) 1 0 + sum (map (count vs) ts)
-		count vs (Type _ ts) = sum $ map (count vs) ts
-		count vs (Func is r _) = sum $ map (count vs) [r:is]
-		count vs (Uniq t) = count vs t
-		count vs (Arrow mt) = sum $ map (count vs) $ maybeToList mt
-
-	updateCounters :: [(Int, MultiEq)] -> [(Int, MultiEq)]
-	updateCounters eqs
-		= [(sum (map (count mes) vars), me) \\ me=:(ME vars _) <- mes]
-	where
-		mes = map snd eqs
-
-		count :: [MultiEq] TypeVar -> Int
-		count mes v
-			= sum [length (filter (isVarOrCons` v) (flatten (map subtypes ts)))
-			       \\ (ME _ ts) <- mes]
-
-	compactify :: [(Int, MultiEq)] -> [(Int, MultiEq)]
-	compactify [] = []
-	compactify [(c,ME vars types):mes] = case lookup vars mes of
-		Nothing = [(c,ME vars types):compactify mes]
-		(Just me=:(c`,ME vars` types`))
-			# vars = removeDup $ vars ++ vars`
-			# types = removeDup $ types ++ types`
-			= compactify [(c+c`, ME vars types):removeMember me mes]
-	where
-		lookup :: [TypeVar] [(Int,MultiEq)] -> Maybe (Int, MultiEq)
-		lookup vs [] = Nothing
-		lookup vs [me=:(i,ME vars _):mes]
-		| isEmpty (intersect vs vars) = lookup vs mes
-		= Just me
-
-:: CommonPart :== Type
-:: Frontier :== [MultiEq]
-
-commonPartAndFrontier :: [Type] -> Maybe (CommonPart, Frontier)
-commonPartAndFrontier ts
-| isEmpty ts = Nothing
-| any isForall ts // TODO class context
-	= commonPartAndFrontier $ map (\t -> if (isForall t) (fromForall t) t) ts
-| any isVar ts = Just (hd $ filter isVar ts, makemulteq ts)
-| all isType ts
-	# names = map (\(Type n _) -> n) ts
-	| (<>) 1 $ length $ removeDup $ names = Nothing
-	# name = hd names
-	# lengths = map (length o (\(Type _ ts) -> ts)) ts
-	| (<>) 1 $ length $ removeDup $ lengths = Nothing
-	# len = hd lengths
-	| len == 0 = Just (Type name [], [])
-	# args = map (\(Type _ ts) -> ts) ts
-	# cpafs = [commonPartAndFrontier [a!!i \\ a <- args] \\ i <- [0..len-1]]
-	| any isNothing cpafs = Nothing
-	# (cps, fronts) = let cfs = map fromJust cpafs in (map fst cfs, map snd cfs)
-	= Just (Type name cps, flatten fronts)
-| all isFunc ts // TODO class context
-	# types = map (\(Func is t _) -> [t:is]) ts
-	# lengths = map length types
-	| (<>) 1 $ length $ removeDup $ lengths = Nothing
-	# len = hd lengths
-	# cpafs = [commonPartAndFrontier [t!!i \\ t <- types] \\ i <- [0..len-1]]
-	| any isNothing cpafs = Nothing
-	# ([cp:cps], fronts) = let cfs = map fromJust cpafs in (map fst cfs, map snd cfs)
-	= Just (Func cps cp [], flatten fronts)
-| all isCons ts
-	# lengths = [length ts \\ (Cons _ ts) <- ts]
-	| 1 == length (removeDup lengths)
-		// All same arity, pairwise unification
-		# len = hd lengths
-		# lists = map (\(Cons v ts) -> [Var v:ts]) ts
-		# cpafs = [commonPartAndFrontier [l!!i \\ l <- lists] \\ i <- [0..len]]
-		| any isNothing cpafs = Nothing
-		# ([Var cp:cps], fronts) = let cfs = map fromJust cpafs in (map fst cfs, map snd cfs)
-		= Just (Cons cp cps, flatten fronts)
-	// Different arities, curry in some arguments
-	# (minlen,maxlen) = (minList lengths, maxList lengths)
-	# maxvar = hd [v \\ (Cons v ts) <- ts | length ts == maxlen]
-	# splits = [splitAt (length ts - minlen) ts \\ (Cons v ts) <- ts]
-	# types = [if (isEmpty init) (Var v) (Cons v init) \\ (init,_) <- splits & (Cons v _) <- ts]
-	# rests = map snd splits
-	# cpafs = [commonPartAndFrontier [r!!i \\ r <- rests] \\ i <- [0..minlen - 1]]
-	| any isNothing cpafs = Nothing
-	# (cps, fronts) = let cfs = map fromJust cpafs in (map fst cfs, map snd cfs)
-	# cpaf = commonPartAndFrontier types
-	| isNothing cpaf = Nothing
-	# (cp, front) = fromJust cpaf
-	| isCons cp
-		# (Cons cpv cpts) = cp
-		= Just (Cons cpv (cpts ++ cps), flatten [front:fronts])
-	# (Var v) = cp
-	= Just (Cons v cps, flatten [front:fronts])
-| all (\t -> isCons t || isType t) ts
-	# types = filter isType ts
-	# conses = filter isCons ts
-	// Unify types separately
-	# cpaft = commonPartAndFrontier types
-	| isNothing cpaft = Nothing
-	# (cpt=:(Type cptn cptts), frontt) = fromJust cpaft
-	// Unify conses separately
-	# cpafc = commonPartAndFrontier conses
-	| isNothing cpafc = Nothing
-	# (cpc, frontc) = fromJust cpafc
-	// Merge results
-	| isVar cpc = let (Var cpc`) = cpc in
-		Just (cpt, [ME [cpc`] [cpt]] ++ frontt ++ frontc)
-	# (Cons cpcv cpcts) = cpc
-	| length cpcts > length cptts = Nothing
-	# (cptts_curry, cptts_unify) = splitAt (length cptts - length cpcts) cptts
-	# cpafs = [commonPartAndFrontier [t,c] \\ t <- cptts_unify & c <- cpcts]
-	| any isNothing cpafs = Nothing
-	# (cps,fronts) = let cfs = map fromJust cpafs in (map fst cfs, map snd cfs)
-	# cps = cptts_curry ++ cps
-	| isEmpty cps = Just (Var cpcv, flatten fronts ++ frontt ++ frontc)
-	= Just (Cons cpcv cps, flatten fronts ++ [ME [cpcv] [Type cptn cptts_curry]] ++ frontt ++ frontc)
-| all isUniq ts
-	= (\(cpaf,front) -> (Uniq cpaf,front))
-		<$> commonPartAndFrontier (map (\(Uniq t) -> t) ts)
-| all isArrow ts
-	# ts` = map fromArrow ts
-	| all isNothing ts` = Just (Arrow Nothing, [])
-	| all isJust ts`
-		# cpaf = commonPartAndFrontier $ map fromJust ts`
-		| isNothing cpaf = Nothing
-		# (cp,front) = fromJust cpaf
-		= Just (Arrow (Just cp), front)
-	| otherwise = Nothing
-| all ((==) (Arrow Nothing)) ts
-	= Just (Arrow Nothing, [])
-| otherwise = Nothing
+uni :: !Type !Type -> UnifyM ()
+uni (Var v) t = if (t == Var v) succeed (applyAssignment v t)
+uni t (Var v) = if (t == Var v) succeed (applyAssignment v t)
+uni (Type t tas) (Type u uas) = if (t==u) (addGoals tas uas) fail
+uni (Cons c cas) (Type t tas)
+| lc <= lt = addGoals cas end >>| applyAssignment c (Type t begin)
 where
-	makemulteq :: [Type] -> Frontier
-	makemulteq ts = let (vs,ts`) = partition isVar ts in [ME (map fromVar vs) ts`]
+	(lc,lt) = (length cas, length tas)
+	(begin,end) = splitAt (lt - lc) tas
+uni t=:(Type _ _) c=:(Cons _ _) = uni c t
+uni (Cons c1 as1) (Cons c2 as2)
+| l1 == l2  = addGoals as1 as2 >>| addGoal (Var c1) (Var c2)
+| l1 <  l2  = addGoals as1 end >>| addGoal (Var c1) (Cons c2 begin) with (begin,end) = splitAt (l2-l1) as2
+| otherwise = addGoals end as2 >>| addGoal (Cons c1 begin) (Var c2) with (begin,end) = splitAt (l1-l2) as1
+where (l1,l2) = (length as1, length as2)
+uni (Func [i1] r1 _) (Func [i2] r2 _) = addGoal i1 i2 >>| addGoal r1 r2
+uni (Uniq a) (Uniq b) = addGoal a b
+uni (Arrow Nothing) (Arrow Nothing) = succeed
+uni (Arrow (Just t)) (Arrow (Just u)) = addGoal t u
+uni _ _ = fail
+
+addGoal :: !Type !Type -> UnifyM ()
+addGoal t u = modify (\s -> {s & goals=[(t,u):s.goals]})
+
+addGoals :: ![Type] ![Type] -> UnifyM ()
+addGoals [t:ts] [u:us] = addGoal t u >>| addGoals ts us
+addGoals []     []     = succeed
+addGoals _      _      = fail
