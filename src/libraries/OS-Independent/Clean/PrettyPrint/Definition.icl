@@ -20,7 +20,7 @@ where
 		args = if (isEmpty cd.class_args) "" (join_start st " " cd.class_args)
     print st (PD_Instance pim)
 		= print st pim
-    print st (PD_Instances pis=:[{pim_pi={pi_ident}}:_])
+    print st (PD_Instances pis)
 		= join st ("\n" :+: st) pis
 	print st (PD_Generic {gen_ident,gen_type,gen_vars})
 		= print st ("generic " :+: gen_ident :+: join_start st " " gen_vars :+: " :: " :+: gen_type)
@@ -76,13 +76,44 @@ instance print SymbolType
 where
 	print st t
 		= print st (if (isEmpty t.st_args) PrintNil (args` :+: " -> ")) +++
-			print stnp (t.st_result :+: st_context` :+: st_env`)
+			print stnp (markVars t.st_result :+: st_context` :+: st_env`)
 	where
 		stp = {st & cpp_parens=True}
 		stnp = {st & cpp_parens=False}
-		st_context` = if (isEmpty t.st_context) PrintNil (" | " :+: join stp " & " t.st_context)
+		st_context` = if (isEmpty t.st_context) PrintNil (" | " :+: join stp " & " (markVarsInTC t.st_context))
 		st_env` = if (isEmpty t.st_attr_env) PrintNil (", [" :+: join stnp ", " t.st_attr_env :+: "]")
-		args` = join stp " " [if s "!" "" :+: a \\ a <- t.st_args & s <- strictnessListToBools t.st_args_strictness]
+		args` = join stp " " [if s "!" "" :+: markVars a \\ a <- t.st_args & s <- strictnessListToBools t.st_args_strictness]
+
+		markVars :: AType -> AType
+		markVars at=:{at_attribute=TA_Var av}
+		| isMember av.av_ident.id_name allInequalityVars
+			= { at_attribute=TA_Var {av & av_ident.id_name = "_" +++ av.av_ident.id_name}
+			  , at_type = markVars` at.at_type
+			  }
+		markVars at = {at & at_type=markVars` at.at_type}
+
+		markVars` :: Type -> Type
+		markVars` (TA tsi ats) = TA tsi (map markVars ats)
+		markVars` (TAS tsi ats sl) = TAS tsi (map markVars ats) sl
+		markVars` (t1 --> t2) = markVars t1 --> markVars t2
+		markVars` (TArrow1 at) = TArrow1 (markVars at)
+		markVars` (c :@: ats) = c :@: map markVars ats
+		markVars` (TFA atvs t) = TFA (map markVars`` atvs) (markVars` t)
+		markVars` (TFAC atvs t tcs) = TFAC (map markVars`` atvs) (markVars` t) (markVarsInTC tcs)
+		markVars` (TQualifiedIdent id s ats) = TQualifiedIdent id s (map markVars ats)
+		markVars` (TLiftedSubst t) = TLiftedSubst (markVars` t)
+		markVars` t = t
+
+		markVars`` :: ATypeVar -> ATypeVar
+		markVars`` atv=:{atv_attribute=TA_Var av}
+		| isMember av.av_ident.id_name allInequalityVars
+			= {atv & atv_attribute=TA_Var {av & av_ident.id_name = "_" +++ av.av_ident.id_name}}
+		markVars`` atv = atv
+
+		markVarsInTC :: [TypeContext] -> [TypeContext]
+		markVarsInTC tcs = [{tc & tc_types=map markVars` tc.tc_types} \\ tc <- tcs]
+
+		allInequalityVars = flatten [[ineq.ai_demanded.av_ident.id_name, ineq.ai_offered.av_ident.id_name] \\ ineq <- t.st_attr_env]
 
 strictnessListToBools :: StrictnessList -> [Bool]
 strictnessListToBools NotStrict        = repeat False
@@ -130,6 +161,9 @@ instance print AType
 where
 	print st {at_attribute=TA_Var {av_ident},at_type=TV {tv_ident}}
 	| av_ident.id_name == tv_ident.id_name = "." +++ tv_ident.id_name
+	print st {at_attribute=TA_Var av=:{av_ident},at_type=t}
+	| aname.[0] == '_' = print {st & cpp_parens=True} (TA_Var {av & av_ident.id_name=aname % (1,size aname-1)} :+: t)
+	where aname = av_ident.id_name
 	print st {at_attribute=TA_None,at_type} = print st at_type
 	print st at = print {st & cpp_parens=True} (at.at_attribute :+: at.at_type)
 
@@ -222,7 +256,7 @@ where
 instance print ParsedInstanceAndMembers
 where
 	print st {pim_pi={pi_pos,pi_ident,pi_types,pi_context},pim_members}
-		= print st (pos :+: ": " :+: "instance " :+: pi_ident :+: " " :+: join st " " pi_types :+: pi_context` :+: members)
+		= print st ("instance " :+: pi_ident :+: " " :+: join st " " pi_types :+: pi_context` :+: members)
 	where
 		pi_context` = if (isEmpty pi_context) PrintNil (" | " :+: join st " & " pi_context)
 		members = if (isEmpty pim_members) PrintNil (" where" :+: join_start st` ("\n" :+: st`) pim_members)
