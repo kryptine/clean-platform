@@ -127,6 +127,7 @@ where
 		count vs (Type _ ts) = sum $ map (count vs) ts
 		count vs (Func is r _) = sum $ map (count vs) [r:is]
 		count vs (Uniq t) = count vs t
+		count vs (Arrow mt) = sum $ map (count vs) $ maybeToList mt
 
 	updateCounters :: [(Int, MultiEq)] -> [(Int, MultiEq)]
 	updateCounters eqs
@@ -238,23 +239,18 @@ commonPartAndFrontier ts
 | all isUniq ts
 	= (\(cpaf,front) -> (Uniq cpaf,front))
 		<$> commonPartAndFrontier (map (\(Uniq t) -> t) ts)
+| all isArrow ts
+	# ts` = map fromArrow ts
+	| all isNothing ts` = Just (Arrow Nothing, [])
+	| all isJust ts`
+		# cpaf = commonPartAndFrontier $ map fromJust ts`
+		| isNothing cpaf = Nothing
+		# (cp,front) = fromJust cpaf
+		= Just (Arrow (Just cp), front)
+	| otherwise = Nothing
+| all ((==) (Arrow Nothing)) ts
+	= Just (Arrow Nothing, [])
 | otherwise = Nothing
 where
 	makemulteq :: [Type] -> Frontier
 	makemulteq ts = let (vs,ts`) = partition isVar ts in [ME (map fromVar vs) ts`]
-
-//-----------------------//
-// Unification utilities //
-//-----------------------//
-
-// Make all functions arity 1 by transforming a b -> c to a -> b -> c
-reduceArities :: !Type -> Type
-reduceArities (Func ts r tc)
-	| length ts > 1 = Func [reduceArities $ hd ts] (reduceArities $ Func (tl ts) r tc) tc
-	| otherwise = Func (map reduceArities ts) (reduceArities r) tc
-reduceArities (Type s ts) = Type s $ map reduceArities ts
-reduceArities (Cons v ts) = Cons v $ map reduceArities ts
-reduceArities (Uniq t) = Uniq $ reduceArities t
-reduceArities (Var v) = Var v
-reduceArities (Forall tvs t tc) = Forall tvs (reduceArities t) tc
-reduceArities (Arrow mt) = Arrow (reduceArities <$> mt)

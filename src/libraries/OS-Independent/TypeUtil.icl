@@ -1,9 +1,13 @@
 implementation module TypeUtil
 
-import TypeDef
-
-import StdArray, StdBool, StdOrdList, StdString, StdTuple
+import StdArray
+import StdBool
 from StdFunc import flip, o
+import StdOrdList
+import StdString
+import StdTuple
+
+from GenEq import generic gEq, ===
 
 import Control.Applicative
 import Control.Monad
@@ -13,7 +17,8 @@ import Data.List
 import Data.Maybe
 import Data.Tuple
 from Text import class Text (concat), instance Text String
-from GenEq import generic gEq, ===
+
+import TypeDef
 
 (--) infixr 1 :: a b -> [String] | print a & print b
 (--) a b = print False a ++ print False b
@@ -239,8 +244,22 @@ assign va (Arrow Nothing) = Just $ Arrow Nothing
 //ifM :: Bool a -> m a | Alternative m
 ifM b x :== if b (pure x) empty
 
+reduceArities :: !Type -> Type
+reduceArities (Func [] r []) = r
+reduceArities (Func ts r tc)
+| length ts > 1 = Func [reduceArities $ hd ts] (reduceArities $ Func (tl ts) r tc) tc
+| otherwise = Func (map reduceArities ts) (reduceArities r) tc
+reduceArities (Type s ts) = Type s $ map reduceArities ts
+reduceArities (Cons v ts) = Cons v $ map reduceArities ts
+reduceArities (Uniq t) = Uniq $ reduceArities t
+reduceArities (Var v) = Var v
+reduceArities (Forall [] t []) = reduceArities t
+reduceArities (Forall tvs t tc) = Forall tvs (reduceArities t) tc
+reduceArities (Arrow mt) = Arrow (reduceArities <$> mt)
+
 normalise_type :: ![TypeDef] !Type -> (!Type, ![TypeDef], ![TypeVar])
 normalise_type tds t
+# t        = reduceArities t
 # (syns,t) = resolve_synonyms tds t
 # t        = propagate_uniqueness t
 # t        = optConses t

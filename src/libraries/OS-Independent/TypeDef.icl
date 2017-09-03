@@ -22,7 +22,7 @@ subtypes t=:(Cons c ts) = removeDup [t : flatten (map subtypes ts)]
 subtypes t=:(Uniq t`) = removeDup [t : subtypes t`]
 subtypes t=:(Forall vs t` tc) = removeDup [t : flatten (map subtypes [t`:vs])]
 subtypes t=:(Var _) = [t]
-subtypes t=:(Arrow mt) = maybeToList mt
+subtypes t=:(Arrow mt) = [t:flatten (map subtypes (maybeToList mt))]
 
 allVars :: (Type -> [TypeVar])
 allVars = removeDup o map name o filter (\t -> isCons t || isVar t) o subtypes
@@ -77,6 +77,12 @@ isForall (Forall _ _ _) = True; isForall _ = False
 
 fromForall :: Type -> Type
 fromForall (Forall _ t _) = t
+
+isArrow :: Type -> Bool
+isArrow (Arrow _) = True; isArrow _ = False
+
+fromArrow :: Type -> Maybe Type
+fromArrow (Arrow t) = t
 
 arity :: Type -> Int
 arity (Type _ ts) = length ts

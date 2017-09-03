@@ -64,6 +64,11 @@ assign :: !TVAssignment !Type -> Maybe Type
 assignAll :== flip (foldM (flip assign))
 
 /**
+ * Make all functions arity 1 by transforming a b -> c to a -> b -> c
+ */
+reduceArities :: !Type -> Type
+
+/**
  * Normalise a type, that is, rewrite it to an equivalent type that can be
  * compared to other types for equality using ==. The transformations applied:
  *

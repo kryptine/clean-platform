@@ -205,6 +205,17 @@ isForall :: Type -> Bool
 fromForall :: Type -> Type
 
 /**
+ * Check if a type is an arrow
+ */
+isArrow :: Type -> Bool
+
+/**
+ * Remove the Arrow constructor from a type.
+ * Generates a run-time error if the type is of another constructor.
+ */
+fromArrow :: Type -> Maybe Type
+
+/**
  * The arity of Type, Func, Var and Cons types.
  * Generates a run-time error for Uniq and Forall.
  */
