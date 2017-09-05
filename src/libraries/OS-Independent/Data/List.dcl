@@ -4,13 +4,54 @@ from Data.Functor import class Functor
 from Data.Maybe import :: Maybe
 import StdList, GenEq
 
+/**
+ * The first element of the list.
+ */
 head            :: ![.a] -> .a
+
+/**
+ * Everything except the first element of the list.
+ */
 tail            :: !u:[.a] -> u:[.a]
+
+/**
+ * Check if a list is empty.
+ */
 isnull          :: ![.a] -> Bool
+
+/**
+ * Keep a number of elements at the end of the list.
+ *
+ * @param The number of elements to retain
+ * @param The list
+ * @result A list with the (|list| - n) last elements of the original list
+ */
 keep            :: Int [a] -> [a]
+
+/**
+ * Unzip a list of three-tuples to a three-tuple of lists.
+ */
 unzip3          :: ![(.a,.b,.c)] -> ([.a],[.b],[.c])
+
+/**
+ * Unzip a list of four-tuples to a four-tuple of lists.
+ */
 unzip4          :: ![(.a,.b,.c,.d)] -> ([.a],[.b],[.c],[.d])
+
+/**
+ * Unzip a list of five-tuples to a five-tuple of lists.
+ */
 unzip5          :: ![(.a,.b,.c,.d,.e)] -> ([.a],[.b],[.c],[.d],[.e])
+
+/**
+ * Replace elements in a list when a condition matches.
+ *
+ * @param The condition p.
+ *   The first parameter is the replacement; the second, the old element.
+ * @param The replacement r
+ * @param The original list
+ * @result The original list, with all elements x for which p r x holds replaced by r
+ */
 replaceInList   :: !(a a -> Bool) !a ![a] -> [a]
 splitWith       :: !(a -> Bool) ![a] -> (![a],![a])
 sortByIndex     :: ![(!Int,!a)] -> [a]

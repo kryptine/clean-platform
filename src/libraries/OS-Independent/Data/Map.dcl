@@ -1,9 +1,9 @@
 definition module Data.Map
 /**
-* This module provides a dynamic Map type for creating mappings from keys to values
-* Internally it uses an AVL tree to organize the key-value pairs stored in the mapping
-* such that lookup, insert and delete operations can be performed in O(log n).
-*/
+ * This module provides a dynamic Map type for creating mappings from keys to values
+ * Internally it uses an AVL tree to organize the key-value pairs stored in the mapping
+ * such that lookup, insert and delete operations can be performed in O(log n).
+ */
 
 from Data.Maybe		import :: Maybe (..)
 from StdOverloaded	import class ==, class <
@@ -19,89 +19,65 @@ from StdOverloaded import class < (..)
 import StdClass
 
 /**
-* The abstract Map type provides the mapping.
-* The parameter k is the key type on which the data structure
-* is indexed. The parameter v is the type of the values
-* stored in the mapping. For example "Map Int String" is a mapping
-* "from" integers "to" strings.
-*/
-//:: Map k v	= MLeaf
-            //| MNode !(Map k v) !k !Int v !(Map k v)
-
-:: Map k a
-  = Bin !Int !k !a !(Map k a) !(Map k a)
+ * The abstract Map type provides the mapping.
+ * For example "Map Int String" is a mapping "from" integers "to" strings.
+ *
+ * @var The key type on which the data structure is indexed.
+ * @var The type of the values stored in the mapping.
+ */
+:: Map k v
+  = Bin !Int !k !v !(Map k v) !(Map k v)
   | Tip
 
 instance Monoid (Map k v) | < k
 
-instance == (Map k a) | == k & == a
+instance == (Map k v) | == k & == v
 
 //Basic functions
 
-//null :: !(Map k a) -> Bool
-//null :: !(Map k a) -> Bool
+/**
+ * Check if a Map is empty.
+ * @type (Map k a) -> Bool
+ */
 null mp :== case mp of
               Tip -> True
               _   -> False
 
 /**
-* Create an empty Map
-*
-* @return An empty map
-*/
+ * Create an empty Map.
+ * @return An empty map
+ */
 newMap      :: w:(Map k u:v), [ w <= u]
 
-singleton   :: !k !a -> Map k a
+/**
+ * Create a Map with one element.
+ */
+singleton   :: !k !v -> Map k v
 
+/**
+ * The number of elements in a Map.
+ */
 mapSize     :: !(Map k v) -> Int
 
 /**
-* Adds or replaces the value for a given key.
-*
-* @param The key value to add/update
-* @param The value to add/update at the key position
-* @param The original mapping
-* @return The modified mapping with the added value
-*/
+ * Adds or replaces the value for a given key.
+ *
+ * @param The key value to add/update
+ * @param The value to add/update at the key position
+ * @param The original mapping
+ * @return The modified mapping with the added value
+ */
 put :: !k !a !(Map k a) -> Map k a | < k
-/**
-* Searches for a value at a given key position. Works only for non-unique
-* mappings.
-*
-* @param The key to look for
-* @param The orginal mapping
-* @return When found, the value at the key position, if not: Nothing
-*/
 
-// | /O(log n)/. Lookup the value at a key in the map.
-//
-// The function will return the corresponding value as @('Just` value)@,
-// or 'Nothing' if the key isn't in the map.
-//
-// An example of using @get@:
-//
-// > import Prelude hiding (get)
-// > import Data.Map
-// >
-// > employeeDept = fromList([("John","Sales"), ("Bob","IT")])
-// > deptCountry = fromList([("IT","USA"), ("Sales","France")])
-// > countryCurrency = fromList([("USA", "Dollar"), ("France", "Euro")])
-// >
-// > employeeCurrency :: String -> Maybe String
-// > employeeCurrency name = do
-// >     dept <- get name employeeDept
-// >     country <- get dept deptCountry
-// >     get country countryCurrency
-// >
-// > main = do
-// >     putStrLn $ "John's currency: " ++ (toString (employeeCurrency "John"))
-// >     putStrLn $ "Pete's currency: " ++ (toString (employeeCurrency "Pete"))
-//
-// The output of this program:
-//
-// >   John's currency: Just "Euro"
-// >   Pete's currency: Nothing
-//get :: !k !(Map k a) -> Maybe a | < k
+/**
+ * Searches for a value at a given key position. Works only for non-unique
+ * mappings.
+ *
+ * @type k (Map k v) -> Maybe v | < k
+ * @param The key to look for
+ * @param The orginal mapping
+ * @return When found, the value at the key position, if not: Nothing
+ */
 get k m :== get` k m
   where
   get` _ Tip              = Nothing
@@ -111,7 +87,11 @@ get k m :== get` k m
                                  (get` k r)
                                  (Just x))
 
+/**
+ * Searches for a value at a given key position. Works also for unique mappings.
+ */
 getU :: !k !w:(Map k v) -> x:(!Maybe v, !y:(Map k v)) | == k & < k, [ x <= y, w <= y]
+
 /**
 * Removes the value at a given key position. The mapping itself can be spine unique.
 *
@@ -121,6 +101,9 @@ getU :: !k !w:(Map k v) -> x:(!Maybe v, !y:(Map k v)) | == k & < k, [ x <= y, w 
 */
 del :: !k !(Map k a) -> Map k a | < k
 
+/**
+ * Removes the value at a given key position. The mapping can be unique.
+ */
 delU :: !a !.(Map a b) -> u:(!v:(Maybe b), !Map a b) | == a & < a, [u <= v] // !k !w:(Map k u:v) -> x:(Maybe u:v, !y:(Map k u:v)) | == k & < k, [ w y <= u, x <= y, w <= y]
 
 foldrWithKey :: !(k v u:a -> u:a) !u:a !(Map k v) -> u:a
@@ -128,62 +111,82 @@ foldrWithKey :: !(k v u:a -> u:a) !u:a !(Map k v) -> u:a
 foldlWithKey :: !(u:a k v -> u:a) !u:a !(Map k v) -> u:a
 //foldlNoKey   :: !(a -> b -> a) !a !(Map c b) -> a
 
-filterWithKey :: !(k a -> Bool) !(Map k a) -> Map k a
+/**
+ * Filter elements in a Map.
+ *
+ * @param The predicate function.
+ * @param The Map.
+ * @return A new Map that contains exactly those pairs (k,v) from the original Map for which p k v holds.
+ */
+filterWithKey :: !(k v -> Bool) !(Map k v) -> Map k v
 
-//keys  :: !(Map k a) -> [k]
+/**
+ * A list of the keys in a Map.
+ * @type (Map k v) -> [k]
+ */
 keys m :== foldrWithKey (\k _ ks -> [k : ks]) [] m
-//elems :: !(Map k a) -> [a]
+
+/**
+ * A list of the elements in a Map.
+ * @type (Map k v) -> [v]
+ */
 elems m :== foldrNoKey (\x xs -> [x:xs]) [] m
 
 //Conversion functions
 
 /**
-* Converts a mapping to a list of key value pairs.
-* Because of the internal ordering of the mapping the resulting
-* list is sorted ascending on the key part of the tuple.
-*
-* @param The original mapping
-* @return A list of key/value tuples in the mapping
-*/
+ * Converts a mapping to a list of key value pairs.
+ * Because of the internal ordering of the mapping the resulting
+ * list is sorted ascending on the key part of the tuple.
+ *
+ * @type (Map k v) -> [(k,v)]
+ * @param The original mapping
+ * @return A list of key/value tuples in the mapping
+ */
 toList m :== toAscList m
+
+/**
+ * Same as toList.
+ * @type (Map k v) -> [(k,v)]
+ */
 toAscList m :== foldrWithKey (\k x xs -> [(k,x):xs]) [] m
 
 /**
-* Converts a list of key/value tuples to a mapping.
-*
-* @param A list of key/value tuples
-* @return A mapping containing all the tuples in the list
-*/
+ * Converts a list of key/value tuples to a mapping.
+ *
+ * @param A list of key/value tuples
+ * @return A mapping containing all the tuples in the list
+ */
 fromList :: !u:[v:(!a, !b)] -> Map a b | == a & < a, [u <= v]
-
-/**
-* Adds or replaces a list of key/value pairs.
-*
-* @param A list of key/value tuples
-* @param The original mapping
-* @return The modified mapping with the added values
-*/
-//putList :: !u:[v:(!a, !b)] !u:(Map a b) -> Map a b | == a & < a, [u <= v]
-
-/**
-* Removes the values at given key positions. The mapping itself can be spine unique.
-*
-* @param The list of keys to remove
-* @param The original mapping
-* @return The modified mapping with the values/keys removed
-*/
-//delList :: ![a] !.(Map a b) -> Map a b | == a & < a
 
 derive JSONEncode Map
 derive JSONDecode Map
 derive gEq Map
 
+/**
+ * Check if a key exists in a Map.
+ */
 member :: !k !(Map k a) -> Bool | < k
 
+/**
+ * Checks if a key is not a member of a Map.
+ * @type k (Map k v) -> Bool | < k
+ */
 notMember k m :== not (member k m)
 
+/**
+ * Find an element in a Map.
+ * Aborts when the element is not found.
+ */
 find :: !k !(Map k a) -> a | < k
 
+/**
+ * Find an element in a Map.
+ * When the key does not exist, return a default.
+ *
+ * @param The default.
+ * @param The key to look up.
+ */
 findWithDefault :: !a !k !(Map k a) -> a | < k
 
 alter :: !((Maybe a) -> Maybe a) !k !(Map k a) -> Map k a | < k
@@ -219,8 +222,24 @@ foldrNoKey f x m :== foldrWithKey (\_ v acc -> f v acc) x m
 
 foldlNoKey f x m :== foldlWithKey (\acc _ v -> f acc v) x m
 
+/**
+ * Removes the values at given key positions. The mapping itself can be spine unique.
+ *
+ * @type [a] (Map a b) -> Map a b | <, == a
+ * @param The list of keys to remove
+ * @param The original mapping
+ * @return The modified mapping with the values/keys removed
+ */
 delList xs m :== 'SL'.foldr (\k m -> del k m) m xs
 
+/**
+ * Adds or replaces a list of key/value pairs.
+ *
+ * @type [(a, b)] (Map a b) -> Map a b | ==, < a
+ * @param A list of key/value tuples
+ * @param The original mapping
+ * @return The modified mapping with the added values
+ */
 putList xs m :== union (fromList xs) m
 
 instance Functor (Map k)
