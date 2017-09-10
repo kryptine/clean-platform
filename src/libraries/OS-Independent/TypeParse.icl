@@ -86,14 +86,14 @@ where
 	isFunny c = isMember c ['~@#$%^?!+-*<>\\/|&=:']
 
 type :: Parser Token Type
-type = liftM3 Func (some argtype) (item TArrow >>| type) context
+type = liftM3 Func (some argtype) (item TArrow >>| type) optContext
 	<|> liftM2 Cons cons (some argtype)
 	<|> (item (TIdent "String") >>| pure (Type "_#Array" [Type "Char" []]))
 	<|> liftM2 Type ident (many argtype)
 	<|> liftM3 Forall
 		(item TUniversalQuantifier >>| some argtype |<< item TColon)
 		type
-		context
+		optContext
 	<|> argtype
 where
 	argtype :: Parser Token Type
@@ -128,6 +128,9 @@ where
 	seplist sep p = liftM2 (\es e-> es ++ [e]) (some (p |<< item sep)) p
 		<|> liftM pure p
 		<|> pure empty
+
+	optContext :: Parser Token TypeContext
+	optContext = context <|> pure []
 
 	context :: Parser Token TypeContext
 	context = item TPipe >>| flatten <$> seplist TAmpersand context`
