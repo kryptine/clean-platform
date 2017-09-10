@@ -24,6 +24,7 @@ instance MonadPlus Maybe
 (>>=) infixl 1    :: (m a) (a -> m b) -> m b | Monad m
 (`b`) infixl 1    :: (m a) (a -> m b) -> m b | Monad m
 (>>|) infixl 1    :: (m a) (m b) -> m b | Monad m
+(|<<) infixl 1    :: (m a) (m b) -> m a | Monad m
 (=<<) infixr 1    :: (a -> m b) (m a) -> m b | Monad m
 sequence          :: .[a b] -> a [b] | Monad a
 sequence_         :: .[a b] -> a () | Monad a
@@ -44,4 +45,3 @@ liftM3            :: (a -> .(b -> .(c -> d))) (e a) (e b) (e c) -> e d | Monad e
 liftM4            :: (a -> .(b -> .(c -> .(d -> e)))) (f a) (f b) (f c) (f d) -> f e | Monad f
 liftM5            :: (a -> .(b -> .(c -> .(d -> .(e -> f))))) (g a) (g b) (g c) (g d) (g e) -> g f | Monad g
 ap                :: u:((a (b -> c)) -> v:((a b) -> a c)) | Monad a, [v <= u]
-
