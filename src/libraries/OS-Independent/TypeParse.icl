@@ -20,6 +20,9 @@ import TypeDef
 import TypeUtil
 import Yard
 
+(|<<) infixl 1 :: (m a) (m b) -> m a | Monad m
+(|<<) ma mb = ma >>= \a -> mb >>= \_ -> pure a
+
 derive gEq Token
 instance == Token where == a b = a === b
 
@@ -83,35 +86,32 @@ where
 	isFunny c = isMember c ['~@#$%^?!+-*<>\\/|&=:']
 
 type :: Parser Token Type
-type = liftM3 Func (some argtype) (item TArrow *> type) context
+type = liftM3 Func (some argtype) (item TArrow >>| type) context
 	<|> liftM2 Cons cons (some argtype)
 	<|> (item (TIdent "String") >>| pure (Type "_#Array" [Type "Char" []]))
 	<|> liftM2 Type ident (many argtype)
 	<|> liftM3 Forall
-		(item TUniversalQuantifier *> some argtype <* item TColon)
+		(item TUniversalQuantifier >>| some argtype |<< item TColon)
 		type
 		context
 	<|> argtype
 where
 	argtype :: Parser Token Type
-	argtype = (item TParenOpen *> item TParenClose >>| pure (Type "_Unit" []))
-		<|> item TParenOpen *> type <* item TParenClose
+	argtype = (item TParenOpen >>| item TParenClose >>| pure (Type "_Unit" []))
+		<|> parenthised type
 		<|> (item (TIdent "String") >>| pure (Type "_#Array" [Type "Char" []]))
 		<|> liftM (\t -> Type t []) ident
 		<|> liftM Var var
 		<|> liftM Uniq uniq
-		<|> liftM (\t -> Type "_#Array" [t])
-			(list [TBraceOpen, TUnboxed] *> type <* item TBraceClose)
-		<|> liftM (\t -> Type "_Array" [t])
-			(item TBraceOpen *> type <* item TBraceClose)
-		<|> liftM (\t -> Type "_List" [t])
-			(item TBrackOpen *> type <* item TBrackClose)
+		<|> liftM (\t -> Type "_#Array" [t]) (braced (item TUnboxed >>| type))
+		<|> liftM (\t -> Type "_Array" [t])  (braced type)
+		<|> liftM (\t -> Type "_List" [t])   (bracked type)
 		<|> liftM (\ts -> Type ("_Tuple" +++ toString (length ts)) ts)
-			(item TParenOpen *> seplist TComma type <* item TParenClose)
-		<|> item TStrict *> argtype       // ! ignored for now
-		<|> item TUnboxed *> argtype      // # ignored for now (except for the _#Array case above)
-		<|> item TAnonymous *> argtype    // . ignored for now
-		<|> unqvar *> item TColon *> argtype // u: & friends ignored for now
+			(parenthised (seplist TComma type))
+		<|> (item TStrict >>| argtype)       // ! ignored for now
+		<|> (item TUnboxed >>| argtype)      // # ignored for now (except for the _#Array case above)
+		<|> (item TAnonymous >>| argtype)    // . ignored for now
+		<|> (unqvar >>| item TColon >>| argtype) // u: & friends ignored for now
 
 	ident :: Parser Token String
 	ident = (\(TIdent id)->id) <$> satisfy isTIdent
@@ -122,10 +122,10 @@ where
 	unqvar = var
 
 	uniq :: Parser Token Type
-	uniq = item TStar *> argtype
+	uniq = item TStar >>| argtype
 
 	seplist :: a (Parser a b) -> Parser a [b] | Eq a
-	seplist sep p = liftM2 (\es e-> es ++ [e]) (some (p <* item sep)) p
+	seplist sep p = liftM2 (\es e-> es ++ [e]) (some (p |<< item sep)) p
 		<|> liftM pure p
 		<|> pure empty
 
@@ -159,8 +159,10 @@ where
 			TParenClose -> True
 			_           -> False
 
-		braced p = item TBraceOpen *> p <* item TBraceClose
-		piped p = item TPipe *> p <* item TPipe
+	parenthised p = item TParenOpen >>| p |<< item TParenClose
+	braced p = item TBraceOpen >>| p |<< item TBraceClose
+	bracked p = item TBrackOpen >>| p |<< item TBrackClose
+	piped p = item TPipe >>| p |<< item TPipe
 
 parseType :: [Char] -> Maybe Type
 parseType cs
