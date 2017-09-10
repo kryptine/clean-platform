@@ -1,9 +1,6 @@
 implementation module TypeParse
 
-import TypeDef
-import TypeUtil
-import Yard
-
+from StdFunc import o
 import StdList
 import StdString
 import StdTuple
@@ -19,55 +16,62 @@ import Control.Monad
 
 import GenEq
 
+import TypeDef
+import TypeUtil
+import Yard
+
 derive gEq Token
 instance == Token where == a b = a === b
 
-:: Token = TIdent String                // UpperCaseId or FunnyId
-		 | TVar String                  // LowerCaseId
+:: Token
+	= TIdent String            // UpperCaseId or FunnyId
+	| TVar String              // LowerCaseId
 
-		 | TArrow                       // ->
-		 | TComma                       // ,
-		 | TUnique                      // *
-		 | TAnonymous                   // .
-		 | TUnboxed                     // #
-		 | TStrict                      // !
-		 | TColon                       // :
-		 | TUniversalQuantifier         // A.
+	| TArrow                   // ->
+	| TComma                   // ,
+	| TUnique                  // *
+	| TAnonymous               // .
+	| TUnboxed                 // #
+	| TStrict                  // !
+	| TColon                   // :
+	| TUniversalQuantifier     // A.
+	| TPipe                    // |
 
-		 | TParenOpen | TParenClose     // ( )
-		 | TBrackOpen | TBrackClose     // [ ]
-		 | TBraceOpen | TBraceClose     // { }
+	| TParenOpen | TParenClose // ( )
+	| TBrackOpen | TBrackClose // [ ]
+	| TBraceOpen | TBraceClose // { }
 
 isTIdent (TIdent _) = True; isTIdent _ = False
 isTVar   (TVar   _) = True; isTVar   _ = False
 
 tokenize :: ([Char] -> Maybe [Token])
-tokenize = tkz []
+tokenize = fmap reverse o tkz []
 where
 	tkz :: [Token] [Char] -> Maybe [Token]
 	tkz tks [] = Just tks
-	tkz tks ['-':'>':cs] = tkz (tks ++ [TArrow])               cs
-	tkz tks [',':cs]     = tkz (tks ++ [TComma])               cs
-	tkz tks ['*':cs]     = tkz (tks ++ [TUnique])              cs
-	tkz tks ['.':cs]     = tkz (tks ++ [TAnonymous])           cs
-	tkz tks ['#':cs]     = tkz (tks ++ [TUnboxed])             cs
-	tkz tks ['!':cs]     = tkz (tks ++ [TStrict])              cs
-	tkz tks ['(':cs]     = tkz (tks ++ [TParenOpen])           cs
-	tkz tks [')':cs]     = tkz (tks ++ [TParenClose])          cs
-	tkz tks ['[':cs]     = tkz (tks ++ [TBrackOpen])           cs
-	tkz tks [']':cs]     = tkz (tks ++ [TBrackClose])          cs
-	tkz tks ['{':cs]     = tkz (tks ++ [TBraceOpen])           cs
-	tkz tks ['}':cs]     = tkz (tks ++ [TBraceClose])          cs
-	tkz tks ['A':'.':cs] = tkz (tks ++ [TUniversalQuantifier]) cs
-	tkz tks [':':cs]     = tkz (tks ++ [TColon])               cs
+	tkz tks ['-':'>':cs] = tkz [TArrow:tks]               cs
+	tkz tks [',':cs]     = tkz [TComma:tks]               cs
+	tkz tks ['*':cs]     = tkz [TUnique:tks]              cs
+	tkz tks ['.':cs]     = tkz [TAnonymous:tks]           cs
+	tkz tks ['#':cs]     = tkz [TUnboxed:tks]             cs
+	tkz tks ['!':cs]     = tkz [TStrict:tks]              cs
+	tkz tks ['(':cs]     = tkz [TParenOpen:tks]           cs
+	tkz tks [')':cs]     = tkz [TParenClose:tks]          cs
+	tkz tks ['[':cs]     = tkz [TBrackOpen:tks]           cs
+	tkz tks [']':cs]     = tkz [TBrackClose:tks]          cs
+	tkz tks ['{':cs]     = tkz [TBraceOpen:tks]           cs
+	tkz tks ['}':cs]     = tkz [TBraceClose:tks]          cs
+	tkz tks ['A':'.':cs] = tkz [TUniversalQuantifier:tks] cs
+	tkz tks [':':cs]     = tkz [TColon:tks]               cs
+	tkz tks ['|':cs]     = tkz [TPipe:tks]                cs
 	tkz tks [c:cs]
 	| isSpace c = tkz tks cs
-	| isUpper c = let (id, cs`) = span isIdentChar cs in
-				  tkz (tks ++ [TIdent $ toString [c:id]]) cs`
-	| isFunny c = let (id, cs`) = span isFunny cs in
-				  tkz (tks ++ [TIdent $ toString [c:id]]) cs`
-	| isLower c = let (var, cs`) = span isIdentChar cs in
-				  tkz (tks ++ [TVar $ toString [c:var]]) cs`
+	| isUpper c = tkz [TIdent $ toString [c:id]:tks] cs`
+		with (id, cs`) = span isIdentChar cs
+	| isFunny c = tkz [TIdent $ toString [c:id]:tks] cs`
+		with (id, cs`) = span isFunny cs
+	| isLower c = tkz [TVar $ toString [c:var]:tks] cs`
+		with (var, cs`) = span isIdentChar cs
 	tkz _ _ = Nothing
 
 	isIdentChar :: Char -> Bool
