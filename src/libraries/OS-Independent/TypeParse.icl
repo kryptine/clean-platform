@@ -29,13 +29,14 @@ instance == Token where == a b = a === b
 
 	| TArrow                   // ->
 	| TComma                   // ,
-	| TUnique                  // *
+	| TStar                    // *
 	| TAnonymous               // .
 	| TUnboxed                 // #
 	| TStrict                  // !
 	| TColon                   // :
 	| TUniversalQuantifier     // A.
 	| TPipe                    // |
+	| TAmpersand               // &
 
 	| TParenOpen | TParenClose // ( )
 	| TBrackOpen | TBrackClose // [ ]
@@ -51,7 +52,7 @@ where
 	tkz tks [] = Just tks
 	tkz tks ['-':'>':cs] = tkz [TArrow:tks]               cs
 	tkz tks [',':cs]     = tkz [TComma:tks]               cs
-	tkz tks ['*':cs]     = tkz [TUnique:tks]              cs
+	tkz tks ['*':cs]     = tkz [TStar:tks]                cs
 	tkz tks ['.':cs]     = tkz [TAnonymous:tks]           cs
 	tkz tks ['#':cs]     = tkz [TUnboxed:tks]             cs
 	tkz tks ['!':cs]     = tkz [TStrict:tks]              cs
@@ -64,6 +65,7 @@ where
 	tkz tks ['A':'.':cs] = tkz [TUniversalQuantifier:tks] cs
 	tkz tks [':':cs]     = tkz [TColon:tks]               cs
 	tkz tks ['|':cs]     = tkz [TPipe:tks]                cs
+	tkz tks ['&':cs]     = tkz [TAmpersand:tks]           cs
 	tkz tks [c:cs]
 	| isSpace c = tkz tks cs
 	| isUpper c = tkz [TIdent $ toString [c:id]:tks] cs`
@@ -81,14 +83,14 @@ where
 	isFunny c = isMember c ['~@#$%^?!+-*<>\\/|&=:']
 
 type :: Parser Token Type
-type = liftM3 Func (some argtype) (item TArrow *> type) (pure []) // no TC for now
+type = liftM3 Func (some argtype) (item TArrow *> type) context
 	<|> liftM2 Cons cons (some argtype)
 	<|> (item (TIdent "String") >>| pure (Type "_#Array" [Type "Char" []]))
 	<|> liftM2 Type ident (many argtype)
 	<|> liftM3 Forall
 		(item TUniversalQuantifier *> some argtype <* item TColon)
 		type
-		(pure []) // No TC for now
+		context
 	<|> argtype
 where
 	argtype :: Parser Token Type
@@ -120,12 +122,45 @@ where
 	unqvar = var
 
 	uniq :: Parser Token Type
-	uniq = item TUnique *> argtype
+	uniq = item TStar *> argtype
 
 	seplist :: a (Parser a b) -> Parser a [b] | Eq a
 	seplist sep p = liftM2 (\es e-> es ++ [e]) (some (p <* item sep)) p
 		<|> liftM pure p
 		<|> pure empty
+
+	context :: Parser Token TypeContext
+	context = item TPipe >>| flatten <$> seplist TAmpersand context`
+	where
+		context` :: Parser Token TypeContext
+		context` = seplist TComma classOrGeneric >>= \restrictions ->
+			some argtype >>= \ts ->
+			mapM (flip ($) ts) restrictions
+
+		classOrGeneric :: Parser Token ([Type] -> Parser Token TypeRestriction)
+		classOrGeneric = className >>= \name ->
+			optional (braced $ piped skipKind) >>= \kind ->
+			case kind of
+				Nothing -> pure $ pure o Instance name
+				Just _  -> pure $ deriv name
+		where
+			deriv :: String [Type] -> Parser Token TypeRestriction
+			deriv d [t] = pure $ Derivation d t
+			deriv _ _   = empty
+
+		className :: Parser Token String
+		className = ident <|> var
+
+		skipKind :: Parser Token [Token]
+		skipKind = some $ satisfy \t -> case t of
+			TStar       -> True
+			TArrow      -> True
+			TParenOpen  -> True
+			TParenClose -> True
+			_           -> False
+
+		braced p = item TBraceOpen *> p <* item TBraceClose
+		piped p = item TPipe *> p <* item TPipe
 
 parseType :: [Char] -> Maybe Type
 parseType cs
