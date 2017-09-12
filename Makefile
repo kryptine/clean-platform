@@ -12,7 +12,7 @@ endif
 Clean\ System\ Files/ctty.o: tty.c
 	mkdir -p Clean\ System\ Files
 ifeq "$(GCCVERSIONGTEQ6)" "1"
-		gcc-5 -c $< -o "$@"
+		gcc -c $< -o "$@"
 else
 		gcc -c $< -o "$@"
 endif
