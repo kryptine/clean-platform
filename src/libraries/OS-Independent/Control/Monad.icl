@@ -37,9 +37,6 @@ instance MonadPlus Maybe where
 (>>|) infixl 1 :: (m a) (m b) -> m b | Monad m
 (>>|) ma mb = ma >>= \_ -> mb
 
-(|<<) infixl 1 :: (m a) (m b) -> m a | Monad m
-(|<<) ma mb = ma >>= \a -> mb >>= \_ -> pure a
-
 (=<<) infixr 1 :: (a -> m b) (m a) -> m b | Monad m
 (=<<) f x = x >>= f
 

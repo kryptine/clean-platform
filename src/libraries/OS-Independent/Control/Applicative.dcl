@@ -42,9 +42,13 @@ some :: (f a) -> f [a] | Alternative f
 
 many :: (f a) -> f [a] | Alternative f
 
-(*>) infixl 4 :: (f a) (f b) -> f b | Applicative f
+class (*>) infixl 4 f :: (f a) (f b) -> f b | Applicative f
+instance *> f
+instance *> Maybe
 
-(<*) infixl 4 :: (f a) (f b) -> f a | Applicative f
+class (<*) infixl 4 f :: (f a) (f b) -> f a | Applicative f
+instance <* f
+instance <* Maybe
 
 (<**>) infixl 4 :: (f a) (f (a -> b)) -> f b | Applicative f
 

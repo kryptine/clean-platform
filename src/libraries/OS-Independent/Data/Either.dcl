@@ -5,15 +5,17 @@ definition module Data.Either
 * used inside generic functions, since most generic functions treat this
 * type in a special way which may lead to strange behavior.
 */
-from Control.Applicative import class Applicative (..)
-from Control.Monad import class Monad (..)
-from Data.Functor import class Functor (..)
+from Control.Applicative import class Applicative, class *>, class <*
+from Control.Monad import class Monad
+from Data.Functor import class Functor
 
 :: Either a b = Left a | Right b
 
 instance Functor (Either a)
 
 instance Applicative (Either e)
+instance *> (Either e)
+instance <* (Either e)
 
 instance Monad (Either e)
 
