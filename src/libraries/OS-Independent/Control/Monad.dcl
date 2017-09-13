@@ -44,4 +44,3 @@ liftM3            :: (a -> .(b -> .(c -> d))) (e a) (e b) (e c) -> e d | Monad e
 liftM4            :: (a -> .(b -> .(c -> .(d -> e)))) (f a) (f b) (f c) (f d) -> f e | Monad f
 liftM5            :: (a -> .(b -> .(c -> .(d -> .(e -> f))))) (g a) (g b) (g c) (g d) (g e) -> g f | Monad g
 ap                :: u:((a (b -> c)) -> v:((a b) -> a c)) | Monad a, [v <= u]
-
