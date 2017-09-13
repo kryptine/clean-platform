@@ -42,10 +42,23 @@ some :: (f a) -> f [a] | Alternative f
 
 many :: (f a) -> f [a] | Alternative f
 
+/**
+ * Sequence actions and take the value of the right argument.
+ * Previously, this was a normal function with the type context Applicative f
+ * and an implementation similar to the instance for f now. However, for some
+ * types there are more efficient possibilities. Making this a class with a
+ * default implementation allows overriding the instance in such cases, like
+ * for Maybe here.
+ */
 class (*>) infixl 4 f :: (f a) (f b) -> f b | Applicative f
 instance *> f
 instance *> Maybe
 
+/**
+ * Sequence actions and take the value of the left argument.
+ * For the reason behind making this a class rather than a normal function, see
+ * the documentation on *>.
+ */
 class (<*) infixl 4 f :: (f a) (f b) -> f a | Applicative f
 instance <* f
 instance <* Maybe

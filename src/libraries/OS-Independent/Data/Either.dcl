@@ -14,6 +14,9 @@ from Data.Functor import class Functor
 instance Functor (Either a)
 
 instance Applicative (Either e)
+
+// Making use of the type information allows for faster sequencing operators.
+// See the documentation on *> in Control.Applicative.
 instance *> (Either e)
 instance <* (Either e)
 
