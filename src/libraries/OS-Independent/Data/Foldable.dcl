@@ -1,6 +1,6 @@
 definition module Data.Foldable
 
-from Control.Applicative import class Applicative (..), :: Const, class Alternative (..)
+from Control.Applicative import class Applicative (..), :: Const, class Alternative (..), class *>
 from Control.Monad import class Monad (..), >>=, class MonadPlus (..)
 from Data.Either import :: Either
 from Data.Functor import class Functor (..)
@@ -97,7 +97,7 @@ foldlM :: (b a -> m b) b (t a) -> m b | Foldable t & Monad m
 
 // Map each element of a structure to an action, evaluate
 // these actions from left to right, and ignore the results.
-traverse_ :: (a -> f b) (t a) -> f () | Foldable t & Applicative f
+traverse_ :: (a -> f b) (t a) -> f () | Foldable t & Applicative, *> f
 
 // 'for_' is 'traverse_' with its arguments flipped.
 //for_ :: (t a) (a -> f b) -> f () | Foldable t, Applicative f
@@ -113,7 +113,7 @@ forM_ x f :== flip mapM_ x f
 
 // Evaluate each action in the structure from left to right,
 // and ignore the results.
-sequenceA_ :: (t (f a)) -> f () | Foldable t & Applicative f
+sequenceA_ :: (t (f a)) -> f () | Foldable t & Applicative, *> f
 
 // Evaluate each monadic action in the structure from left to right,
 // and ignore the results.
