@@ -82,6 +82,7 @@ instance <* f where <* fa fb = liftA2 const fa fb
 
 instance <* Maybe
 where
+	<* Nothing _  = Nothing
 	<* m (Just _) = m
 	<* _ _        = Nothing
 

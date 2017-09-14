@@ -20,8 +20,9 @@ where
 
 instance <* (Either e)
 where
-	<* l (Right y) = l
-	<* e _         = e
+	<* (Left l)  _         = Left l
+	<* _         (Left l)  = Left l
+	<* x         _         = x
 
 instance Monad (Either e) where
   bind (Left  l) _ = Left l
