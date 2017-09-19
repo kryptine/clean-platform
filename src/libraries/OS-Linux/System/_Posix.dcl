@@ -60,6 +60,7 @@ kill        :: !Int !Int !*w -> (!Int, !*w)
 //Memory (impure)
 malloc	:: !Int -> Pointer
 free	:: !Pointer -> Int
+freeSt  :: !Pointer !*w -> *w
 memcpy_string_to_pointer :: !Pointer !{#Char} !Int -> Pointer
 
 //Posix datastructures
