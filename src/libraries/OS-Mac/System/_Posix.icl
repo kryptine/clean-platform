@@ -130,6 +130,10 @@ free :: !Pointer -> Int
 free ptr = code {
 	ccall free "p:I"
 }
+freeSt :: !Pointer !*w -> *w
+freeSt ptr world = code {
+   ccall free "p:V:A"
+}
 memcpy_string_to_pointer :: !Pointer !{#Char} !Int -> Pointer
 memcpy_string_to_pointer p s n = code {
     ccall memcpy "psp:p"
