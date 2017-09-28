@@ -66,30 +66,7 @@ where
 
 instance print Type
 where
-	print isArg (Type s vs)
-		// Lists
-		| s == "_List"   = "[" -- vs -- "]"
-		| s == "_!List"  = if (isEmpty vs) ["[! ]"] ("[!" -- vs -- "]")
-		| s == "_List!"  = if (isEmpty vs) ["[ !]"] ("[" -- vs -- "!]")
-		| s == "_!List!" = "[!" -- vs -- "!]"
-		| s == "_#List"  = "[#" -- vs -- "]"
-		| s == "_#List!" = "[#" -- vs -- "!]"
-		// Arrays
-		| s == "_#Array" = "{#" -- vs -- "}"
-		| s == "_Array"  = "{" -- vs -- "}"
-		| s == "_!Array" = "{!" -- vs -- "}"
-		// Tuples
-		| s % (0,5) == "_Tuple"
-			# n = toInt (s % (6, size s - 1))
-			| isEmpty vs = "(" -- repeatn (n-1) ',' -- ")"
-			| n > length vs = "((" -- repeatn (n-1) ',' -- ") " -- printersperse True " " vs -- ")"
-			| otherwise     = "(" -- printersperse False ", " vs -- ")"
-		// Other predefined types
-		| s == "_Unit"   = ["()"]
-		| s.[0] == '_'   = [s % (1, size s - 1)]
-		// Other types
-		| isEmpty vs     = print isArg s
-		| otherwise      = parens isArg (s -- " " -- printersperse True " " vs)
+	print ia (Type s vs) = typeConstructorName True ia s vs
 	print _ (Var v) = [v]
 	print ia (Func [] r []) = print ia r
 	print _ (Func [] r tc) = r -- " " -- tc
@@ -110,16 +87,15 @@ parens True ss  = ["(":ss] ++ [")"]
 instance print TypeDef
 where
 	print _ {td_name,td_uniq,td_args,td_rhs}
-		= ":: " -- if td_uniq "*" "" -- td_name -- " " --
-			printersperse True " " td_args -- if (isEmpty td_args) "" " " --
+		= ":: " -- if td_uniq "*" "" -- typeConstructorName False False td_name td_args --
 			case td_rhs of
-				(TDRCons ext cs) = "= " -- makeADT ext cs
-				(TDRRecord _ exi fields) = "= " --
+				(TDRCons ext cs) = " = " -- makeADT ext cs
+				(TDRRecord _ exi fields) = " = " --
 					if (isEmpty exi) [] ("E." -- printersperse False " " exi -- ": ") --
 					makeRecord exi fields
-				(TDRSynonym t) = ":== " -- t
+				(TDRSynonym t) = " :== " -- t
 				TDRAbstract = []
-				(TDRAbstractSynonym t) = "(:== " -- t -- ")"
+				(TDRAbstractSynonym t) = " (:== " -- t -- ")"
 	where
 		indent = size td_name + toInt td_uniq + length td_args + sum (map (size o concat o print True) td_args)
 		recordIndent exi = repeatn (indent + 6 + if (isEmpty exi) 0 (3 + length exi + sum (map size exi))) ' '
@@ -143,6 +119,36 @@ where
 			= concat (c1 -- "\n" --
 				concat [concat (consIndent -- "| " -- c -- "\n") \\ c <- cs])
 		makeADT True cs = concat (makeADT False cs -- consIndent -- "| ..")
+
+typeConstructorName :: Bool Bool String [Type] -> [String]
+typeConstructorName isInfix isArg t as
+# isInfix = isInfix && not (isEmpty as)
+// Lists
+| t == "_List"   = if isInfix ("["  -- as --  "]") ("[]"   -- as`)
+| t == "_!List"  = if isInfix ("[!" -- as --  "]") ("[! ]" -- as`)
+| t == "_List!"  = if isInfix ("["  -- as -- "!]") ("[ !]" -- as`)
+| t == "_!List!" = if isInfix ("[!" -- as -- "!]") ("[!!]" -- as`)
+| t == "_#List"  = if isInfix ("[#" -- as --  "]") ("[#]"  -- as`)
+| t == "_#List!" = if isInfix ("[#" -- as -- "!]") ("[#!]" -- as`)
+| t == "_|List"  = if isInfix ("[|" -- as --  "]") ("[|]"  -- as`)
+// Arrays
+| t == "_#Array" = if isInfix ("{#" -- as --  "}") ("{#}"  -- as`)
+| t == "_Array"  = if isInfix ("{"  -- as --  "}") ("{}"   -- as`)
+| t == "_!Array" = if isInfix ("{!" -- as --  "}") ("{!}"  -- as`)
+// Tuples
+| t % (0,5) == "_Tuple"
+	# n = toInt (t % (6, size t - 1))
+	| isEmpty as                   = "(" -- repeatn (n-1) ',' -- ")"
+	| n > length as || not isInfix = "((" -- repeatn (n-1) ',' -- ") " -- printersperse True " " as -- ")"
+	| otherwise                    = "(" -- printersperse False ", " as -- ")"
+// Other predefined types
+| t == "_Unit"   = ["()"]
+| t.[0] == '_'   = [t % (1, size t - 1)]
+// Other types
+| isEmpty as     = print isArg t
+| otherwise      = parens isArg (t -- " " -- printersperse True " " as)
+where
+	as` = if (isEmpty as) [] (" " -- as)
 
 instance print Constructor
 where
