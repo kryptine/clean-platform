@@ -13,10 +13,10 @@ alphaNum :: Parser Char a Char
 
 oneOf :: [Char] -> Parser Char a Char
 
-choice :: [Parser s t r] -> Parser s t r
+choice :: ![Parser s t r] -> Parser s t r
 
 // drop initial spaces
-ds :: (Parser s t r) -> Parser s t r | space s
+ds :: !(Parser s t r) -> Parser s t r | space s
 
 class space s :: !s -> Bool
 
@@ -32,13 +32,13 @@ identifier :: Parser Char t String
 
 /* Computes line and column number, taking into account tabs and line breaks. Mind that tabs and
    line breaks are themselves characters in the input string and have a position.*/
-lineAndColumn :: [Char] Int        // position returned by error msg
-                        Int ->     // standard tab width
-                        (Int,Int)  // line,column
+lineAndColumn :: ![Char] !Int       // position returned by error msg
+                          Int ->    // standard tab width
+                          (Int,Int) // line,column
 
 errorToString :: SymbolTypes (Rose (String,[SugPosition])) [SugPosition] -> String
 
-simpleErrorToString :: SymbolTypes (Rose (String,[SugPosition])) [SugPosition] -> String
+simpleErrorToString :: SymbolTypes !(Rose (String,[SugPosition])) ![SugPosition] -> String
 // For testing only. Quick&Dirty really. Use import path ParserLanguage/For Testing/Language.dcl
 
 flattenSep :: String ![x] -> String | toString x  // concatenate all with String in between

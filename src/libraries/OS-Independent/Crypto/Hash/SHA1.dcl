@@ -20,7 +20,7 @@ from System.File import :: FileError
 * @param The message for which to compute the digest
 * @return The ascii hex representation of the message digest
 */
-sha1 :: String -> String
+sha1 :: !String -> String
 
 /**
 * Compute the SHA1 digest of a string
@@ -28,7 +28,7 @@ sha1 :: String -> String
 * @param The message for which to compute the digest
 * @return The raw 160 bit digest
 */
-sha1StringDigest :: String -> SHA1Digest
+sha1StringDigest :: !String -> SHA1Digest
 
 /**
 * Compute the SHA1 digest of the contents of a file
@@ -38,7 +38,7 @@ sha1StringDigest :: String -> SHA1Digest
 * @return The raw 160 bit digest
 * @return The environment
 */
-sha1FileDigest :: FilePath *env -> (!MaybeError FileError SHA1Digest,!*env) | FileSystem env
+sha1FileDigest :: !FilePath !*env -> (!MaybeError FileError SHA1Digest, !*env) | FileSystem env
 
 /**
 * Print a SHA1 digest as ascii hexadecimal form

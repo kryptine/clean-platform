@@ -7,14 +7,12 @@ from StdFunc import o, id
 import StdFile, StdString
 from Text import class Text (trim), instance Text String
 
-:: IO a = IO .(*World -> *(a, *World))
-
-execIO :: (IO a) *World -> *World
+execIO :: !(IO a) !*World -> *World
 execIO (IO f) world
   # (_, world) = f world
   = world
 
-evalIO :: (IO a) *World -> *(a, *World)
+evalIO :: !(IO a) !*World -> *(a, !*World)
 evalIO (IO f) world = f world
 
 withWorld :: (*World -> *(.a, !*World)) -> IO .a
@@ -86,12 +84,12 @@ writeFileM name txt = withWorld f
     # (ok, world)       = fclose file world
     = ((), world)
 
-unsafePerformIO :: (*World -> *(.a, *World)) -> .a
+unsafePerformIO :: !(*World -> *(.a, !*World)) -> .a
 unsafePerformIO f
   # (x, world) = f make_world
   | world_to_true world = x
 
-unsafePerformIOTrue :: (*World -> *(a, *World)) -> Bool
+unsafePerformIOTrue :: !(*World -> *(a, !*World)) -> Bool
 unsafePerformIOTrue f
   # (x, world) = f make_world
   = world_to_true world

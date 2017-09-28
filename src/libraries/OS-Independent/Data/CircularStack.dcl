@@ -12,14 +12,14 @@ from Data.IntMap.Strict import :: IntMap
 
 newStack   :: !Int -> CircularStack a
 
-push       :: a (CircularStack a) -> CircularStack a
+push       :: !a !(CircularStack a) -> CircularStack a
 
-pop        :: (CircularStack a) -> (Maybe a, CircularStack a)
+pop        :: !(CircularStack a) -> (!Maybe a, !CircularStack a)
 
-peek       :: (CircularStack a) -> Maybe a
+peek       :: !(CircularStack a) -> Maybe a
 
-emptyStack :: (CircularStack a) -> Bool
+emptyStack :: !(CircularStack a) -> Bool
 
-fromList   :: [a] -> CircularStack a
+fromList   :: ![a] -> CircularStack a
 
-toList     :: (CircularStack a) -> [a]
+toList     :: !(CircularStack a) -> [a]

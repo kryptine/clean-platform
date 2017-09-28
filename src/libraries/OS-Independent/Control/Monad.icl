@@ -40,18 +40,18 @@ instance MonadPlus Maybe where
 (=<<) infixr 1 :: (a -> m b) (m a) -> m b | Monad m
 (=<<) f x = x >>= f
 
-sequence :: .[a b] -> a [b] | Monad a
+sequence :: !.[a b] -> a [b] | Monad a
 sequence ms = foldr k (lift []) ms
   where
     k m m` = m >>= \x -> m` >>= \xs -> lift [x:xs]
 
-sequence_ :: .[a b] -> a () | Monad a
+sequence_ :: !.[a b] -> a () | Monad a
 sequence_ ms = foldr (>>|) (lift ()) ms
 
-mapM :: (.a -> b c) [.a] -> b [c] | Monad b
+mapM :: (.a -> b c) ![.a] -> b [c] | Monad b
 mapM f as = sequence (map f as)
 
-mapM_ :: (.a -> b c) [.a] -> b () | Monad b
+mapM_ :: (.a -> b c) ![.a] -> b () | Monad b
 mapM_ f as = sequence_ (map f as)
 
 forM :: u:([v:a] -> w:((v:a -> b c) -> b [c])) | Monad b, [w <= u,w <= v]
@@ -66,14 +66,14 @@ forever a = let a` = a >>| a` in a`
 join :: (a (a b)) -> a b | Monad a
 join x = x >>= id
 
-zipWithM :: (.a -> .(.b -> c d)) [.a] [.b] -> c [d] | Monad c
+zipWithM :: (.a -> .(.b -> c d)) ![.a] [.b] -> c [d] | Monad c
 zipWithM f xs ys = sequence (zipWith f xs ys)
 
-foldM :: (a -> .(b -> c a)) a [b] -> c a | Monad c
+foldM :: (a -> .(b -> c a)) a ![b] -> c a | Monad c
 foldM _ a []      = lift a
 foldM f a [x:xs]  = f a x >>= \fax -> foldM f fax xs
 
-replicateM :: .Int (a b) -> a [b] | Monad a
+replicateM :: !.Int (a b) -> a [b] | Monad a
 replicateM n x = sequence (replicate n x)
 
 (>=>) infixr 1 :: u:(.a -> b c) (c -> b d) -> v:(.a -> b d) | Monad b, [v <= u]

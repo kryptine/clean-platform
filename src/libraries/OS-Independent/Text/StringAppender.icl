@@ -10,7 +10,7 @@ import Data.Error, System.File
 newAppender :: StringAppender		  
 newAppender = {full_length = 0, elements = []}		  
 		   
-append :: StringAppender a -> StringAppender | toString a
+append :: !StringAppender a -> StringAppender | toString a
 append appender a 
 	#! str = toString a
 	#! new_length = appender.full_length + (size str)
@@ -26,7 +26,7 @@ where
 	| i == num		= dst
 	| otherwise		= copyChars offset (i+1) num src {dst & [offset + i] = src.[i]}	
 	
-joinList :: !String [a] StringAppender -> StringAppender | toString a
+joinList :: !String ![a] !StringAppender -> StringAppender | toString a
 joinList sep [t] a = append a t
 joinList sep [t:ts] a = joinList sep ts (append (append a t) sep)
 joinList sep [] a = a	

@@ -15,7 +15,7 @@ from Control.Monad import class Monad, instance Monad Maybe
 import qualified Control.Monad as CM
 import TCPIP
 
-doHTTPRequest :: HTTPRequest Int *World -> *(MaybeErrorString HTTPResponse, *World)
+doHTTPRequest :: !HTTPRequest Int !*World -> *(!MaybeErrorString HTTPResponse, !*World)
 doHTTPRequest req timeout w
 # (ip,w) = lookupIPAddress req.server_name w
 | isNothing ip
@@ -52,7 +52,7 @@ where
 		= (Error $ req.server_name + " hung up during transmission.", chan, w)
 	= receiveRest {resp & rsp_data=resp.rsp_data + toString (fromJust newresp)} chan w
 
-doHTTPRequestFollowRedirects :: HTTPRequest Int Int *World -> *(MaybeErrorString HTTPResponse, *World)
+doHTTPRequestFollowRedirects :: !HTTPRequest Int !Int !*World -> *(!MaybeErrorString HTTPResponse, !*World)
 doHTTPRequestFollowRedirects req timeout 0 w = (Error "Maximal redirect number exceeded", w)
 doHTTPRequestFollowRedirects req timeout maxRedirects w
 # (er, w) = doHTTPRequest req timeout w

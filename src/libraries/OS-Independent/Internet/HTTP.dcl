@@ -22,7 +22,7 @@ from Data.Error import :: MaybeErrorString, :: MaybeError
  * @param Timeout in milliseconds
  * @param The world
  */
-doHTTPRequest :: HTTPRequest Int *World -> *(MaybeErrorString HTTPResponse, *World)
+doHTTPRequest :: !HTTPRequest Int !*World -> *(!MaybeErrorString HTTPResponse, !*World)
 
 /* Do an HTTP request and follow redirects
  *
@@ -31,7 +31,7 @@ doHTTPRequest :: HTTPRequest Int *World -> *(MaybeErrorString HTTPResponse, *Wor
  * @param The maximum number of redirects
  * @param The world
  */
-doHTTPRequestFollowRedirects :: HTTPRequest Int Int *World -> *(MaybeErrorString HTTPResponse, *World)
+doHTTPRequestFollowRedirects :: !HTTPRequest Int !Int !*World -> *(!MaybeErrorString HTTPResponse, !*World)
 
 instance toString   HTTPMethod
 instance fromString HTTPMethod

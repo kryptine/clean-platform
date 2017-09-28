@@ -14,13 +14,13 @@ instance length Queue where length (Queue front rear) = length front + length re
 /**
 * Add an element to the queue
 */
-enqueue :: a (Queue a) -> Queue a
+enqueue :: a !(Queue a) -> Queue a
 enqueue x (Queue front rear) = Queue front [x:rear]
 
 /**
 * Take an element from the queue (if the queue is not empty)
 */
-dequeue :: (Queue a) -> (!Maybe a,!Queue a)
+dequeue :: !(Queue a) -> (!Maybe a, !Queue a)
 dequeue (Queue [] [] ) = (Nothing, Queue [] [])
 dequeue (Queue [x:xs] rear) = (Just x, Queue xs rear)
 dequeue (Queue [] rear) = let [x:xs] = reverse rear in (Just x, Queue xs [])
