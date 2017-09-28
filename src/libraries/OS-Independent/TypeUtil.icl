@@ -139,7 +139,7 @@ typeConstructorName isInfix isArg t as
 | t % (0,5) == "_Tuple"
 	# n = toInt (t % (6, size t - 1))
 	| isEmpty as                   = "(" -- repeatn (n-1) ',' -- ")"
-	| n > length as || not isInfix = "((" -- repeatn (n-1) ',' -- ") " -- printersperse True " " as -- ")"
+	| n > length as || not isInfix = parens isArg ("(" -- repeatn (n-1) ',' -- ") " -- printersperse True " " as)
 	| otherwise                    = "(" -- printersperse False ", " as -- ")"
 // Other predefined types
 | t == "_Unit"   = ["()"]
