@@ -1,6 +1,7 @@
 implementation module TypeUnify
 
 import StdArray
+import StdBool
 from StdFunc import o
 import StdList
 import StdOrdList
@@ -14,10 +15,12 @@ from Data.Func import $
 import Data.Functor
 import Data.Maybe
 
+import GenEq
+
 import TypeDef
 import TypeUtil
 
-derive gEq Type, TypeRestriction, Kind
+derive gEq Maybe, Type, TypeRestriction, Kind
 
 (generalises) infix 4 :: !Type !Type -> Bool
 (generalises) a b = case unify a` b` of
@@ -49,22 +52,22 @@ where
 	renameVars (Uniq t) = Uniq $ renameVars t
 	renameVars (Arrow t) = Arrow (renameVars <$> t)
 	renameVars (Forall vs t tc) = fromJust $
-		assignAll [(v,Var ("_"+++v)) \\ v <- map fromVarLenient vs] $
-		Forall (map renameVars vs) (renameVars t) tc
+		assignAll [(prep+++v,Var ("_"+++prep+++v)) \\ v <- map fromVarLenient vs] $
+		renameVars t
 
 finish_unification :: ![TypeDef] ![TVAssignment] -> Unifier
 finish_unification syns tvs
-# (tvs1, tvs2) = (filter (endsWith 'l') tvs, filter (endsWith 'r') tvs)
-# (tvs1, tvs2) = (map removeEnds tvs1, map removeEnds tvs2)
+# (tvs1, tvs2) = (filter (startsWith 'l') tvs, filter (startsWith 'r') tvs)
+# (tvs1, tvs2) = (map removePrefixes tvs1, map removePrefixes tvs2)
 # (tvs1, tvs2) = (sortBy order tvs1, sortBy order tvs2)
 = {left_to_right=tvs1, right_to_left=tvs2, used_synonyms=removeDupTypedefs syns}
 where
-	endsWith :: Char TVAssignment -> Bool
-	endsWith c (h,_) = h.[0] == c
+	startsWith :: Char TVAssignment -> Bool
+	startsWith c (h,_) = h.[0] == c || h.[0] == '_' && h.[1] == c
 
-	removeEnds :: TVAssignment -> TVAssignment
-	removeEnds (v,t) = let rm s = s % (1, size s - 1) in (rm v, fromJust $
-	                   assignAll (map (\v->(v,Var (rm v))) $ allVars t) t)
+	removePrefixes :: TVAssignment -> TVAssignment
+	removePrefixes (v,t) = (rm v, fromJust $ assignAll (map (\v->(v,Var (rm v))) $ allVars t) t)
+	where rm s = s % (if (s.[0] == '_') 2 1, size s - 1)
 
 	order :: TVAssignment TVAssignment -> Bool
 	order (v1,t1) (v2,t2)
@@ -102,7 +105,8 @@ where
 	checkUniversalisedVariables v t
 	| v.[0] <> '_' = pure t
 	| otherwise = case t of
-		Var v -> applyInGoals (v,Var ("_"+++v)) >>| pure (Var ("_" +++ v))
+		Var v -> applyInGoals (v,Var v`) >>| pure (Var v`)
+			with v` = if (v.[0] == '_') v ("_" +++ v)
 		_     -> fail
 	where
 		applyInGoals :: !TVAssignment -> UnifyM ()

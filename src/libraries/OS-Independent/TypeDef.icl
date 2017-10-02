@@ -11,7 +11,7 @@ from GenEq import generic gEq, ===
 from Data.Func import $
 import Data.Maybe
 
-derive gEq Type, TypeRestriction, Kind
+derive gEq Maybe, Type, TypeRestriction, Kind
 
 instance == Type where == a b = a === b
 instance == TypeRestriction where == a b = a === b
