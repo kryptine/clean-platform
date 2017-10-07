@@ -81,6 +81,8 @@ where
 		= 'T'.TDRAbstractSynonym ('T'.toType atype)
 	toTypeDefRhs (ExtensibleConses pcs)
 		= 'T'.TDRCons True (map 'T'.toConstructor pcs)
+	toTypeDefRhs (MoreConses id pcs)
+		= 'T'.TDRMoreConses (map 'T'.toConstructor pcs)
 
 instance toConstructor ParsedConstructor
 where

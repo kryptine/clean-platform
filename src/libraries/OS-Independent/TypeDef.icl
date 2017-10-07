@@ -96,6 +96,9 @@ constructorsToFunctions :: TypeDef -> [(String,Type,Maybe Priority)]
 constructorsToFunctions {td_name,td_uniq,td_args,td_rhs=TDRCons _ conses}
 	= [(c.cons_name, Func c.cons_args return c.cons_context, c.cons_priority) \\ c <- conses]
 where return = if td_uniq Uniq id $ Type td_name td_args
+constructorsToFunctions {td_name,td_uniq,td_args,td_rhs=TDRMoreConses conses}
+	= [(c.cons_name, Func c.cons_args return c.cons_context, c.cons_priority) \\ c <- conses]
+where return = if td_uniq Uniq id $ Type td_name td_args
 constructorsToFunctions _ = []
 
 recordsToFunctions :: TypeDef -> [(String,Type)]
