@@ -83,10 +83,11 @@ where
 		= printp st ("dynamic " :+: pe :+: " :: " :+: dt)
 	print st (PE_Dynamic pe No)
 		= printp st ("dynamic " :+: pe)
+	print st (PE_Generic id k)
+		= print st (id :+: "{|" :+: k :+: "|}")
 	// | PE_ArrayPattern ![ElemAssignment]
 	// | PE_Matches !Ident /*expr*/!ParsedExpr /*pattern*/!ParsedExpr !Position
 	// | PE_Any_Code !(CodeBinding Ident) !(CodeBinding Ident) ![String]
-	// | PE_Generic !Ident !TypeKind	/* AA: For generics, kind indexed identifier */
 	// | PE_TypeSignature !ArrayKind !ParsedExpr
 	// | PE_Empty
 	print st pe
@@ -215,6 +216,18 @@ compound_rhs :: OptGuardedAlts -> Bool
 compound_rhs (GuardedAlts _ _)                 = True
 compound_rhs (UnGuardedExpr {ewl_nodes=[_:_]}) = True
 compound_rhs _                                 = False
+
+// Generics
+instance print TypeKind
+where
+	print st KindConst = "*"
+	print st (KindArrow ks) = printp st (intersperse "->" (map (print {st & cpp_parens=True}) ks))
+	where
+		intersperse :: !a ![a] -> [a]
+		intersperse i []      = []
+		intersperse i [x]     = [x]
+		intersperse i [x:xs]  = [x,i:intersperse i xs]
+	print st _ = abort "Unknown TypeKind"
 
 // Dynamics
 instance print DynamicType

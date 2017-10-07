@@ -57,6 +57,12 @@ where
 			(TypeSpec _) = " :== "
 			(EmptyRhs _) = ""
 			_            = " = "
+	print st (PD_GenericCase {gc_type,gc_gcf=GCF id {gcf_body=GCB_ParsedBody [desc:args] rhs}} _)
+		= print st (id :+: "{|" :+: gc_type :+: desc` :+: "|} " :+: args :+: " = " :+: rhs)
+	where
+		desc` = case desc of
+			PE_WildCard -> PrintNil
+			_           -> " of " :+: desc
 	print _ _
 		= abort "UNKNOWN_PD"
 
