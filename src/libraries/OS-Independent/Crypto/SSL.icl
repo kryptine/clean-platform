@@ -3,7 +3,6 @@ implementation module Crypto.SSL
 // Compile with -l -lcrypto -l -lssl
 // https://wiki.openssl.org/index.php/SSL/TLS_Client
 
-import code from "ssl_help."
 import StdBool
 import StdInt
 import StdList
@@ -16,15 +15,17 @@ import Internet.HTTP
 import System._Pointer
 import System.FilePath
 
+import code from "sslhelp."
+
 :: SSLMethod :== Pointer
 :: SSLCTX :== Pointer
 :: BIO :== Pointer
 
 
 Start w
-# (bio,w)  = initSSL host port w
-# w        = BIO_puts bio (toString req) w
-# (resp,w) = BIO_read_all bio w
+#! (bio,w)  = initSSL host port w
+#! w        = BIO_puts bio (toString req) w
+#! (resp,w) = BIO_read_all bio w
 = resp
 where
 	host = "www.random.org"
@@ -42,9 +43,9 @@ initSSL host port w
 #! (meth,w) = SSLv23_method w
 | meth == 0 = abort "Method was 0\n"
 #! (ctx,w)  = SSL_CTX_new meth w
-| ctx == 0  = abort "CTX was 0\n"
-//#! w        = SSL_CTX_set_verify ctx SSL_VERIFY_PEER w
-//#! w        = SSL_CTX_set_verify_depth ctx 4 w
+| ctx == 0  = abort "CTX was 1\n"
+#! w        = SSL_CTX_set_verify ctx SSL_VERIFY_PEER w
+#! (res,w)  = SSL_CTX_set_verify_depth ctx 4 w
 #! w        = SSL_CTX_set_options ctx [SSL_OP_NO_SSLv2, SSL_OP_NO_SSLv3, SSL_OP_NO_COMPRESSION] w
 #! (res,w)  = SSL_CTX_load_verify_locations_file ctx "/etc/ssl/certs/ca-certificates.crt" w
 | res <> 1  = abort "LV Res was not 1\n"
@@ -56,8 +57,8 @@ initSSL host port w
 | ssl == 0  = abort "SSL was 0\n"
 #! (res,w)  = SSL_set_cipher_list ssl "HIGH:!aNULL:!kRSA:!PSK:!SRP:!MD5:!RC4" w
 | res <> 1  = abort "CL Res was not 1\n"
-//#! (res,w)  = SSL_set_tlsext_host_name ssl host w
-//| res <> 1  = abort "TH Res was not 1\n"
+#! (res,w)  = SSL_set_tlsext_host_name ssl host w
+| res <> 1  = abort "TH Res was not 1\n"
 #! (res,w)  = BIO_do_connect web w
 | res <> 1  = abort ("DC was not 1: " +++ toString res +++ "\n")
 #! (res,w)  = BIO_do_handshake web w
@@ -80,16 +81,16 @@ SSL_CTX_new m w = code {
 }
 
 SSL_CTX_set_verify :: !SSLCTX !Int !*World -> *World
-SSL_CTX_set_verify ctx mode w = set_verify ctx mode w
+SSL_CTX_set_verify ctx mode w = snd (set_verify ctx mode w)
 where
-	set_verify :: !SSLCTX !Int /*!Pointer*/ !*World -> *World
+	set_verify :: !SSLCTX !Int /*!Pointer*/ !*World -> *(!Int, !*World)
 	set_verify ctx mode /*callback*/ w = code {
-		ccall SSL_CTX_set_verify_help "pI:V:A"
+		ccall SSL_CTX_set_verify_help "pI:I:A"
 	}
 
-SSL_CTX_set_verify_depth :: !SSLCTX !Int !*World -> *World
+SSL_CTX_set_verify_depth :: !SSLCTX !Int !*World -> *(!Int, !*World)
 SSL_CTX_set_verify_depth ctx depth w = code {
-	ccall SSL_CTX_set_verify_depth "pI:V:A"
+	ccall SSL_CTX_set_verify_depth_help "pI:I:A"
 }
 
 SSL_CTX_load_verify_locations_file :: !SSLCTX !FilePath !*World -> *(!Int, !*World)
@@ -106,7 +107,7 @@ SSL_CTX_set_options ctx opts w = snd $ SSL_CTX_ctrl ctx SSL_CTRL_OPTIONS (foldr 
 
 SSL_CTX_ctrl :: !SSLCTX !Int !Int !Pointer !*World -> *(!Int, !*World)
 SSL_CTX_ctrl ctx cmd larg parg w = code {
-	ccall SSL_CTX_ctrl "pIIp:I:A"
+	ccall SSL_CTX_ctrl "pIpp:p:A"
 }
 
 SSL_set_cipher_list :: !Pointer !String !*World -> *(!Int, !*World)
@@ -124,11 +125,11 @@ where TLSEXT_NAMETYPE_host_name = 0
 
 import StdString, StdArray
 SSL_ctrl_string :: !Pointer !Int !Int !String !*World -> *(!Int, !*World)
-SSL_ctrl_string ssl cmd larg parg w = call ssl cmd (size parg) /*larg*/ (packString parg) w
+SSL_ctrl_string ssl cmd larg parg w = call ssl cmd /*(size parg)*/ larg (packString parg) w
 where
 	call :: !Pointer !Int !Int !String !*World -> *(!Int, !*World)
 	call ssl cmd larg parg w = code {
-		ccall SSL_ctrl_help "pIIs:I:A"
+		ccall SSL_ctrl "pIps:p:A"
 	}
 
 BIO_new_ssl_connect :: !SSLCTX !*World -> *(!BIO, *World)
@@ -145,7 +146,7 @@ BIO_get_ssl bio w = ctrl bio BIO_C_GET_SSL 0 w
 where
 	ctrl :: !BIO !Int !Int !*World -> *(!Pointer, !*World)
 	ctrl bio cmd arg w = code {
-		ccall BIO_ctrl "pII:VI:A"
+		ccall BIO_ctrl "pIp:Vp:A"
 	}
 
 BIO_do_connect :== BIO_do_handshake
@@ -154,7 +155,7 @@ BIO_do_handshake bio w = BIO_ctrl_ptr bio BIO_C_DO_STATE_MACHINE 0 0 w
 
 BIO_ctrl_ptr :: !BIO !Int !Int !Pointer !*World -> *(!Int, !*World)
 BIO_ctrl_ptr bio cmd larg parg w = code {
-	ccall BIO_ctrl "pIIp:I:A"
+	ccall BIO_ctrl "pIpp:p:A"
 }
 
 BIO_ctrl_string :: !BIO !Int !Int !String !*World -> *(!Int, !*World)
@@ -162,15 +163,15 @@ BIO_ctrl_string bio cmd larg parg w = call bio cmd larg (packString parg) w
 where
 	call :: !BIO !Int !Int !String !*World -> *(!Int, !*World)
 	call bio cmd larg parg w = code {
-		ccall BIO_ctrl "pIIs:I:A"
+		ccall BIO_ctrl "pIps:p:A"
 	}
 
 BIO_puts :: !BIO !String !*World -> *World
-BIO_puts bio s w = puts bio (packString s) w
+BIO_puts bio s w = snd (puts bio (packString s) w)
 where
-	puts :: !BIO !String !*World -> *World
+	puts :: !BIO !String !*World -> *(!Int, !*World)
 	puts bio s w = code {
-		ccall BIO_puts "ps:V:A"
+		ccall BIO_puts "ps:I:A"
 	}
 
 // A static buffer, because BIO_read_all has an int argument after the char ptr
@@ -183,7 +184,7 @@ BIO_read_all bio w
 #! (r,w) = BIO_test_flags bio BIO_FLAGS_SHOULD_RETRY w
 #! (s,w) = (derefString read_buffer,w)
 #! s     = s % (0, n-1)
-| n <= 0 && not r = (s, w)
+| n <= 0 && r == 0 = (s, w)
 #! (s2,w) = BIO_read_all bio w
 = (s +++ s2, w)
 
@@ -192,7 +193,7 @@ BIO_read bio p n w = code {
 	ccall BIO_read "ppI:I:A"
 }
 
-BIO_test_flags :: !BIO !Int !*World -> *(!Bool, !*World)
+BIO_test_flags :: !BIO !Int !*World -> *(!Int, !*World)
 BIO_test_flags bio f w = code {
 	ccall BIO_test_flags "pI:I:A"
 }
