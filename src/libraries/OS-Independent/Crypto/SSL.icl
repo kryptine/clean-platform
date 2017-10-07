@@ -28,11 +28,18 @@ Start w
 #! (resp,w) = BIO_read_all bio w
 = resp
 where
-	host = "www.random.org"
+	host = "badssl.com"
+	//host = "untrusted-root.badssl.com"
+	//host = "revoked.com"
+	//host = "sha1-intermediate.badssl.com"
+	//host = "pinning-test.badssl.com"
+	//host = "wrong.host.badssl.com"
+	//host = "self-signed.badssl.com"
+	//host = "expired.badssl.com"
 	port = 443
 
 	req = { newHTTPRequest
-		& req_path = "/cgi-bin/randbyte?nbytes=32&format=h"
+		& req_path = "/"
 		, server_name = host
 		, server_port = port
 		}
@@ -44,6 +51,9 @@ initSSL host port w
 | meth == 0 = abort "Method was 0\n"
 #! (ctx,w)  = SSL_CTX_new meth w
 | ctx == 0  = abort "CTX was 1\n"
+#! (prm,w)  = SSL_CTX_get0_param ctx w
+#! (_,w)    = X509_VERIFY_PARAM_set_hostflags prm 4 /* X509_CHECK_FLAG_NO_PARTIAL_WILDCARDS */ w
+#! w        = X509_VERIFY_PARAM_set1_host prm host w
 #! w        = SSL_CTX_set_verify ctx SSL_VERIFY_PEER w
 #! (res,w)  = SSL_CTX_set_verify_depth ctx 4 w
 #! w        = SSL_CTX_set_options ctx [SSL_OP_NO_SSLv2, SSL_OP_NO_SSLv3, SSL_OP_NO_COMPRESSION] w
@@ -79,6 +89,24 @@ SSL_CTX_new :: !SSLMethod !*World -> *(!SSLCTX, !*World)
 SSL_CTX_new m w = code {
 	ccall SSL_CTX_new "p:p:A"
 }
+
+SSL_CTX_get0_param :: !SSLCTX !*World -> *(!Pointer, !*World)
+SSL_CTX_get0_param ctx w = code {
+	ccall SSL_CTX_get0_param "p:p:A"
+}
+
+X509_VERIFY_PARAM_set_hostflags :: !Pointer !Int !*World -> *(!Int, !*World)
+X509_VERIFY_PARAM_set_hostflags param flags w = code {
+	ccall X509_VERIFY_PARAM_set_hostflags_help "pI:I:A"
+}
+
+X509_VERIFY_PARAM_set1_host :: !Pointer !String !*World -> *World
+X509_VERIFY_PARAM_set1_host param s w = snd (set param (packString s) 0 w)
+where
+	set :: !Pointer !String !Int !*World -> *(!Int, !*World)
+	set param s len w = code {
+		ccall X509_VERIFY_PARAM_set1_host "psI:I:A"
+	}
 
 SSL_CTX_set_verify :: !SSLCTX !Int !*World -> *World
 SSL_CTX_set_verify ctx mode w = snd (set_verify ctx mode w)
