@@ -35,16 +35,24 @@ null :: (Heap a) -> Bool
 
 size :: (Heap a) -> Int
 
-//empty :: Heap a
+/**
+ * @type Heap a
+ */
 empty :== Empty
 
-//singleton :: a -> Heap a | Ord a
+/**
+ * @type a -> Heap a | Ord a
+ */
 singleton x :== singletonWith (<=) x
 
-//singletonWith :: (a a -> Bool) a -> Heap a
+/**
+ * @type (a a -> Bool) a -> Heap a
+ */
 singletonWith f a :== Heap 1 f (Node 0 a Nil)
 
-//insert :: a (Heap a) -> (Heap a) | Ord a
+/**
+ * @type a (Heap a) -> (Heap a) | Ord a
+ */
 insert :== insertWith (<=)
 
 insertWith :: (a a -> Bool) a (Heap a) -> Heap a
@@ -55,7 +63,9 @@ replicate :: a Int -> Heap a | Ord a
 
 uncons :: (Heap a) -> Maybe (a, Heap a) | Ord a
 
-//viewMin :: (Heap a) -> Maybe (a, Heap a) | Ord a
+/**
+ * @type (Heap a) -> Maybe (a, Heap a) | Ord a
+ */
 viewMin :== uncons
 
 minimum :: (Heap a) -> a
