@@ -63,6 +63,12 @@ getFileSize hFile lpFileSizeHigh world
 		ccall GetFileSize@8 "PIA:I:I"
 	}
 
+getFullPathNameA :: !String !DWORD !String !LPTSTR !*w -> (!DWORD, !*w)
+getFullPathNameA lpFileName nBufferLnegth lpBuffer lpFilePart world
+	= code {
+		ccall GetFullPathNameA@16 "PsIsp:I:I"
+	}
+
 createProcessA :: !String !String !LPSECURITY_ATTRIBUTES !LPSECURITY_ATTRIBUTES !Bool !Int !LPVOID
 					!LPCTSTR !LPSTARTUPINFO !LPPROCESS_INFORMATION !*w -> (!Bool,!*w)
 createProcessA lpApplicationName commandLine lpProcessAttributes lpThreadAttributes inheritHandles creationFlags lpEnvironment

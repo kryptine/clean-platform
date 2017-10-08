@@ -13,3 +13,4 @@ CreatePipe@16
 PeekNamedPipe@24
 SetHandleInformation@12
 TerminateProcess@8
+GetFullPathNameA@16
