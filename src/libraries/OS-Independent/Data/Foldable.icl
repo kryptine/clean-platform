@@ -172,7 +172,7 @@ foldlM f z0 xs = foldr f` pure xs z0
 
 // Map each element of a structure to an action, evaluate
 // these actions from left to right, and ignore the results.
-traverse_ :: (a -> f b) (t a) -> f () | Foldable t & Applicative f
+traverse_ :: (a -> f b) (t a) -> f () | Foldable t & Applicative, *> f
 traverse_ f x = foldr ((*>) o f) (pure ()) x
 
 // 'for_' is 'traverse_' with its arguments flipped.
@@ -190,7 +190,7 @@ forM_ x f :== flip mapM_ x f
 
 // Evaluate each action in the structure from left to right,
 // and ignore the results.
-sequenceA_ :: (t (f a)) -> f () | Foldable t & Applicative f
+sequenceA_ :: (t (f a)) -> f () | Foldable t & Applicative, *> f
 sequenceA_ x = foldr (*>) (pure ()) x
 
 // Evaluate each monadic action in the structure from left to right,

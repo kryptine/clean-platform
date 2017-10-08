@@ -153,8 +153,7 @@ runProcessMakeArgv argv_list world
 		= abort "malloc failed"
 	# args_memory = memcpy_string_to_pointer args_memory args_string args_size
 	# (argv, args_memory) = readP (createArgv argv_list) args_memory
-    #!fRes = free args_memory
-    | fRes <> fRes = undef
+    # world = freeSt args_memory world
 	= (argv, world)
 where
 	argvLength [a:as] l
@@ -194,17 +193,15 @@ where
 
 openPipe :: !*World -> (MaybeOSError (Int, Int), !*World)
 openPipe world
-    #! ptr = malloc 8
+    # ptr = malloc 8
     | ptr == 0 = abort "malloc failed"
-    #! (res, world) = pipe ptr world
+    # (res, world) = pipe ptr world
     | res == -1
-        # fRes         = free ptr
-        | fRes <> fRes = undef
+        # world = freeSt ptr world
         = getLastOSError world
     # (rEnd, ptr)  = readP (\ptr -> readInt4S ptr 0) ptr
     # (wEnd, ptr)  = readP (\ptr -> readInt4S ptr 4) ptr
-    #! fRes        = free ptr
-    | fRes <> fRes = undef
+    # world = freeSt ptr world
     = (Ok (rEnd, wEnd), world)
 
 checkProcess :: !ProcessHandle !*World -> (MaybeOSError (Maybe Int), *World)
@@ -240,24 +237,20 @@ callProcess path args mCurrentDirectory world
 readPipeNonBlocking :: !ReadPipe !*World -> (!MaybeOSError String, !*World)
 readPipeNonBlocking (ReadPipe fd) world
     # ptr           = malloc 4
-    #! (res, world) = ioctl fd FIONREAD ptr world
+    # (res, world) = ioctl fd FIONREAD ptr world
     | res == -1
-        #! fRes        = free ptr
-        | fRes <> fRes = undef
+        # world = freeSt ptr world
         = getLastOSError world
     # (n, ptr)      = readP (\ptr -> readInt4Z ptr 0) ptr
-    #! fRes         = free ptr
-    | fRes <> fRes  = undef
+    # world         = freeSt ptr world
     | n == 0        = (Ok "", world)
     # buffer        = malloc n
-    #! (res, world) = read fd buffer n world
+    # (res, world) = read fd buffer n world
     | res == -1
-        #! fRes        = free buffer
-        | fRes <> fRes = undef
+        # world = freeSt buffer world
         = getLastOSError world
-    #(str, buffer) = readP (\ptr -> derefCharArray ptr n) buffer
-    #!fRes         = free buffer
-    | fRes <> fRes = undef
+    # (str, buffer) = readP (\ptr -> derefCharArray ptr n) buffer
+    # world = freeSt buffer world
     = (Ok str, world)
 
 readPipeBlocking :: !ReadPipe !*World -> (!MaybeOSError String, !*World)
@@ -266,13 +259,10 @@ readPipeBlocking pipe=:(ReadPipe fd) world
     // init array
     # readfds = seq [\ptr -> writeIntElemOffset ptr i 0 \\ i <- [0..IF_INT_64_OR_32 15 31]] readfds
     // set bit for fd
-    # offset  = fromInt fd / IF_INT_64_OR_32 64 32
-    # val = (readIntElemOffset readfds offset) bitor (1 << (fd rem IF_INT_64_OR_32 64 32))
-    # readfds = writeIntElemOffset readfds offset val
+    # readfds = readPipeBlockingSetFdBit fd readfds
     // wait
-    #! (res, world) = select_ (fd + 1) readfds 0 0 0 world
-    #!fRes         = free readfds
-    | fRes <> fRes = undef
+    # (res, world) = select_ (fd + 1) readfds 0 0 0 world
+    # world = freeSt readfds world
     | res == -1 = getLastOSError world
     = readPipeNonBlocking pipe world
 
@@ -282,11 +272,10 @@ readPipeBlockingMulti pipes world
     // init array
     #readfds = seq [\ptr -> writeIntElemOffset ptr i 0 \\ i <- [0..IF_INT_64_OR_32 15 31]] readfds
     // set bits for fds
-    #readfds = seq [setFdBit fd \\ ReadPipe fd <- pipes] readfds
+    #readfds = seq [readPipeBlockingSetFdBit fd \\ ReadPipe fd <- pipes] readfds
     // wait
-    #!(res, world) = select_ (maxFd + 1) readfds 0 0 0 world
-    #!fRes         = free readfds
-    | fRes <> fRes = undef
+    # (res, world) = select_ (maxFd + 1) readfds 0 0 0 world
+    # world = freeSt readfds world
     | res == -1 = getLastOSError world
     = seq [ \(res, world) -> case res of
                 Ok res`
@@ -299,10 +288,11 @@ readPipeBlockingMulti pipes world
 where
     maxFd = maximum [fd \\ ReadPipe fd <- pipes]
 
-    setFdBit fd ptr
-        #offset  = fromInt fd / IF_INT_64_OR_32 64 32
-        #val = (readIntElemOffset ptr offset) bitor (1 << (fd rem IF_INT_64_OR_32 64 32))
-        = writeIntElemOffset ptr offset val
+readPipeBlockingSetFdBit :: !Int !Pointer -> Pointer
+readPipeBlockingSetFdBit fd ptr
+    # offset  = fromInt fd / IF_INT_64_OR_32 64 32
+    # val = (readIntElemOffset ptr offset) bitor (1 << (fd rem IF_INT_64_OR_32 64 32))
+    = writeIntElemOffset ptr offset val
 
 writePipe :: !String !WritePipe !*World -> (!MaybeOSError (), !*World)
 writePipe str (WritePipe fd) world

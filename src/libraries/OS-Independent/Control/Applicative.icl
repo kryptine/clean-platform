@@ -71,11 +71,20 @@ many v = many_v
   where  many_v  = some_v <|> lift []
          some_v  = (\x xs -> [x:xs]) <$> v <*> many_v
 
-(*>) infixl 4 :: (f a) (f b) -> f b | Applicative f
-(*>) fa fb = liftA2 (const id) fa fb
+instance *> f where *> fa fb = id <$ fa <*> fb
 
-(<*) infixl 4 :: (f a) (f b) -> f a | Applicative f
-(<*) fa fb = liftA2 const fa fb
+instance *> Maybe
+where
+	*> (Just _) m = m
+	*> _        _ = Nothing
+
+instance <* f where <* fa fb = liftA2 const fa fb
+
+instance <* Maybe
+where
+	<* Nothing _  = Nothing
+	<* m (Just _) = m
+	<* _ _        = Nothing
 
 (<**>) infixl 4 :: (f a) (f (a -> b)) -> f b | Applicative f
 (<**>) fa fab = liftA2 (flip ($)) fa fab
