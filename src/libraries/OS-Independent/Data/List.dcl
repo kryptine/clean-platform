@@ -4,6 +4,7 @@ from Data.Functor import class Functor
 from Data.Maybe import :: Maybe
 import StdList, GenEq
 
+(!?) infixl 9   :: ![.a] !Int -> Maybe .a
 head            :: ![.a] -> .a
 tail            :: !u:[.a] -> u:[.a]
 isnull          :: ![.a] -> Bool

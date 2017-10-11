@@ -1,7 +1,7 @@
 implementation module Text.JSON
 
 import StdGeneric, Data.Maybe, StdList, StdOrdList, StdString, _SystemArray, StdTuple, StdBool, StdFunc, StdOverloadedList, StdFile
-import Text, Text.PPrint
+import Data.List, Text, Text.PPrint
 
 //Basic JSON serialization
 instance toString JSONNode
@@ -573,10 +573,11 @@ JSONDecode{|FIELD of {gfd_name}|} fx _ l =:[JSONObject fields]
     | otherwise  = findField match xs
   findField match [] = []
 JSONDecode{|FIELD of {gfd_index}|} fx _ l =:[JSONArray fields]
-  #! field = fields !! gfd_index
-  = case fx True [field] of
-      (Just x, _) = (Just (FIELD x), l)
-      (_, _)      = (Nothing, l)
+	= case fields !? gfd_index of
+		Nothing    = (Nothing, l)
+		Just field = case fx True [field] of
+			(Just x, _) = (Just (FIELD x), l)
+			(_, _)      = (Nothing, l)
 JSONDecode{|FIELD|} fx _ l = (Nothing, l)
 
 JSONDecode{|[]|} fx _ l =:[JSONArray items:xs]
