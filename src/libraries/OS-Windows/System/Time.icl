@@ -84,6 +84,14 @@ where
 		ccall mktime "A:I:I"
 	}
 
+timeGm :: !Tm -> Timestamp
+timeGm tm = Timestamp (timegmC (packTm tm))
+where
+	timegmC :: !{#Int} -> Int
+	timegmC tm = code {
+		ccall _mkgmtime "A:I"
+	}
+
 diffTime :: !Timestamp !Timestamp -> Int
 diffTime (Timestamp t1) (Timestamp t2) = t1 - t2
 

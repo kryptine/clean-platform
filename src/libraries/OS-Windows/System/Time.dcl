@@ -64,6 +64,11 @@ localTime	:: !*World -> (!Tm, !*World)
 */
 mkTime		:: !Tm !*World-> (!Timestamp, !*World)
 /**
+* Convert a Tm record (UTC) to a Timestamp value.
+* No time zone conversion is done.
+*/
+timeGm		:: !Tm -> Timestamp
+/**
 * Calculate the difference in seconds between two times
 */
 diffTime	:: !Timestamp !Timestamp -> Int
