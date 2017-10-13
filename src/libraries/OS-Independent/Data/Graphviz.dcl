@@ -411,6 +411,7 @@ derive gEq Color // PK++
 
 instance toString ArrowType
 instance ==       ArrowType
+derive gEq Maybe
 derive gEq ArrowType // PK++
 
 // direction of the edge
