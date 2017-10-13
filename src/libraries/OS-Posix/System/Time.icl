@@ -1,7 +1,7 @@
 implementation module System.Time
 
 import StdString, StdArray, StdClass, StdOverloaded, StdInt
-import System._Pointer
+import System._Pointer, System.OS
 import Text
 
 //String buffer size
@@ -162,4 +162,4 @@ unpackTm buf off =
 	}
 
 sizeOfTm :: Int
-sizeOfTm = 36 
+sizeOfTm = IF_ANDROID 44 36 
