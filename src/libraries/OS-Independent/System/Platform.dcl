@@ -3,7 +3,9 @@ definition module System.Platform
 import System._Platform
 
 :: Platform
-	= Linux32
+	= Android32
+	| Android64
+	| Linux32
 	| Linux64
 	| Mac
 	| Windows32
