@@ -126,6 +126,8 @@ unlockFile :: !HANDLE !DWORD !DWORD !DWORD !DWORD !*w -> (!Bool, !*w)
 
 getFileSize :: !HANDLE !LPDWORD !*w -> (!DWORD, !*w)
 
+getFullPathNameA :: !String !DWORD !String !LPTSTR !*w -> (!DWORD, !*w)
+
 createDirectoryA :: !String !LPSECURITY_ATTRIBUTES !*w -> (!Bool, !*w)
 
 createProcessA :: !String !String !LPSECURITY_ATTRIBUTES !LPSECURITY_ATTRIBUTES !Bool !Int !LPVOID
