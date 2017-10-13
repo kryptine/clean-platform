@@ -5,7 +5,19 @@ from Data.Functor         import class Functor
 from Data.Maybe           import :: Maybe
 
 class Monad m | Applicative m where
-  bind :: !(m a) (a -> m b) -> m b
+    bind :: !(m a) (a -> m b) -> m b
+
+    (>>=) infixl 1 :: (m a) (a -> m b) -> m b
+    (>>=) ma a2mb :== bind ma a2mb
+
+    (`b`) infixl 1 :: (m a) (a -> m b) -> m b
+    (`b`) ma a2mb :== bind ma a2mb
+
+    (>>|) infixl 1 :: (m a) (m b) -> m b | Monad m
+    (>>|) ma mb :== ma >>= \_ -> mb
+
+    (=<<) infixr 1 :: (a -> m b) (m a) -> m b
+    (=<<) f x :== x >>= f
 
 instance Monad ((->) r)
 
@@ -21,10 +33,6 @@ instance MonadPlus []
 
 instance MonadPlus Maybe
 
-(>>=) infixl 1    :: (m a) (a -> m b) -> m b | Monad m
-(`b`) infixl 1    :: (m a) (a -> m b) -> m b | Monad m
-(>>|) infixl 1    :: (m a) (m b) -> m b | Monad m
-(=<<) infixr 1    :: (a -> m b) (m a) -> m b | Monad m
 sequence          :: !.[a b] -> a [b] | Monad a
 sequence_         :: !.[a b] -> a () | Monad a
 mapM              :: (.a -> b c) ![.a] -> b [c] | Monad b

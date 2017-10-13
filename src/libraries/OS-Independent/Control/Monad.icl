@@ -28,18 +28,6 @@ instance MonadPlus Maybe where
   mplus Nothing ys  = ys
   mplus xs      _   = xs
 
-(>>=) infixl 1 :: (m a) (a -> m b) -> m b | Monad m
-(>>=) ma a2mb = bind ma a2mb
-
-(`b`) infixl 1    :: (m a) (a -> m b) -> m b | Monad m
-(`b`) ma a2mb = bind ma a2mb
-
-(>>|) infixl 1 :: (m a) (m b) -> m b | Monad m
-(>>|) ma mb = ma >>= \_ -> mb
-
-(=<<) infixr 1 :: (a -> m b) (m a) -> m b | Monad m
-(=<<) f x = x >>= f
-
 sequence :: !.[a b] -> a [b] | Monad a
 sequence ms = foldr k (lift []) ms
   where
