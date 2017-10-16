@@ -122,6 +122,11 @@ kill pid sig world = code {
     ccall kill "II:I:A"
 }
 
+timegm :: !{#Int} -> Int
+timegm tm = code {
+	ccall timegm "A:I"
+}
+
 malloc :: !Int -> Pointer
 malloc num = code {
 	ccall malloc "p:p"

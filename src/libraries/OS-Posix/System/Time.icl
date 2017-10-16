@@ -1,7 +1,7 @@
 implementation module System.Time
 
 import StdString, StdArray, StdClass, StdOverloaded, StdInt
-import System._Pointer
+import System._Pointer, System._Posix
 import Text
 
 //String buffer size
@@ -80,15 +80,18 @@ localTime world
     	ccall localtime "A:p:p"
 	}
 
-mkTime :: !Tm -> Timestamp
-mkTime tm 
-	# t = mkTimeC (packTm tm)
-	= Timestamp t
-	where
-	mkTimeC :: !{#Int} -> Int
-	mkTimeC tm = code {
-		ccall mktime "A:I"
+mkTime :: !Tm !*World-> (!Timestamp, !*World)
+mkTime tm world
+	# (t, world) = mkTimeC (packTm tm) world
+	= (Timestamp t, world)
+where
+	mkTimeC :: !{#Int} !*World -> (!Int, !*World)
+	mkTimeC tm world = code {
+		ccall mktime "A:I:A"
 	}
+
+timeGm :: !Tm -> Timestamp
+timeGm tm = Timestamp (timegm (packTm tm))
 
 diffTime :: !Timestamp !Timestamp -> Int
 diffTime (Timestamp t1) (Timestamp t2) = t1 - t2
