@@ -62,7 +62,7 @@ where
 	where
 		grps = groupBy (\a b -> types a == types b && length (types a) == 1) crs
 		types (Instance _ ts) = ts; types (Derivation _ t) = [t]
-		corg (Instance c _) = c; corg (Derivation g _) = g
+		corg (Instance c _) = c; corg (Derivation g _) = g +++ "{|*|}"
 
 instance print Type
 where
