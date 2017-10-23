@@ -25,8 +25,8 @@ STDERR_FILENO :== 2
 
 FIONREAD :== 0x4004667F
 
-F_SETFD   :== 2
-O_CLOEXEC :== 02000000
+F_SETFD    :== 2
+FD_CLOEXEC :== 1
 
 //Posix API calls
 errno		:: !*w -> (!Int,!*w)
