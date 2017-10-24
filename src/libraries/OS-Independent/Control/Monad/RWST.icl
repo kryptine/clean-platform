@@ -63,7 +63,7 @@ evalRWST m r s
 execRWST :: (RWST r w s m a) r s -> m (s, w) | Monad m
 execRWST m r s
   =                  runRWST m r s
-  >>= \(_, s`, w) -> pure (s, w)
+  >>= \(_, s`, w) -> pure (s`, w)
 
 mapRWST :: ((m (a, s, w)) -> n (b, s, w`)) (RWST r w s m a) -> RWST r w` s n b
 mapRWST f m = RWST (\r s -> f (runRWST m r s))
