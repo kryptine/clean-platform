@@ -55,6 +55,7 @@ read        :: !Int !Pointer !Int !*w -> (!Int, !*w)
 write       :: !Int !{#Char} !Int !*w -> (!Int, !*w)
 select_     :: !Int !Pointer !Pointer !Pointer !Pointer !*w -> (!Int, !*w)
 kill        :: !Int !Int !*w -> (!Int, !*w)
+timegm      :: !{#Int} -> Int
 
 //Memory (impure)
 malloc	:: !Int -> Pointer
