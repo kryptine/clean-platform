@@ -4,13 +4,7 @@ from StdOverloaded import class + (..), class * (..), class zero (..), class one
 from StdBool import &&, ||
 from StdFunc import o, id
 from Data.Maybe import :: Maybe(..)
-from StdList import ++, foldr
-
-mconcat :: !.[a] -> a | Monoid a
-mconcat xs = foldr mappend mempty xs
-
-(<++>) infixr 6 :: a a -> a | Semigroup a
-(<++>) ma mb = mappend ma mb
+from StdList import ++
 
 instance Semigroup [a] where
   mappend xs ys  = xs ++ ys
