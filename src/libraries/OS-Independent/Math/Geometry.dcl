@@ -2,6 +2,10 @@ definition module Math.Geometry
 
 from StdEnv import class ==, class <, class +, class -, class sign
 
+/**
+ * The constant pi.
+ * @type Real
+ */
 pi :== 3.14159265359
 
 :: Angle
@@ -20,4 +24,3 @@ instance < Angle
 instance + Angle
 instance - Angle
 instance sign Angle
-

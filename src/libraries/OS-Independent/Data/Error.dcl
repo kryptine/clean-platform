@@ -5,8 +5,17 @@ from Control.Monad import class Monad
 from Control.Applicative import class Applicative
 from Data.Maybe import :: Maybe
 
+/**
+ * A type representing something that may have failed.
+ * @var The error type.
+ * @var The value type.
+ */
 :: MaybeError a b = Error a | Ok b 
 
+/**
+ * Like {{`MaybeError`}} but with {{`String`}} as error type.
+ * @var The value type.
+ */
 :: MaybeErrorString a :== MaybeError String a
 
 instance Functor (MaybeError a)

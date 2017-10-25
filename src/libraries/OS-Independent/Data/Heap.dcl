@@ -35,16 +35,24 @@ null :: (Heap a) -> Bool
 
 size :: (Heap a) -> Int
 
-//empty :: Heap a
+/**
+ * @type Heap a
+ */
 empty :== Empty
 
-//singleton :: a -> Heap a | Ord a
+/**
+ * @type a -> Heap a | Ord a
+ */
 singleton x :== singletonWith (<=) x
 
-//singletonWith :: (a a -> Bool) a -> Heap a
+/**
+ * @type (a a -> Bool) a -> Heap a
+ */
 singletonWith f a :== Heap 1 f (Node 0 a Nil)
 
-//insert :: a (Heap a) -> (Heap a) | Ord a
+/**
+ * @type a (Heap a) -> (Heap a) | Ord a
+ */
 insert :== insertWith (<=)
 
 insertWith :: (a a -> Bool) a (Heap a) -> Heap a
@@ -55,7 +63,9 @@ replicate :: a Int -> Heap a | Ord a
 
 uncons :: (Heap a) -> Maybe (a, Heap a) | Ord a
 
-//viewMin :: (Heap a) -> Maybe (a, Heap a) | Ord a
+/**
+ * @type (Heap a) -> Maybe (a, Heap a) | Ord a
+ */
 viewMin :== uncons
 
 minimum :: (Heap a) -> a
@@ -74,18 +84,39 @@ partition :: (a -> Bool) (Heap a) -> (Heap a, Heap a)
 
 split :: a (Heap a) -> (Heap a, Heap a, Heap a)
 
+/**
+ * @type Int (Heap a) -> Heap a
+ */
 take :== withList o 'L'.take
 
+/**
+ * @type Int (Heap a) -> Heap a
+ */
 drop :== withList o 'L'.drop
 
+/**
+ * @type Int (Heap a) -> (Heap a, Heap a)
+ */
 splitAt :== splitWithList o 'L'.splitAt
 
+/**
+ * @type (a -> Bool) (Heap a) -> (Heap a, Heap a)
+ */
 break :== splitWithList o 'L'.break
 
+/**
+ * @type (a -> Bool) (Heap a) -> (Heap a, Heap a)
+ */
 span :== splitWithList o 'L'.span
 
+/**
+ * @type (a -> Bool) (Heap a) -> Heap a
+ */
 takeWhile :== withList o 'L'.takeWhile
 
+/**
+ * @type (a -> Bool) (Heap a) -> Heap a
+ */
 dropWhile :== withList o 'L'.dropWhile
 
 nub :: (Heap a) -> Heap a
