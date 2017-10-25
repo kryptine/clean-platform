@@ -14,12 +14,12 @@ toJSLiteral ustr = encodeString ustr
 
 instance fromUnicode JSLit
 where
-	fromUnicode :: UString -> JSLit
+	fromUnicode :: !UString -> JSLit
 	fromUnicode ustr = JSLit (encodeString ustr)
 			
 instance toUnicode JSLit 
 where
-	toUnicode :: JSLit -> UString
+	toUnicode :: !JSLit -> UString
 	toUnicode (JSLit str) = decodeString str
 
 instance fromString JSLit

@@ -39,43 +39,43 @@ from StdFunc import flip
 //
 class Foldable t where
     // Combine the elements of a structure using a monoid.
-    fold :: (t m) -> m | Monoid m
+    fold :: !(t m) -> m | Monoid m
 
     // Map each element of the structure to a monoid,
     // and combine the results.
-    foldMap :: (a -> m) (t a) -> m | Monoid m
+    foldMap :: (a -> m) !(t a) -> m | Monoid m
 
     // Right-associative fold of a structure.
     //
     // @'foldr' f z = 'Prelude.foldr' f z . 'toList'@
-    foldr :: (a b -> b) b (t a) -> b
+    foldr :: (a b -> b) b !(t a) -> b
 
     // Right-associative fold of a structure, 
     // but with strict application of the operator.
-    foldr` :: (a b -> b) b (t a) -> b
+    foldr` :: (a b -> b) b !(t a) -> b
 
     // Left-associative fold of a structure.
     //
     // @'foldl' f z = 'Prelude.foldl' f z . 'toList'@
-    foldl :: (b a -> b) b (t a) -> b
+    foldl :: (b a -> b) b !(t a) -> b
 
     // Left-associative fold of a structure.
     // but with strict application of the operator.
     //
     // @'foldl' f z = 'List.foldl'' f z . 'toList'@
-    foldl` :: (b a -> b) b (t a) -> b
+    foldl` :: (b a -> b) b !(t a) -> b
 
     // A variant of 'foldr' that has no base case,
     // and thus may only be applied to non-empty structures.
     //
     // @'foldr1' f = 'Prelude.foldr1' f . 'toList'@
-    foldr1 :: (a a -> a) (t a) -> a
+    foldr1 :: (a a -> a) !(t a) -> a
 
     // A variant of 'foldl' that has no base case,
     // and thus may only be applied to non-empty structures.
     //
     // @'foldl1' f = 'Prelude.foldl1' f . 'toList'@
-    foldl1 :: (a a -> a) (t a) -> a
+    foldl1 :: (a a -> a) !(t a) -> a
 
 instance Foldable Maybe
 instance Foldable []

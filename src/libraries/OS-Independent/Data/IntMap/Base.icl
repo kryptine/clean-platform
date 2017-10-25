@@ -141,7 +141,7 @@ notMember :: Int (IntMap a) -> Bool
 notMember k m = not (member k m)
 
 // | /O(min(n,W))/. Lookup the value at a key in the map. See also 'Data.Map.lookup'.
-lookup :: !Int (IntMap a) -> Maybe a
+lookup :: !Int !(IntMap a) -> Maybe a
 lookup k (Bin p m l r)
   | nomatch k p m = Nothing
   | zero k m  = lookup k l
@@ -506,7 +506,7 @@ alter f k t =
 // >     == fromList [(3, "b"), (5, "a"), (7, "C")]
 // > unions [(fromList [(5, "A3"), (3, "B3")]), (fromList [(5, "A"), (7, "C")]), (fromList [(5, "a"), (3, "b")])]
 // >     == fromList [(3, "B3"), (5, "A3"), (7, "C")]
-unions :: [IntMap a] -> IntMap a
+unions :: ![IntMap a] -> IntMap a
 unions xs = foldlStrict union empty xs
 
 // | The union of a list of maps, with a combining operation.
@@ -521,7 +521,7 @@ unionsWith f ts = foldlStrict (unionWith f) empty ts
 // i.e. (@'union' == 'unionWith' 'const'@).
 //
 // > union (fromList [(5, "a"), (3, "b")]) (fromList [(5, "A"), (7, "C")]) == fromList [(3, "b"), (5, "a"), (7, "C")]
-union :: (IntMap a) (IntMap a) -> IntMap a
+union :: !(IntMap a) !(IntMap a) -> IntMap a
 union m1 m2 = mergeWithKey` Bin const id id m1 m2
 
 // | /O(n+m)/. The union with a combining function.
@@ -721,7 +721,7 @@ updateMaxWithKey f t =
 //
 // > maxViewWithKey (fromList [(5,"a"), (3,"b")]) == Just ((5,"a"), singleton 3 "b")
 // > maxViewWithKey empty == Nothing
-maxViewWithKey :: (IntMap a) -> Maybe ((Int, a), IntMap a)
+maxViewWithKey :: !(IntMap a) -> Maybe ((Int, a), IntMap a)
 maxViewWithKey t =
   case t of Nil -> Nothing
             Bin p m l r | m < 0 -> case go l of (result, l`) -> Just (result, bin p m l` r)
@@ -736,7 +736,7 @@ maxViewWithKey t =
 //
 // > minViewWithKey (fromList [(5,"a"), (3,"b")]) == Just ((3,"b"), singleton 5 "a")
 // > minViewWithKey empty == Nothing
-minViewWithKey :: (IntMap a) -> Maybe ((Int, a), IntMap a)
+minViewWithKey :: !(IntMap a) -> Maybe ((Int, a), IntMap a)
 minViewWithKey t =
   case t of Nil -> Nothing
             Bin p m l r | m < 0 -> case go r of (result, r`) -> Just (result, bin p m l r`)
@@ -1275,7 +1275,7 @@ foldl` f z t =
 //
 // > let f k a result = result ++ "(" ++ (show k) ++ ":" ++ a ++ ")"
 // > foldrWithKey f "Map: " (fromList [(5,"a"), (3,"b")]) == "Map: (5:a)(3:b)"
-foldrWithKey :: (Int a b -> b) b (IntMap a) -> b
+foldrWithKey :: (Int a b -> b) b !(IntMap a) -> b
 foldrWithKey f z t =
   case t of Bin _ m l r | m < 0 -> go (go z l) r // put negative numbers before
                         | otherwise -> go (go z r) l
@@ -1529,7 +1529,7 @@ fromDistinctAscList [z0 : zs0] = work z0 zs0 Nada
 instance == (IntMap a) | == a where
   (==) t1 t2  = equal t1 t2
 
-equal :: (IntMap a) (IntMap a) -> Bool | == a
+equal :: !(IntMap a) !(IntMap a) -> Bool | == a
 equal (Bin p1 m1 l1 r1) (Bin p2 m2 l2 r2)
   = (m1 == m2) && (p1 == p2) && (equal l1 l2) && (equal r1 r2)
 equal (Tip kx x) (Tip ky y)

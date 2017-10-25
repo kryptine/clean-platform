@@ -7,7 +7,7 @@ definition module Data.Queue
 from Data.Maybe import :: Maybe
 from StdOverloaded import class length
 
-:: Queue a = Queue [a] [a]
+:: Queue a = Queue ![a] ![a]
 
 /**
 * Create an empty queue
@@ -27,9 +27,9 @@ instance length Queue
 /**
 * Add an element to the queue
 */
-enqueue :: a (Queue a) -> Queue a
+enqueue :: a !(Queue a) -> Queue a
 
 /**
 * Take an element from the queue (if the queue is not empty)
 */
-dequeue :: (Queue a) -> (!Maybe a,!Queue a)
+dequeue :: !(Queue a) -> (!Maybe a, !Queue a)

@@ -28,6 +28,6 @@ instance Monad (Either e) where
   bind (Left  l) _ = Left l
   bind (Right r) k = k r
 
-either :: (.a -> .c) (.b -> .c) (Either .a .b) -> .c
+either :: (.a -> .c) (.b -> .c) !(Either .a .b) -> .c
 either f _ (Left x)     =  f x
 either _ g (Right y)    =  g y

@@ -24,10 +24,10 @@ alphaNum = satisfy isAlphanum
 oneOf :: [Char] -> Parser Char a Char
 oneOf cs = satisfy (\c -> isMember c cs)  
 
-choice :: [Parser s t r] -> Parser s t r
+choice :: ![Parser s t r] -> Parser s t r
 choice l = foldl (<!>) fail l
 
-ds :: (Parser s t r) -> Parser s t r | space s
+ds :: !(Parser s t r) -> Parser s t r | space s
 ds p = dropCheck space p
 
 class space s :: !s -> Bool
@@ -50,9 +50,9 @@ identifier = satisfy isAlpha <&> \c -> <.*> (satisfy isAlphanum) <@ \r -> toStri
 /*	Computes line and column number, taking into account tabs and line breaks. Mind that tabs and
 	line breaks are themselves characters in the input string and have a position.*/
 		
-lineAndColumn :: [Char] Int			// position returned by error msg
-						Int ->		// standard tab width
-						(Int,Int)	// line,column
+lineAndColumn :: ![Char] !Int       // position returned by error msg
+						 Int ->		// standard tab width
+						 (Int,Int)	// line,column
 lineAndColumn cs pos tab
 	| pos < 1	= abort "ParserKernel.icl: position less than one"
 	= lnc cs pos 1 1
@@ -78,7 +78,7 @@ errorToString :: SymbolTypes (Rose (String,[SugPosition])) [SugPosition] -> Stri
 errorToString symbolTypes hypotheses position
 	= flattenSep "\n" (errorToStrings symbolTypes hypotheses position)
 
-simpleErrorToString :: SymbolTypes (Rose (String,[SugPosition])) [SugPosition] -> String
+simpleErrorToString :: SymbolTypes !(Rose (String,[SugPosition])) ![SugPosition] -> String
 simpleErrorToString symbolTypes hypotheses position
 	# loc	= "["+++ flattenSep "," (map toString position)+++"]: "
 	# sugs	= fromRose hypotheses undef position

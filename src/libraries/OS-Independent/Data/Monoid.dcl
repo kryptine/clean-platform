@@ -2,15 +2,19 @@ definition module Data.Monoid
 
 from StdOverloaded import class +, class *, class zero, class one
 from Data.Maybe import :: Maybe
+import qualified StdList
 
 class Semigroup a where
-  mappend :: a a -> a
+    mappend :: !a a -> a
+
+    mconcat :: !.[a] -> a
+    mconcat xs :== 'StdList'.foldr mappend mempty xs
 
 class Monoid a | Semigroup a where
-  mempty :: a
+    mempty :: a
 
-mconcat         :: .[a] -> a | Monoid a
-(<++>) infixr 6 :: a a -> a | Semigroup a
+    (<++>) infixr 6 :: a a -> a
+    (<++>) ma mb :== mappend ma mb
 
 instance Semigroup [a]
 instance Semigroup (a -> b) | Semigroup b
@@ -64,18 +68,18 @@ instance Monoid (Product a) | * a & one a
 instance Monoid (First a)
 instance Monoid (Last a)
 
-getDual :: (Dual a) -> a
+getDual :: !(Dual a) -> a
 
-appEndo :: (Endo a) -> (a -> a)
+appEndo :: !(Endo a) -> (a -> a)
 
-getAll :: All -> Bool
+getAll :: !All -> Bool
 
-getAny :: Any -> Bool
+getAny :: !Any -> Bool
 
-getSum :: (Sum a) -> a
+getSum :: !(Sum a) -> a
 
-getProduct :: (Product a) -> a
+getProduct :: !(Product a) -> a
 
-getFirst :: (First a) -> Maybe a
+getFirst :: !(First a) -> Maybe a
 
-getLast :: (Last a) -> Maybe a
+getLast :: !(Last a) -> Maybe a

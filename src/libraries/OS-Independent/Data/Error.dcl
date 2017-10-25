@@ -50,7 +50,7 @@ mb2error		:: !e !(Maybe a) -> MaybeError e a
 /**
  * Returns st on Error, state continuation on OK
  */
-okSt :: *st (.a *st -> *st) (MaybeError .e .a) -> *st
+okSt :: *st (.a *st -> *st) !(MaybeError .e .a) -> *st
 
 /**
 * Converts a MaybeError value into a Maybe value.

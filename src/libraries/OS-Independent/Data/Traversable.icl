@@ -18,15 +18,6 @@ from Data.Monoid import class Monoid
 import Data.Maybe
 from StdFunc import o, id, flip
 
-//instance Traversable t where
-    //traverse f = sequenceA o fmap f
-
-    //sequenceA = traverse id
-
-    //mapM f = unwrapMonad o traverse (WrapMonad o f)
-
-    //sequence = mapM id
-
 instance Traversable Maybe where
     traverse _ Nothing = pure Nothing
     traverse f (Just x) = Just <$> f x

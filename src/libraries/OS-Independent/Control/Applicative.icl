@@ -6,7 +6,7 @@ from Data.Monoid import class Monoid, class Semigroup
 import qualified Data.Monoid as DM
 from StdFunc import id, o, flip, const
 
-getConst :: (Const a b) -> a
+getConst :: !(Const a b) -> a
 getConst (Const x) = x
 
 instance Functor (Const m) where
@@ -22,7 +22,7 @@ instance Applicative (Const m) | Monoid m where
   pure _ = Const 'DM'.mempty
   (<*>) (Const f) (Const v) = Const ('DM'.mappend f v)
 
-unwrapMonad :: (WrappedMonad m a) -> m a
+unwrapMonad :: !(WrappedMonad m a) -> m a
 unwrapMonad (WrapMonad x) = x
 
 instance Functor (WrappedMonad m) | Monad m where

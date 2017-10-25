@@ -4,13 +4,7 @@ from StdOverloaded import class + (..), class * (..), class zero (..), class one
 from StdBool import &&, ||
 from StdFunc import o, id
 from Data.Maybe import :: Maybe(..)
-from StdList import ++, foldr
-
-mconcat :: .[a] -> a | Monoid a
-mconcat xs = foldr mappend mempty xs
-
-(<++>) infixr 6 :: a a -> a | Semigroup a
-(<++>) ma mb = mappend ma mb
+from StdList import ++
 
 instance Semigroup [a] where
   mappend xs ys  = xs ++ ys
@@ -112,27 +106,26 @@ instance Semigroup (Last a) where
 instance Monoid (Last a) where
   mempty = Last Nothing
 
-getDual :: (Dual a) -> a
+getDual :: !(Dual a) -> a
 getDual (Dual x) = x
 
-appEndo :: (Endo a) -> (a -> a)
+appEndo :: !(Endo a) -> (a -> a)
 appEndo (Endo f) = f
 
-getAll :: All -> Bool
+getAll :: !All -> Bool
 getAll (All b) = b
 
-getAny :: Any -> Bool
+getAny :: !Any -> Bool
 getAny (Any b) = b
 
-getSum :: (Sum a) -> a
+getSum :: !(Sum a) -> a
 getSum (Sum x) = x
 
-getProduct :: (Product a) -> a
+getProduct :: !(Product a) -> a
 getProduct (Product x) = x
 
-getFirst :: (First a) -> Maybe a
+getFirst :: !(First a) -> Maybe a
 getFirst (First x) = x
 
-getLast :: (Last a) -> Maybe a
+getLast :: !(Last a) -> Maybe a
 getLast (Last x) = x
-

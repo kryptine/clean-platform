@@ -132,7 +132,7 @@ generalCategory c = fromInt (wgencat (toInt c))
 // | Selects alphabetic Unicode characters (lower-case, upper-case and
 // title-case letters, plus letters of caseless scripts and modifiers letters).
 // This function is equivalent to 'Data.Char.isAlpha'.
-isLetter :: UChar -> Bool
+isLetter :: !UChar -> Bool
 isLetter c = case generalCategory c of
         UppercaseLetter         -> True
         LowercaseLetter         -> True
@@ -143,7 +143,7 @@ isLetter c = case generalCategory c of
 
 // | Selects Unicode mark characters, e.g. accents and the like, which
 // combine with preceding letters.
-isMark :: UChar -> Bool
+isMark :: !UChar -> Bool
 isMark c = case generalCategory c of
         NonSpacingMark          -> True
         SpacingCombiningMark    -> True
@@ -152,7 +152,7 @@ isMark c = case generalCategory c of
 
 // | Selects Unicode numeric characters, including digits from various
 // scripts, Roman numerals, etc.
-isNumber :: UChar -> Bool
+isNumber :: !UChar -> Bool
 isNumber c = case generalCategory c of
         DecimalNumber           -> True
         LetterNumber            -> True
@@ -161,7 +161,7 @@ isNumber c = case generalCategory c of
 
 // | Selects Unicode punctuation characters, including various kinds
 // of connectors, brackets and quotes.
-isPunctuation :: UChar -> Bool
+isPunctuation :: !UChar -> Bool
 isPunctuation c = case generalCategory c of
         ConnectorPunctuation    -> True
         DashPunctuation         -> True
@@ -174,7 +174,7 @@ isPunctuation c = case generalCategory c of
 
 // | Selects Unicode symbol characters, including mathematical and
 // currency symbols.
-isSymbol :: UChar -> Bool
+isSymbol :: !UChar -> Bool
 isSymbol c = case generalCategory c of
         MathSymbol              -> True
         CurrencySymbol          -> True
@@ -183,7 +183,7 @@ isSymbol c = case generalCategory c of
         _                       -> False
 
 // | Selects Unicode space and separator characters.
-isSeparator :: UChar -> Bool
+isSeparator :: !UChar -> Bool
 isSeparator c = case generalCategory c of
         Space                   -> True
         LineSeparator           -> True
@@ -193,7 +193,7 @@ isSeparator c = case generalCategory c of
 // | Selects alphabetic Unicode characters (lower-case, upper-case and
 // title-case letters, plus letters of caseless scripts and modifiers letters).
 // This function is equivalent to 'Data.Char.isLetter'.
-isAlpha :: UChar -> Bool
+isAlpha :: !UChar -> Bool
 isAlpha c = not (iswalpha c == 0)
 
 // | Selects alphabetic or numeric digit Unicode characters.
@@ -201,27 +201,27 @@ isAlpha c = not (iswalpha c == 0)
 // Note that numeric digits outside the ASCII range are selected by this
 // function but not by 'isDigit'.  Such digits may be part of identifiers
 // but are not used by the printer and reader to represent numbers.
-isAlphaNum  :: UChar -> Bool
+isAlphaNum  :: !UChar -> Bool
 isAlphaNum c = not (iswalnum c == 0)
 
 // | Selects the first 128 characters of the Unicode character set,
 // corresponding to the ASCII character set.
-isAscii :: UChar -> Bool
+isAscii :: !UChar -> Bool
 isAscii c = c < 0x80
 
 // | Selects the first 256 characters of the Unicode character set,
 // corresponding to the ISO 8859-1 (Latin-1) character set.
-isLatin1 :: UChar -> Bool
+isLatin1 :: !UChar -> Bool
 isLatin1 c = c <= 0xff
 
 // | Selects ASCII lower-case letters,
 // i.e. characters satisfying both 'isAscii' and 'isLower'.
-isAsciiLower :: UChar -> Bool
+isAsciiLower :: !UChar -> Bool
 isAsciiLower c =  c >= fromChar 'a' && c <= fromChar 'z'
 
 // | Selects ASCII upper-case letters,
 // i.e. characters satisfying both 'isAscii' and 'isUpper'.
-isAsciiUpper :: UChar -> Bool
+isAsciiUpper :: !UChar -> Bool
 isAsciiUpper c = c >= fromChar 'A' && c <= fromChar 'Z'
 
 // | Returns 'True' for any Unicode space character, and the control
@@ -229,7 +229,7 @@ isAsciiUpper c = c >= fromChar 'A' && c <= fromChar 'Z'
 // isSpace includes non-breaking space
 // Done with explicit equalities both for efficiency, and to avoid a tiresome
 // recursion with GHC.List elem
-isSpace :: UChar -> Bool
+isSpace :: !UChar -> Bool
 isSpace c
 		  = c == fromChar ' '     ||
             c == fromChar '\t'    ||
@@ -242,54 +242,54 @@ isSpace c
 
 // | Selects control characters, which are the non-printing characters of
 // the Latin-1 subset of Unicode.
-isControl :: UChar -> Bool                 
+isControl :: !UChar -> Bool                 
 isControl c = not (iswcntrl c == 0)
 
 // | Selects printable Unicode characters
 // (letters, numbers, marks, punctuation, symbols and spaces).
-isPrint :: UChar -> Bool
+isPrint :: !UChar -> Bool
 isPrint c = not (iswprint c == 0)
 
 // | Selects upper-case or title-case alphabetic Unicode characters (letters).
 // Title case is used by a small number of letter ligatures like the
 // single-character form of /Lj/.
-isUpper :: UChar -> Bool
+isUpper :: !UChar -> Bool
 isUpper c = not (iswupper c == 0)
 
 // | Selects lower-case alphabetic Unicode characters (letters).
-isLower :: UChar -> Bool
+isLower :: !UChar -> Bool
 isLower c = not (iswlower c == 0)
 
 // | Selects ASCII digits, i.e. @\'0\'@..@\'9\'@.
-isDigit :: UChar -> Bool
+isDigit :: !UChar -> Bool
 isDigit c = c >= fromChar '0' && c <= fromChar '9'
 
 // | Selects ASCII octal digits, i.e. @\'0\'@..@\'7\'@.
-isOctDigit :: UChar -> Bool
+isOctDigit :: !UChar -> Bool
 isOctDigit c =  c >= fromChar '0' && c <= fromChar '7'
 
 // | Selects ASCII hexadecimal digits,
 // i.e. @\'0\'@..@\'9\'@, @\'a\'@..@\'f\'@, @\'A\'@..@\'F\'@.
-isHexDigit :: UChar -> Bool
+isHexDigit :: !UChar -> Bool
 isHexDigit c =  
 		isDigit c || c >= fromChar 'A' && c <= fromChar 'F' ||
                      c >= fromChar 'a' && c <= fromChar 'f'
 
 // | Convert a letter to the corresponding lower-case letter, if any.
 // Any other character is returned unchanged.
-toLower :: UChar -> UChar
+toLower :: !UChar -> UChar
 toLower c = towlower c
 
 // | Convert a letter to the corresponding upper-case letter, if any.
 // Any other character is returned unchanged.
-toUpper :: UChar -> UChar
+toUpper :: !UChar -> UChar
 toUpper c = towupper c
 
 // | Convert a letter to the corresponding title-case or upper-case
 // letter, if any.  (Title case differs from upper case only for a small
 // number of ligature letters.)
 // Any other character is returned unchanged.
-toTitle :: UChar -> UChar
+toTitle :: !UChar -> UChar
 toTitle c =  towtitle c
 
 instance ==	UChar

@@ -15,13 +15,13 @@ import Data.Maybe
 // the components are:
 
 :: URI = 
-		{ uriScheme		:: Maybe String		// foo
-		, uriUserInfo	:: Maybe String		// anonymous
-		, uriRegName	:: Maybe String		// www.haskell.org
-		, uriPort		:: Maybe Int 		// 42
-		, uriPath		:: String 			// /ghc
-		, uriQuery 		:: Maybe String		// query
-		, uriFragment 	:: Maybe String		// frag
+		{ uriScheme		:: !Maybe String // foo
+		, uriUserInfo	:: !Maybe String // anonymous
+		, uriRegName	:: !Maybe String // www.haskell.org
+		, uriPort		:: !Maybe Int    // 42
+		, uriPath		:: !String       // /ghc
+		, uriQuery 		:: !Maybe String // query
+		, uriFragment 	:: !Maybe String // frag
 		}
 
 // Blank URI
@@ -46,15 +46,15 @@ okInPathSegment :: Char -> Bool
 parseURI :: String -> Maybe URI
 
 // Escapes string, using predicate to determine whether character is allowed
-escapeString :: (Char -> Bool) String -> String
+escapeString :: (Char -> Bool) !String -> String
 // Convenience function for extracting www-urlencoded data
-uriQueryItems :: URI -> [(String, String)]
+uriQueryItems :: !URI -> [(String, String)]
 // Splits path to segments
-pathToSegments :: String -> [String]
+pathToSegments :: !String -> [String]
 // Convenience function for extracting path segments
-uriPathSegments :: URI -> [String]
+uriPathSegments :: !URI -> [String]
 // Joins path segments, with escaping
-segmentsToPath :: [String] -> String
+segmentsToPath :: ![String] -> String
 // Checks if uri is a reference
 isReference :: URI -> Bool
 // Checks if uri is relative

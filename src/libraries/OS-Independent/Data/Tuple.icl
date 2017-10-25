@@ -21,5 +21,5 @@ appSnd3 f (a,b,c) = (a,f b,c)
 appThd3 :: (.c -> .d) !(.a,.b,.c) -> (.a,.b,.d)
 appThd3 f (a,b,c) = (a,b,f c)
 
-swap :: (a, b) -> (b, a)
+swap :: !(a, b) -> (b, a)
 swap (a,b) = (b,a)

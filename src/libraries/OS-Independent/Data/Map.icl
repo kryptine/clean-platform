@@ -2208,7 +2208,6 @@ where // TODO
       #! (right,k,v)    = takeMax right
       #! (hleft,left)   = height left
       #! (hright,right) = height right
-      #! h              = (max hleft hright) + 1
       = (balance nk nv left right, k, v)
 
 	//Determines the height of the parent node of two sub trees

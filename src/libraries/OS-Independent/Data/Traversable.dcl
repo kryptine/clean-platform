@@ -96,19 +96,19 @@ from Data.Either import :: Either
 class Traversable t | Functor t & Foldable t where
     // Map each element of a structure to an action, evaluate
     // these actions from left to right, and collect the results.
-    traverse :: (a -> f b) (t a) -> f (t b) | Applicative f
+    traverse :: (a -> f b) !(t a) -> f (t b) | Applicative f
 
     // Evaluate each action in the structure from left to right,
     // and collect the results.
-    sequenceA :: (t (f a)) -> f (t a) | Applicative f
+    sequenceA :: !(t (f a)) -> f (t a) | Applicative f
 
     // Map each element of a structure to a monadic action, evaluate
     // these actions from left to right, and collect the results.
-    mapM :: (a -> m b) (t a) -> m (t b) | Monad m
+    mapM :: (a -> m b) !(t a) -> m (t b) | Monad m
 
     // Evaluate each monadic action in the structure from left to right,
     // and collect the results.
-    sequence :: (t (m a)) -> m (t a) | Monad m
+    sequence :: !(t (m a)) -> m (t a) | Monad m
 
 instance Traversable Maybe
 

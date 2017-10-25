@@ -12,10 +12,10 @@ import Data.Tuple, Text, System.FilePath, System.File, Data.Error, Data.Functor
 */
 :: SHA1Digest = SHA1Digest {#Char} // 160 bit (20byte) message digest
 
-sha1 :: String -> String
+sha1 :: !String -> String
 sha1 msg = toString (sha1StringDigest msg)
 
-sha1StringDigest :: String -> SHA1Digest
+sha1StringDigest :: !String -> SHA1Digest
 sha1StringDigest msg = SHA1Digest (toBytes (foldl processChunk initState (chunk (pad msg))))
 where
 	//Pre-processing:
@@ -91,7 +91,7 @@ where
 
 //The file digest is computed very dumb. Reading the full file and then hashing
 //This can be optimized in the future because the digest can also be computed streaming
-sha1FileDigest :: FilePath *env -> (!MaybeError FileError SHA1Digest,!*env) | FileSystem env
+sha1FileDigest :: !FilePath !*env -> (!MaybeError FileError SHA1Digest,!*env) | FileSystem env
 sha1FileDigest path env	
 	= appFst (fmap sha1StringDigest) (readFile path env)	
 

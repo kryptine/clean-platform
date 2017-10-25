@@ -141,7 +141,7 @@ instance Functor (PAlt f) | Functor f where
   fmap a2c (Seq fb2a gb)   = Seq ((\f -> a2c o f) <$> fb2a) gb
   fmap a2c (Bind fb b2ga)  = Bind fb (\b -> fmap a2c (b2ga b))
 
-(<<||>) infixl 4 :: (Gram f (b -> a)) (Gram f b) -> Gram f a | Functor f
+(<<||>) infixl 4 :: !(Gram f (b -> a)) (Gram f b) -> Gram f a | Functor f
 (<<||>) gb2a=:(Gram lb2a eb2a) gb =
   let  (Gram _ eb) = gb
   in   Gram (map (\x -> fwdby1 x gb) lb2a) (eb2a <*> eb)
@@ -152,7 +152,7 @@ fwdby1 (Bind fc c2gb2a)  gb = Bind fc (l c2gb2a gb)
          l :: .(.a -> .(Gram b (c -> d))) .(Gram b c) .a -> Gram b d | Functor b
          l c2gb2a gb c = c2gb2a c <||> gb
 
-(<||>) infixl 4 :: (Gram f (b -> a)) (Gram f b) -> Gram f a | Functor f
+(<||>) infixl 4 :: !(Gram f (b -> a)) !(Gram f b) -> Gram f a | Functor f
 (<||>) fb2a fb = fb2a <<||> fb <|> flip ($) <$> fb <<||> fb2a
 
 instance Applicative (Gram f) | Functor f where
@@ -182,16 +182,16 @@ instance Monad (Gram f) | Functor f where
           (Just b)  -> let (Gram lra ma) = b2g_a b
                        in  Gram (la ++ lra) ma
 
-mkP :: (Gram f a) -> f a | Monad f & Applicative f & Alternative f
+mkP :: !(Gram f a) -> f a | Monad f & Applicative f & Alternative f
 mkP (Gram l_a m_a) = foldr (<|>) (maybe empty pure m_a)
                                  (map mkP_Alt l_a)
   where  mkP_Alt (Seq f_b2a g_b)   = f_b2a <*> mkP g_b
          mkP_Alt (Bind f_b b2g_a)  = f_b >>= (mkP o b2g_a)
 
-sepBy :: (Gram f a) (f b) -> f a | Monad, Applicative, Alternative, *> f
+sepBy :: !(Gram f a) (f b) -> f a | Monad, Applicative, Alternative, *> f
 sepBy g sep = mkP (insertSep sep g)
 
-insertSep :: (f b) (Gram f a) -> Gram f a | Monad, Applicative, Alternative, *> f
+insertSep :: (f b) !(Gram f a) -> Gram f a | Monad, Applicative, Alternative, *> f
 insertSep sep (Gram na ea) = Gram (map insertSepInAlt na) ea
    where insertSepInAlt (Seq fb2a gb)   = Seq fb2a (prefixSepInGram sep gb)
          insertSepInAlt (Bind fc c2ga)  = Bind fc (insertSep sep o c2ga)
@@ -202,7 +202,7 @@ prefixSepInGram sep (Gram na ne)   = Gram (map (prefixSepInAlt sep) na) ne
 prefixSepInAlt :: (f a) (PAlt f b) -> PAlt f b | Monad, Applicative, Alternative, *> f
 prefixSepInAlt sep (Seq fb2a gb)   = Seq (sep *> fb2a) (prefixSepInGram sep gb)
 
-gmList :: (Gram f a) -> Gram f [a] | Functor f
+gmList :: !(Gram f a) -> Gram f [a] | Functor f
 gmList p = let pm = ((\x xs -> [x:xs]) <$> p <<||> pm) <|> pure [] in pm
 
 fail :: Parser s t r
@@ -273,28 +273,25 @@ where	p hy sc ac xc sg (is,i,ss,symTypes)	= case ss of
 alternative :: (Parser s t r) (Parser s t r) -> Parser s t r
 alternative (Parser p1) (Parser p2) = Parser (\hy sc ac xc sg ss -> p1 hy sc (\xc3 sg` -> p2 hy sc ac xc3 sg` ss) xc sg ss)
 
-(<&>) infixr 6 :: (Parser s t u) (u -> Parser s t v) -> Parser s t v
+(<&>) infixr 6 :: !(Parser s t u) (u -> Parser s t v) -> Parser s t v
 (<&>) (Parser p) u2wp = Parser (\hy sc ac xc -> p hy (\t ac1 xc1 -> (runParser (u2wp t)) hy sc ac1 xc) ac xc)
 
-(<++>) infixl 6 :: (Parser s t (r->u)) (Parser s t r) -> Parser s t u
+(<++>) infixl 6 :: !(Parser s t (r->u)) !(Parser s t r) -> Parser s t u
 (<++>) (Parser p1) (Parser p2) = Parser (\hy sc ac xc -> p1 hy (\f ac1 xc1 -> p2 hy (\rp -> sc (f rp)) ac1 xc) ac xc)
 
 :: MonadicSeq s r u t = (<&->)  infixr 6 (Parser s t      u) (u -> Parser s t r)
 :: ArrowSeq   s u r t = (<++->) infixl 6 (Parser s t (r->u)) (     Parser s t r)
 
-class Orr c where
-  (<-!>) infixr 4 :: !(c s r u t) (Parser s t r) -> Parser s t r
-
-(<!>) infixr 4 :: (Parser s t r) (Parser s t r) -> Parser s t r
+(<!>) infixr 4 :: !(Parser s t r) !(Parser s t r) -> Parser s t r
 (<!>) (Parser p1) (Parser p2) = Parser (\hy sc ac xc sg ss -> p1 hy sc (choose ac) (\sg` -> p2 hy sc ac xc sg` ss) sg ss)
 
 instance Orr MonadicSeq where
-  (<-!>) :: !(MonadicSeq s r u t) (Parser s t r) -> Parser s t r
+  (<-!>) :: !(MonadicSeq s r u t) !(Parser s t r) -> Parser s t r
   (<-!>) ((Parser p1) <&-> u2wp) (Parser p2) = Parser (\hy sc ac xc sg ss -> p1 hy (\r ac1 xc1 -> (runParser (u2wp r)) hy sc ac1 xc)
     (choose ac) (\sg` -> p2 hy sc ac xc sg` ss) sg ss)
 
 instance Orr ArrowSeq where
-  (<-!>) :: !(ArrowSeq s r u t) (Parser s t r) -> Parser s t r
+  (<-!>) :: !(ArrowSeq s r u t) !(Parser s t r) -> Parser s t r
   (<-!>) ((Parser p1) <++-> (Parser p2)) (Parser p3) = Parser (\hy sc ac xc sg ss -> p1 hy (\f ac1 xc1 -> p2 hy (\r2 -> sc (f r2)) ac1 xc)
     (choose ac) (\sg` -> p3 hy sc ac xc sg` ss) sg ss)
 
@@ -306,7 +303,7 @@ choose ac xc sg
 
 // PARSER TRANSFORMERS:
 
-first :: (Parser s t r) -> Parser s t r
+first :: !(Parser s t r) -> Parser s t r
 first (Parser p) = Parser (\hy sc ac xc sg -> p hy (\r ac` xc -> sc r ac empty_xc) ac xc sg)
 
 /*	checkIf: Paying attention to the proper error message will make things work after all this
@@ -321,7 +318,7 @@ first (Parser p) = Parser (\hy sc ac xc sg -> p hy (\r ac` xc -> sc r ac empty_x
 
 
 	
-(checkIf) infix 7 :: (Parser s t r) (r -> Bool) -> Parser s t r
+(checkIf) infix 7 :: !(Parser s t r) (r -> Bool) -> Parser s t r
 (checkIf) p test = p <&> checkIf` test
 
 checkIf` :: (r -> Bool) r -> Parser s t r
@@ -349,7 +346,7 @@ the test may now only name an alternative if (a part of) a test is violated.
 rewind :: (Parser s t r) -> Parser s t r
 rewind p = getParsable <&> \pp -> p <& setParsable pp
 
-dropCheck :: (s -> Bool) (Parser s t r) -> Parser s t r
+dropCheck :: (s -> Bool) !(Parser s t r) -> Parser s t r
 dropCheck pred (Parser p) = Parser p2
 where	p2 hy sc ac xc sg (is,i,ss,symTypes)
 			# (ss,j)	= drop pred ss 0
@@ -361,7 +358,7 @@ where	p2 hy sc ac xc sg (is,i,ss,symTypes)
 			= (all,i)
 		drop pred as i	= (as,i)
 
-atMost :: !Int (Parser s t r) -> Parser s t r
+atMost :: !Int !(Parser s t r) -> Parser s t r
 atMost n (Parser p) = (Parser p1)
 where	p1 hy sc ac xc sg (is,i,ss,symTypes=:[word,sentence:rSymTypes])
 			| n < 0			= ac xc (sg + (symTypes,[hy])@(is++[i]))
@@ -397,7 +394,7 @@ yieldAll :: (Succ s r t) (Alt s t) (Xor s t) Suggestions [(Parsable s,r)] -> Par
 yieldAll sc ac xc sg [(ss`,r):rs]	= sc r (\xc` sg` -> yieldAll sc ac xc` sg` rs) empty_xc sg ss`
 yieldAll sc ac xc sg []				= ac xc sg
 
-sortResultBy :: (r r -> Bool)  (Parser s r r) -> Parser s t r
+sortResultBy :: (r r -> Bool)  !(Parser s r r) -> Parser s t r
 sortResultBy less (Parser p) = Parser p1
 where	p1 hy sc ac xc sg ss
 			# (sg`,rs)	= parse` p hy sg ss
@@ -412,7 +409,7 @@ where	min1 a cum [b:bs]
 		min1 a cum []	= [a:cum]
 minListByAll less [] = []
 
-minResultBy :: (r r -> Bool) (Parser s r r) -> Parser s t r
+minResultBy :: (r r -> Bool) !(Parser s r r) -> Parser s t r
 minResultBy less (Parser p) = Parser p1
 where	p1 hy sc ac xc sg ss
 			# (sg`,rs)	= parse` p hy sg ss
@@ -421,7 +418,7 @@ where	p1 hy sc ac xc sg ss
 fstLonger :: (Parsable s,r) (Parsable s,r) -> Bool
 fstLonger ((is1,i1,_,_),_) ((is2,i2,_,_),_) = is1 == is2 && i1 > i2 || is1 > is2
 
-longest :: (Parser s r r) -> Parser s t r
+longest :: !(Parser s r r) -> Parser s t r
 longest (Parser p) = Parser p1
 where	p1 hy sc ac xc sg ss
 			# (sg`,rs)	= parse` p hy sg ss
@@ -438,7 +435,7 @@ where	p1 hy sc ac xc sg ss
 	in the 'expression' that starts at position 56, and within that
 	at position 61 the parser expects either a '(' or a number.    */
 
-(:>) infixl 8 :: String (Parser s t r) -> Parser s t r
+(:>) infixl 8 :: String !(Parser s t r) -> Parser s t r
 (:>) hyl (Parser p) = Parser (\hy sc ac xc sg ss=:(is,i,_,_) -> p [(hyl,is++[i]):hy] sc ac xc sg ss)
 
 /*	To add a hypothesis level to a wanting parser, with the possibility to use the wanted
