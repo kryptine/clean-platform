@@ -3,6 +3,8 @@ CLM:=clm
 override CLMFLAGS+=-dynamics
 CLMLIBS:=\
 	-I ../../src/libraries/OS-Independent\
+	-I ../../src/libraries/OS-Independent/Deprecated/ArgEnv\
+	-I ../../src/libraries/OS-Independent/Deprecated/MersenneTwister\
 	-I ../../src/libraries/OS-Independent/Deprecated/StdLib\
 	-I ../../src/libraries/OS-Posix\
 	-I ../../src/libraries/OS-Linux\
