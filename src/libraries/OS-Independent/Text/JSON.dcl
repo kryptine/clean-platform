@@ -10,6 +10,7 @@ definition module Text.JSON
 
 import StdGeneric, Data.Maybe, StdList, StdString
 from StdFile import class <<<
+from Data.List import !?
 
 :: JSONNode	= JSONNull
 			| JSONBool !Bool
@@ -146,10 +147,11 @@ JSONDecode{|FIELD of {gfd_name}|} fx _ l =:[JSONObject fields]
     | otherwise  = findField match xs
   findField match [] = []
 JSONDecode{|FIELD of {gfd_index}|} fx _ l =:[JSONArray fields]
-  #! field = fields !! gfd_index
-  = case fx True [field] of
-      (Just x, _) = (Just (FIELD x), l)
-      (_, _)      = (Nothing, l)
+	= case fields !? gfd_index of
+		Nothing    = (Nothing, l)
+		Just field = case fx True [field] of
+			(Just x, _) = (Just (FIELD x), l)
+			(_, _)      = (Nothing, l)
 JSONDecode{|FIELD|} fx _ l = (Nothing, l)
 
 /**

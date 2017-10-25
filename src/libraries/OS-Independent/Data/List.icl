@@ -3,6 +3,11 @@ implementation module Data.List
 import Data.Maybe, StdTuple, StdBool, StdEnum, StdFunc, StdList, StdOrdList, Data.Functor, GenEq
 from StdMisc import abort
 
+(!?) infixl 9   :: ![.a] !Int -> Maybe .a
+(!?) [x:_]  0 = Just x
+(!?) [_:xs] i = xs !? (i-1)
+(!?) _      _ = Nothing
+
 // Haskell Data.List compat
 
 head :: ![.a] -> .a

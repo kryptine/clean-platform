@@ -5,6 +5,11 @@ from Data.Maybe import :: Maybe
 import StdList, GenEq
 
 /**
+ * An element in the list, or Nothing if it does not exist.
+ */
+(!?) infixl 9   :: ![.a] !Int -> Maybe .a
+
+/**
  * The first element of the list.
  */
 head            :: ![.a] -> .a

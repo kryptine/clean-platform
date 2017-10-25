@@ -74,14 +74,22 @@ localTime world
 	# (tm,world)			= localTimeC (packInt t) world
 	= (derefTm tm, world)
 
-mkTime :: !Tm -> Timestamp
-mkTime tm 
-	# t = mkTimeC (packTm tm)
-	= Timestamp t
-	where
-	mkTimeC :: !{#Int} -> Int
-	mkTimeC tm = code {
-		ccall mktime "A:I"
+mkTime :: !Tm !*World-> (!Timestamp, !*World)
+mkTime tm world
+	# (t, world) = mkTimeC (packTm tm) world
+	= (Timestamp t, world)
+where
+	mkTimeC :: !{#Int} !*World -> (!Int, !*World)
+	mkTimeC tm world = code {
+		ccall mktime "A:I:I"
+	}
+
+timeGm :: !Tm -> Timestamp
+timeGm tm = Timestamp (timegmC (packTm tm))
+where
+	timegmC :: !{#Int} -> Int
+	timegmC tm = code {
+		ccall _mkgmtime "A:I"
 	}
 
 diffTime :: !Timestamp !Timestamp -> Int
