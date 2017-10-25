@@ -84,18 +84,39 @@ partition :: (a -> Bool) (Heap a) -> (Heap a, Heap a)
 
 split :: a (Heap a) -> (Heap a, Heap a, Heap a)
 
+/**
+ * @type Int (Heap a) -> Heap a
+ */
 take :== withList o 'L'.take
 
+/**
+ * @type Int (Heap a) -> Heap a
+ */
 drop :== withList o 'L'.drop
 
+/**
+ * @type Int (Heap a) -> (Heap a, Heap a)
+ */
 splitAt :== splitWithList o 'L'.splitAt
 
+/**
+ * @type (a -> Bool) (Heap a) -> (Heap a, Heap a)
+ */
 break :== splitWithList o 'L'.break
 
+/**
+ * @type (a -> Bool) (Heap a) -> (Heap a, Heap a)
+ */
 span :== splitWithList o 'L'.span
 
+/**
+ * @type (a -> Bool) (Heap a) -> Heap a
+ */
 takeWhile :== withList o 'L'.takeWhile
 
+/**
+ * @type (a -> Bool) (Heap a) -> Heap a
+ */
 dropWhile :== withList o 'L'.dropWhile
 
 nub :: (Heap a) -> Heap a

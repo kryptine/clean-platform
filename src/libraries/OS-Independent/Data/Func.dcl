@@ -13,8 +13,31 @@ definition module Data.Func
  */
 app f :== f
 
+/**
+ * Apply a state function to a list of values.
+ * See also {{`mapSt`}}.
+ *
+ * @param The function.
+ * @param The list of values.
+ * @param The initial state.
+ * @result The final state.
+ */
 seqSt        :: !(a .st -> .st)       ![a] !.st -> .st
+
+/**
+ * Apply a state function to a list of values and return the results.
+ * See also {{`seqSt`}}.
+ *
+ * @param The function.
+ * @param The list of values.
+ * @param The initial state.
+ * @result The value results and the final state.
+ */
 mapSt        :: !(a .st -> (!b,!.st)) ![a] !.st -> (![b],!.st)
+
+/**
+ * The fixed point combinator, reducing `fix f` to `f (fix f)`.
+ */
 fix          :: (a -> a) -> a
 
 /**
