@@ -206,6 +206,8 @@ where
 resolve_synonyms tds (Func is r tc)
 	# (syns, [r:is]) = appFst (removeDupTypedefs o flatten) $ unzip $ map (resolve_synonyms tds) [r:is]
 	= (syns, Func is r tc)
+resolve_synonyms _ (Var v)
+	= ([], Var v)
 resolve_synonyms tds (Cons v ts)
 	# (syns, ts) = appFst (removeDupTypedefs o flatten) $ unzip $ map (resolve_synonyms tds) ts
 	= (syns, Cons v ts)
@@ -213,9 +215,11 @@ resolve_synonyms tds (Forall vs t tc)
 	# (syns, t) = resolve_synonyms tds t
 	= (syns, Forall vs t tc)
 resolve_synonyms tds (Arrow (Just t))
-	= appSnd (Arrow o pure) $ resolve_synonyms tds t
-resolve_synonyms tds t
-	= ([], t)
+	= Arrow o Just <$> resolve_synonyms tds t
+resolve_synonyms tds (Arrow Nothing)
+	= ([], Arrow Nothing)
+resolve_synonyms tds (Uniq t)
+	= Uniq <$> resolve_synonyms tds t
 
 // Apply a TVAssignment to a Type
 assign :: !TVAssignment !Type -> Maybe Type
