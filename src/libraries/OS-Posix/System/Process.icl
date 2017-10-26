@@ -109,8 +109,8 @@ runProcessChildProcessExec :: !FilePath ![String] !(Maybe String) !Int !Int !*Wo
 runProcessChildProcessExec path args mCurrentDirectory pipeExecErrorOut pipeExecErrorIn world
     # (res, world) = close pipeExecErrorOut world
     | res == -1    = passLastOSErrorToParent pipeExecErrorIn world
-    // set O_CLOEXEC such that parent is informed if 'execvp' succeeds
-    # (res, world) = fcntlArg pipeExecErrorIn F_SETFD O_CLOEXEC world
+    // set FD_CLOEXEC such that parent is informed if 'execvp' succeeds
+    # (res, world) = fcntlArg pipeExecErrorIn F_SETFD FD_CLOEXEC world
     | res == -1    = passLastOSErrorToParent pipeExecErrorIn world
 	//Chdir
 	# (res,world) = case mCurrentDirectory of

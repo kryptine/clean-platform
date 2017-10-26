@@ -3,7 +3,7 @@
 
 definition module Data.Graphviz
 
-from StdOverloaded import class toString
+from StdOverloaded import class toString, class ==
 from Data.Maybe import :: Maybe
 from GenEq import generic gEq
 
