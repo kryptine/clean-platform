@@ -181,8 +181,6 @@ propagate_uniqueness (Forall vs t tc)
 propagate_uniqueness t
 	= t
 
-import StdMisc
-
 resolve_synonyms :: [TypeDef] Type -> ([TypeDef], Type)
 resolve_synonyms tds (Type t ts)
 	# (syns, ts) = appFst (removeDupTypedefs o flatten) $ unzip $ map (resolve_synonyms tds) ts
