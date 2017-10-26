@@ -7,16 +7,16 @@ from Data.Maybe           import :: Maybe
 class Monad m | Applicative m where
     bind :: !(m a) (a -> m b) -> m b
 
-    (>>=) infixl 1 :: (m a) (a -> m b) -> m b
+    (>>=) infixl 1 :: (m a) (a -> m b) -> m b | Monad m
     (>>=) ma a2mb :== bind ma a2mb
 
-    (`b`) infixl 1 :: (m a) (a -> m b) -> m b
+    (`b`) infixl 1 :: (m a) (a -> m b) -> m b | Monad m
     (`b`) ma a2mb :== bind ma a2mb
 
     (>>|) infixl 1 :: (m a) (m b) -> m b | Monad m
     (>>|) ma mb :== ma >>= \_ -> mb
 
-    (=<<) infixr 1 :: (a -> m b) (m a) -> m b
+    (=<<) infixr 1 :: (a -> m b) (m a) -> m b | Monad m
     (=<<) f x :== x >>= f
 
 instance Monad ((->) r)
