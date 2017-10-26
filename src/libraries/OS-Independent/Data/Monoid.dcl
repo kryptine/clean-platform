@@ -7,14 +7,14 @@ import qualified StdList
 class Semigroup a where
     mappend :: !a a -> a
 
-    mconcat :: !.[a] -> a
-    mconcat xs :== 'StdList'.foldr mappend mempty xs
+    (<++>) infixr 6 :: a a -> a | Semigroup a
+    (<++>) ma mb :== mappend ma mb
 
 class Monoid a | Semigroup a where
     mempty :: a
 
-    (<++>) infixr 6 :: a a -> a
-    (<++>) ma mb :== mappend ma mb
+    mconcat :: !.[a] -> a | Monoid a
+    mconcat xs :== 'StdList'.foldr mappend mempty xs
 
 instance Semigroup [a]
 instance Semigroup (a -> b) | Semigroup b
