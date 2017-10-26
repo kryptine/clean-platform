@@ -13,6 +13,7 @@ import Control.Monad
 import Control.Monad.State
 from Data.Func import $
 import Data.Functor
+import Data.List
 import Data.Maybe
 
 import GenEq
@@ -25,16 +26,30 @@ derive gEq Maybe, Type, TypeRestriction, Kind
 (generalises) infix 4 :: !Type !Type -> Bool
 (generalises) a b = case unify a` b` of
 	Nothing  -> False
-	Just tvs -> let unif = finish_unification [] tvs in
-		all (isVar o snd) unif.right_to_left
+	Just tvs -> isOk tvs
 where
 	(_, a`) = prepare_unification True  [] a
 	(_, b`) = prepare_unification False [] b
 
+	isOk :: [TVAssignment] -> Bool
+	isOk tvas = all isOk` $ groupVars tvas []
+	where
+		isOk` :: [Type] -> Bool
+		isOk` ts
+		| length [v \\ Var v <- ts | v.[0] == 'r'] >= 2 = False
+		| any (not o isVar) ts && any (\t -> isVar t && (fromVar t).[0] == 'r') ts = False
+		| otherwise = True
+
+	groupVars :: [TVAssignment] [[Type]] -> [[Type]]
+	groupVars []           groups = map removeDup groups
+	groupVars [(v,t):rest] groups = case partition (\g -> isMember (Var v) g || isMember t g) groups of
+		([], gs) -> groupVars rest [[Var v,t]:gs]
+		(yes,no) -> groupVars rest $ [[Var v,t:flatten yes]:no]
+
 (specialises) infix 4 :: !Type !Type -> Bool
 (specialises) a b = b generalises a
 
-prepare_unification :: !Bool /* is left */ [TypeDef] !Type -> ([TypeDef], Type)
+prepare_unification :: !Bool [TypeDef] !Type -> ([TypeDef], Type)
 prepare_unification b db (Func [] t _) = prepare_unification b db t
 prepare_unification isleft db t
 # (syns, t) = resolve_synonyms db t
@@ -59,8 +74,7 @@ finish_unification :: ![TypeDef] ![TVAssignment] -> Unifier
 finish_unification syns tvs
 # (tvs1, tvs2) = (filter (startsWith 'l') tvs, filter (startsWith 'r') tvs)
 # (tvs1, tvs2) = (map removePrefixes tvs1, map removePrefixes tvs2)
-# (tvs1, tvs2) = (sortBy order tvs1, sortBy order tvs2)
-= {left_to_right=tvs1, right_to_left=tvs2, used_synonyms=removeDupTypedefs syns}
+= {assignments=sortBy order (map LeftToRight tvs1 ++ map RightToLeft tvs2), used_synonyms=removeDupTypedefs syns}
 where
 	startsWith :: Char TVAssignment -> Bool
 	startsWith c (h,_) = h.[0] == c || h.[0] == '_' && h.[1] == c
@@ -69,17 +83,20 @@ where
 	removePrefixes (v,t) = (rm v, fromJust $ assignAll (map (\v->(v,Var (rm v))) $ allVars t) t)
 	where rm s = s % (if (s.[0] == '_') 2 1, size s - 1)
 
-	order :: TVAssignment TVAssignment -> Bool
-	order (v1,t1) (v2,t2)
+	order :: UnifyingAssignment UnifyingAssignment -> Bool
+	order ua1 ua2
 	| isMember v1 (allVars t2) = False
 	| isMember v2 (allVars t1) = True
 	| otherwise                = True // don't care
+	where
+		(v1,t1) = fromUnifyingAssignment ua1
+		(v2,t2) = fromUnifyingAssignment ua2
 
 :: UnificationState =
 	{ assignments :: ![TVAssignment]
 	, goals       :: ![(!Type, !Type)]
 	}
-assignments s :== s.assignments
+assignments s :== s.UnificationState.assignments
 goals       s :== s.goals
 
 :: UnifyM t :== StateT UnificationState Maybe t
@@ -97,7 +114,7 @@ applyAssignment v t =
 	gets goals >>= mapM (assign` (v,t)) >>= \goals ->
 	modify \s ->
 	{ s
-	& assignments = [(v,t):s.assignments]
+	& assignments = [(v,t):s.UnificationState.assignments]
 	, goals = goals
 	}
 where

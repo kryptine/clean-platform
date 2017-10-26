@@ -9,6 +9,7 @@ import StdBool
 from StdFunc import o, id
 from GenEq import generic gEq, ===
 from Data.Func import $
+import Data.Functor
 import Data.Maybe
 
 derive gEq Maybe, Type, TypeRestriction, Kind
@@ -85,12 +86,25 @@ isArrow (Arrow _) = True; isArrow _ = False
 fromArrow :: Type -> Maybe Type
 fromArrow (Arrow t) = t
 
+fromUnifyingAssignment :: UnifyingAssignment -> TVAssignment
+fromUnifyingAssignment (LeftToRight x) = x
+fromUnifyingAssignment (RightToLeft x) = x
+
 arity :: Type -> Int
 arity (Type _ ts) = length ts
 arity (Func is _ _) = length is
 arity (Var _) = 0
 arity (Cons _ ts) = length ts
 //TODO arity of Uniq / Forall / Arrow?
+
+removeTypeContexts :: Type -> Type
+removeTypeContexts (Type s ts) = Type s $ map removeTypeContexts ts
+removeTypeContexts (Func is r _) = Func (map removeTypeContexts is) (removeTypeContexts r) []
+removeTypeContexts (Var v) = Var v
+removeTypeContexts (Cons v ts) = Cons v $ map removeTypeContexts ts
+removeTypeContexts (Uniq t) = Uniq $ removeTypeContexts t
+removeTypeContexts (Forall ts t _) = Forall (map removeTypeContexts ts) (removeTypeContexts t) []
+removeTypeContexts (Arrow t) = Arrow (removeTypeContexts <$> t)
 
 constructorsToFunctions :: TypeDef -> [(String,Type,Maybe Priority)]
 constructorsToFunctions {td_name,td_uniq,td_args,td_rhs=TDRCons _ conses}

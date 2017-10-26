@@ -35,10 +35,13 @@ from Data.Maybe import :: Maybe
  * A unifier of a left type and a right type
  */
 :: Unifier
-	= { left_to_right :: [TVAssignment] //* The assignments from left to right
-	  , right_to_left :: [TVAssignment] //* The assignments from right to left
+	= { assignments   :: [UnifyingAssignment] //* The assignments
 	  , used_synonyms :: [TypeDef] //* Type synonyms used in the unification
 	  }
+
+:: UnifyingAssignment
+	= RightToLeft TVAssignment
+	| LeftToRight TVAssignment
 
 /**
  * A type context
@@ -218,10 +221,21 @@ isArrow :: Type -> Bool
 fromArrow :: Type -> Maybe Type
 
 /**
+ * Get the TVAssignment from a UnifyingAssignment
+ */
+fromUnifyingAssignment :: UnifyingAssignment -> TVAssignment
+
+/**
  * The arity of Type, Func, Var and Cons types.
  * Generates a run-time error for Uniq and Forall.
  */
 arity :: Type -> Int
+
+/**
+ * Remove all type contexts (including those of universally quantified types)
+ * from a type.
+ */
+removeTypeContexts :: Type -> Type
 
 /**
  * The constructors of an algebraic data type, as functions
