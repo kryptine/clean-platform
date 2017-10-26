@@ -199,6 +199,16 @@ findWithDefault :: !a !k !(Map k a) -> a | < k
 
 alter :: !((Maybe a) -> Maybe a) !k !(Map k a) -> Map k a | < k
 
+/**
+ * Get the position of a key in a Map so that it can be retrieved with
+ * {{`elemAt`}}.
+ */
+positionOf :: !k !(Map k a) -> Maybe Int | < k
+
+/**
+ * Get the entry at a certain index. This gives a runtime error when the index
+ * is out of range. To get an index for a certain key, see {{`positionOf`}}.
+ */
 elemAt :: !Int !(Map k a) -> (!k, !a)
 
 findMin :: !(Map k a) -> (!k, !a)
