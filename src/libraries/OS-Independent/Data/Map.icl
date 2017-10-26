@@ -447,13 +447,6 @@ getIndex k m = go 0 k m
       GT -> go (idx + mapSize l + 1) k r
       EQ -> Just (idx + mapSize l)
 
-indexOf :: !k !(Map k a) -> Maybe Int | < k
-indexOf k Tip = Nothing
-indexOf k (Bin s kx _ l r) = case lexOrd k kx of
-	LT -> indexOf k l
-	EQ -> Just (mapSize l)
-	GT -> ((+) (mapSize l + 1)) <$> indexOf k r
-
 // | /O(log n)/. Retrieve an element by its /index/, i.e. by its zero-based
 // index in the sequence sorted by keys. If the /index/ is out of range (less
 // than zero, greater or equal to 'mapSize' of the map), 'abort` is called.
