@@ -196,7 +196,7 @@ resolve_synonyms tds (Type t ts)
 				# (Type r rs) = t
 				# t = Type r $ rs ++ drop (length td_args) ts
 				= appFst ((++) [syn:syns]) $ resolve_synonyms tds t
-			= ([syn:syns], t)
+			= appFst ((++) [syn:syns]) $ resolve_synonyms tds t
 where
 	candidates = [td \\ td=:{td_rhs=TDRSynonym syn} <- tds
 		| td.td_name == t && length td.td_args <= length ts
