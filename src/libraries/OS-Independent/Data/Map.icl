@@ -428,7 +428,7 @@ getIndex k m = go 0 k m
 
 // | /O(log n)/. Retrieve an element by its /index/, i.e. by its zero-based
 // index in the sequence sorted by keys. If the /index/ is out of range (less
-// than zero, greater or equal to 'mapSize' of the map), 'abort` is called.
+// than zero, greater or equal to 'mapSize' of the map), 'Nothing` is returned.
 //
 // > elemAt 0 (fromList [(5,"a"), (3,"b")]) == Just (3,"b")
 // > elemAt 1 (fromList [(5,"a"), (3,"b")]) == Just (5, "a")
