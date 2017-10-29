@@ -9,12 +9,18 @@ import TypeDef
 from Data.Maybe import ::Maybe
 
 /**
- * True iff the first type is more general or equal to the second type
+ * Check whether a unification result indicates that the left type generalised
+ * the right type.
+ */
+isGeneralisingUnifier :: [TVAssignment] -> Bool
+
+/**
+ * True iff the first type is more general or equal to the second type.
  */
 (generalises) infix 4 :: !Type !Type -> Bool
 
 /**
- * True iff the first type is more specific or equal to the second type
+ * True iff the first type is more specific or equal to the second type.
  */
 (specialises) infix 4 :: !Type !Type -> Bool
 
@@ -31,7 +37,7 @@ from Data.Maybe import ::Maybe
 prepare_unification :: !Bool [TypeDef] !Type -> ([TypeDef], Type)
 
 /**
- * Finish unification, yielding a unifier
+ * Finish unification, yielding a unifier.
  *
  * @param The used type synonyms
  * @param The variable assignments
@@ -42,7 +48,7 @@ finish_unification :: ![TypeDef] ![TVAssignment] -> Unifier
 /**
  * Core of the unification. An implementation of Martelli and Montanari, 'An
  * Efficient Unification Algorithm'. ACM Transactions on Programming Languages
- * and Systems, Vol. 4, No. 2, April 1982, Pages 258-282.
+ * and Systems, Vol. 4, No. 2, April 1982, pp. 258-282.
  * It has been modified slightly to deal with constructor variables, universal
  * quantifiers and uniqueness.
  *

@@ -23,28 +23,28 @@ import TypeUtil
 
 derive gEq Maybe, Type, TypeRestriction, Kind
 
-(generalises) infix 4 :: !Type !Type -> Bool
-(generalises) a b = case unify a` b` of
-	Nothing  -> False
-	Just tvs -> isOk tvs
+isGeneralisingUnifier :: [TVAssignment] -> Bool
+isGeneralisingUnifier tvas = all isOk` $ groupVars tvas []
 where
-	(_, a`) = prepare_unification True  [] a
-	(_, b`) = prepare_unification False [] b
-
-	isOk :: [TVAssignment] -> Bool
-	isOk tvas = all isOk` $ groupVars tvas []
-	where
-		isOk` :: [Type] -> Bool
-		isOk` ts
-		| length [v \\ Var v <- ts | v.[0] == 'r'] >= 2 = False
-		| any (not o isVar) ts && any (\t -> isVar t && (fromVar t).[0] == 'r') ts = False
-		| otherwise = True
+	isOk` :: [Type] -> Bool
+	isOk` ts
+	| length [v \\ Var v <- ts | v.[0] == 'r'] >= 2 = False
+	| any (not o isVar) ts && any (\t -> isVar t && (fromVar t).[0] == 'r') ts = False
+	| otherwise = True
 
 	groupVars :: [TVAssignment] [[Type]] -> [[Type]]
 	groupVars []           groups = map removeDup groups
 	groupVars [(v,t):rest] groups = case partition (\g -> isMember (Var v) g || isMember t g) groups of
 		([], gs) -> groupVars rest [[Var v,t]:gs]
 		(yes,no) -> groupVars rest $ [[Var v,t:flatten yes]:no]
+
+(generalises) infix 4 :: !Type !Type -> Bool
+(generalises) a b = case unify a` b` of
+	Nothing  -> False
+	Just tvs -> isGeneralisingUnifier tvs
+where
+	(_, a`) = prepare_unification True  [] a
+	(_, b`) = prepare_unification False [] b
 
 (specialises) infix 4 :: !Type !Type -> Bool
 (specialises) a b = b generalises a
