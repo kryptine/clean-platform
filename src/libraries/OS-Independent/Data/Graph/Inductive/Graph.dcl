@@ -3,7 +3,7 @@
 definition module Data.Graph.Inductive.Graph
 
 from Data.Maybe import :: Maybe
-from StdOverloaded import class <
+from StdOverloaded import class <, class ==
 from StdClass import class Eq
 from GenLexOrd import generic gLexOrd, :: LexOrd
 
