@@ -53,7 +53,7 @@ instance < (Set a) | < a where
 //size (Bin sz _ _ _) = sz
 
 // | /O(log n)/. Is the element in the set?
-member :: !a !(Set a) -> Bool | < a & == a
+member :: !a !(Set a) -> Bool | < a
 member x Tip = False
 member x (Bin _ y l r)
   | x < y     = member x l
@@ -83,14 +83,14 @@ singleton x = Bin 1 x Tip Tip
 // | /O(log n)/. Insert an element in a set.
 // If the set already contains an element equal to the given value,
 // it is replaced with the new value.
-insert :: !a !.(Set a) -> Set a | < a & == a
+insert :: !a !.(Set a) -> Set a | < a
 insert x Tip = singleton x
 insert x (Bin sz y l r)
   | x < y     = balanceL y (insert x l) r
   | x > y     = balanceR y l (insert x r)
   | otherwise = Bin sz x l r
 
-insertR :: !a !(Set a) -> Set a | < a & == a
+insertR :: !a !(Set a) -> Set a | < a
 insertR x Tip = singleton x
 insertR x t=:(Bin _ y l r)
   | x < y     = balanceL y (insertR x l) r
@@ -98,7 +98,7 @@ insertR x t=:(Bin _ y l r)
   | otherwise = t
 
 // | /O(log n)/. Delete an element from a set.
-delete :: !a !.(Set a) -> Set a | < a & == a
+delete :: !a !.(Set a) -> Set a | < a
 delete x Tip = Tip
 delete x (Bin _ y l r)
   | x < y     = balanceR y (delete x l) r
@@ -118,7 +118,7 @@ delete x (Bin _ y l r)
 //isSubsetOf :: !(Set a) !(Set a) -> Bool | < a & == a
 //isSubsetOf t1 t2 = (size t1 <= size t2) && (isSubsetOfX t1 t2)
 
-isSubsetOfX :: !(Set a) !(Set a) -> Bool | < a & == a
+isSubsetOfX :: !(Set a) !(Set a) -> Bool | < a
 isSubsetOfX Tip _ = True
 isSubsetOfX _ Tip = False
 isSubsetOfX (Bin _ x l r) t
@@ -238,7 +238,7 @@ hedgeInt blo bhi (Bin _ x l r) t2
  *--------------------------------------------------------------------*/
 
 // | /O(n)/. Filter all elements that satisfy the predicate.
-filter :: !(a -> Bool) !(Set a) -> Set a | < a & == a
+filter :: !(a -> Bool) !(Set a) -> Set a | < a
 filter _ Tip = Tip
 filter p (Bin _ x l r)
   | p x       = link x (filter p l) (filter p r)
@@ -247,7 +247,7 @@ filter p (Bin _ x l r)
 // | /O(n)/. Partition the set into two sets, one with all elements that satisfy
 // the predicate and one with all elements that don't satisfy the predicate.
 // See also 'split'.
-partition :: !(a -> Bool) !(Set a) -> (!Set a, !Set a) | < a & == a
+partition :: !(a -> Bool) !(Set a) -> (!Set a, !Set a) | < a
 partition _ Tip = (Tip,Tip)
 partition p (Bin _ x l r)
   #! (l1,l2) = partition p l
@@ -277,10 +277,10 @@ fold f z (Bin _ x l r) = fold f (f x (fold f z r)) l
 //toAscList t = fold (\a as -> [a:as]) [] t
 
 // | /O(n*log n)/. Create a set from a list of elements.
-fromList :: ![a] -> Set a | < a & == a
+fromList :: ![a] -> Set a | < a
 fromList xs = foldl ins newSet xs
   where
-  ins :: !(Set a) !a -> Set a | < a & == a
+  ins :: !(Set a) !a -> Set a | < a
   ins t x = insert x t
 
 /*--------------------------------------------------------------------
@@ -354,7 +354,7 @@ filterLt (JustS b) t = filter` b t
 // | /O(log n)/. The expression (@'split' x set@) is a pair @(set1,set2)@
 // where @set1@ comprises the elements of @set@ less than @x@ and @set2@
 // comprises the elements of @set@ greater than @x@.
-split :: !a !(Set a) -> (!Set a, !Set a) | < a & == a
+split :: !a !(Set a) -> (!Set a, !Set a) | < a
 split _ Tip = (Tip,Tip)
 split x (Bin _ y l r)
   | x < y
@@ -367,7 +367,7 @@ split x (Bin _ y l r)
 
 // | /O(log n)/. Performs a 'split' but also returns whether the pivot
 // element was found in the original set.
-splitMember :: !a !(Set a) -> (!Set a, !Bool, !Set a) | < a & == a
+splitMember :: !a !(Set a) -> (!Set a, !Bool, !Set a) | < a
 splitMember _ Tip = (Tip, False, Tip)
 splitMember x (Bin _ y l r)
   | x < y

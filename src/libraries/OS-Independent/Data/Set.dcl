@@ -68,7 +68,7 @@ size s :== case s of
 /**
  * Is the element in the set?
  */
-member    :: !a !(Set a) -> Bool | < a & == a
+member    :: !a !(Set a) -> Bool | < a
 
 /**
  * Checks if an element is not in the set.
@@ -82,7 +82,7 @@ notMember x t :== not (member x t)
  */
 isSubsetOf t1 t2 :== (size t1 <= size t2) && (isSubsetOfX t1 t2)
 
-isSubsetOfX :: !(Set a) !(Set a) -> Bool | < a & == a
+isSubsetOfX :: !(Set a) !(Set a) -> Bool | < a
 
 /**
  * Is t1 a proper subset of t2?
@@ -103,12 +103,12 @@ singleton :: !u:a -> w:(Set u:a), [w <= u]
  * Insert an element in a set.
  * If the set already contains an element equal to the given value, it is replaced with the new value.
  */
-insert :: !a !.(Set a) -> Set a | < a & == a
+insert :: !a !.(Set a) -> Set a | < a
 
 /**
  * Delete an element from a set.
  */
-delete :: !a !.(Set a) -> Set a | < a & == a
+delete :: !a !.(Set a) -> Set a | < a
 
 /**
  * The minimal element of a set.
@@ -185,13 +185,13 @@ intersections :: ![Set a] -> Set a | < a & == a
 /**
  * Filter all elements that satisfy the predicate.
  */
-filter :: !(a -> Bool) !(Set a) -> Set a | < a & == a
+filter :: !(a -> Bool) !(Set a) -> Set a | < a
 
 /**
  * Partition the set into two sets, one with all elements that satisfy the
  * predicate and one with all elements that don't satisfy the predicate.
  */
-partition :: !(a -> Bool) !(Set a) -> (!Set a, !Set a) | < a & == a
+partition :: !(a -> Bool) !(Set a) -> (!Set a, !Set a) | < a
 
 /**
  * Split a set in elements less and elements greater than a certain pivot.
@@ -200,13 +200,13 @@ partition :: !(a -> Bool) !(Set a) -> (!Set a, !Set a) | < a & == a
  * @param The set.
  * @return A tuple of two sets containing small and large values.
  */
-split :: !a !(Set a) -> (!Set a, !Set a) | < a & == a
+split :: !a !(Set a) -> (!Set a, !Set a) | < a
 
 /**
  * Performs a 'split' but also returns whether the pivot element was found in
  * the original set.
  */
-splitMember :: !a !(Set a) -> (!Set a, !Bool, !Set a) | < a & == a
+splitMember :: !a !(Set a) -> (!Set a, !Bool, !Set a) | < a
 
 /**
  * O(n) Post-order fold.
@@ -228,7 +228,7 @@ toAscList t :== fold (\a as -> [a:as]) [] t
 /**
  * Create a set from a list of elements.
  */
-fromList :: ![a] -> Set a | < a & == a
+fromList :: ![a] -> Set a | < a
 
 /**
  * Map a function to all elements in a set.
