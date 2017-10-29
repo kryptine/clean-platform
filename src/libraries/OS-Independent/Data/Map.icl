@@ -406,27 +406,6 @@ alter f k (Bin sx kx x l r) = case lexOrd k kx of
 //////////////////////////////////////////////////////////////////////
 //  Indexing
 //////////////////////////////////////////////////////////////////////
-// | /O(log n)/. Return the /index/ of a key, which is its zero-based index in
-// the sequence sorted by keys. The index is a number from /0/ up to, but not
-// including, the 'mapSize' of the map. Calls 'abort` when the key is not
-// a 'member` of the map.
-//
-// > findIndex 2 (fromList [(5,"a"), (3,"b")])    Error: element is not in the map
-// > findIndex 3 (fromList [(5,"a"), (3,"b")]) == 0
-// > findIndex 5 (fromList [(5,"a"), (3,"b")]) == 1
-// > findIndex 6 (fromList [(5,"a"), (3,"b")])    Error: element is not in the map
-
-// See Note: Type of local 'go' function
-findIndex :: !k !(Map k a) -> Int | < k
-findIndex k m = go 0 k m
-  where
-    go :: !Int !k !(Map k a) -> Int | < k
-    go _   _ Tip  = abort "Map.findIndex: element is not in the map"
-    go idx k (Bin _ kx _ l r) = case lexOrd k kx of
-      LT -> go idx k l
-      GT -> go (idx + mapSize l + 1) k r
-      EQ -> idx + mapSize l
-
 // | /O(log n)/. Lookup the /index/ of a key, which is its zero-based index in
 // the sequence sorted by keys. The index is a number from /0/ up to, but not
 // including, the 'mapSize' of the map.
@@ -451,18 +430,18 @@ getIndex k m = go 0 k m
 // index in the sequence sorted by keys. If the /index/ is out of range (less
 // than zero, greater or equal to 'mapSize' of the map), 'abort` is called.
 //
-// > elemAt 0 (fromList [(5,"a"), (3,"b")]) == (3,"b")
-// > elemAt 1 (fromList [(5,"a"), (3,"b")]) == (5, "a")
-// > elemAt 2 (fromList [(5,"a"), (3,"b")])    Error: index out of range
+// > elemAt 0 (fromList [(5,"a"), (3,"b")]) == Just (3,"b")
+// > elemAt 1 (fromList [(5,"a"), (3,"b")]) == Just (5, "a")
+// > elemAt 2 (fromList [(5,"a"), (3,"b")]) == Nothing
 
-elemAt :: !Int !(Map k a) -> (!k, !a)
-elemAt _ Tip = abort "Map.elemAt: index out of range"
+elemAt :: !Int !(Map k a) -> Maybe (!k, !a)
+elemAt _ Tip = Nothing
 elemAt i (Bin _ kx x l r)
   #! mapSizeL = mapSize l
   = case lexOrd i mapSizeL of
       LT -> elemAt i l
       GT -> elemAt (i - mapSizeL - 1) r
-      EQ -> (kx,x)
+      EQ -> Just (kx,x)
 
 // | /O(log n)/. Update the element at /index/, i.e. by its zero-based index in
 // the sequence sorted by keys. If the /index/ is out of range (less than zero,

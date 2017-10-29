@@ -201,24 +201,15 @@ alter :: !((Maybe a) -> Maybe a) !k !(Map k a) -> Map k a | < k
 
 /**
  * Get the index of a key in a Map so that it can be retrieved with
- * {{`elemAt`}}. This gives a runtime error when the key does not exist.
- * {{`getIndex`}} does the same, but uses a Maybe instead.
- */
-findIndex :: !k !(Map k a) -> Int | < k
-
-/**
- * Get the index of a key in a Map so that it can be retrieved with
- * {{`elemAt`}}. {{`findIndex`}} does the same with a runtime error instead of
- * Maybe.
+ * {{`elemAt`}}.
  */
 getIndex :: !k !(Map k a) -> Maybe Int | < k
 
 /**
- * Get the entry at a certain index. This gives a runtime error when the index
- * is out of range. To get an index for a certain key, see {{`findIndex`}} and
+ * Get the entry at a certain index. To get an index for a certain key, see
  * {{`getIndex`}}.
  */
-elemAt :: !Int !(Map k a) -> (!k, !a)
+elemAt :: !Int !(Map k a) -> Maybe (!k, !a)
 
 findMin :: !(Map k a) -> (!k, !a)
 
