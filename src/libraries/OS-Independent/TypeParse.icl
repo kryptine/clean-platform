@@ -103,13 +103,18 @@ where
 		<|> liftM (\t -> Type t []) ident
 		<|> liftM Var var
 		<|> liftM Uniq uniq
-		<|> liftM (\t -> Type "_#Array" [t]) (braced (item TUnboxed >>| type))
-		<|> liftM (\t -> Type "_Array" [t])  (braced type)
-		<|> liftM (\t -> Type "_List" [t])   (bracked type)
+		<|> liftM (\t -> Type "_#Array" [t]) (braced  (item TUnboxed >>| type))
+		<|> liftM (\t -> Type "_!Array" [t]) (braced  (item TStrict  >>| type))
+		<|> liftM (\t -> Type "_Array"  [t]) (braced  type)
+		<|> liftM (\t -> Type "_#List!" [t]) (bracked (item TUnboxed >>| type |<< item TStrict))
+		<|> liftM (\t -> Type "_!List!" [t]) (bracked (item TStrict  >>| type |<< item TStrict))
+		<|> liftM (\t -> Type "_#List"  [t]) (bracked (item TUnboxed >>| type))
+		<|> liftM (\t -> Type "_!List"  [t]) (bracked (item TStrict  >>| type))
+		<|> liftM (\t -> Type "_List!"  [t]) (bracked (type |<< item TStrict))
+		<|> liftM (\t -> Type "_List"   [t]) (bracked type)
 		<|> liftM (\ts -> Type ("_Tuple" +++ toString (length ts)) ts)
 			(parenthised (seplist TComma type))
 		<|> (item TStrict >>| argtype)       // ! ignored for now
-		<|> (item TUnboxed >>| argtype)      // # ignored for now (except for the _#Array case above)
 		<|> (item TAnonymous >>| argtype)    // . ignored for now
 		<|> (unqvar >>| item TColon >>| argtype) // u: & friends ignored for now
 
