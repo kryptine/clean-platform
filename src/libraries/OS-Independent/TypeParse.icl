@@ -40,6 +40,7 @@ instance == Token where == a b = a === b
 	| TUniversalQuantifier     // A.
 	| TPipe                    // |
 	| TAmpersand               // &
+	| TLtEq                    // <=
 
 	| TParenOpen | TParenClose // ( )
 	| TBrackOpen | TBrackClose // [ ]
@@ -69,6 +70,7 @@ where
 	tkz tks [':':cs]     = tkz [TColon:tks]               cs
 	tkz tks ['|':cs]     = tkz [TPipe:tks]                cs
 	tkz tks ['&':cs]     = tkz [TAmpersand:tks]           cs
+	tkz tks ['<':'=':cs] = tkz [TLtEq:tks]                cs
 	tkz tks [c:cs]
 	| isSpace c = tkz tks cs
 	| isUpper c = tkz [TIdent $ toString [c:id]:tks] cs`
@@ -99,7 +101,6 @@ where
 	argtype = (item TParenOpen >>| item TParenClose >>| pure (Type "_Unit" []))
 		<|> parenthised type
 		<|> liftM (\t -> Type t []) ident
-		<|> liftM Var var
 		<|> liftM Uniq uniq
 		<|> liftM (\t -> Type "_#Array" [t]) (braced  (item TUnboxed >>| type))
 		<|> liftM (\t -> Type "_!Array" [t]) (braced  (item TStrict  >>| type))
@@ -112,9 +113,10 @@ where
 		<|> liftM (\t -> Type "_List"   [t]) (bracked type)
 		<|> liftM (\ts -> Type ("_Tuple" +++ toString (length ts)) ts)
 			(parenthised (seplist TComma type))
-		<|> (item TStrict >>| argtype)       // ! ignored for now
-		<|> (item TAnonymous >>| argtype)    // . ignored for now
+		<|> (item TStrict >>| argtype)           // ! ignored for now
+		<|> (item TAnonymous >>| argtype)        // . ignored for now
 		<|> (unqvar >>| item TColon >>| argtype) // u: & friends ignored for now
+		<|> liftM Var var
 
 	ident :: Parser Token String
 	ident = (\(TIdent id)->id) <$> satisfy isTIdent
@@ -133,7 +135,7 @@ where
 		<|> pure empty
 
 	optContext :: Parser Token TypeContext
-	optContext = context <|> pure []
+	optContext = (context <|> pure []) >>| (uniquenessEqualities <|> pure [])
 
 	context :: Parser Token TypeContext
 	context = item TPipe >>| flatten <$> seplist TAmpersand context`
@@ -164,6 +166,11 @@ where
 			TParenOpen  -> True
 			TParenClose -> True
 			_           -> False
+
+	uniquenessEqualities :: Parser Token TypeContext
+	uniquenessEqualities = item TComma >>| bracked (seplist TComma inequality) $> []
+	where
+		inequality = unqvar >>| item TLtEq >>| unqvar
 
 	parenthised p = item TParenOpen >>| p |<< item TParenClose
 	braced p = item TBraceOpen >>| p |<< item TBraceClose
