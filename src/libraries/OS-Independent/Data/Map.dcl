@@ -199,7 +199,28 @@ findWithDefault :: !a !k !(Map k a) -> a | < k
 
 alter :: !((Maybe a) -> Maybe a) !k !(Map k a) -> Map k a | < k
 
-elemAt :: !Int !(Map k a) -> (!k, !a)
+/**
+ * Get the index of a key in a Map so that it can be retrieved with
+ * {{`elemAt`}}.
+ */
+getIndex :: !k !(Map k a) -> Maybe Int | < k
+
+/**
+ * Get the entry at a certain index. To get an index for a certain key, see
+ * {{`getIndex`}}.
+ */
+elemAt :: !Int !(Map k a) -> Maybe (!k, !a)
+
+/**
+ * Update an entry at a certain index. To get an index for a certain key, see
+ * {{`getIndex`}}.
+ *
+ * @param The update function
+ * @param The index
+ * @param The map
+ * @result The new map, or Maybe in case of an index out of range
+ */
+updateAt :: !(k a -> Maybe a) !Int !(Map k a) -> Maybe (Map k a)
 
 findMin :: !(Map k a) -> (!k, !a)
 
