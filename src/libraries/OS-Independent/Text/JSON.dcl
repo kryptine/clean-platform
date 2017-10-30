@@ -10,7 +10,7 @@ definition module Text.JSON
 
 import StdGeneric
 from StdFile import class <<<
-from StdOverloaded import class fromString, class ==(..)
+from StdOverloaded import class fromString, class toString, class ==(..)
 from StdString import instance == {#Char}
 from Data.List import !?
 from Data.Maybe import :: Maybe(..)
