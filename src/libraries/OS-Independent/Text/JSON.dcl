@@ -8,9 +8,12 @@ definition module Text.JSON
 * For more info about JSON see: http://www.json.org/
 */
 
-import StdGeneric, Data.Maybe, StdList, StdString
+import StdGeneric
 from StdFile import class <<<
+from StdOverloaded import class fromString, class ==(..)
+from StdString import instance == {#Char}
 from Data.List import !?
+from Data.Maybe import :: Maybe(..)
 
 :: JSONNode	= JSONNull
 			| JSONBool !Bool

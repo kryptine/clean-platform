@@ -211,6 +211,17 @@ getIndex :: !k !(Map k a) -> Maybe Int | < k
  */
 elemAt :: !Int !(Map k a) -> Maybe (!k, !a)
 
+/**
+ * Update an entry at a certain index. To get an index for a certain key, see
+ * {{`getIndex`}}.
+ *
+ * @param The update function
+ * @param The index
+ * @param The map
+ * @result The new map, or Maybe in case of an index out of range
+ */
+updateAt :: !(k a -> Maybe a) !Int !(Map k a) -> Maybe (Map k a)
+
 findMin :: !(Map k a) -> (!k, !a)
 
 findMax :: !(Map k a) -> (!k, !a)

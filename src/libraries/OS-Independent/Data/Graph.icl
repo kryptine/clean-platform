@@ -2,7 +2,9 @@ implementation module Data.Graph
 
 import StdBool
 import StdFunc
-import StdList
+import StdInt
+from StdList import ++, filter, hd, isEmpty, isMember, map, reverse, tl,
+	instance length []
 import StdOrdList
 import StdTuple
 
