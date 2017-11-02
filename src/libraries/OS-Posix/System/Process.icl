@@ -153,7 +153,6 @@ runProcessMakeArgv argv_list world
 		= abort "malloc failed"
 	# args_memory = memcpy_string_to_pointer args_memory args_string args_size
 	# (argv, args_memory) = readP (createArgv argv_list) args_memory
-    # world = freeSt args_memory world
 	= (argv, world)
 where
 	argvLength [a:as] l
