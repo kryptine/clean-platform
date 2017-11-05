@@ -221,36 +221,30 @@ resolve_synonyms tds (Uniq t)
 
 // Apply a TVAssignment to a Type
 assign :: !TVAssignment !Type -> Maybe Type
-assign va (Type s ts) = Type s <$^> map (assign va) ts
-assign va (Func ts r tc) = Func <$^> map (assign va) ts
-		>>= (\f->f <$> assign va r) >>= (\f -> pure $ f tc) // TODO tc
+assign va (Type s ts) = Type s <$> mapM (assign va) ts
+assign va (Func ts r tc)
+	= liftM3 Func (mapM (assign va) ts) (assign va r) (pure tc) // TODO tc
 assign (v,a) (Var v`) = pure $ if (v == v`) a (Var v`)
 assign va=:(v,Type s ts) (Cons v` ts`)
-	| v == v`   = Type s <$^> map (assign va) (ts ++ ts`)
-	| otherwise = Cons v` <$^> map (assign va) ts`
+	| v == v`   = Type s <$> mapM (assign va) (ts ++ ts`)
+	| otherwise = Cons v` <$> mapM (assign va) ts`
 assign va=:(v,Cons c ts) (Cons v` ts`)
-	| v == v`   = Cons c <$^> map (assign va) (ts ++ ts`)
-	| otherwise = Cons v` <$^> map (assign va) ts`
+	| v == v`   = Cons c <$> mapM (assign va) (ts ++ ts`)
+	| otherwise = Cons v` <$> mapM (assign va) ts`
 assign va=:(v,Var v`) (Cons v`` ts)
-	| v == v``  = Cons v` <$^> map (assign va) ts
-	| otherwise = Cons v`` <$^> map (assign va) ts
+	| v == v``  = Cons v` <$> mapM (assign va) ts
+	| otherwise = Cons v`` <$> mapM (assign va) ts
 assign va=:(v,_) (Cons v` ts)
 	| v == v` = empty
-	| otherwise = Cons v` <$^> map (assign va) ts
-assign va (Uniq t) = Uniq <$> (assign va t)
+	| otherwise = Cons v` <$> mapM (assign va) ts
+assign va (Uniq t) = Uniq <$> assign va t
 assign va=:(v,Var v`) (Forall tvs t tc)
-	= Forall <$^> map (assign va) tvs >>= (\f -> flip f tc <$> assign va t)
+	= liftM3 Forall (mapM (assign va) tvs) (assign va t) (pure tc) // TODO tc
 assign va=:(v,_) (Forall tvs t tc)
 	| isMember (Var v) tvs = empty
 	| otherwise = flip (Forall tvs) tc <$> assign va t
 assign va (Arrow (Just t)) = Arrow o Just <$> assign va t
 assign va (Arrow Nothing) = Just $ Arrow Nothing
-
-(<$^>) infixl 4 //:: ([a] -> b) [Maybe a] -> Maybe b
-(<$^>) f mbs :== ifM (all isJust mbs) $ f $ map fromJust mbs
-
-//ifM :: Bool a -> m a | Alternative m
-ifM b x :== if b (pure x) empty
 
 reduceArities :: !Type -> Type
 reduceArities (Func [] r []) = r
