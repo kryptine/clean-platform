@@ -90,15 +90,14 @@ where
 
 runProcessPty :: !FilePath ![String] !(Maybe String) !*World -> (MaybeOSError (ProcessHandle, ProcessIO), *World)
 runProcessPty path args mCurrentDirectory world
-	# (masterPty, world) = openPty world
-	| isError masterPty  = (liftError masterPty, world)
-	# masterPty          = fromOk masterPty
+	# (masterPty, world) = posix_openpt (O_RDWR bitor O_NOCTTY) world
+	| masterPty == -1    = getLastOSError world
 	# (slavePty, world)  = grantpt masterPty world
 	| slavePty == -1     = getLastOSError world
 	# (slavePty, world)  = unlockpt masterPty world
 	| slavePty == -1     = getLastOSError world
 	# (slavePty, world)  = ptsname masterPty world
-	| slavePty == -1     = getLastOSError world
+	| slavePty == 0      = getLastOSError world
     // StdOut
     # (pipeStdOut, world) = openPipe world
     | isError pipeStdOut = (liftError pipeStdOut, world)
@@ -248,13 +247,6 @@ where
 			= fillArgv (arg_n+1) as argv args_memory
 		fillArgv arg_n [] argv args_memory
 			= {argv & [arg_n]=0}
-
-openPty :: !*World -> (MaybeOSError Int, !*World)
-openPty world
-	# (res, world) = posix_openpt (O_RDWR bitor O_NOCTTY) world
-	| res == -1
-		= getLastOSError world
-	= (Ok res, world)
 
 openPipe :: !*World -> (MaybeOSError (Int, Int), !*World)
 openPipe world
