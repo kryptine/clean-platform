@@ -133,6 +133,8 @@ where
 
     parentProcess :: !Int !Int !Int!Int !Int !Int !Int !Int !*World -> (!MaybeOSError (!ProcessHandle, !ProcessIO), !*World)
     parentProcess pipeStdIn pipeStdOutOut pipeStdOutIn pipeStdErrOut pipeStdErrIn pid pipeExecErrorOut pipeExecErrorIn world
+        # (res, world)       = close pipeStdOutIn world
+        | res == -1          = getLastOSError world
         # (res, world)       = close pipeStdErrIn world
         | res == -1          = getLastOSError world
         # (mbPHandle, world) = runProcessParentProcessCheckError pid pipeExecErrorOut pipeExecErrorIn world
