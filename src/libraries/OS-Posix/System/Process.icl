@@ -88,6 +88,65 @@ where
           , world
           )
 
+runProcessPty :: !FilePath ![String] !(Maybe String) !*World -> (MaybeOSError (ProcessHandle, ProcessIO), *World)
+runProcessPty path args mCurrentDirectory world
+	# (masterPty, world) = openPty world
+	| isError masterPty  = (liftError masterPty, world)
+	# masterPty          = fromOk masterPty
+	# (slavePty, world)  = grantpt masterPty world
+	| slavePty == -1     = getLastOSError world
+	# (slavePty, world)  = unlockpt masterPty world
+	| slavePty == -1     = getLastOSError world
+	# (slavePty, world)  = ptsname masterPty world
+	| slavePty == -1     = getLastOSError world
+    // StdOut
+    # (pipeStdOut, world) = openPipe world
+    | isError pipeStdOut = (liftError pipeStdOut, world)
+    # (pipeStdOutOut, pipeStdOutIn) = fromOk pipeStdOut
+    // StdErr
+    # (pipeStdErr, world) = openPipe world
+    | isError pipeStdErr = (liftError pipeStdErr, world)
+    # (pipeStdErrOut, pipeStdErrIn) = fromOk pipeStdErr
+    = runProcessFork (childProcess  slavePty pipeStdOutOut pipeStdOutIn pipeStdErrOut pipeStdErrIn)
+                     (parentProcess masterPty pipeStdOutOut pipeStdOutIn pipeStdErrOut pipeStdErrIn)
+                     world
+where
+    childProcess :: !Pointer !Int !Int!Int !Int !Int !Int !*World -> (!MaybeOSError (!ProcessHandle, !ProcessIO), !*World)
+    childProcess pipeStdIn pipeStdOutOut pipeStdOutIn pipeStdErrOut pipeStdErrIn pipeExecErrorOut pipeExecErrorIn world
+        //redirect stdin/out/err to pipes
+        # (res, world) = open pipeStdIn (O_RDWR bitor O_NOCTTY) world
+		| res == -1    = getLastOSError world
+        # (res, world) = dup2 res STDIN_FILENO world
+        | res == -1    = getLastOSError world
+
+        # (res, world) = dup2 pipeStdOutIn STDOUT_FILENO world
+        | res == -1    = getLastOSError world
+        # (res, world) = close pipeStdOutOut world
+        | res == -1    = getLastOSError world
+
+        # (res, world) = dup2 pipeStdErrIn STDERR_FILENO world
+        | res == -1    = getLastOSError world
+        # (res, world) = close pipeStdErrOut world
+        | res == -1    = getLastOSError world
+		# (_, world)   = runProcessChildProcessExec path args mCurrentDirectory pipeExecErrorOut pipeExecErrorIn world
+        // this is never executed as 'childProcessExec' never returns
+        = (undef, world)
+
+    parentProcess :: !Int !Int !Int!Int !Int !Int !Int !Int !*World -> (!MaybeOSError (!ProcessHandle, !ProcessIO), !*World)
+    parentProcess pipeStdIn pipeStdOutOut pipeStdOutIn pipeStdErrOut pipeStdErrIn pid pipeExecErrorOut pipeExecErrorIn world
+        # (res, world)       = close pipeStdErrIn world
+        | res == -1          = getLastOSError world
+        # (mbPHandle, world) = runProcessParentProcessCheckError pid pipeExecErrorOut pipeExecErrorIn world
+        | isError mbPHandle  = (liftError mbPHandle, world)
+		= ( Ok ( fromOk mbPHandle
+               , { stdIn  = WritePipe pipeStdIn
+                 , stdOut = ReadPipe  pipeStdOutOut
+                 , stdErr = ReadPipe  pipeStdErrOut
+                 }
+               )
+          , world
+          )
+
 runProcessFork :: !(    Int Int *World -> (!MaybeOSError a, !*World))
                   !(Int Int Int *World -> (!MaybeOSError a, !*World))
                   !*World
@@ -189,6 +248,13 @@ where
 			= fillArgv (arg_n+1) as argv args_memory
 		fillArgv arg_n [] argv args_memory
 			= {argv & [arg_n]=0}
+
+openPty :: !*World -> (MaybeOSError Int, !*World)
+openPty world
+	# (res, world) = posix_openpt (O_RDWR bitor O_NOCTTY) world
+	| res == -1
+		= getLastOSError world
+	= (Ok res, world)
 
 openPipe :: !*World -> (MaybeOSError (Int, Int), !*World)
 openPipe world

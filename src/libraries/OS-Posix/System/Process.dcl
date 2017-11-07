@@ -39,6 +39,15 @@ runProcess :: !FilePath ![String] !(Maybe String) !*World -> (MaybeOSError Proce
 runProcessIO :: !FilePath ![String] !(Maybe String) !*World -> (MaybeOSError (ProcessHandle, ProcessIO), *World)
 
 /**
+* runs a new process and a pty for IO
+* @param Path to the executable
+* @param a list of command-line arguments
+* @param (optional) startup directory
+* @return Process handle to the process and pipes for IO
+*/
+runProcessPty :: !FilePath ![String] !(Maybe String) !*World -> (MaybeOSError (ProcessHandle, ProcessIO), *World)
+
+/**
 * Check if a process is still running
 * @param Process handle to the process
 * @return Return code if the process has finished, Nothing if the process is still running
