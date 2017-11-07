@@ -80,7 +80,26 @@ pipe :: !Pointer !*w -> (!Int, !*w)
 pipe arr world = code {
     ccall pipe "p:I:A"
 }
-
+posix_openpt :: !Int !*w -> (!Int, !*w)
+posix_openpt flags w = code {
+	ccall posix_openpt "I:I:A"
+}
+grantpt     :: !Int *w -> (!Int, !*w)
+grantpt fp w = code {
+	ccall grantpt "I:I:A"
+}
+unlockpt    :: !Int *w -> (!Int, !*w)
+unlockpt fp w = code {
+	ccall unlockpt "I:I:A"
+}
+ptsname     :: !Int *w -> (!Pointer, !*w)
+ptsname fp w = code {
+	ccall ptsname "I:p:A"
+}
+open        :: !Pointer !Int !*w -> (!Int, !*w)
+open p flags w = code {
+	ccall open "pI:I:A"
+}
 dup2 :: !Int !Int !*w -> (!Int, !*w)
 dup2 old new world = code {
     ccall dup2 "II:I:A"

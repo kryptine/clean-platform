@@ -29,6 +29,9 @@ FIONREAD :== 0x541B
 F_SETFD    :== 2
 FD_CLOEXEC :== 1
 
+O_RDWR   :== 02
+O_NOCTTY :== 0400
+
 //Posix API calls
 errno		:: !*w -> (!Int,!*w)
 strerr		:: !Int -> Pointer
@@ -47,6 +50,11 @@ opendir		:: !{#Char} !*w -> (!Pointer,!*w)
 closedir	:: !Pointer !*w -> (!Int,!*w)
 readdir		:: !Pointer !*w -> (!Pointer,!*w)
 pipe        :: !Pointer !*w -> (!Int, !*w)
+posix_openpt :: !Int !*w -> (!Int, !*w)
+grantpt     :: !Int !*w -> (!Int, !*w)
+unlockpt    :: !Int !*w -> (!Int, !*w)
+ptsname     :: !Int !*w -> (!Pointer, !*w)
+open        :: !Pointer !Int !*w -> (!Int, !*w)
 dup2        :: !Int !Int !*w -> (!Int, !*w)
 close       :: !Int !*w -> (!Int, !*w)
 ioctl       :: !Int !Int !Pointer !*w -> (!Int, !*w)
