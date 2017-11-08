@@ -1,3 +1,5 @@
+# Standards
+
 The following guidelines should be adhered to when developing libraries for the
 Clean Platform library collection.
 
@@ -11,7 +13,7 @@ abbreviation should be written using only capitals (e.g. GUI,SQL,HTTP).
 ## Function names 
 
 Function names should be written in lowerCamelCase. By starting types and
-constructors with a capital and, functions without one, the difference between
+constructors with a capital and functions without one, the difference between
 a constructor and a function is immediately clear for the reader of a program.
 
 ## Module names 
@@ -20,7 +22,7 @@ For modules, the same guidelines apply as for naming types. Names should be
 informative and preferably short. When a library module is not meant for direct
 imports by end users, but should only used by experts in modules that for
 example provide a more friendly interface, you should prefix the name of that
-module with an underscore character or place it in a separate Internal
+module with an underscore character (`_`) or place it in a separate `Internal`
 submodule.
 
 ## Argument order 
@@ -35,28 +37,32 @@ somewhat more clear:
   of the arguments. This makes it easy to pass in options by currying.
 
 ## Comments 
-A concise description of the purpose of a function and the meaning of its input
-and output parameters should be present in the .dcl file for all exported
-functions. Comments are specified as follows:
 
-```
+A concise description of the purpose of a function and the meaning of its
+arguments and result should be present in the .dcl file for all exported
+functions. The documentation should not be included in the .icl file for
+maintainability. Comments are specified as follows:
+
+```clean
 /**
  * This function is the identity.
+ * @param Some value
+ * @result The same value
  */
 id :: a -> a
 id x = x
 ```
 
 Several JavaDoc like parameters are supported such as `@param`, `@result`,
-`@type`, `@var` and `@representation. More info about this can be found
-[here](https://github.com/clean-cloogle/Cloogle#clean-documentation)
+`@type`, `@var` and `@representation`. More info about this can be found
+[here](https://github.com/clean-cloogle/Cloogle#clean-documentation).
 
 ## Layout 
 
-Tabs should be used for indentation. Spaces for alignment.
-`where` clauses should not be indented.
+- Tabs should be used for indentation. Spaces for alignment.
+- The `where` keyword should be at the same level as the parent code block.
 
-## Exporting functions and types =
+## Exporting functions and types
 
 Definition modules (.dcl) must be very specific about the modules they import
 because everything imported in a definition module is exported as well,
@@ -64,9 +70,9 @@ increasing the chance of name collisions. To minimize the chance for
 collisions, adhere to the following conventions:
 
 - Explicitly import the types and classes you need for specifying the type
-  signatures by using the "from ... import ..." notation.
+  signatures by using the `from ... import ...` notation.
 
-- Only ever import an entire module with the "import ..." notation if you
+- Only ever import an entire module with the `import ...` notation if you
   really truly want to re-export the entire module.
 
 Implementation modules may import anything they like.
