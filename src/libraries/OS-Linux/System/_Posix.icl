@@ -100,11 +100,22 @@ open        :: !Pointer !Int !*w -> (!Int, !*w)
 open p flags w = code {
 	ccall open "pI:I:A"
 }
+tcgetattr   :: !Int !Pointer !*w -> (!Int, !*w)
+tcgetattr fp f w = code {
+	ccall tcgetattr "Ip:I:A"
+}
+cfmakeraw   :: !Pointer !*w -> !*w
+cfmakeraw p w = code {
+	ccall cfmakeraw "p:V:A"
+}
+tcsetattr   :: !Int !Int !Pointer !*w -> (!Int, !*w)
+tcsetattr fp strategy p w = code {
+	ccall tcsetattr "IIp:I:A"
+}
 dup2 :: !Int !Int !*w -> (!Int, !*w)
 dup2 old new world = code {
     ccall dup2 "II:I:A"
 }
-
 close :: !Int !*w -> (!Int, !*w)
 close fd world = code {
     ccall close "I:I:A"
@@ -147,7 +158,7 @@ timegm tm = code {
 
 malloc :: !Int -> Pointer
 malloc num = code {
-	ccall malloc "p:p"
+	ccall malloc "I:p"
 }
 free :: !Pointer -> Int
 free ptr = code {

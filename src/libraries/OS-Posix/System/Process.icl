@@ -98,47 +98,64 @@ runProcessPty path args mCurrentDirectory world
 	| slavePty == -1     = getLastOSError world
 	# (slavePty, world)  = ptsname masterPty world
 	| slavePty == 0      = getLastOSError world
-    // StdErr
-    # (pipeStdErr, world) = openPipe world
-    | isError pipeStdErr = (liftError pipeStdErr, world)
-    # (pipeStdErrOut, pipeStdErrIn) = fromOk pipeStdErr
-    = runProcessFork (childProcess  slavePty pipeStdErrOut pipeStdErrIn)
-                     (parentProcess masterPty pipeStdErrOut pipeStdErrIn)
-                     world
+	# (slavePty, world)  = open slavePty (O_RDWR bitor O_NOCTTY) world
+	| slavePty == -1     = getLastOSError world
+	= runProcessFork (childProcess  slavePty masterPty)
+	                 (parentProcess slavePty masterPty)
+	                 world
 where
-    childProcess :: !Pointer !Int !Int !Int !Int !*World -> (!MaybeOSError (!ProcessHandle, !ProcessIO), !*World)
-    childProcess pipePty pipeStdErrOut pipeStdErrIn pipeExecErrorOut pipeExecErrorIn world
-        //redirect stdin/out/err to pipes
-        # (pty, world) = open pipePty (O_RDWR bitor O_NOCTTY) world
-		| pty == -1    = getLastOSError world
-        # (res, world) = dup2 pty STDIN_FILENO world
-        | res == -1    = getLastOSError world
+	childProcess :: !Int !Int !Int !Int !*World -> (!MaybeOSError (!ProcessHandle, !ProcessIO), !*World)
+	childProcess slavePty masterPty pipeExecErrorOut pipeExecErrorIn world
+		//Disable echo
+		# termios      = malloc 88
+		| termios == 0 = abort "malloc failed"
+		# (res, world) = tcgetattr slavePty termios world
+		| res == -1    = getLastOSError world
+		# world        = cfmakeraw termios world
+		# (res, world) = tcsetattr slavePty TCSANOW termios world
+		| res == -1    = getLastOSError world
+		# world        = freeSt termios world
 
-        # (res, world) = dup2 pty STDOUT_FILENO world
-        | res == -1    = getLastOSError world
-
-        # (res, world) = dup2 pipeStdErrIn STDERR_FILENO world
-        | res == -1    = getLastOSError world
-        # (res, world) = close pipeStdErrOut world
-        | res == -1    = getLastOSError world
+		//Close the master side
+		# (res, world) = close masterPty world
+		| res == -1    = getLastOSError world
+		
+		//Connect the pty to the stdio
+		# (res, world) = dup2 slavePty STDIN_FILENO world
+		| res == -1    = getLastOSError world
+		# (res, world) = dup2 slavePty STDOUT_FILENO world
+		| res == -1    = getLastOSError world
+		# (res, world) = dup2 slavePty STDERR_FILENO world
+		| res == -1    = getLastOSError world
+		//Start
 		# (_, world)   = runProcessChildProcessExec path args mCurrentDirectory pipeExecErrorOut pipeExecErrorIn world
-        // this is never executed as 'childProcessExec' never returns
-        = (undef, world)
+		// this is never executed as 'childProcessExec' never returns
+		= (undef, world)
 
-    parentProcess :: !Int !Int !Int !Int !Int !Int !*World -> (!MaybeOSError (!ProcessHandle, !ProcessIO), !*World)
-    parentProcess pipePty pipeStdErrOut pipeStdErrIn pid pipeExecErrorOut pipeExecErrorIn world
-        # (res, world)       = close pipeStdErrIn world
-        | res == -1          = getLastOSError world
-        # (mbPHandle, world) = runProcessParentProcessCheckError pid pipeExecErrorOut pipeExecErrorIn world
-        | isError mbPHandle  = (liftError mbPHandle, world)
+	parentProcess :: !Int !Int !Int !Int !Int !*World -> (!MaybeOSError (!ProcessHandle, !ProcessIO), !*World)
+	parentProcess slavePty masterPty pid pipeExecErrorOut pipeExecErrorIn world
+		//Disable echo
+		# termios          = malloc 88
+		| termios == 0     = abort "malloc failed"
+		# (res, world)     = tcgetattr masterPty termios world
+		| res == -1        = getLastOSError world
+		# world            = cfmakeraw termios world
+		# (res, world)     = tcsetattr masterPty TCSANOW termios world
+		| res == -1        = getLastOSError world
+		//Close the slave side
+		# (res, world)     = close slavePty world
+		| res == -1        = getLastOSError world
+		# world            = freeSt termios world
+		//Start
+		# (mbPHandle, world) = runProcessParentProcessCheckError pid pipeExecErrorOut pipeExecErrorIn world
+		| isError mbPHandle  = (liftError mbPHandle, world)
 		= ( Ok ( fromOk mbPHandle
-               , { stdIn  = WritePipe pipePty
-                 , stdOut = ReadPipe  pipePty
-                 , stdErr = ReadPipe  pipeStdErrOut
-                 }
-               )
-          , world
-          )
+		       , { stdIn  = WritePipe masterPty
+		         , stdOut = ReadPipe masterPty
+		         , stdErr = ReadPipe masterPty
+		         }
+		       )
+		  , world)
 
 runProcessFork :: !(    Int Int *World -> (!MaybeOSError a, !*World))
                   !(Int Int Int *World -> (!MaybeOSError a, !*World))
