@@ -4,9 +4,8 @@ Clean Platform library collection.
 == Type names ==
 The names of types should be clear and informative, and should always start
 with a capital.  If the name of a type consists of multiple words, each new
-word should start with a capital.  The constructors of a type should also start
-with a capital. Whenever the name is an abbreviation the abbreviation should be
-written using only capitals (e.g. GUI,SQL,HTTP).
+word should start with a capital.  Whenever the name is an abbreviation the
+abbreviation should be written using only capitals (e.g. GUI,SQL,HTTP).
 
 == Function names ==
 Function names should *not* start with a capital, but when a function consists
