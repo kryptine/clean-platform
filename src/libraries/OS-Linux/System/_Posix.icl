@@ -104,13 +104,17 @@ tcgetattr   :: !Int !Pointer !*w -> (!Int, !*w)
 tcgetattr fp f w = code {
 	ccall tcgetattr "Ip:I:A"
 }
-cfmakeraw   :: !Pointer !*w -> !*w
+cfmakeraw   :: !Pointer !*w -> *w
 cfmakeraw p w = code {
 	ccall cfmakeraw "p:V:A"
 }
 tcsetattr   :: !Int !Int !Pointer !*w -> (!Int, !*w)
 tcsetattr fp strategy p w = code {
 	ccall tcsetattr "IIp:I:A"
+}
+setsid :: !*w -> *w
+setsid w = code {
+	ccall setsid ":V:A"
 }
 dup2 :: !Int !Int !*w -> (!Int, !*w)
 dup2 old new world = code {

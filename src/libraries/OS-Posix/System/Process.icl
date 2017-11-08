@@ -127,6 +127,12 @@ where
 		| res == -1    = getLastOSError world
 		# (res, world) = dup2 slavePty STDERR_FILENO world
 		| res == -1    = getLastOSError world
+
+		//Set the correct ioctl settings
+		# world        = setsid world
+		# (res, world) = ioctl 0 TIOCSCTTY 1 world
+		| res == -1    = getLastOSError world
+
 		//Start
 		# (_, world)   = runProcessChildProcessExec path args mCurrentDirectory pipeExecErrorOut pipeExecErrorIn world
 		// this is never executed as 'childProcessExec' never returns

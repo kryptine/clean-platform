@@ -32,6 +32,7 @@ O_RDWR    :== 02
 O_NOCTTY  :== 0400
 
 TCSANOW  :== 0
+TIOCSCTTY :== 0x540E
 
 //Posix API calls
 errno		:: !*w -> (!Int,!*w)
@@ -57,7 +58,8 @@ unlockpt    :: !Int !*w -> (!Int, !*w)
 ptsname     :: !Int !*w -> (!Pointer, !*w)
 open        :: !Pointer !Int !*w -> (!Int, !*w)
 tcgetattr   :: !Int !Pointer !*w -> (!Int, !*w)
-cfmakeraw   :: !Pointer !*w -> !*w
+cfmakeraw   :: !Pointer !*w -> *w
+setsid      :: !*w -> *w
 tcsetattr   :: !Int !Int !Pointer !*w -> (!Int, !*w)
 dup2        :: !Int !Int !*w -> (!Int, !*w)
 close       :: !Int !*w -> (!Int, !*w)
