@@ -109,7 +109,7 @@ cfmakeraw p w = code {
 	ccall cfmakeraw "p:V:A"
 }
 tcsetattr   :: !Int !Int !Pointer !*w -> (!Int, !*w)
-tcsetattr fp strategy p = code {
+tcsetattr fp strategy p w = code {
 	ccall tcsetattr "IIp:I:A"
 }
 setsid :: !*w -> *w
