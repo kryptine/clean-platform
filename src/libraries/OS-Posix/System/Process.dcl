@@ -45,7 +45,29 @@ runProcessIO :: !FilePath ![String] !(Maybe String) !*World -> (MaybeOSError (Pr
 * @param (optional) startup directory
 * @return Process handle to the process and pipes for IO
 */
-runProcessPty :: !FilePath ![String] !(Maybe String) !*World -> (MaybeOSError (ProcessHandle, ProcessIO), *World)
+runProcessPty :: !FilePath ![String] !(Maybe String) !ProcessPtyOptions !*World -> (MaybeOSError (ProcessHandle, ProcessIO), *World)
+
+/*
+ * Options for the pseudoterminal
+ * Set ioctl to (Just TIOCSCTTY) (from System._Posix) for job control
+ * Set setsid to True to let the child be the session controller (for logins)
+ * Termios determines the terminal settings.
+ * For raw terminals use the cfmakerawT function
+ */
+:: ProcessPtyOptions =
+	{ setsid   :: Bool
+	, ioctl    :: Maybe Int
+	, termiosT :: (Termios -> Termios)
+	}
+
+:: Termios =
+	{ c_iflag :: Int // See: man termios
+	, c_oflag :: Int
+	, c_cflag :: Int
+	, c_lflag :: Int
+//	, cc_t    :: {#Int} Not used at the moment
+	}
+cfmakerawT :: Termios -> Termios
 
 /**
 * Check if a process is still running
