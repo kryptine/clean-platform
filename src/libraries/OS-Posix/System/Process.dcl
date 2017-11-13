@@ -67,7 +67,7 @@ runProcessPty :: !FilePath ![String] !(Maybe String) !ProcessPtyOptions !*World 
 	, c_lflag :: Int
 //	, cc_t    :: {#Int} Not used at the moment
 	}
-cfmakerawT :: Termios -> Termios
+cfmakerawT :: !Termios -> Termios
 
 /**
 * Check if a process is still running
