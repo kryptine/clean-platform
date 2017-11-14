@@ -43,8 +43,15 @@ fix          :: !(a -> a) -> a
  * Apply a binary function on another domain.
  *
  * Typical usage: `sortBy (on (<) toInt) :: [a] -> [a] | toInt a`
+ * Or infix: `sortBy ((<) `on` toInt) :: [a] -> [a] | toInt a`
  */
 on           :: (b b -> c) (a -> b) -> (a a -> c)
+
+/**
+ * Infix version of {{`on`}}.
+ */
+(`on`) infixl 0
+(`on`) :== on
 
 /**
  * Completely evaluate an expression (not just to head normal form like strictness).
