@@ -49,6 +49,7 @@ on           :: (b b -> c) (a -> b) -> (a a -> c)
 
 /**
  * Infix version of {{`on`}}.
+ * @type (b b -> c) (a -> b) -> (a a -> c)
  */
 (`on`) infixl 0
 (`on`) :== on
