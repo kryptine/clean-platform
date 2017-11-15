@@ -163,7 +163,7 @@ where
 	(begin,end) = splitAt (lt - lc) tas
 uni t=:(Type _ _) c=:(Cons _ _) = uni c t
 uni (Cons c1 as1) (Cons c2 as2)
-| l1 == l2  = addGoals as1 as2 >>| applyAssignment c1 (Var c2)
+| l1 == l2  = addGoals as1 as2 >>| if (c1 == c2) succeed (applyAssignment c1 (Var c2))
 | l1 <  l2  = addGoals as1 end >>| applyAssignment c1 (Cons c2 begin) with (begin,end) = splitAt (l2-l1) as2
 | otherwise = addGoals end as2 >>| applyAssignment c2 (Cons c1 begin) with (begin,end) = splitAt (l1-l2) as1
 where (l1,l2) = (length as1, length as2)
