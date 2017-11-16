@@ -39,7 +39,6 @@ import Data.Either
 import Control.Monad
 import Control.Applicative
 from Data.Func import $
-import Data.Void
 
 instance toString Error where
 	toString (PositionalError l c e) =
@@ -102,9 +101,9 @@ peek = Parser \i -> case i of
 			(Left e, _)	 = (Left e, i)
 			(Right r, rest) = (Right r, rest)
 
-eof :: Parser a Void
+eof :: Parser a ()
 eof = Parser \i -> case i of 
-	[]	= (Right Void, [])
+	[]	= (Right (), [])
 	_	= (Left $ Error "", i)
 
 satisfy :: (a -> Bool) -> Parser a a
