@@ -5,9 +5,9 @@ from StdTuple import fst, snd
 from StdInt import bitand, bitxor, bitor, >>, bitnot, class + (..), instance + Int, class - (..), instance - Int, instance < Int, instance == Int
 from StdOverloaded import class < (..)
 from StdMisc import abort
-from StdList import instance < []
+from StdList import instance < [a]
 import qualified StdList as SL
-from StdTuple import instance < (,)
+from StdTuple import instance < (a,b)
 import StdClass
 from Control.Monad import class Monad (..), instance Monad Maybe
 from Data.Functor import class Functor (..)
