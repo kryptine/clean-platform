@@ -69,14 +69,14 @@ where
 	print ia (Type s vs) = typeConstructorName True ia s vs
 	print _ (Var v) = [v]
 	print ia (Func [] r []) = print ia r
-	print _ (Func [] r tc) = r -- " " -- tc
+	print _ (Func [] r tc) = r -- " | " -- tc
 	print ia (Func ts r []) = parens ia (printersperse True " " ts -- " -> " -- r)
 	print _ (Func ts r tc) = (Func ts r []) -- " | " -- tc
 	print ia (Cons tv [])  = print ia tv
 	print ia (Cons tv ats) = parens ia (tv -- " " -- printersperse True " " ats)
 	print _ (Uniq t)       = "*" -+ t
 	print _ (Forall tvs t []) = "(A." -- printersperse True " " tvs -- ": " -- t -- ")"
-	print _ (Forall tvs t tc) = "(A." -- printersperse True " " tvs -- ": " -- t -- " " -- tc -- ")"
+	print _ (Forall tvs t tc) = "(A." -- printersperse True " " tvs -- ": " -- t -- " | " -- tc -- ")"
 	print _ (Arrow Nothing)  = ["(->)"]
 	print _ (Arrow (Just t)) = "((->) " -+ t +- ")"
 
