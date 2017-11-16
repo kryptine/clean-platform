@@ -75,7 +75,6 @@ import qualified Data.Stack
 import qualified Data.Traversable
 import qualified Data.Tree
 import qualified Data.Tuple
-import qualified Data.Void
 import qualified Data.Word8
 import qualified Database.SQL
 import qualified Database.SQL.MySQL
