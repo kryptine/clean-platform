@@ -1,12 +1,18 @@
 definition module CoclUtils
 
 /**
- * Functions to transform types in the Clean compiler into types in TypeDef.
+ * Functions to
+ *
+ * - transform types in the Clean compiler into types in TypeDef;
+ * - derive types for very simple expressions from the compiler AST.
  */
+
+from Data.Maybe import :: Maybe
 
 from TypeDef import class toType, class toTypeVar, class toTypeDef,
 	class toTypeDefRhs, class toConstructor, class toRecordField,
 	class toTypeContext, class toMaybePriority
+import qualified TypeDef as T
 
 // Cocl frontend
 from syntax import ::SymbolType, ::Type, ::TypeVar, ::ParsedSelector,
@@ -26,3 +32,5 @@ instance toTypeDefRhs RhsDefsOfType
 instance toConstructor ParsedConstructor
 instance toRecordField ParsedSelector
 instance toMaybePriority Priority
+
+pdType :: 'syntax'.ParsedDefinition -> Maybe 'T'.Type

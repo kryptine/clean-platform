@@ -1,15 +1,21 @@
 implementation module CoclUtils
 
+from StdList import map
+
+import Control.Applicative
+import Control.Monad
+import Control.Monad.State
+import Data.Functor
+from Data.Maybe import :: Maybe (..), instance Functor Maybe
+import qualified Data.Map as M
+
 import qualified Type as T
 from Type import class toType, class toTypeVar, class toTypeDef,
 	class toTypeDefRhs, class toConstructor, class toRecordField,
 	::TypeRestriction
-from Data.Maybe import :: Maybe (..)
 
 import syntax
 import qualified syntax
-
-from StdList import map
 
 instance 'T'.toTypeContext [TypeContext]
 where
@@ -104,3 +110,52 @@ instance toRecordField ParsedSelector
 where
 	toRecordField {ps_selector_ident,ps_field_type}
 		= 'T'.recordfield ps_selector_ident.id_name ('T'.toType ps_field_type)
+
+:: TypeDerivState =
+	{ tds_var_index :: Int
+	, tds_map       :: 'M'.Map String 'T'.Type
+	}
+tds_var_index tds = tds.tds_var_index
+tds_map       tds = tds.tds_map
+
+class coclType a :: a -> StateT TypeDerivState Maybe 'T'.Type
+
+store :: String 'T'.Type -> StateT TypeDerivState Maybe 'T'.Type
+store id t = modify (\tds -> {tds & tds_map='M'.put id t tds.tds_map}) $> t
+
+fail :: StateT a Maybe b
+fail = StateT \_ -> Nothing
+
+pdType :: 'syntax'.ParsedDefinition -> Maybe 'T'.Type
+pdType pd = evalStateT (coclType pd) {tds_var_index=0, tds_map='M'.newMap}
+
+instance coclType ParsedDefinition
+where
+	coclType (PD_Function _ {id_name=id} _ args {rhs_alts=UnGuardedExpr {ewl_expr}} _)
+		= mapM coclType args >>= \argts -> coclType ewl_expr >>= \rt ->
+			store id ('T'.Func argts rt [])
+	coclType _
+		= fail
+
+instance coclType ParsedExpr
+where
+	coclType (PE_Basic b) = coclType b
+	coclType (PE_Ident id) = gets tds_map >>= \m -> case 'M'.get id.id_name m of
+		Nothing -> gets tds_var_index >>= \i ->
+			modify (\tds -> {tds & tds_var_index=i+1}) >>|
+			let t = var i in store id.id_name t
+		Just t  -> pure t
+	where
+		var :: Int -> 'T'.Type
+		var n = 'T'.Var (if (n < 26) {toChar n + 'a'} ("v" +++ toString n))
+
+	coclType _ = fail
+
+instance coclType BasicValue
+where
+	coclType (BVI _)   = pure ('T'.Type "Int" [])
+	coclType (BVInt _) = pure ('T'.Type "Int" [])
+	coclType (BVC _)   = pure ('T'.Type "Char" [])
+	coclType (BVB _)   = pure ('T'.Type "Bool" [])
+	coclType (BVR _)   = pure ('T'.Type "Real" [])
+	coclType (BVS _)   = pure ('T'.Type "String" [])
