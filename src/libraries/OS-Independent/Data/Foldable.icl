@@ -164,7 +164,7 @@ maximum x = foldr1 max x
 
 maximumBy :: (a a -> Bool) (t a) -> a | Foldable t
 maximumBy cmp x = foldr1 max` x
-  where max` x y = if (cmp x y) x y
+  where max` x y = if (cmp x y) y x
 
 minimum :: (t a) -> a | Foldable t & Ord a
 minimum x = foldr1 min x
