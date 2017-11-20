@@ -88,18 +88,12 @@ where
           , world
           )
 
-//see man cfmakeraw
-cfmakerawT :: !Termios -> Termios
-cfmakerawT {c_iflag,c_oflag,c_cflag,c_lflag} =
-//termios_p->c_iflag &= ~(IGNBRK | BRKINT | PARMRK | ISTRIP | INLCR | IGNCR | ICRNL | IXON);
-	{ c_iflag = c_iflag bitand (bitnot (1 bitor 2 bitor 8 bitor 20 bitor 40 bitor 80 bitor 100 bitor 400))
-//termios_p->c_oflag &= ~OPOST;
-	, c_oflag = c_oflag bitand (bitnot 1)
-//termios_p->c_lflag &= ~(ECHO | ECHONL | ICANON | ISIG | IEXTEN);
-	, c_cflag = c_cflag bitand (8 bitor 40 bitor 2 bitor 1 bitor 8000)
-//termios_p->c_cflag &= ~(CSIZE | PARENB);
-//termios_p->c_cflag |= CS8;
-	, c_lflag = (c_lflag bitand (30 bitor 100)) bitor 30
+defaultPtyOptions :: ProcessPtyOptions
+defaultPtyOptions =
+	{ProcessPtyOptions
+	|childInNewSession = False
+	,childControlsTty  = False
+	,useRawIO          = False
 	}
 
 runProcessPty :: !FilePath ![String] !(Maybe String) !ProcessPtyOptions !*World -> (MaybeOSError (ProcessHandle, ProcessIO), *World)
@@ -118,19 +112,6 @@ runProcessPty path args mCurrentDirectory opts world
 	                 (parentProcess slavePty masterPty)
 	                 world
 where
-	derefTermios :: !Pointer -> Termios
-	derefTermios p =
-		{ c_iflag = readInt4S p 0, c_oflag = readInt4S p 4
-		, c_cflag = readInt4S p 8, c_lflag = readInt4S p 12
-		}
-
-	refTermios :: !Termios !Pointer -> Pointer
-	refTermios {c_iflag,c_oflag,c_cflag,c_lflag} p
-	# p = writeInt4 p 0 c_iflag
-	# p = writeInt4 p 4 c_oflag
-	# p = writeInt4 p 8 c_cflag
-	= writeInt4 p 12 c_lflag
-
 	childProcess :: !Int !Int !Int !Int !*World -> (!MaybeOSError (!ProcessHandle, !ProcessIO), !*World)
 	childProcess slavePty masterPty pipeExecErrorOut pipeExecErrorIn world
 		//Disable echo
@@ -139,8 +120,9 @@ where
 		| termios == 0 = abort "malloc failed"
 		# (res, world) = tcgetattr slavePty termios world
 		| res == -1    = getLastOSError world
+
 		//Apply the termios transformation
-		# termios      = refTermios (opts.termiosT (derefTermios termios)) termios
+		# world        = (if opts.useRawIO cfmakeraw (flip const)) termios world
 		# (res, world) = tcsetattr slavePty TCSANOW termios world
 		| res == -1    = getLastOSError world
 		# world        = freeSt termios world
@@ -158,10 +140,9 @@ where
 		| res == -1    = getLastOSError world
 
 		//Set the correct ioctl settings
-		# world        = (if opts.setsid setsid id) world
-		# (res, world) = case opts.ioctl of
-			Nothing = (0, world)
-			Just i = ioctl 0 i 1 world
+		# world        = (if opts.childInNewSession setsid id) world
+		# (res, world) = if opts.childControlsTty (0, world)
+			(ioctl TCSANOW TIOCSCTTY 1 world)
 		| res == -1    = getLastOSError world
 		//Start
 		# (_, world)   = runProcessChildProcessExec path args mCurrentDirectory pipeExecErrorOut pipeExecErrorIn world
@@ -175,10 +156,12 @@ where
 		| termios == 0     = abort "malloc failed"
 		# (res, world)     = tcgetattr masterPty termios world
 		| res == -1        = getLastOSError world
+
 		//Apply the termios transformation
-		# termios          = refTermios (opts.termiosT (derefTermios termios)) termios
+		# world            = (if opts.useRawIO cfmakeraw (flip const)) termios world
 		# (res, world)     = tcsetattr slavePty TCSANOW termios world
 		| res == -1        = getLastOSError world
+
 		//Close the slave side
 		# (res, world)     = close slavePty world
 		| res == -1        = getLastOSError world

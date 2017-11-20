@@ -55,31 +55,13 @@ runProcessPty :: !FilePath ![String] !(Maybe String) !ProcessPtyOptions !*World 
  * Termios determines the terminal settings.
  * For raw terminals use the cfmakerawT function
  */
-/*
 :: ProcessPtyOptions =
 	{ childInNewSession :: !Bool // (setsid)
 	, childControlsTty  :: !Bool // (ioctl TIOCSCTTY)
 	, useRawIO          :: !Bool // (uses cfmakeraw for termios)
-	, echoStdIn         :: !Bool
 	}
 
-defaultPtyOptions :: ProcessPtyOptions {childInNewSession = False, childControlsTty = False, useRawIO = True, echoStdIn = False}
-*/
-
-:: ProcessPtyOptions =
-	{ setsid   :: Bool
-	, ioctl    :: Maybe Int
-	, termiosT :: (Termios -> Termios)
-	}
-
-:: Termios =
-	{ c_iflag :: Int // See: man termios
-	, c_oflag :: Int
-	, c_cflag :: Int
-	, c_lflag :: Int
-//	, cc_t    :: {#Int} Not used at the moment
-	}
-cfmakerawT :: !Termios -> Termios
+defaultPtyOptions :: ProcessPtyOptions
 
 /**
 * Check if a process is still running
