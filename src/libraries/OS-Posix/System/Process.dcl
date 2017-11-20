@@ -39,7 +39,8 @@ runProcess :: !FilePath ![String] !(Maybe String) !*World -> (MaybeOSError Proce
 runProcessIO :: !FilePath ![String] !(Maybe String) !*World -> (MaybeOSError (ProcessHandle, ProcessIO), *World)
 
 /**
-* runs a new process and a pty for IO
+* Runs a new process with a pseudo-terminal (pty) for IO
+*
 * @param Path to the executable
 * @param a list of command-line arguments
 * @param (optional) startup directory
@@ -54,6 +55,17 @@ runProcessPty :: !FilePath ![String] !(Maybe String) !ProcessPtyOptions !*World 
  * Termios determines the terminal settings.
  * For raw terminals use the cfmakerawT function
  */
+/*
+:: ProcessPtyOptions =
+	{ childInNewSession :: !Bool // (setsid)
+	, childControlsTty  :: !Bool // (ioctl TIOCSCTTY)
+	, useRawIO          :: !Bool // (uses cfmakeraw for termios)
+	, echoStdIn         :: !Bool
+	}
+
+defaultPtyOptions :: ProcessPtyOptions {childInNewSession = False, childControlsTty = False, useRawIO = True, echoStdIn = False}
+*/
+
 :: ProcessPtyOptions =
 	{ setsid   :: Bool
 	, ioctl    :: Maybe Int
