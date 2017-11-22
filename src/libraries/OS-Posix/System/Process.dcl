@@ -50,15 +50,16 @@ runProcessPty :: !FilePath ![String] !(Maybe String) !ProcessPtyOptions !*World 
 
 /*
  * Options for the pseudoterminal
- * Set ioctl to (Just TIOCSCTTY) (from System._Posix) for job control
- * Set setsid to True to let the child be the session controller (for logins)
- * Termios determines the terminal settings.
- * For raw terminals use the cfmakerawT function
+ * By default set all options to False
+ *
+ * Should the child process create a new terminal session (see man setsid for more info)
+ * Should the child process control the terminal (check man ioctl/TIOCSCTTY for more info)
+ * Should the terminal do nothing with the IO (check cfmakeraw or termios)
  */
 :: ProcessPtyOptions =
-	{ childInNewSession :: !Bool // (setsid)
-	, childControlsTty  :: !Bool // (ioctl TIOCSCTTY)
-	, useRawIO          :: !Bool // (uses cfmakeraw for termios)
+	{ childInNewSession :: !Bool
+	, childControlsTty  :: !Bool
+	, useRawIO          :: !Bool
 	}
 
 defaultPtyOptions :: ProcessPtyOptions
