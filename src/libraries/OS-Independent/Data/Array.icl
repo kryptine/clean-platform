@@ -77,7 +77,7 @@ takeArr n arr
   | otherwise = {x \\ x <-: arr}
   where
   copyArr sz i origArr newArr
-    | i == sz - 1 = newArr
+    | i == sz = newArr
     | otherwise   = copyArr sz (i + 1) origArr {newArr & [i] = origArr.[i]}
 
 mapArr :: !(a -> a) !(arr a) -> arr a | Array arr a
