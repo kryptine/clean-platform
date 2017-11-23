@@ -222,7 +222,7 @@ maximum :: (t a) -> a | Foldable t & Ord a
 
 /**
  * The largest element of a non-empty structure with respect to the given
- * greater-than function.
+ * lesser-than function.
  */
 maximumBy :: (a a -> Bool) (t a) -> a | Foldable t
 
