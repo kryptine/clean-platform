@@ -112,27 +112,39 @@ where
 		= 'T'.recordfield ps_selector_ident.id_name ('T'.toType ps_field_type)
 
 :: TypeDerivState =
-	{ tds_var_index :: Int
-	, tds_map       :: 'M'.Map String 'T'.Type
+	{ tds_var_index         :: Int
+	, tds_allows_new_idents :: Bool
+	, tds_map               :: 'M'.Map String 'T'.Type
 	}
-tds_var_index tds = tds.tds_var_index
-tds_map       tds = tds.tds_map
+tds_var_index         tds = tds.tds_var_index
+tds_allows_new_idents tds = tds.tds_allows_new_idents
+tds_map               tds = tds.tds_map
 
 class coclType a :: a -> StateT TypeDerivState Maybe 'T'.Type
 
 store :: String 'T'.Type -> StateT TypeDerivState Maybe 'T'.Type
 store id t = modify (\tds -> {tds & tds_map='M'.put id t tds.tds_map}) $> t
 
+allowNewIdents :: Bool -> StateT TypeDerivState Maybe ()
+allowNewIdents b = modify \tds -> {tds & tds_allows_new_idents=b}
+
 fail :: StateT a Maybe b
 fail = StateT \_ -> Nothing
 
 pdType :: 'syntax'.ParsedDefinition -> Maybe 'T'.Type
-pdType pd = evalStateT (coclType pd) {tds_var_index=0, tds_map='M'.newMap}
+pdType pd = evalStateT (coclType pd)
+	{ tds_var_index         = 0
+	, tds_allows_new_idents = True
+	, tds_map               = 'M'.newMap
+	}
 
 instance coclType ParsedDefinition
 where
 	coclType (PD_Function _ {id_name=id} _ args {rhs_alts=UnGuardedExpr {ewl_expr}} _)
-		= mapM coclType args >>= \argts -> coclType ewl_expr >>= \rt ->
+		= allowNewIdents True >>|
+			mapM coclType args >>= \argts ->
+			allowNewIdents False >>|
+			coclType ewl_expr >>= \rt ->
 			store id ('T'.Func argts rt [])
 	coclType _
 		= fail
@@ -141,9 +153,11 @@ instance coclType ParsedExpr
 where
 	coclType (PE_Basic b) = coclType b
 	coclType (PE_Ident id) = gets tds_map >>= \m -> case 'M'.get id.id_name m of
-		Nothing -> gets tds_var_index >>= \i ->
-			modify (\tds -> {tds & tds_var_index=i+1}) >>|
-			let t = var i in store id.id_name t
+		Nothing -> gets tds_allows_new_idents >>= \allowed -> if allowed
+			(gets tds_var_index >>= \i ->
+				modify (\tds -> {tds & tds_var_index=i+1}) >>|
+				let t = var i in store id.id_name t)
+			fail
 		Just t  -> pure t
 	where
 		var :: Int -> 'T'.Type
