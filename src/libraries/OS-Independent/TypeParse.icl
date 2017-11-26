@@ -92,13 +92,13 @@ type = liftM3 Func (some argtype) (item TArrow >>| type) optContext
 	<|> liftM2 Cons cons (some argtype)
 	<|> liftM2 Type ident (many argtype)
 	<|> liftM3 Forall
-		(item TUniversalQuantifier >>| some argtype |<< item TColon)
+		(item TUniversalQuantifier >>| some (Var <$> var) |<< item TColon)
 		type
 		optContext
 	<|> argtype
 where
 	argtype :: Parser Token Type
-	argtype = (item TParenOpen >>| item TParenClose >>| pure (Type "_Unit" []))
+	argtype = (list [TParenOpen, TParenClose] $> Type "_Unit" [])
 		<|> parenthised type
 		<|> liftM (\t -> Type t []) ident
 		<|> liftM Uniq uniq
