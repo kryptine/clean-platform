@@ -135,7 +135,7 @@ where
 		<|> pure empty
 
 	optContext :: Parser Token TypeContext
-	optContext = (context <|> pure []) >>| (uniquenessEqualities <|> pure [])
+	optContext = liftM2 (++) (context <|> pure []) (uniquenessEqualities <|> pure [])
 
 	context :: Parser Token TypeContext
 	context = item TPipe >>| flatten <$> seplist TAmpersand context`
