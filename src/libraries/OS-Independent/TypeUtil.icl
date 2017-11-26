@@ -87,38 +87,37 @@ parens True ss  = ["(":ss] ++ [")"]
 instance print TypeDef
 where
 	print _ {td_name,td_uniq,td_args,td_rhs}
-		= ":: " -- if td_uniq "*" "" -- typeConstructorName False False td_name td_args --
-			case td_rhs of
-				(TDRCons ext cs) = " = " -- makeADT ext cs
-				(TDRRecord _ exi fields) = " = " --
-					if (isEmpty exi) [] ("E." -- printersperse False " " exi -- ": ") --
-					makeRecord exi fields
-				(TDRSynonym t) = " :== " -- t
-				TDRAbstract = []
-				(TDRAbstractSynonym t) = " (:== " -- t -- ")"
-	where
-		indent = size td_name + toInt td_uniq + length td_args + sum (map (size o concat o print True) td_args)
-		recordIndent exi = repeatn (indent + 6 + if (isEmpty exi) 0 (3 + length exi + sum (map size exi))) ' '
-		consIndent = repeatn (indent + 4) ' '
+		= ":: " -- if td_uniq "*" "" -- typeConstructorName False False td_name td_args -- td_rhs
 
+instance print TypeDefRhs
+where
+	print _ (TDRCons ext cs)         = "\n\t= " -- makeADT ext cs
+	where
+		makeADT :: Bool [Constructor] -> String
+		makeADT exten [] = if exten " .." ""
+		makeADT False [c1:cs]
+			= concat (c1 -- "\n" --
+				concat [concat ("\t| " -- c -- "\n") \\ c <- cs])
+		makeADT True cs = concat (makeADT False cs -- "\t| ..")
+	print _ (TDRRecord _ exi fields) = " =\n\t" --
+		if (isEmpty exi) [] ("E." -- printersperse False " " exi -- ": ") --
+		makeRecord exi fields
+	where
 		makeRecord :: [TypeVar] [RecordField] -> String
 		makeRecord _ [] = "{}"
 		makeRecord exi [f1:fs]
 			= concat ("{ " -- printRf f1 -- "\n" --
-				concat [concat (recordIndent exi -- ", " -- printRf f -- "\n")
-				        \\ f <- fs] -- recordIndent exi -- "}")
+				concat [concat ("\t, " -- printRf f -- "\n")
+				        \\ f <- fs] -- "\t}")
 		where
 			padLen = maxList (map (\f -> size f.rf_name) [f1:fs])
 			pad i s = s +++ toString (repeatn (i - size s) ' ')
 
 			printRf {rf_name,rf_type} = pad padLen rf_name -- " :: " -- rf_type
-
-		makeADT :: Bool [Constructor] -> String
-		makeADT exten [] = if exten " .." ""
-		makeADT False [c1:cs]
-			= concat (c1 -- "\n" --
-				concat [concat (consIndent -- "| " -- c -- "\n") \\ c <- cs])
-		makeADT True cs = concat (makeADT False cs -- consIndent -- "| ..")
+	print _ (TDRSynonym t)           = " :== " -- t
+	print _ (TDRAbstract Nothing)    = []
+	print _ (TDRAbstract (Just rhs)) = " /*" -- rhs -- " */"
+	print _ (TDRAbstractSynonym t)   = " (:== " -- t -- ")"
 
 typeConstructorName :: Bool Bool String [Type] -> [String]
 typeConstructorName isInfix isArg t as

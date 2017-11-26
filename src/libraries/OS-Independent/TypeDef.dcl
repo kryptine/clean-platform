@@ -78,12 +78,12 @@ from Data.Maybe import :: Maybe
 :: TypeDefRhs
 	= TDRCons Bool [Constructor]
 		//* A list of constructors. The boolean indicates if the type is extensible
-	| TDRMoreConses [Constructor] //* More constructors for an extensible ADT
+	| TDRMoreConses [Constructor]    //* More constructors for an extensible ADT
 	| TDRRecord String [TypeVar] [RecordField]
 		//* A record with its internal identifier, existentially quantified variables and fields
-	| TDRSynonym Type         //* A type synonym
-	| TDRAbstract             //* An abstract type
-	| TDRAbstractSynonym Type //* An abstract type synonym
+	| TDRSynonym Type                //* A type synonym
+	| TDRAbstract (Maybe TypeDefRhs) //* An abstract type
+	| TDRAbstractSynonym Type        //* An abstract type synonym
 
 /**
  * The constructor of an algebraic data type

@@ -82,7 +82,7 @@ where
 	toTypeDefRhs (TypeSpec atype)
 		= 'T'.TDRSynonym ('T'.toType atype)
 	toTypeDefRhs (EmptyRhs _)
-		= 'T'.TDRAbstract
+		= 'T'.TDRAbstract Nothing
 	toTypeDefRhs (AbstractTypeSpec _ atype)
 		= 'T'.TDRAbstractSynonym ('T'.toType atype)
 	toTypeDefRhs (ExtensibleConses pcs)
