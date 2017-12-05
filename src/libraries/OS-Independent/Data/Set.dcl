@@ -153,9 +153,8 @@ minView :: !.(Set a) -> .(Maybe (!a, !Set a))
 maxView :: !.(Set a) -> .(Maybe (!a, !Set a))
 
 /**
- * The union of two sets, preferring the first set when equal elements ar
- * encountered. The implementation uses the efficient hedge-union algorithm.
- * Hedge-union is more efficient on (bigset `union` smallset).
+ * The union of two sets, preferring the first set when equal elements are
+ * encountered.
  */
 union :: !u:(Set a) !u:(Set a) -> Set a | < a & == a
 

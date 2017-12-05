@@ -163,8 +163,6 @@ deleteMax Tip             = Tip
 
 // | /O(n+m)/. The union of two sets, preferring the first set when
 // equal elements are encountered.
-// The implementation uses the efficient /hedge-union/ algorithm.
-// Hedge-union is more efficient on (bigset `union` smallset).
 union :: !u:(Set a) !u:(Set a) -> Set a | < a & == a
 union t1 Tip = t1
 union t1 (Bin _ x Tip Tip) = insertR x t1
