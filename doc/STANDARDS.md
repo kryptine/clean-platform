@@ -3,6 +3,15 @@
 The following guidelines should be adhered to when developing libraries for the
 Clean Platform library collection.
 
+## What is the purpose of Clean Platform
+
+Clean Platform was created to have a central place where commonly used
+functionality was stored so that people didn't have to look for it. All the
+functionality should be available on all platforms. This means that
+functionality only working on Windows has no place here. It is allowed to
+simulate functionality across systems. Examples of this is the System.Process
+module that offers the same API across platforms.
+
 ## Type names 
 
 The names of types should be clear and informative, and should always start
