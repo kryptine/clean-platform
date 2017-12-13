@@ -1,6 +1,6 @@
 implementation module Data.Generics.GenFMap 
 
-import StdGeneric, StdEnv, StdMaybe, Data.Generics._Array, GenMonad
+import StdGeneric, StdEnv, StdMaybe, Data.Generics._Array, Data.Generics.GenMonad
 
 derive bimap (,), [] 
 

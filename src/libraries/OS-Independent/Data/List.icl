@@ -1,6 +1,6 @@
 implementation module Data.List
 
-import Data.Maybe, StdTuple, StdBool, StdEnum, StdFunc, StdList, StdOrdList, Data.Functor, GenEq
+import Data.Maybe, StdTuple, StdBool, StdEnum, StdFunc, StdList, StdOrdList, Data.Functor, Data.Generics.GenEq
 from StdMisc import abort
 
 (!?) infixl 9   :: ![.a] !Int -> Maybe .a
