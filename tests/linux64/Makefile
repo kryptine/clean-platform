@@ -19,12 +19,13 @@ ifeq "$(GCCVERSIONGTEQ6)" "1"
 	override CLMFLAGS+=-l -no-pie
 endif
 
-BINARIES:=test
+BINARIES:=test gentest
 
 all: $(BINARIES)
 
 %: %.icl $(wildcard *.[id]cl)
 	$(CLM) $(CLMLIBS) $(CLMFLAGS) $(basename $<) -o $@
+	./$@
 
 clean:
 	$(RM) -r $(BINARIES) Clean\ System\ Files
