@@ -1,6 +1,6 @@
 implementation module Data.Generics._Array
 
-import _SystemArray, StdInt, StdClass, _Array
+import _SystemArray, StdInt, StdClass
 
 import qualified _SystemArray as A
 
