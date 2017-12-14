@@ -7,7 +7,7 @@ from StdFunc import id, flip, o, const
 from StdTuple import snd
 from StdMisc import abort, undef
 import StdString
-from GenEq import generic gEq
+from Data.Generics.GenEq import generic gEq
 import qualified StdList as SL
 import Data.Maybe, Text.JSON
 from Data.Set import :: Set
