@@ -23,15 +23,20 @@ STDIN_FILENO  :== 0
 STDOUT_FILENO :== 1
 STDERR_FILENO :== 2
 
-FIONREAD :== 0x4004667F
+FIONREAD   :== 0x4004667F
 
 F_SETFD    :== 2
 FD_CLOEXEC :== 1
 
-O_RDWR    :== 02
-O_NOCTTY  :== 0400
+O_RDWR     :== 02
+O_NOCTTY   :== 0400
 
-TCSANOW  :== 0
+TCSANOW    :== 0
+TIOCSCTTY  :== 0x540E
+
+ECHO       :== 0x8
+ECHONL     :== 0x40
+ICANON     :== 0x2
 
 //Posix API calls
 errno		:: !*w -> (!Int,!*w)
@@ -57,7 +62,8 @@ unlockpt    :: !Int !*w -> (!Int, !*w)
 ptsname     :: !Int !*w -> (!Pointer, !*w)
 open        :: !Pointer !Int !*w -> (!Int, !*w)
 tcgetattr   :: !Int !Pointer !*w -> (!Int, !*w)
-cfmakeraw   :: !Pointer !*w -> !*w
+cfmakeraw   :: !Pointer !*w -> *w
+setsid      :: !*w -> *w
 tcsetattr   :: !Int !Int !Pointer !*w -> (!Int, !*w)
 dup2        :: !Int !Int !*w -> (!Int, !*w)
 close       :: !Int !*w -> (!Int, !*w)

@@ -88,8 +88,16 @@ where
           , world
           )
 
-runProcessPty :: !FilePath ![String] !(Maybe String) !*World -> (MaybeOSError (ProcessHandle, ProcessIO), *World)
-runProcessPty path args mCurrentDirectory world
+defaultPtyOptions :: ProcessPtyOptions
+defaultPtyOptions =
+	{ProcessPtyOptions
+	|childInNewSession = False
+	,childControlsTty  = False
+	,useRawIO          = False
+	}
+
+runProcessPty :: !FilePath ![String] !(Maybe String) !ProcessPtyOptions !*World -> (MaybeOSError (ProcessHandle, ProcessIO), *World)
+runProcessPty path args mCurrentDirectory opts world
 	# (masterPty, world) = posix_openpt (O_RDWR bitor O_NOCTTY) world
 	| masterPty == -1    = getLastOSError world
 	# (slavePty, world)  = grantpt masterPty world
@@ -107,11 +115,14 @@ where
 	childProcess :: !Int !Int !Int !Int !*World -> (!MaybeOSError (!ProcessHandle, !ProcessIO), !*World)
 	childProcess slavePty masterPty pipeExecErrorOut pipeExecErrorIn world
 		//Disable echo
-		# termios      = malloc 88
+		//sizeof(struct termios) on linux gives 60, lets play safe
+		# termios      = malloc 64
 		| termios == 0 = abort "malloc failed"
 		# (res, world) = tcgetattr slavePty termios world
 		| res == -1    = getLastOSError world
-		# world        = cfmakeraw termios world
+
+		//Apply the termios transformation
+		# world        = (if opts.useRawIO cfmakeraw (flip const)) termios world
 		# (res, world) = tcsetattr slavePty TCSANOW termios world
 		| res == -1    = getLastOSError world
 		# world        = freeSt termios world
@@ -127,6 +138,12 @@ where
 		| res == -1    = getLastOSError world
 		# (res, world) = dup2 slavePty STDERR_FILENO world
 		| res == -1    = getLastOSError world
+
+		//Set the correct ioctl settings
+		# world        = (if opts.childInNewSession setsid id) world
+		# (res, world) = if opts.childControlsTty (0, world)
+			(ioctl TCSANOW TIOCSCTTY 1 world)
+		| res == -1    = getLastOSError world
 		//Start
 		# (_, world)   = runProcessChildProcessExec path args mCurrentDirectory pipeExecErrorOut pipeExecErrorIn world
 		// this is never executed as 'childProcessExec' never returns
@@ -134,14 +151,17 @@ where
 
 	parentProcess :: !Int !Int !Int !Int !Int !*World -> (!MaybeOSError (!ProcessHandle, !ProcessIO), !*World)
 	parentProcess slavePty masterPty pid pipeExecErrorOut pipeExecErrorIn world
-		//Disable echo
-		# termios          = malloc 88
+		//sizeof(struct termios) on linux gives 60, lets play safe
+		# termios          = malloc 64
 		| termios == 0     = abort "malloc failed"
 		# (res, world)     = tcgetattr masterPty termios world
 		| res == -1        = getLastOSError world
-		# world            = cfmakeraw termios world
-		# (res, world)     = tcsetattr masterPty TCSANOW termios world
+
+		//Apply the termios transformation
+		# world            = (if opts.useRawIO cfmakeraw (flip const)) termios world
+		# (res, world)     = tcsetattr slavePty TCSANOW termios world
 		| res == -1        = getLastOSError world
+
 		//Close the slave side
 		# (res, world)     = close slavePty world
 		| res == -1        = getLastOSError world

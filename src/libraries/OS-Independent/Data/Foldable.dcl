@@ -115,7 +115,7 @@ traverse_ :: (a -> f b) (t a) -> f () | Foldable t & Applicative, *> f
 
 /**
  * `for_` is {{`traverse_`}} with its arguments flipped.
- * @type (t a) (a -> f b) -> f () | Foldable t, Applicative f
+ * @type (t a) (a -> f b) -> f () | Foldable, Applicative f
  */
 for_ :== flip traverse_
 
@@ -165,7 +165,7 @@ msum :== foldr mplus mzero
 toList t :== build (\c n -> foldr c n t)
 
 /**
- * @type (A.: (a b -> b) b -> b) -> [a]
+ * @type ((a b -> b) b -> b) -> [a]
  */
 build g :== g (\x xs -> [x:xs]) []
 
@@ -222,7 +222,7 @@ maximum :: (t a) -> a | Foldable t & Ord a
 
 /**
  * The largest element of a non-empty structure with respect to the given
- * greater-than function.
+ * lesser-than function.
  */
 maximumBy :: (a a -> Bool) (t a) -> a | Foldable t
 

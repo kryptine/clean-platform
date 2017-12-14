@@ -39,13 +39,30 @@ runProcess :: !FilePath ![String] !(Maybe String) !*World -> (MaybeOSError Proce
 runProcessIO :: !FilePath ![String] !(Maybe String) !*World -> (MaybeOSError (ProcessHandle, ProcessIO), *World)
 
 /**
-* runs a new process and a pty for IO
+* Runs a new process with a pseudo-terminal (pty) for IO
+*
 * @param Path to the executable
 * @param a list of command-line arguments
 * @param (optional) startup directory
 * @return Process handle to the process and pipes for IO
 */
-runProcessPty :: !FilePath ![String] !(Maybe String) !*World -> (MaybeOSError (ProcessHandle, ProcessIO), *World)
+runProcessPty :: !FilePath ![String] !(Maybe String) !ProcessPtyOptions !*World -> (MaybeOSError (ProcessHandle, ProcessIO), *World)
+
+/*
+ * Options for the pseudoterminal
+ * By default set all options to False
+ *
+ * Should the child process create a new terminal session (see man setsid for more info)
+ * Should the child process control the terminal (check man ioctl/TIOCSCTTY for more info)
+ * Should the terminal do nothing with the IO (check cfmakeraw or termios)
+ */
+:: ProcessPtyOptions =
+	{ childInNewSession :: !Bool
+	, childControlsTty  :: !Bool
+	, useRawIO          :: !Bool
+	}
+
+defaultPtyOptions :: ProcessPtyOptions
 
 /**
 * Check if a process is still running

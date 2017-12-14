@@ -163,20 +163,23 @@ deleteMax Tip             = Tip
 
 // | /O(n+m)/. The union of two sets, preferring the first set when
 // equal elements are encountered.
-// The implementation uses the efficient /hedge-union/ algorithm.
-// Hedge-union is more efficient on (bigset `union` smallset).
 union :: !u:(Set a) !u:(Set a) -> Set a | < a & == a
-union Tip t2  = t2
-union t1 Tip  = t1
-union t1 t2 = hedgeUnion NothingS NothingS t1 t2
+union t1 Tip = t1
+union t1 (Bin _ x Tip Tip) = insertR x t1
+union (Bin _ x Tip Tip) t2 = insert x t2
+union Tip t2 = t2
+union t1=:(Bin _ x l1 r1) t2 = link x l1l2 r1r2
+where
+	(l2,r2) = splitS x t2
+	l1l2 = union l1 l2
+	r1r2 = union r1 r2
 
-hedgeUnion :: !(MaybeS a) !(MaybeS a) !(Set a) !(Set a) -> Set a | < a & == a
-hedgeUnion _   _   t1  Tip = t1
-hedgeUnion blo bhi Tip (Bin _ x l r) = link x (filterGt blo l) (filterLt bhi r)
-hedgeUnion _   _   t1  (Bin _ x Tip Tip) = insertR x t1
-hedgeUnion blo bhi (Bin _ x l r) t2 = link x (hedgeUnion blo bmi l (trim blo bmi t2))
-                                             (hedgeUnion bmi bhi r (trim bmi bhi t2))
-  where bmi = JustS x
+splitS :: !a !(Set a) -> (!Set a, !Set a) | <, == a
+splitS _ Tip = (Tip,Tip)
+splitS x (Bin _ y l r)
+| x < y     = let (lt,gt) = splitS x l in (lt, link y gt r)
+| x > y     = let (lt,gt) = splitS x r in (link y l lt, gt)
+| otherwise = (l,r)
 
 /*--------------------------------------------------------------------
  * Difference
