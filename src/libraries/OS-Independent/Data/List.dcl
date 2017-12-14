@@ -2,7 +2,7 @@ definition module Data.List
 
 from Data.Functor import class Functor
 from Data.Maybe import :: Maybe
-import StdList, GenEq
+import StdList, Data.Generics.GenEq
 
 /**
  * An element in the list, or Nothing if it does not exist.
