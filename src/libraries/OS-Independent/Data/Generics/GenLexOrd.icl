@@ -6,7 +6,7 @@ import StdGeneric, Data.Generics.GenEq
 :: LexOrd = LT |EQ | GT
 derive gEq LexOrd
 
-generic gLexOrd a b :: a b -> LexOrd
+generic gLexOrd a :: !a !a -> LexOrd
 gLexOrd{|Int|} x y
 	| x == y = EQ
 	| x < y	 = LT
@@ -29,11 +29,11 @@ gLexOrd{|String|} x y
 			 = GT			 
 gLexOrd{|UNIT|} UNIT UNIT = EQ
 gLexOrd{|PAIR|} fx fy (PAIR x1 y1) (PAIR x2 y2) = case fx x1 x2 of
-	 	EQ -> fy y1 y2
-	 	LT -> LT
-	 	GT -> GT
+	EQ -> fy y1 y2
+	LT -> LT
+	GT -> GT
 	 		
-gLexOrd{|EITHER|} fl fr (LEFT x) (LEFT y) = fl x y 
+gLexOrd{|EITHER|} fl fr (LEFT x) (LEFT y) = fl x y
 gLexOrd{|EITHER|} fl fr (LEFT x) (RIGHT y) = LT
 gLexOrd{|EITHER|} fl fr (RIGHT x) (LEFT y) = GT
 gLexOrd{|EITHER|} fl fr (RIGHT x) (RIGHT y) = fr x y
@@ -58,14 +58,8 @@ gLexOrd{|[]|} f [x:xs] [y:ys]
 gLexOrd{|{}|} f xs ys 	= lexOrdArray f xs ys 
 gLexOrd{|{!}|} f xs ys 	= lexOrdArray f xs ys 
 
-
 // standard types
 derive gLexOrd (,), (,,),  (,,,), (,,,,), (,,,,,), (,,,,,,), (,,,,,,,)
-
-   
-(=?=) infix 4 :: a a -> LexOrd | gLexOrd{|*|} a
-(=?=) x y = gLexOrd{|*|} x y			 	
-
 
 lexOrdArray f xs ys
 	#! size_xs = size xs
