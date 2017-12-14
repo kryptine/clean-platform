@@ -15,6 +15,7 @@ import Data.Generics.GenMonad
 import Data.Generics.GenHylo
 import Data.Generics.GenFMap
 import Data.Generics.GenBimap
+import Data.Generics.GenFDomain
 
 fromOBJECT :: !(OBJECT x) -> x
 fromCONS   :: !(CONS x)   -> x
