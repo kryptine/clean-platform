@@ -16,6 +16,7 @@ from Control.Monad import class Monad
 import qualified Control.Monad as CM
 from Data.Monoid import class Monoid
 import Data.Maybe
+import Data.Tuple
 from StdFunc import o, id, flip
 
 instance Traversable Maybe where

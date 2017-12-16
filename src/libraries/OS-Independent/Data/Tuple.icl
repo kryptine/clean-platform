@@ -1,5 +1,7 @@
 implementation module Data.Tuple
 
+import Data.Functor
+
 tuple :: a b -> (a,b)
 tuple a b = (a,b)
 
@@ -23,3 +25,7 @@ appThd3 f (a,b,c) = (a,b,f c)
 
 swap :: !(a, b) -> (b, a)
 swap (a,b) = (b,a)
+
+instance Functor ((,) a)
+where
+	fmap f (x, y) = (x, f y)

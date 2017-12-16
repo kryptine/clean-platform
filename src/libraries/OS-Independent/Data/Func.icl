@@ -1,5 +1,12 @@
 implementation module Data.Func
 
+from StdFunc import o
+import Data.Functor
+
+instance Functor ((->) r)
+where
+	fmap f g = \x -> (f o g) x
+
 seqSt :: !(a .st -> .st) ![a] !.st -> .st
 seqSt f [] st = st
 seqSt f [x:xs] st = seqSt f xs (f x st)

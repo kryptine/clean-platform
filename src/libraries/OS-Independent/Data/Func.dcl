@@ -1,5 +1,9 @@
 definition module Data.Func
 
+from Data.Functor import class Functor
+
+instance Functor ((->) r)
+
 /**
  * Function application.
  * @type (a -> b) a -> b

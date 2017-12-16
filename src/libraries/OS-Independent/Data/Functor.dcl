@@ -17,7 +17,3 @@ class Functor f where
 
     void :: !(f a) -> f () | Functor f
     void x :== () <$ x
-
-instance Functor ((->) r)
-instance Functor ((,) a)
-
