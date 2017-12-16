@@ -48,14 +48,6 @@ instance Semigroup (a, b, c, d, e) | Semigroup a & Semigroup b & Semigroup c & S
 instance Monoid (a, b, c, d, e) | Monoid a & Monoid b & Monoid c & Monoid d & Monoid e where
   mempty = (mempty, mempty, mempty, mempty, mempty)
 
-instance Semigroup (Maybe a) | Semigroup a where
-  mappend Nothing   m         = m
-  mappend m         Nothing   = m
-  mappend (Just m1) (Just m2) = Just (mappend m1 m2)
-
-instance Monoid (Maybe a) where
-  mempty = Nothing
-
 instance Semigroup (Dual a) | Semigroup a where
   mappend (Dual x) (Dual y) = Dual (mappend y x)
 

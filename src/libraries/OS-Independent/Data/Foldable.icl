@@ -13,29 +13,6 @@ import StdClass
 from StdOverloaded import class < (..)
 from StdBool import not
 
-instance Foldable Maybe where
-    fold x = foldMap id x
-    foldMap f x = foldr (mappend o f) mempty x
-    foldr _ z Nothing = z
-    foldr f z (Just x) = f x z
-    foldr` f z0 xs = foldl f` id xs z0
-      where f` k x z = k (f x z)
-
-    foldl _ z Nothing = z
-    foldl f z (Just x) = f z x
-    foldl` f z0 xs = foldr f` id xs z0
-      where f` x k z = k (f z x)
-    foldr1 f xs = fromMaybe (abort "foldr1: empty structure")
-                    (foldr mf Nothing xs)
-      where
-        mf x Nothing = Just x
-        mf x (Just y) = Just (f x y)
-    foldl1 f xs = fromMaybe (abort "foldl1: empty structure")
-                    (foldl mf Nothing xs)
-      where
-        mf Nothing y = Just y
-        mf (Just x) y = Just (f x y)
-
 instance Foldable [] where
     fold x = foldMap id x
     foldMap f x = foldr (mappend o f) mempty x

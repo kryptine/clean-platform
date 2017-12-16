@@ -15,16 +15,8 @@ from Data.Either import instance Functor (Either a)
 from Control.Monad import class Monad
 import qualified Control.Monad as CM
 from Data.Monoid import class Monoid
-import Data.Maybe
 import Data.Tuple
 from StdFunc import o, id, flip
-
-instance Traversable Maybe where
-    traverse _ Nothing = pure Nothing
-    traverse f (Just x) = Just <$> f x
-    sequenceA f = traverse id f
-    mapM f x = unwrapMonad (traverse (WrapMonad o f) x)
-    sequence x = mapM id x
 
 instance Traversable [] where
     traverse f x = foldr cons_f (pure []) x

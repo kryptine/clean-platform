@@ -85,7 +85,6 @@ class Foldable t where
 	 */
     foldl1 :: (a a -> a) !(t a) -> a
 
-instance Foldable Maybe
 instance Foldable []
 instance Foldable (Either a)
 instance Foldable ((,) a)

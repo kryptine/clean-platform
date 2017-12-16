@@ -23,7 +23,6 @@ instance Semigroup (a, b) | Semigroup a & Semigroup b
 instance Semigroup (a, b, c) | Semigroup a & Semigroup b & Semigroup c
 instance Semigroup (a, b, c, d) | Semigroup a & Semigroup b & Semigroup c & Semigroup d
 instance Semigroup (a, b, c, d, e) | Semigroup a & Semigroup b & Semigroup c & Semigroup d & Semigroup e
-instance Semigroup (Maybe a) | Semigroup a
 
 instance Monoid [a]
 instance Monoid (a -> b) | Monoid b
@@ -32,7 +31,6 @@ instance Monoid (a, b) | Monoid a & Monoid b
 instance Monoid (a, b, c) | Monoid a & Monoid b & Monoid c
 instance Monoid (a, b, c, d) | Monoid a & Monoid b & Monoid c & Monoid d
 instance Monoid (a, b, c, d, e) | Monoid a & Monoid b & Monoid c & Monoid d & Monoid e
-instance Monoid (Maybe a)
 
 :: Dual a = Dual a
 
