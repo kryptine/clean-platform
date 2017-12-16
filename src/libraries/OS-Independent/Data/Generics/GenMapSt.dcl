@@ -9,4 +9,3 @@ derive gMapLSt [], (,), (,,),  (,,,), (,,,,), (,,,,,), (,,,,,,), (,,,,,,,)
 generic gMapRSt a b :: .a .st -> (.b, .st)
 derive gMapRSt c, UNIT, PAIR, EITHER, FIELD, CONS, OBJECT, {}, {!} 
 derive gMapRSt [], (,), (,,),  (,,,), (,,,,), (,,,,,), (,,,,,,), (,,,,,,,)
-

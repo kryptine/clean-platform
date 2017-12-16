@@ -1,6 +1,7 @@
 definition module Data.Generics.GenCompress
 
-import StdGeneric, StdMaybe
+import StdGeneric
+from Data.Maybe import :: Maybe
 
 :: BitVector :== {#Int}
 

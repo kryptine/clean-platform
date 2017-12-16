@@ -1,6 +1,7 @@
 module gentest
 
 import StdEnv, Data.Generics, System.CommandLine, StdDebug
+from Data.Maybe import :: Maybe(..)
 
 :: Tree a b = Tip a | Bin b (Tree a b) (Tree a b)
 :: Rose a = Rose a .[Rose a]

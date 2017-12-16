@@ -16,4 +16,3 @@ gMap{|{}|} f xs 				= mapArray f xs
 gMap{|{!}|} f xs				= mapArray f xs
 
 derive gMap [], (,), (,,),  (,,,), (,,,,), (,,,,,), (,,,,,,), (,,,,,,,)
-

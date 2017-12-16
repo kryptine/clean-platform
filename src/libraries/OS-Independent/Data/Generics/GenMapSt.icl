@@ -52,4 +52,3 @@ mapStFIELD f (FIELD x) st
 mapStOBJECT f (OBJECT x) st 		
 	# (x, st) = f x st 
 	= (OBJECT x, st)	
-	

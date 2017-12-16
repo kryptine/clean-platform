@@ -24,6 +24,15 @@ instance Alternative [] where
 	empty        = []
 	(<|>) fa fa` = fa ++ fa`
 
+instance Monad []
+where
+	bind m k = foldr ((++) o k) [] m
+
+instance MonadPlus []
+where
+	mzero        = []
+	mplus xs ys = xs ++ ys
+
 (!?) infixl 9   :: ![.a] !Int -> Maybe .a
 (!?) [x:_]  0 = Just x
 (!?) [_:xs] i = xs !? (i-1)

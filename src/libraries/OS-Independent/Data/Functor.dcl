@@ -1,9 +1,9 @@
 definition module Data.Functor
 
-from System.IO import :: IO
 from StdFunc import const
 
-class Functor f where
+class Functor f
+where
     fmap :: (a -> b) !(f a) -> f b
 
     (<$>) infixl 4 :: (a -> b) !(f a) -> f b | Functor f

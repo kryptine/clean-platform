@@ -3,14 +3,20 @@ implementation module Data.Func
 from StdFunc import const, o
 import Data.Functor
 import Control.Applicative
+import Control.Monad
 
 instance Functor ((->) r)
 where
 	fmap f g = \x -> (f o g) x
 
-instance Applicative ((->) r) where
+instance Applicative ((->) r)
+where
 	pure x    = const x
 	(<*>) f g = \x -> f x (g x)
+
+instance Monad ((->) r)
+where
+	bind ma a2mb = \r -> a2mb (ma r) r
 
 seqSt :: !(a .st -> .st) ![a] !.st -> .st
 seqSt f [] st = st

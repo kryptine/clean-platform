@@ -5,10 +5,13 @@ from Data.Generics.GenEq import generic gEq
 from Data.Functor import class Functor
 from Data.Maybe import :: Maybe
 from Control.Applicative import class Applicative, class Alternative
+from Control.Monad import class Monad, class MonadPlus
 
 instance Functor []
 instance Applicative []
 instance Alternative []
+instance Monad []
+instance MonadPlus []
 
 /**
  * An element in the list, or Nothing if it does not exist.

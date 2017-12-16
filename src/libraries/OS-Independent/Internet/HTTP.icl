@@ -11,7 +11,7 @@ import Text.URI
 import Data.Functor
 
 import Control.Applicative
-from Control.Monad import class Monad, instance Monad Maybe
+from Control.Monad import class Monad
 import qualified Control.Monad as CM
 import TCPIP
 

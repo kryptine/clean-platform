@@ -5,6 +5,7 @@ import StdFunc
 import StdMisc
 import Data.Functor
 import Control.Applicative
+import Control.Monad
 
 :: Maybe a = Nothing | Just a
 
@@ -32,6 +33,17 @@ where
 	empty           = Nothing
 	(<|>) Nothing r = r
 	(<|>) l       _ = l
+
+instance Monad Maybe
+where
+	bind (Just x) k = k x
+	bind Nothing  _ = Nothing
+
+instance MonadPlus Maybe
+where
+	mzero = Nothing
+	mplus Nothing ys = ys
+	mplus xs      _  = xs
 
 maybe :: w:b v:(.a -> w:b) !.(Maybe .a) -> w:b
 maybe x _ Nothing  = x

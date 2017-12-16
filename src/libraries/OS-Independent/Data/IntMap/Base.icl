@@ -9,13 +9,13 @@ from StdList import instance < [a]
 import qualified StdList as SL
 from StdTuple import instance < (a,b)
 import StdClass
-from Control.Monad import class Monad (..), instance Monad Maybe
+from Control.Monad import class Monad (..)
 from Data.Functor import class Functor (..)
 from StdBool import class == (..), ||, &&
 from Control.Applicative import class Applicative(..)
 from Control.Monad import liftM
 import qualified Data.Foldable as Foldable
-from Data.Maybe import :: Maybe (..), fromMaybe, maybe, instance Functor Maybe, instance Applicative Maybe
+from Data.Maybe import :: Maybe (..), fromMaybe, maybe, instance Functor Maybe, instance Applicative Maybe, instance Monad Maybe
 from Data.Either import :: Either (..)
 from Data.Monoid import class Monoid(..), class Semigroup (..)
 from Data.Functor import <$>

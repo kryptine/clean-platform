@@ -12,6 +12,16 @@ unwrapMonad :: !(WrappedMonad m a) -> m a
 
 getConst :: !(Const a b) -> a
 
+class Applicative f | Functor f
+where
+	pure           :: a -> f a
+	(<*>) infixl 4 :: !(f (a -> b)) (f a) -> f b
+
+class Alternative f | Applicative f
+where
+	empty          :: f a
+	(<|>) infixl 3 :: !(f a) (f a) -> f a
+
 instance Functor (Const m)
 instance Functor (WrappedMonad m) | Monad m
 instance Applicative (Const m) | Monoid m
@@ -22,14 +32,6 @@ instance Alternative (WrappedMonad m) | MonadPlus m
 
 instance Semigroup (Const a b) | Semigroup a
 instance Monoid (Const a b) | Monoid a
-
-class Applicative f | Functor f where
-  pure            :: a -> f a
-  (<*>) infixl 4  :: !(f (a -> b)) (f a) -> f b
-
-class Alternative f | Applicative f where
-  empty           :: f a
-  (<|>) infixl 3  :: !(f a) (f a) -> f a
 
 some :: (f a) -> f [a] | Alternative f
 
