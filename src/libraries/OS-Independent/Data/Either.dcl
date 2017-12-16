@@ -8,6 +8,8 @@ definition module Data.Either
 from Control.Applicative import class Applicative, class *>, class <*
 from Control.Monad import class Monad
 from Data.Functor import class Functor
+from Data.Foldable import class Foldable
+from Data.Traversable import class Traversable
 
 :: Either a b = Left a | Right b
 
@@ -21,5 +23,8 @@ instance *> (Either e)
 instance <* (Either e)
 
 instance Monad (Either e)
+
+instance Foldable (Either a)
+instance Traversable (Either a)
 
 either :: (.a -> .c) (.b -> .c) !(Either .a .b) -> .c

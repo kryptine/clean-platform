@@ -2,7 +2,6 @@ definition module Data.Foldable
 
 from Control.Applicative import class Applicative (..), :: Const, class Alternative (..), class *>
 from Control.Monad import class Monad (..), >>=, class MonadPlus (..)
-from Data.Either import :: Either
 from Data.Functor import class Functor (..)
 from Data.Monoid import class Monoid (..), class Semigroup (..)
 from Data.Maybe import :: Maybe
@@ -84,8 +83,6 @@ class Foldable t where
 	 * `foldl1 f = 'Data.List'.{{foldl1}} f o {{toList}}`
 	 */
     foldl1 :: (a a -> a) !(t a) -> a
-
-instance Foldable (Either a)
 
 // TODO Cleanify
 //instance Ix i => Foldable (Array i)

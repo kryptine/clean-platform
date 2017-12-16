@@ -4,26 +4,15 @@ implementation module Data.Traversable
  * Ported from Haskell's Data.Traversable by Jurriën Stutterheim 15-08-2014
  */
 
-
 import Control.Applicative
-import Data.Either
-//from Data.Foldable import class Foldable
 import Data.Foldable
 import Data.Functor
 from Data.List import instance Functor []
-from Data.Either import instance Functor (Either a)
 from Control.Monad import class Monad
 import qualified Control.Monad as CM
 from Data.Monoid import class Monoid
 import Data.Tuple
 from StdFunc import o, id, flip
-
-instance Traversable (Either a) where
-    traverse _ (Left x) = pure (Left x)
-    traverse f (Right y) = Right <$> f y
-    sequenceA f = traverse id f
-    mapM f x = unwrapMonad (traverse (WrapMonad o f) x)
-    sequence x = mapM id x
 
 // TODO Cleanify
 //instance Ix i => Traversable (Array i) where
