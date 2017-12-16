@@ -6,10 +6,11 @@ from Control.Monad import liftM, class Monad
 import Data.Monoid
 from Data.Func import on
 from Data.Functor import class Functor (..)
-from Data.List import instance Functor [], instance Applicative []
+from Data.List import instance Functor [], instance Applicative [],
+	instance Semigroup [a], instance Monoid [a], instance Foldable [], instance Traversable []
 import qualified Data.Traversable as Traversable
-from Data.Traversable import class Traversable (..), instance Traversable []
-from Data.Foldable import class Foldable (..), instance Foldable []
+from Data.Traversable import class Traversable (..)
+from Data.Foldable import class Foldable (..)
 import qualified Data.Foldable as DF
 from StdFunc import o, id, flip
 from StdOverloaded import class < (..), class == (..), class + (..), class isEven

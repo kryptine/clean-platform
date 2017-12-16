@@ -4,6 +4,9 @@ import StdList
 from Data.Generics.GenEq import generic gEq
 from Data.Functor import class Functor
 from Data.Maybe import :: Maybe
+from Data.Monoid import class Semigroup, class Monoid
+from Data.Foldable import class Foldable
+from Data.Traversable import class Traversable
 from Control.Applicative import class Applicative, class Alternative
 from Control.Monad import class Monad, class MonadPlus
 
@@ -12,6 +15,11 @@ instance Applicative []
 instance Alternative []
 instance Monad []
 instance MonadPlus []
+
+instance Semigroup [a]
+instance Monoid [a]
+instance Foldable []
+instance Traversable []
 
 /**
  * An element in the list, or Nothing if it does not exist.

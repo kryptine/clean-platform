@@ -109,8 +109,6 @@ class Traversable t | Functor t & Foldable t where
     // and collect the results.
     sequence :: !(t (m a)) -> m (t a) | Monad m
 
-instance Traversable []
-
 instance Traversable (Either a)
 
 instance Traversable ((,) a)

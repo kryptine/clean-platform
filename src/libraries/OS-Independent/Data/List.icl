@@ -10,7 +10,12 @@ import StdTuple
 import Data.Functor
 import Data.Generics.GenEq
 import Data.Maybe
+import Data.Monoid
+from Data.Foldable import class Foldable(foldMap)
+from Data.Traversable import class Traversable
+import qualified Data.Traversable as T
 import Control.Applicative
+import Control.Monad
 
 instance Functor []
 where
@@ -32,6 +37,34 @@ instance MonadPlus []
 where
 	mzero        = []
 	mplus xs ys = xs ++ ys
+
+instance Semigroup [a]
+where
+	mappend xs ys  = xs ++ ys
+
+instance Monoid [a]
+where
+	mempty = []
+
+instance Foldable []
+where
+	fold x = foldMap id x
+	foldMap f x = foldr (mappend o f) mempty x
+	foldr f x y = foldr f x y
+	foldr` f z0 xs = foldl f` id xs z0
+	where f` k x z = k (f x z)
+	foldl f x y = foldl f x y
+	foldl` f x y = foldl f x y
+	foldr1 f x = foldr1 f x
+	foldl1 f x = foldl1 f x
+
+instance Traversable []
+where
+	traverse f x = foldr cons_f (pure []) x
+	where cons_f x ys = (\x xs -> [x:xs]) <$> f x <*> ys
+	mapM f x = mapM f x
+	sequenceA f = 'T'.traverse id f
+	sequence x = 'T'.mapM id x
 
 (!?) infixl 9   :: ![.a] !Int -> Maybe .a
 (!?) [x:_]  0 = Just x

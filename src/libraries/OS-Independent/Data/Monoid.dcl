@@ -4,19 +4,20 @@ from StdOverloaded import class +, class *, class zero, class one
 from Data.Maybe import :: Maybe
 import qualified StdList
 
-class Semigroup a where
-    mappend :: !a a -> a
+class Semigroup a
+where
+	mappend :: !a a -> a
 
-    (<++>) infixr 6 :: a a -> a | Semigroup a
-    (<++>) ma mb :== mappend ma mb
+	(<++>) infixr 6 :: a a -> a | Semigroup a
+	(<++>) ma mb :== mappend ma mb
 
-class Monoid a | Semigroup a where
-    mempty :: a
+class Monoid a | Semigroup a
+where
+	mempty :: a
 
-    mconcat :: !.[a] -> a | Monoid a
-    mconcat xs :== 'StdList'.foldr mappend mempty xs
+	mconcat :: !.[a] -> a | Monoid a
+	mconcat xs :== 'StdList'.foldr mappend mempty xs
 
-instance Semigroup [a]
 instance Semigroup (a -> b) | Semigroup b
 instance Semigroup ()
 instance Semigroup (a, b) | Semigroup a & Semigroup b
@@ -24,7 +25,6 @@ instance Semigroup (a, b, c) | Semigroup a & Semigroup b & Semigroup c
 instance Semigroup (a, b, c, d) | Semigroup a & Semigroup b & Semigroup c & Semigroup d
 instance Semigroup (a, b, c, d, e) | Semigroup a & Semigroup b & Semigroup c & Semigroup d & Semigroup e
 
-instance Monoid [a]
 instance Monoid (a -> b) | Monoid b
 instance Monoid ()
 instance Monoid (a, b) | Monoid a & Monoid b

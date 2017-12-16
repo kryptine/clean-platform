@@ -18,13 +18,6 @@ from Data.Monoid import class Monoid
 import Data.Tuple
 from StdFunc import o, id, flip
 
-instance Traversable [] where
-    traverse f x = foldr cons_f (pure []) x
-      where cons_f x ys = (\x xs -> [x:xs]) <$> f x <*> ys
-    mapM f x = 'CM'.mapM f x
-    sequenceA f = traverse id f
-    sequence x = mapM id x
-
 instance Traversable (Either a) where
     traverse _ (Left x) = pure (Left x)
     traverse f (Right y) = Right <$> f y

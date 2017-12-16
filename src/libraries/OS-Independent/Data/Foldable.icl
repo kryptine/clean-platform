@@ -4,7 +4,7 @@ from StdFunc import o, id, flip
 from StdMisc import abort
 import Control.Applicative
 from Control.Monad import class Monad(..), >>=
-import qualified Data.List as DL
+from Data.List import instance Semigroup [a], instance Monoid [a], instance Foldable []
 import Data.Either
 import Data.Monoid
 import Data.Maybe
@@ -12,17 +12,6 @@ import qualified StdList as SL
 import StdClass
 from StdOverloaded import class < (..)
 from StdBool import not
-
-instance Foldable [] where
-    fold x = foldMap id x
-    foldMap f x = foldr (mappend o f) mempty x
-    foldr f x y = 'SL'.foldr f x y
-    foldr` f z0 xs = foldl f` id xs z0
-      where f` k x z = k (f x z)
-    foldl f x y = 'SL'.foldl f x y
-    foldl` f x y = 'DL'.foldl f x y
-    foldr1 f x = 'DL'.foldr1 f x
-    foldl1 f x = 'DL'.foldl1 f x
 
 instance Foldable (Either a) where
     foldMap _ (Left _) = mempty
