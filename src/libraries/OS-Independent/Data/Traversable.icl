@@ -25,12 +25,6 @@ instance Traversable (Either a) where
     mapM f x = unwrapMonad (traverse (WrapMonad o f) x)
     sequence x = mapM id x
 
-instance Traversable ((,) a) where
-    traverse f (x, y) = (\x y -> (x, y)) x <$> f y
-    sequenceA f = traverse id f
-    mapM f x = unwrapMonad (traverse (WrapMonad o f) x)
-    sequence x = mapM id x
-
 // TODO Cleanify
 //instance Ix i => Traversable (Array i) where
     //traverse f arr = listArray (bounds arr) `fmap` traverse f (elems arr)

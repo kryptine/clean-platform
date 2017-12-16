@@ -86,7 +86,6 @@ class Foldable t where
     foldl1 :: (a a -> a) !(t a) -> a
 
 instance Foldable (Either a)
-instance Foldable ((,) a)
 
 // TODO Cleanify
 //instance Ix i => Foldable (Array i)

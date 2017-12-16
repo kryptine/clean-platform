@@ -12,30 +12,6 @@ instance Semigroup () where
 instance Monoid () where
   mempty = ()
 
-instance Semigroup (a, b) | Semigroup a & Semigroup b where
-  mappend (a1, b1) (a2, b2)  = (mappend a1 a2, mappend b1 b2)
-
-instance Monoid (a, b) | Monoid a & Monoid b where
-  mempty = (mempty, mempty)
-
-instance Semigroup (a, b, c) | Semigroup a & Semigroup b & Semigroup c where
-  mappend (a1, b1, c1) (a2, b2, c2)  = (mappend a1 a2, mappend b1 b2, mappend c1 c2)
-
-instance Monoid (a, b, c) | Monoid a & Monoid b & Monoid c where
-  mempty = (mempty, mempty, mempty)
-
-instance Semigroup (a, b, c, d) | Semigroup a & Semigroup b & Semigroup c & Semigroup d where
-  mappend (a1, b1, c1, d1) (a2, b2, c2, d2)  = (mappend a1 a2, mappend b1 b2, mappend c1 c2, mappend d1 d2)
-
-instance Monoid (a, b, c, d) | Monoid a & Monoid b & Monoid c & Monoid d where
-  mempty = (mempty, mempty, mempty, mempty)
-
-instance Semigroup (a, b, c, d, e) | Semigroup a & Semigroup b & Semigroup c & Semigroup d & Semigroup e where
-  mappend (a1, b1, c1, d1, e1) (a2, b2, c2, d2, e2)  = (mappend a1 a2, mappend b1 b2, mappend c1 c2, mappend d1 d2, mappend e1 e2)
-
-instance Monoid (a, b, c, d, e) | Monoid a & Monoid b & Monoid c & Monoid d & Monoid e where
-  mempty = (mempty, mempty, mempty, mempty, mempty)
-
 instance Semigroup (Dual a) | Semigroup a where
   mappend (Dual x) (Dual y) = Dual (mappend y x)
 

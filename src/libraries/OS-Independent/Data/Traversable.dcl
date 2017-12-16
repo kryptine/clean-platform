@@ -111,8 +111,6 @@ class Traversable t | Functor t & Foldable t where
 
 instance Traversable (Either a)
 
-instance Traversable ((,) a)
-
 for :: (t a) (a -> f b) -> f (t b) | Traversable t & Applicative f
 forM :: (t a) (a -> m b) -> m (t b) | Traversable t & Monad m
 mapAccumL :: (b -> (*s -> *(c, *s))) (t b) *s -> *(t c, *s) | Traversable t

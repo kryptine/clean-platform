@@ -20,6 +20,7 @@ import StdClass
 from StdBool import &&
 from StdMisc import abort
 import Data.Maybe
+import Data.Tuple
 from StdList import repeatn
 import qualified StdList as SL
 

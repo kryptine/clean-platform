@@ -1,6 +1,13 @@
 implementation module Data.Tuple
 
+from StdFunc import id, o
+from StdMisc import abort
 import Data.Functor
+import Data.Maybe
+import Data.Monoid
+import Data.Foldable
+import Data.Traversable
+import Control.Applicative
 
 tuple :: a b -> (a,b)
 tuple a b = (a,b)
@@ -29,3 +36,62 @@ swap (a,b) = (b,a)
 instance Functor ((,) a)
 where
 	fmap f (x, y) = (x, f y)
+
+instance Semigroup (a, b) | Semigroup a & Semigroup b
+where
+	mappend (a1, b1) (a2, b2)  = (mappend a1 a2, mappend b1 b2)
+
+instance Monoid (a, b) | Monoid a & Monoid b
+where
+	mempty = (mempty, mempty)
+
+instance Semigroup (a, b, c) | Semigroup a & Semigroup b & Semigroup c
+where
+	mappend (a1, b1, c1) (a2, b2, c2)  = (mappend a1 a2, mappend b1 b2, mappend c1 c2)
+
+instance Monoid (a, b, c) | Monoid a & Monoid b & Monoid c
+where
+	mempty = (mempty, mempty, mempty)
+
+instance Semigroup (a, b, c, d) | Semigroup a & Semigroup b & Semigroup c & Semigroup d
+where
+	mappend (a1, b1, c1, d1) (a2, b2, c2, d2)  = (mappend a1 a2, mappend b1 b2, mappend c1 c2, mappend d1 d2)
+
+instance Monoid (a, b, c, d) | Monoid a & Monoid b & Monoid c & Monoid d
+where
+	mempty = (mempty, mempty, mempty, mempty)
+
+instance Semigroup (a, b, c, d, e) | Semigroup a & Semigroup b & Semigroup c & Semigroup d & Semigroup e
+where
+	mappend (a1, b1, c1, d1, e1) (a2, b2, c2, d2, e2)  = (mappend a1 a2, mappend b1 b2, mappend c1 c2, mappend d1 d2, mappend e1 e2)
+
+instance Monoid (a, b, c, d, e) | Monoid a & Monoid b & Monoid c & Monoid d & Monoid e
+where
+	mempty = (mempty, mempty, mempty, mempty, mempty)
+
+instance Foldable ((,) a)
+where
+	foldMap f (_, y) = f y
+	fold x = foldMap id x
+
+	foldr f z (_, y) = f y z
+	foldr` f z0 xs = foldl f` id xs z0
+	where f` k x z = k (f x z)
+	foldl f z t = appEndo (getDual (foldMap (Dual o Endo o flip f) t)) z
+	foldl` f z0 xs = foldr f` id xs z0
+	where f` x k z = k (f z x)
+	foldr1 f xs = fromMaybe (abort "foldr1: empty structure") (foldr mf Nothing xs)
+	where
+		mf x Nothing = Just x
+		mf x (Just y) = Just (f x y)
+	foldl1 f xs = fromMaybe (abort "foldl1: empty structure") (foldl mf Nothing xs)
+	where
+		mf Nothing y = Just y
+		mf (Just x) y = Just (f x y)
+
+instance Traversable ((,) a)
+where
+	traverse f (x, y) = (\x y -> (x, y)) x <$> f y
+	sequenceA f = traverse id f
+	mapM f x = unwrapMonad (traverse (WrapMonad o f) x)
+	sequence x = mapM id x
