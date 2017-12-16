@@ -51,18 +51,7 @@ many v = many_v
 
 instance *> f where *> fa fb = id <$ fa <*> fb
 
-instance *> Maybe
-where
-	*> (Just _) m = m
-	*> _        _ = Nothing
-
 instance <* f where <* fa fb = liftA2 const fa fb
-
-instance <* Maybe
-where
-	<* Nothing _  = Nothing
-	<* m (Just _) = m
-	<* _ _        = Nothing
 
 (<**>) infixl 4 :: (f a) (f (a -> b)) -> f b | Applicative f
 (<**>) fa fab = liftA2 (flip ($)) fa fab

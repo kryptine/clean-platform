@@ -2,7 +2,7 @@ definition module Data.Maybe
 
 from StdOverloaded import class ==(..)
 from Data.Functor import class Functor
-from Control.Applicative import class Applicative, class Alternative
+from Control.Applicative import class Applicative, class *>, class <*, class Alternative
 from Control.Monad import class Monad, class MonadPlus
 from Data.Monoid import class Semigroup, class Monoid
 from Data.Foldable import class Foldable
@@ -21,6 +21,8 @@ instance == (Maybe x) | == x
 
 instance Functor Maybe
 instance Applicative Maybe
+instance *> Maybe
+instance <* Maybe
 instance Alternative Maybe
 instance Monad Maybe
 instance MonadPlus Maybe

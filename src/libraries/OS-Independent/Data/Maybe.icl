@@ -32,6 +32,17 @@ where
 	(<*>) Nothing  _  = Nothing
 	(<*>) (Just f) ma = fmap f ma
 
+instance *> Maybe
+where
+	*> (Just _) m = m
+	*> _        _ = Nothing
+
+instance <* Maybe
+where
+	<* Nothing _  = Nothing
+	<* m (Just _) = m
+	<* _ _        = Nothing
+
 instance Alternative Maybe
 where
 	empty           = Nothing
