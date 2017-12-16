@@ -2,6 +2,7 @@ definition module Data.Maybe
 
 from StdOverloaded import class ==(..)
 from Data.Functor import class Functor
+from Control.Applicative import class Applicative, class Alternative
 
 /**
  * The Maybe type represents an optional value by providing a constructor 
@@ -15,6 +16,8 @@ from Data.Functor import class Functor
 instance == (Maybe x) | == x
 
 instance Functor Maybe
+instance Applicative Maybe
+instance Alternative Maybe
 
 /**
  * Apply a function to the the contents of a Just value and directly return

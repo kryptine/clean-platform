@@ -1,8 +1,14 @@
 definition module Data.List
 
+import StdList
+from Data.Generics.GenEq import generic gEq
 from Data.Functor import class Functor
 from Data.Maybe import :: Maybe
-import StdList, Data.Generics.GenEq
+from Control.Applicative import class Applicative, class Alternative
+
+instance Functor []
+instance Applicative []
+instance Alternative []
 
 /**
  * An element in the list, or Nothing if it does not exist.
@@ -143,5 +149,3 @@ strictTRZip2Acc     :: ![a] ![b] ![(!a, !b)] -> [(!a, !b)]
 strictTRZipWith3    :: !(a b c -> d) ![a] ![b] ![c] -> [d]
 strictTRZipWith3Rev :: !(a b c -> d) ![a] ![b] ![c] -> [d]
 strictTRZipWith3Acc :: !(a b c -> d) ![a] ![b] ![c] ![d] -> [d]
-
-instance Functor []

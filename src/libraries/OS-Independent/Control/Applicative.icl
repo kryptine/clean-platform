@@ -39,28 +39,6 @@ instance Alternative (WrappedMonad m) | MonadPlus m where
   empty = WrapMonad mzero
   (<|>) (WrapMonad u) (WrapMonad v) = WrapMonad (mplus u v)
 
-instance Applicative ((->) r) where
-  pure x      = const x
-  (<*>) f g   = \x -> f x (g x)
-
-instance Applicative Maybe where
-  pure x              = Just x
-  (<*>) Nothing   _   = Nothing
-  (<*>) (Just f)  ma  = fmap f ma
-
-instance Applicative [] where
-  pure x      = [x]
-  (<*>) xs x  = liftA2 id xs x
-
-instance Alternative Maybe where
-  empty             = Nothing
-  (<|>) Nothing  r  = r
-  (<|>) l        _  = l
-
-instance Alternative [] where
-  empty         = []
-  (<|>) fa fa`  = fa ++ fa`
-
 some :: (f a) -> f [a] | Alternative f
 some v = some_v
   where  many_v  = some_v <|> lift []

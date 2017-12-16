@@ -1,12 +1,12 @@
 implementation module Data.Heap
 
 import qualified Data.List as L
-from Control.Applicative import class Applicative (..), :: WrappedMonad (..), unwrapMonad, instance Applicative (WrappedMonad m), instance Applicative [], instance Functor (WrappedMonad m)
+from Control.Applicative import class Applicative (..), :: WrappedMonad (..), unwrapMonad, instance Applicative (WrappedMonad m), instance Functor (WrappedMonad m)
 from Control.Monad import liftM, class Monad
 import Data.Monoid
 from Data.Func import on
 from Data.Functor import class Functor (..)
-from Data.List import instance Functor []
+from Data.List import instance Functor [], instance Applicative []
 import qualified Data.Traversable as Traversable
 from Data.Traversable import class Traversable (..), instance Traversable []
 from Data.Foldable import class Foldable (..), instance Foldable []

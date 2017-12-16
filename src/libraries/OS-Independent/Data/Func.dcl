@@ -1,8 +1,10 @@
 definition module Data.Func
 
 from Data.Functor import class Functor
+from Control.Applicative import class Applicative
 
 instance Functor ((->) r)
+instance Applicative ((->) r)
 
 /**
  * Function application.

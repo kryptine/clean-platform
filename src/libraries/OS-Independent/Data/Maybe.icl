@@ -4,6 +4,7 @@ import StdBool
 import StdFunc
 import StdMisc
 import Data.Functor
+import Control.Applicative
 
 :: Maybe a = Nothing | Just a
 
@@ -19,6 +20,18 @@ instance Functor Maybe
 where
 	fmap f Nothing	= Nothing
 	fmap f (Just a)	= Just (f a)
+
+instance Applicative Maybe
+where
+	pure x            = Just x
+	(<*>) Nothing  _  = Nothing
+	(<*>) (Just f) ma = fmap f ma
+
+instance Alternative Maybe
+where
+	empty           = Nothing
+	(<|>) Nothing r = r
+	(<|>) l       _ = l
 
 maybe :: w:b v:(.a -> w:b) !.(Maybe .a) -> w:b
 maybe x _ Nothing  = x

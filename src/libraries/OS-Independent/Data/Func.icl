@@ -1,11 +1,16 @@
 implementation module Data.Func
 
-from StdFunc import o
+from StdFunc import const, o
 import Data.Functor
+import Control.Applicative
 
 instance Functor ((->) r)
 where
 	fmap f g = \x -> (f o g) x
+
+instance Applicative ((->) r) where
+	pure x    = const x
+	(<*>) f g = \x -> f x (g x)
 
 seqSt :: !(a .st -> .st) ![a] !.st -> .st
 seqSt f [] st = st

@@ -12,13 +12,6 @@ unwrapMonad :: !(WrappedMonad m a) -> m a
 
 getConst :: !(Const a b) -> a
 
-instance Applicative ((->) r)
-instance Applicative Maybe
-instance Applicative []
-
-instance Alternative Maybe
-instance Alternative []
-
 instance Functor (Const m)
 instance Functor (WrappedMonad m) | Monad m
 instance Applicative (Const m) | Monoid m

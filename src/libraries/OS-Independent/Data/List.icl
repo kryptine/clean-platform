@@ -1,7 +1,28 @@
 implementation module Data.List
 
-import Data.Maybe, StdTuple, StdBool, StdEnum, StdFunc, StdList, StdOrdList, Data.Functor, Data.Generics.GenEq
-from StdMisc import abort
+import StdBool
+import StdEnum
+import StdFunc
+import StdList
+import StdOrdList
+import StdTuple
+
+import Data.Functor
+import Data.Generics.GenEq
+import Data.Maybe
+import Control.Applicative
+
+instance Functor []
+where
+	fmap f l = [f e \\ e <- l]
+
+instance Applicative [] where
+	pure x     = [x]
+	(<*>) xs x = liftA2 id xs x
+
+instance Alternative [] where
+	empty        = []
+	(<|>) fa fa` = fa ++ fa`
 
 (!?) infixl 9   :: ![.a] !Int -> Maybe .a
 (!?) [x:_]  0 = Just x
@@ -105,10 +126,6 @@ minimum xs =  foldl1 min xs
 
 getItems :: ![a] ![Int] -> [a]
 getItems list indexes = [x \\ x <- list & idx <- [0..] | isMember idx indexes]
-
-instance Functor []
-where
-  fmap f l = [f e \\ e <- l]
 
 scanl :: (a -> .(.b -> a)) a [.b] -> .[a]
 scanl f q ls            =  [q : (case ls of
@@ -437,4 +454,3 @@ strictTRZipWith3Acc :: !(a b c -> d) ![a] ![b] ![c] ![d] -> [d]
 strictTRZipWith3Acc f [a:as] [b:bs] [c:cs] acc
   = strictTRZipWith3Acc f as bs cs [f a b c : acc]
 strictTRZipWith3Acc _ _ _ _ acc = acc
-
