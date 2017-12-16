@@ -4,6 +4,7 @@ from Data.Functor import class Functor
 from Data.Monoid import class Semigroup, class Monoid
 from Data.Foldable import class Foldable
 from Data.Traversable import class Traversable
+from Data.Bifunctor import class Bifunctor
 
 tuple  :: a b -> (a,b)
 tuple3 :: a b c -> (a,b,c)
@@ -31,3 +32,8 @@ instance Monoid (a, b, c, d, e) | Monoid a & Monoid b & Monoid c & Monoid d & Mo
 
 instance Foldable ((,) a)
 instance Traversable ((,) a)
+
+instance Bifunctor (,)
+instance Bifunctor ((,,) x)
+instance Bifunctor ((,,,) x y)
+instance Bifunctor ((,,,,) x y z)

@@ -10,6 +10,7 @@ import Data.Monoid
 from Data.Foldable import class Foldable(foldMap,foldl,foldr)
 from Data.Traversable import class Traversable(traverse)
 import qualified Data.Traversable as T
+import Data.Bifunctor
 
 instance Functor (Either a) where
   fmap f (Left l)  = Left l
@@ -65,6 +66,13 @@ where
 	sequenceA f = traverse id f
 	mapM f x = unwrapMonad (traverse (WrapMonad o f) x)
 	sequence x = 'T'.mapM id x
+
+instance Bifunctor Either
+where
+	bifmap f _ (Left a) = Left (f a)
+	bifmap _ g (Right b) = Right (g b)
+	first f d = bifmap f id d
+	second g d = bifmap id g d
 
 either :: (.a -> .c) (.b -> .c) !(Either .a .b) -> .c
 either f _ (Left x)     =  f x
