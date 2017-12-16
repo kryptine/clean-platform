@@ -6,12 +6,6 @@ from StdFunc import o, id
 from Data.Maybe import :: Maybe(..)
 from StdList import ++
 
-instance Semigroup (a -> b) | Semigroup b where
-  mappend f g = \x -> mappend (f x) (g x)
-
-instance Monoid (a -> b) | Monoid b where
-  mempty = \_ -> mempty
-
 instance Semigroup () where
   mappend _ _  = ()
 

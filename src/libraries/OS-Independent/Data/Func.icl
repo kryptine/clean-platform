@@ -2,6 +2,7 @@ implementation module Data.Func
 
 from StdFunc import const, o
 import Data.Functor
+import Data.Monoid
 import Control.Applicative
 import Control.Monad
 
@@ -17,6 +18,14 @@ where
 instance Monad ((->) r)
 where
 	bind ma a2mb = \r -> a2mb (ma r) r
+
+instance Semigroup (a -> b) | Semigroup b
+where
+	mappend f g = \x -> mappend (f x) (g x)
+
+instance Monoid (a -> b) | Monoid b
+where
+	mempty = \_ -> mempty
 
 seqSt :: !(a .st -> .st) ![a] !.st -> .st
 seqSt f [] st = st
