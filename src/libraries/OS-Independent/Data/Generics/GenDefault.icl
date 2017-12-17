@@ -16,4 +16,3 @@ gDefault{|FIELD|}  df     	= FIELD  df
 gDefault{|OBJECT|} do     	= OBJECT do
 
 derive gDefault [], (,), (,,),  (,,,), (,,,,), (,,,,,), (,,,,,,), (,,,,,,,)
-

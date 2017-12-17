@@ -3,30 +3,9 @@ implementation module Control.Monad
 from Control.Applicative  import class Applicative (..), lift
 from Data.Functor         import class Functor (..)
 from Data.List            import map, zipWith, replicate
-from Data.Maybe           import :: Maybe, Nothing, Just
-from StdList              import foldr, ++
+from StdList              import foldr
 from StdFunc              import flip, id, o, const
 from StdInt               import class +, instance + Int
-
-instance Monad ((->) r) where
-  bind ma a2mb = \r -> a2mb (ma r) r
-
-instance Monad [] where
-  bind m k = foldr ((++) o k) [] m
-
-instance Monad Maybe where
-  bind (Just x) k  = k x
-  bind Nothing  _  = Nothing
-
-instance MonadPlus [] where
-  mzero        = []
-  mplus xs ys  = xs ++ ys
-
-instance MonadPlus Maybe where
-  mzero = Nothing
-
-  mplus Nothing ys  = ys
-  mplus xs      _   = xs
 
 sequence :: !.[a b] -> a [b] | Monad a
 sequence ms = foldr k (lift []) ms

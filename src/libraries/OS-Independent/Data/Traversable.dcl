@@ -5,8 +5,6 @@ from Control.Monad import class Monad
 from Data.Functor import class Functor
 from Data.Foldable import class Foldable
 from Data.Monoid import class Monoid, class Semigroup
-from Data.Maybe import :: Maybe
-from Data.Either import :: Either
 
 // Functors representing data structures that can be traversed from left to
 // right.
@@ -109,14 +107,6 @@ class Traversable t | Functor t & Foldable t where
     // Evaluate each monadic action in the structure from left to right,
     // and collect the results.
     sequence :: !(t (m a)) -> m (t a) | Monad m
-
-instance Traversable Maybe
-
-instance Traversable []
-
-instance Traversable (Either a)
-
-instance Traversable ((,) a)
 
 for :: (t a) (a -> f b) -> f (t b) | Traversable t & Applicative f
 forM :: (t a) (a -> m b) -> m (t b) | Traversable t & Monad m

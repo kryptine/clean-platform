@@ -3,7 +3,7 @@ implementation module Control.Monad.Fix
 from StdFunc import o
 from StdMisc import abort
 import Control.Applicative
-from Control.Monad import class Monad, instance Monad []
+from Control.Monad import class Monad
 from Data.Func import fix
 import Data.List
 import Data.Maybe

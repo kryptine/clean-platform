@@ -15,4 +15,3 @@ cata f = hylo f Out
 
 ana :: (.a -> u:(f .a)) -> .a -> (Fix u:f) | gMap{|*->*|} f
 ana f = hylo In f
-

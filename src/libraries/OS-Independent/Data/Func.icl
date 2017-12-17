@@ -1,5 +1,32 @@
 implementation module Data.Func
 
+from StdFunc import const, o
+import Data.Functor
+import Data.Monoid
+import Control.Applicative
+import Control.Monad
+
+instance Functor ((->) r)
+where
+	fmap f g = \x -> (f o g) x
+
+instance Applicative ((->) r)
+where
+	pure x    = const x
+	(<*>) f g = \x -> f x (g x)
+
+instance Monad ((->) r)
+where
+	bind ma a2mb = \r -> a2mb (ma r) r
+
+instance Semigroup (a -> b) | Semigroup b
+where
+	mappend f g = \x -> mappend (f x) (g x)
+
+instance Monoid (a -> b) | Monoid b
+where
+	mempty = \_ -> mempty
+
 seqSt :: !(a .st -> .st) ![a] !.st -> .st
 seqSt f [] st = st
 seqSt f [x:xs] st = seqSt f xs (f x st)

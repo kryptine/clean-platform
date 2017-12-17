@@ -1,6 +1,7 @@
 implementation module Data.Generics.GenMonad
 
-import StdGeneric, StdMaybe, StdList, StdFunc
+import StdGeneric, StdList, StdFunc
+from Data.Maybe import :: Maybe(..)
 
 generic gMapLM a b :: a:a -> m:(m b:b) | Monad m, [m <= b]
 gMapLM{|c|} x 						= ret x

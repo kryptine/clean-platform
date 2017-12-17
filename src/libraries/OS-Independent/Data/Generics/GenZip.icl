@@ -2,7 +2,8 @@ implementation module Data.Generics.GenZip
 
 import StdGeneric
 import StdEnv
-import StdMaybe
+from Data.Maybe import :: Maybe(..)
+from StdMaybe import mapMaybe
 
 derive bimap Maybe
 	
@@ -41,4 +42,3 @@ derive gMaybeZip [], (,), (,,),  (,,,), (,,,,), (,,,,,), (,,,,,,), (,,,,,,,)
 zipMaybe :: .(.a -> .(.b -> .c)) !(Maybe .a) (Maybe .b) -> (Maybe .c)
 zipMaybe f (Just x) (Just y) 	= Just (f x y)
 zipMaybe f _ _ 					= Nothing
-

@@ -1,6 +1,7 @@
 definition module Data.Generics.GenZip
 
-import StdMaybe, StdGeneric
+import StdGeneric
+from Data.Maybe import :: Maybe
 
 generic gZip a b c :: .a .b -> .c
 derive gZip Int, Bool, Char, Real, String, UNIT, EITHER, PAIR, CONS, FIELD, OBJECT

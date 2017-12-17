@@ -42,5 +42,3 @@ derive gReduceLSt [], (,), (,,),  (,,,), (,,,,), (,,,,,), (,,,,,,), (,,,,,,,)
 
 reduceEITHER fl fr (LEFT x) st 			= fl x st
 reduceEITHER fl fr (RIGHT x) st 		= fr x st
-
-		  

@@ -1,6 +1,7 @@
 definition module Data.Generics.GenParse
 
-import StdGeneric, StdMaybe
+import StdGeneric
+from Data.Maybe import :: Maybe
 
 class ParseInput s where
 	parseInput :: s -> (Maybe Char, s)

@@ -2,6 +2,11 @@ definition module Data.Maybe
 
 from StdOverloaded import class ==(..)
 from Data.Functor import class Functor
+from Control.Applicative import class Applicative, class *>, class <*, class Alternative
+from Control.Monad import class Monad, class MonadPlus
+from Data.Monoid import class Semigroup, class Monoid
+from Data.Foldable import class Foldable
+from Data.Traversable import class Traversable
 
 /**
  * The Maybe type represents an optional value by providing a constructor 
@@ -15,6 +20,17 @@ from Data.Functor import class Functor
 instance == (Maybe x) | == x
 
 instance Functor Maybe
+instance Applicative Maybe
+instance *> Maybe
+instance <* Maybe
+instance Alternative Maybe
+instance Monad Maybe
+instance MonadPlus Maybe
+
+instance Semigroup (Maybe a) | Semigroup a
+instance Monoid (Maybe a)
+instance Foldable Maybe
+instance Traversable Maybe
 
 /**
  * Apply a function to the the contents of a Just value and directly return

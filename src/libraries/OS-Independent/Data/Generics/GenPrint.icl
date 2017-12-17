@@ -1,6 +1,7 @@
 implementation module Data.Generics.GenPrint
 
-import StdGeneric, StdEnv, StdMaybe
+import StdGeneric, StdEnv
+from Data.Maybe import :: Maybe(..)
 
 //-------------------------------------------------------------------------------------
 

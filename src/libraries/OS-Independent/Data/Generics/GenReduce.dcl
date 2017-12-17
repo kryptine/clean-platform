@@ -13,5 +13,3 @@ derive gReduceRSt [], (,), (,,),  (,,,), (,,,,), (,,,,,), (,,,,,,), (,,,,,,,)
 generic gReduceLSt t :: .t .st -> .st
 derive gReduceLSt c, UNIT, PAIR, EITHER, CONS, FIELD, OBJECT
 derive gReduceLSt [], (,), (,,),  (,,,), (,,,,), (,,,,,), (,,,,,,), (,,,,,,,)
-
- 

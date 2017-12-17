@@ -1,6 +1,8 @@
 implementation module Data.Generics.GenParse
 
-import StdGeneric, StdEnv, StdMaybe
+import StdGeneric, StdEnv
+from Data.Maybe import :: Maybe(..)
+from StdMaybe import mapMaybe
 
 //---------------------------------------------------------------------------
 

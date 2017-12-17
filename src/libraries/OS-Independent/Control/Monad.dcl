@@ -2,9 +2,9 @@ definition module Control.Monad
 
 from Control.Applicative  import class Applicative
 from Data.Functor         import class Functor
-from Data.Maybe           import :: Maybe
 
-class Monad m | Applicative m where
+class Monad m | Applicative m
+where
     bind :: !(m a) (a -> m b) -> m b
 
     (>>=) infixl 1 :: (m a) (a -> m b) -> m b | Monad m
@@ -19,19 +19,10 @@ class Monad m | Applicative m where
     (=<<) infixr 1 :: (a -> m b) (m a) -> m b | Monad m
     (=<<) f x :== x >>= f
 
-instance Monad ((->) r)
-
-instance Monad []
-
-instance Monad Maybe
-
-class MonadPlus m | Monad m where
-  mzero :: m a
-  mplus :: !(m a) (m a) -> m a
-
-instance MonadPlus []
-
-instance MonadPlus Maybe
+class MonadPlus m | Monad m
+where
+	mzero :: m a
+	mplus :: !(m a) (m a) -> m a
 
 sequence          :: !.[a b] -> a [b] | Monad a
 sequence_         :: !.[a b] -> a () | Monad a
