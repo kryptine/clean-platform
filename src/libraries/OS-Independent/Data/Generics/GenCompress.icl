@@ -1,6 +1,7 @@
 implementation module Data.Generics.GenCompress
 
-import StdGeneric, StdEnv, StdMaybe, Data.Generics._Array
+import StdGeneric, StdEnv, Data.Generics._Array
+from Data.Maybe import :: Maybe(..)
 
 //--------------------------------------------------
 // uncompressor monad

@@ -39,13 +39,13 @@ import qualified Data.Func
 import qualified Data.Functor
 import qualified Data.Functor.Identity
 import qualified Data.Generics
-import qualified Data.Generics
 import qualified Data.Generics._Array
 import qualified Data.Generics.GenBimap
 import qualified Data.Generics.GenCompress
 import qualified Data.Generics.GenDefault
 import qualified Data.Generics.GenEq
 import qualified Data.Generics.GenFMap
+import qualified Data.Generics.GenFDomain
 import qualified Data.Generics.GenHylo
 import qualified Data.Generics.GenLexOrd
 import qualified Data.Generics.GenMap

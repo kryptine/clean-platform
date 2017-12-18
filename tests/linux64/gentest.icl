@@ -1,6 +1,7 @@
 module gentest
 
 import StdEnv, Data.Generics, System.CommandLine, StdDebug
+from Data.Maybe import :: Maybe(..)
 
 :: Tree a b = Tip a | Bin b (Tree a b) (Tree a b)
 :: Rose a = Rose a .[Rose a]
@@ -130,7 +131,7 @@ testParsePrint =
 	, test Green
 	, test Blue
 
-	, test {rec_fst=1, rec_snd='a', rec_thd=1.2}
+	//, test {rec_fst=1, rec_snd='a', rec_thd=1.2}
 
 	, test (Bin 'a' (Tip 1) (Bin 'b' (Tip 2) (Bin 'c' (Tip 3) (Tip 4))))
 	, test (Rose 1 [Rose 2 [], Rose 3 [], Rose 4 [Rose 5 []]])
@@ -148,11 +149,11 @@ testParsePrint =
 
 	, test [I 1 :+: I 2 :+: I 3, I 4 :->: I 5 :->: I 6]
 	, test (arr [I 1 :+: I 2 :+: I 3, I 4 :->: I 5 :->: I 6])
-	, test 
-		{	rec_fst = I 1 :+: I 2 :+: I 3
-		, 	rec_snd = I 4 :->: I 5 :->: I 6
-		,	rec_thd = I 7 :*: I 8 :+: I 9
-		}
+	//, test
+	//	{	rec_fst = I 1 :+: I 2 :+: I 3
+	//	, 	rec_snd = I 4 :->: I 5 :->: I 6
+	//	,	rec_thd = I 7 :*: I 8 :+: I 9
+	//	}
 	]
 where
 	test x = case parseString (printToString x) of
@@ -231,7 +232,7 @@ where
 		, testMapLM
 		, testReduceRSt
 		, testReduceLSt
-		//, testParsePrint
+		, testParsePrint
 		, testCompress
 		, testFMap
 		]

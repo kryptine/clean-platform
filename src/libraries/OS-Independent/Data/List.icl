@@ -1,7 +1,70 @@
 implementation module Data.List
 
-import Data.Maybe, StdTuple, StdBool, StdEnum, StdFunc, StdList, StdOrdList, Data.Functor, Data.Generics.GenEq
-from StdMisc import abort
+import StdBool
+import StdEnum
+import StdFunc
+import StdList
+import StdOrdList
+import StdTuple
+
+import Data.Functor
+import Data.Generics.GenEq
+import Data.Maybe
+import Data.Monoid
+from Data.Foldable import class Foldable(foldMap)
+from Data.Traversable import class Traversable
+import qualified Data.Traversable as T
+import Control.Applicative
+import Control.Monad
+
+instance Functor []
+where
+	fmap f l = [f e \\ e <- l]
+
+instance Applicative [] where
+	pure x     = [x]
+	(<*>) xs x = liftA2 id xs x
+
+instance Alternative [] where
+	empty        = []
+	(<|>) fa fa` = fa ++ fa`
+
+instance Monad []
+where
+	bind m k = foldr ((++) o k) [] m
+
+instance MonadPlus []
+where
+	mzero        = []
+	mplus xs ys = xs ++ ys
+
+instance Semigroup [a]
+where
+	mappend xs ys  = xs ++ ys
+
+instance Monoid [a]
+where
+	mempty = []
+
+instance Foldable []
+where
+	fold x = foldMap id x
+	foldMap f x = foldr (mappend o f) mempty x
+	foldr f x y = foldr f x y
+	foldr` f z0 xs = foldl f` id xs z0
+	where f` k x z = k (f x z)
+	foldl f x y = foldl f x y
+	foldl` f x y = foldl f x y
+	foldr1 f x = foldr1 f x
+	foldl1 f x = foldl1 f x
+
+instance Traversable []
+where
+	traverse f x = foldr cons_f (pure []) x
+	where cons_f x ys = (\x xs -> [x:xs]) <$> f x <*> ys
+	mapM f x = mapM f x
+	sequenceA f = 'T'.traverse id f
+	sequence x = 'T'.mapM id x
 
 (!?) infixl 9   :: ![.a] !Int -> Maybe .a
 (!?) [x:_]  0 = Just x
@@ -105,10 +168,6 @@ minimum xs =  foldl1 min xs
 
 getItems :: ![a] ![Int] -> [a]
 getItems list indexes = [x \\ x <- list & idx <- [0..] | isMember idx indexes]
-
-instance Functor []
-where
-  fmap f l = [f e \\ e <- l]
 
 scanl :: (a -> .(.b -> a)) a [.b] -> .[a]
 scanl f q ls            =  [q : (case ls of
@@ -437,4 +496,3 @@ strictTRZipWith3Acc :: !(a b c -> d) ![a] ![b] ![c] ![d] -> [d]
 strictTRZipWith3Acc f [a:as] [b:bs] [c:cs] acc
   = strictTRZipWith3Acc f as bs cs [f a b c : acc]
 strictTRZipWith3Acc _ _ _ _ acc = acc
-

@@ -1,6 +1,7 @@
 definition module Data.Generics.GenFMap
 
-import StdGeneric, StdMaybe
+import StdGeneric
+from Data.Maybe import :: Maybe
 
 :: FMap v
 derive bimap FMap
