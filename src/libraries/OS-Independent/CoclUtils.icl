@@ -6,7 +6,8 @@ import Control.Applicative
 import Control.Monad
 import Control.Monad.State
 import Data.Functor
-from Data.Maybe import :: Maybe (..), instance Functor Maybe
+from Data.Maybe import :: Maybe (..), instance Functor Maybe,
+	instance Applicative Maybe, instance Monad Maybe
 import qualified Data.Map as M
 
 import qualified Type as T
