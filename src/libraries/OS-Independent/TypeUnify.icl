@@ -13,10 +13,9 @@ import Control.Monad
 import Control.Monad.State
 from Data.Func import $
 import Data.Functor
+import Data.Generics.GenEq
 import Data.List
 import Data.Maybe
-
-import GenEq
 
 import TypeDef
 import TypeUtil

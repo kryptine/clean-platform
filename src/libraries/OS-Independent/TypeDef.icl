@@ -7,9 +7,9 @@ import StdTuple
 from StdString import instance == {#Char}
 import StdBool
 from StdFunc import o, id
-from GenEq import generic gEq, ===
 from Data.Func import $
 import Data.Functor
+import Data.Generics.GenEq
 import Data.Maybe
 
 derive gEq Maybe, Type, TypeRestriction, Kind

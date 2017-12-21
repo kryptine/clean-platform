@@ -7,12 +7,11 @@ import StdOrdList
 import StdString
 import StdTuple
 
-from GenEq import generic gEq, ===
-
 import Control.Applicative
 import Control.Monad
 from Data.Func import $
 import Data.Functor
+import Data.Generics.GenEq
 import Data.List
 import Data.Maybe
 import Data.Tuple
