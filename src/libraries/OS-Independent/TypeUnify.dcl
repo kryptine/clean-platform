@@ -15,6 +15,12 @@ from Data.Maybe import ::Maybe
 isGeneralisingUnifier :: [TVAssignment] -> Bool
 
 /**
+ * Check whether a unification result indicates that the unified types are
+ * isomorphic.
+ */
+isIsomorphicUnifier :: [TVAssignment] -> Bool
+
+/**
  * True iff the first type is more general or equal to the second type.
  */
 (generalises) infix 4 :: !Type !Type -> Bool
@@ -23,6 +29,11 @@ isGeneralisingUnifier :: [TVAssignment] -> Bool
  * True iff the first type is more specific or equal to the second type.
  */
 (specialises) infix 4 :: !Type !Type -> Bool
+
+/**
+ * True if two types are isomorphic to each other.
+ */
+(isomorphic_to) infix 4 :: !Type !Type -> Bool
 
 /**
  * Prepare a type for unification. Unification always happens between a 'left'
