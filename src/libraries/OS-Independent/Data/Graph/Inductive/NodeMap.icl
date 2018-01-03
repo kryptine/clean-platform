@@ -19,7 +19,7 @@ import qualified Data.List as DL
   , key :: Int
   }
 
-instance == (NodeMap a) | == a where
+instance == (NodeMap a) | Eq a where
   (==) {map, key} {map = map`, key = key`} = key == key` && map == map`
 
 // | Create a new, empty mapping.
