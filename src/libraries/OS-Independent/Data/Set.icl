@@ -1,7 +1,7 @@
 implementation module Data.Set
 
 import StdClass, StdMisc, StdBool, StdList, StdFunc, StdInt, StdTuple
-import Data.Maybe
+import Data.Maybe, Data.Generics.GenEq, Data.Generics.GenLexOrd
 
 //mapSet :: !(a -> b) !(Set a) -> Set b | < a & == a & < b & == b
 //mapSet f s = fromList (map f (toList s))
@@ -33,6 +33,9 @@ instance < (Set a) | < a where
       | a < b     = True
       | a > b     = False
       | otherwise = compare as bs
+
+gEq{|Set|} eEq x y = (size x == size y) && gEq{|* -> *|} eEq (toAscList x) (toAscList y)
+gLexOrd{|Set|} eLexOrd x y = gLexOrd{|* -> *|} eLexOrd (toAscList x) (toAscList y)
 
 /*--------------------------------------------------------------------
  * Query
