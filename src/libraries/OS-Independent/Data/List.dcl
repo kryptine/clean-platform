@@ -135,6 +135,13 @@ intersectBy     :: (a -> b -> .Bool) !.[a] !.[b] -> .[a]
 union           :: u:(.[a] -> v:(.[a] -> .[a])) | == a, [v <= u]
 unionBy         :: (a -> .(a -> .Bool)) !.[a] .[a] -> .[a]
 
+/** hasDup @as = True:
+       @as has at least one element that occurs twice.
+    hasDup @as = False:
+       @as has no elements that occur twice.
+*/
+hasDup :: ![a] -> Bool | Eq a
+
 isMemberGen :: !a !.[a] -> Bool | gEq{|*|} a
 
 strictFoldr         :: !(.a -> .(.b -> .b)) !.b ![.a] -> .b
@@ -160,3 +167,8 @@ strictTRZip2Acc     :: ![a] ![b] ![(!a, !b)] -> [(!a, !b)]
 strictTRZipWith3    :: !(a b c -> d) ![a] ![b] ![c] -> [d]
 strictTRZipWith3Rev :: !(a b c -> d) ![a] ![b] ![c] -> [d]
 strictTRZipWith3Acc :: !(a b c -> d) ![a] ![b] ![c] ![d] -> [d]
+
+// variants of the fold functions that use a queue instead of a fixed size list:
+qfoldl :: (a -> b -> [b]) (a -> b -> a) a ![b] -> a
+qfoldr :: (a -> b -> [b]) (b -> a -> a) a ![b] -> a
+
