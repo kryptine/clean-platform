@@ -1,7 +1,10 @@
 implementation module Data.Set
 
-import StdClass, StdMisc, StdBool, StdList, StdFunc, StdInt, StdTuple
-import Data.Maybe, Data.Generics.GenEq, Data.Generics.GenLexOrd
+import StdClass, StdMisc, StdBool, StdFunc, StdInt, StdTuple
+import Data.Maybe, Data.Generics.GenEq, Data.Generics.GenLexOrd, Data.Monoid
+from Data.Foldable import class Foldable (..)
+import qualified StdList
+from StdList import instance == [a]
 
 //mapSet :: !(a -> b) !(Set a) -> Set b | < a & == a & < b & == b
 //mapSet f s = fromList (map f (toList s))
@@ -36,6 +39,32 @@ instance < (Set a) | < a where
 
 gEq{|Set|} eEq x y = (size x == size y) && gEq{|* -> *|} eEq (toAscList x) (toAscList y)
 gLexOrd{|Set|} eLexOrd x y = gLexOrd{|* -> *|} eLexOrd (toAscList x) (toAscList y)
+
+instance Foldable Set where
+	fold x = foldMap id x
+	foldMap f x = foldr (mappend o f) mempty x
+
+    foldr _ z Tip           = z
+    foldr f z (Bin _ x l r) = foldr f (f x (foldr f z r)) l
+
+	foldr` _ z Tip           = z
+    foldr` f z (Bin _ x l r) = foldr` f (f x (foldr` f z r)) l
+
+    foldl _ z Tip           = z
+    foldl f z (Bin _ x l r) = foldl f (f (foldl f z l) x) r
+
+	foldl` _ z Tip           = z
+    foldl` f z (Bin _ x l r) = foldl` f (f (foldl` f z l) x) r
+
+	foldr1 f (Bin _ x Tip Tip) = x
+    foldr1 f (Bin _ x Tip r)   = foldr f x r
+    foldr1 f (Bin _ x l Tip)   = foldr f x l
+    foldr1 f (Bin _ x l r)     = foldr f (f x (foldr1 f r)) l
+
+	foldl1 f (Bin _ x Tip Tip) = x
+    foldl1 f (Bin _ x Tip r)   = foldl f x r
+    foldl1 f (Bin _ x l Tip)   = foldl f x l
+    foldl1 f (Bin _ x l r)     = foldl f (f (foldr1 f l) x) r
 
 /*--------------------------------------------------------------------
  * Query
@@ -209,7 +238,7 @@ hedgeDiff blo bhi t (Bin _ x l r) = merge (hedgeDiff blo bmi (trim blo bmi t) l)
 
 intersections :: ![Set a] -> Set a | < a & == a
 intersections [t] = t
-intersections [t:ts] = foldl intersection t ts
+intersections [t:ts] = 'StdList'.foldl intersection t ts
 
 // | /O(n+m)/. The intersection of two sets.
 // Elements of the result come from the first set, so for example
@@ -284,7 +313,7 @@ fold f z (Bin _ x l r) = fold f (f x (fold f z r)) l
 
 // | /O(n*log n)/. Create a set from a list of elements.
 fromList :: ![a] -> Set a | < a
-fromList xs = foldl ins newSet xs
+fromList xs = 'StdList'.foldl ins newSet xs
   where
   ins :: !(Set a) !a -> Set a | < a
   ins t x = insert x t

@@ -56,7 +56,7 @@ class Foldable t where
 	 * Right-associative fold of a structure, but with strict application of
 	 * the operator.
 	 */
-    foldr` :: (a b -> b) b !(t a) -> b
+    foldr` :: (a b -> b) !b !(t a) -> b
 
 	/**
 	 * Left-associative fold of a structure.
@@ -68,7 +68,7 @@ class Foldable t where
 	 * Left-associative fold of a structure, but with strict application of the
 	 * operator.
 	 */
-    foldl` :: (b a -> b) b !(t a) -> b
+    foldl` :: (b a -> b) !b !(t a) -> b
 
 	/**
 	 * A variant of {{foldr}} that has no base case, and thus may only be
