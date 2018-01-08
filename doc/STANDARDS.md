@@ -90,4 +90,32 @@ collisions, adhere to the following conventions:
 Implementation modules may import anything they like.
 
 ## Implementing class instances and generic derives 
+The applicable instances for the _general_ classes should be exported in the module of the type and not of the class.
+This means that for example the `Functor` instance of `Maybe` should be defined in `Data.Maybe` and not in `Data.Functor`.
 
+For _specific_ classes the instances for types should be exported in submodules.
+For example, `JSONEncode` for `Map` should be exported in `Data.Map.JSONEncode` and not in `Data.Map` nor in `Text.JSON`.
+This rule also holds for types that have multiple valid instances such as the `Monoid` for `Int`.
+
+_general_ classes are:
+
+  - [ ] `Functor` from `Data.Functor`
+  - [ ] `Monoid, Semigroup` from `Data.Monoid`
+  - [ ] `Monad` from `Control.Monad` and applicable monads from `Control.Monad.*`
+  - [ ] `Applicative, Alternative` from `Control.Applicative`
+  - [ ] `gEq{|*|}` from `Data.Generics.GenEq`
+  - [ ] `gDefault{|*|}` from `Data.Generics.GenDefault`
+  - [ ] `GenFDomain` from `Data.Generics.GenFDomain`
+  - [ ] everything from `StdOverloaded`
+  - [ ] ...
+
+_specific_ classes are for example:
+
+  - [ ] `JSONEncode, JSONDecode` from `Text.JSON`
+  - [ ] ...
+
+
+## OS/Architecture specific functionality
+When implementing functionality that is OS or Architecture specific it is preferred to implement it for all platforms.
+This means that it is preferred to define a common interface to offer the same functionality on all platforms.
+However, this is not always possible (e.g. PseudoTTY support is not available on windows) and therefore this is not mandatory.
