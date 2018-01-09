@@ -132,6 +132,7 @@ import qualified Text.Encodings.MIME
 import qualified Text.Encodings.UrlEncoding
 import qualified Text.HTML
 import qualified Text.JSON
+import qualified Text.Language
 import qualified Text.LaTeX
 import qualified Text.PPrint
 import qualified Text.Parsers.CParsers.ParserCombinators
