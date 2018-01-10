@@ -88,3 +88,9 @@ toGmTime :: !Timestamp -> Tm
 derefTm :: !Int -> Tm
 packTm :: !Tm -> {#Int}
 gmTimeC :: !{#Int} -> Int
+
+/**
+ * Get subsecond precision time
+ */
+nsTime :: !*World -> (!Timespec, !*World)
+:: Timespec = {tv_sec :: !Int, tv_nsec :: !Int}

@@ -284,3 +284,11 @@ peekNamedPipe :: !HANDLE !LPVOID !DWORD !LPDWORD !LPDWORD !LPDWORD !*w -> (!Bool
 peekNamedPipe hNamedPipe lpBuffer nBufferSize lpBytesRead lpTotalBytesAvail lpBytesLeftThisMessage world = code {
 	ccall PeekNamedPipe@24 "PIpIppp:I:I"
 }
+
+GetSystemTimeAsFileTime :: !{#Int} !*World -> (!{#Int},!*World)
+GetSystemTimeAsFileTime i w
+= code {
+	push_a 0
+	ccall GetSystemTimeAsFileTime@4 "PA:I:AA"
+	pop_b 1
+}
