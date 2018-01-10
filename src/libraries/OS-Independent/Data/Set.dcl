@@ -5,6 +5,9 @@ from StdClass import class Ord (..), <=, >
 from Data.Maybe		import :: Maybe
 from Data.List import foldl, map
 from StdBool import not, &&
+from Data.Generics.GenEq import generic gEq
+from Data.Generics.GenLexOrd import generic gLexOrd, :: LexOrd
+from Data.Foldable import class Foldable
 
 // This module is ported from Haskell Data.Set by László Domoszlai. 2013.sep.6
 
@@ -47,8 +50,10 @@ from StdBool import not, &&
          | Bin !Int !a !(Set a) !(Set a)
 
 instance == (Set a) | == a
-
 instance < (Set a) | < a
+derive gEq Set
+derive gLexOrd Set
+instance Foldable Set
 
 /**
  * True iff this is the empty set.

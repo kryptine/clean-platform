@@ -11,6 +11,7 @@ from StdBool        import not
 from StdFunc        import id
 from Text.JSON      import generic JSONEncode, generic JSONDecode, :: JSONNode
 from Data.Generics.GenEq import generic gEq
+from Data.Generics.GenLexOrd import generic gLexOrd, :: LexOrd
 from Data.Monoid    import class Monoid, class Semigroup
 import qualified StdList as SL
 from Data.List import foldr
@@ -31,7 +32,8 @@ import StdClass
 
 instance Monoid (Map k v) | < k
 
-instance == (Map k v) | == k & == v
+instance == (Map k v) | Eq k  & Eq v
+instance <  (Map k v) | Ord k & Ord v
 
 //Basic functions
 
@@ -170,6 +172,7 @@ fromList :: !u:[v:(!a, !b)] -> Map a b | == a & < a, [u <= v]
 derive JSONEncode Map
 derive JSONDecode Map
 derive gEq Map
+derive gLexOrd Map
 
 /**
  * Check if a key exists in a Map.

@@ -10,7 +10,7 @@ import Data.Graph.Inductive.Graph
   , key :: Int
   }
 
-instance == (NodeMap a) | == a
+instance == (NodeMap a) | Eq a
 
 // | Create a new, empty mapping.
 new :: NodeMap a

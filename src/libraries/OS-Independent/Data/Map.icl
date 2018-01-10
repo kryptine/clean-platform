@@ -6,10 +6,10 @@ from StdBool import &&, ||
 from StdFunc import id, flip, o, const
 from StdTuple import snd
 from StdMisc import abort, undef
-import StdString
+import StdString, StdTuple
 from Data.Generics.GenEq import generic gEq
 import qualified StdList as SL
-import Data.Maybe, Text.JSON
+import Data.Maybe, Text.JSON, Data.Generics.GenLexOrd
 from Data.Set import :: Set
 import qualified Data.Set as DS
 import Data.Monoid, Data.Functor, Control.Applicative
@@ -55,8 +55,6 @@ instance Monoid (Map k v) | < k where
 mapSize :: !(Map k a) -> Int
 mapSize Tip              = 0
 mapSize (Bin sz _ _ _ _) = sz
-
-:: LexOrd = LT | GT | EQ
 
 //lexOrd :: !a !a -> LexOrd | < a
 lexOrd x y :== if (x < y) LT (if (x > y) GT EQ)
@@ -1891,11 +1889,11 @@ bin k x l r = Bin (mapSize l + mapSize r + 1) k x l r
 //  actually seems one of the faster methods to gLexOrd{|*|} two trees
 //  and it is certainly the simplest :-)
 ////////////////////////////////////////////////////////////////////
-instance == (Map k a) | == k & == a where
+instance == (Map k a) | Eq k & Eq a where
   (==) t1 t2  = (mapSize t1 == mapSize t2) && (toAscList t1 == toAscList t2)
 
-instance == (a, b) | == a & == b where
-  (==) (x1, y1) (x2, y2) = x1 == x2 && y1 == y2
+instance < (Map k v) | Ord k & Ord v where
+    (<) t1 t2 = toAscList t1 < toAscList t2
 
 ////////////////////////////////////////////////////////////////////
 //  Functor
@@ -2526,4 +2524,5 @@ gEq{|Map|} fk fv mx my = length mxl == length myl && and [fk kx ky && fv vx vy \
 where
 	mxl = toList mx
 	myl = toList my
+gLexOrd{|Map|} kLexOrd vLexOrd x y = gLexOrd{|* -> *|} (gLexOrd{|* -> * -> *|} kLexOrd vLexOrd) (toAscList x) (toAscList y)
 
