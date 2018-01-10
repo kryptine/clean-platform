@@ -166,3 +166,13 @@ unpackTm buf off =
 
 sizeOfTm :: Int
 sizeOfTm = 36 
+
+nsTime :: !*World -> (!Timespec, !*World)
+nsTime w
+# (p, w) = mallocSt 16 w
+# (r, w) = clock_gettime 0 p w
+= derefTimespec p w
+
+//Include world to force evaluation order...
+derefTimespec :: !Pointer !*w -> (!Timespec, !*w)
+derefTimespec p w = ({Timespec | tv_sec = readInt p 0, tv_nsec = readInt p 8}, w)

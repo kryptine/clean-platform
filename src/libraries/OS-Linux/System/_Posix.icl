@@ -164,6 +164,10 @@ malloc :: !Int -> Pointer
 malloc num = code {
 	ccall malloc "I:p"
 }
+mallocSt	:: !Int !*w -> (!Pointer, !*w)
+mallocSt num w = code {
+	ccall malloc "I:p:A"
+}
 free :: !Pointer -> Int
 free ptr = code {
 	ccall free "p:I"
@@ -175,6 +179,10 @@ freeSt ptr world = code {
 memcpy_string_to_pointer :: !Pointer !{#Char} !Int -> Pointer
 memcpy_string_to_pointer p s n = code {
     ccall memcpy "psp:p"
+}
+clock_gettime :: !Int !Pointer !*w -> (!Int, !*w)
+clock_gettime _ _ _ = code {
+	ccall clock_gettime "Ip:I:A"
 }
 
 //Mapping to/from byte arrays
