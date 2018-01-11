@@ -1,7 +1,7 @@
 implementation module System.Time
 
-import StdString, StdArray, StdClass, StdOverloaded, StdInt
-import System._Pointer, System.OS
+import StdString, StdArray, StdClass, StdOverloaded, StdInt, StdMisc
+import System.OS
 import System._Pointer, System._Posix
 import Text
 
@@ -166,10 +166,7 @@ unpackTm buf off =
 	}
 
 sizeOfTm :: Int
-<<<<<<< HEAD
 sizeOfTm = IF_ANDROID 44 36 
-=======
-sizeOfTm = 36 
 
 nsTime :: !*World -> (!Timespec, !*World)
 nsTime w
@@ -180,4 +177,3 @@ nsTime w
 # (tv_sec, p) = readIntP p 0
 # (tv_nsec, p) = readIntP p 8
 = ({Timespec | tv_sec = tv_sec, tv_nsec = tv_nsec}, freeSt p w)
->>>>>>> 77b02c8b9aa43e18ae3cbce41eecfb3b7ee03b3c
