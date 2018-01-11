@@ -75,9 +75,11 @@ write       :: !Int !{#Char} !Int !*w -> (!Int, !*w)
 select_     :: !Int !Pointer !Pointer !Pointer !Pointer !*w -> (!Int, !*w)
 kill        :: !Int !Int !*w -> (!Int, !*w)
 timegm      :: !{#Int} -> Int
+clock_gettime :: !Int !Pointer !*w -> (!Int, !*w)
 
 //Memory (impure)
 malloc	:: !Int -> Pointer
+mallocSt	:: !Int !*w -> (!Pointer, !*w)
 free	:: !Pointer -> Int
 freeSt  :: !Pointer !*w -> *w
 memcpy_string_to_pointer :: !Pointer !{#Char} !Int -> Pointer

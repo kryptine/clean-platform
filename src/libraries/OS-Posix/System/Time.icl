@@ -1,6 +1,6 @@
 implementation module System.Time
 
-import StdString, StdArray, StdClass, StdOverloaded, StdInt
+import StdString, StdArray, StdClass, StdOverloaded, StdInt, StdMisc
 import System._Pointer, System._Posix
 import Text
 
@@ -166,3 +166,13 @@ unpackTm buf off =
 
 sizeOfTm :: Int
 sizeOfTm = 36 
+
+nsTime :: !*World -> (!Timespec, !*World)
+nsTime w
+# (p, w) = mallocSt 16 w
+# (r, w) = clock_gettime 0 p w
+//For completeness sake
+| r <> 0 = abort "clock_gettime error: everyone should have permission to open CLOCK_REALTIME?"
+# (tv_sec, p) = readIntP p 0
+# (tv_nsec, p) = readIntP p 8
+= ({Timespec | tv_sec = tv_sec, tv_nsec = tv_nsec}, freeSt p w)

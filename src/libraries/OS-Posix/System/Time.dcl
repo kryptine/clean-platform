@@ -85,3 +85,8 @@ toLocalTime :: !Timestamp !*World -> (!Tm,!*World)
 * Convert a timestamp to a Tm record (GMT time)
 */
 toGmTime    :: !Timestamp -> Tm
+/**
+ * Get subsecond precision time
+ */
+nsTime :: !*World -> (!Timespec, !*World)
+:: Timespec = {tv_sec :: !Int, tv_nsec :: !Int}
