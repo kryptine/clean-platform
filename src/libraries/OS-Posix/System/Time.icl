@@ -176,3 +176,30 @@ nsTime w
 # (tv_sec, p) = readIntP p 0
 # (tv_nsec, p) = readIntP p 8
 = ({Timespec | tv_sec = tv_sec, tv_nsec = tv_nsec}, freeSt p w)
+
+timespecToStamp :: !Timespec -> Timestamp
+timespecToStamp t = Timestamp t.tv_sec
+
+timestampToSpec :: !Timestamp -> Timespec
+timestampToSpec (Timestamp t) = {tv_sec=t,tv_nsec=0}
+
+instance < Timespec
+where
+	(<) t1 t2
+		| t1.tv_sec == t2.tv_sec = t1.tv_nsec < t2.tv_nsec
+		= t1.tv_sec < t2.tv_sec
+
+instance + Timespec
+where
+	(+) t1 t2 = let tv_nsec = t1.tv_nsec + t2.tv_nsec in
+		{ tv_sec  = t1.tv_sec + t2.tv_sec + tv_nsec / 1000000000
+		, tv_nsec = tv_nsec rem 1000000000
+		}
+
+instance - Timespec
+where
+	(-) t1 t2
+		# tv_nsec = t1.tv_nsec - t2.tv_nsec
+		| tv_nsec < 0
+			= {tv_sec = t1.tv_sec - t2.tv_sec - 1, tv_nsec = 1000000000 - tv_nsec}
+			= {tv_sec = t1.tv_sec - t2.tv_sec - 1, tv_nsec = tv_nsec}

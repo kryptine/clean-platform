@@ -94,3 +94,11 @@ gmTimeC :: !{#Int} -> Int
  */
 nsTime :: !*World -> (!Timespec, !*World)
 :: Timespec = {tv_sec :: !Int, tv_nsec :: !Int}
+
+timespecToStamp :: !Timespec -> Timestamp
+
+timestampToSpec :: !Timestamp -> Timespec
+
+instance < Timespec
+instance + Timespec
+instance - Timespec
