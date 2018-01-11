@@ -194,3 +194,5 @@ sleep :: !DWORD !*w -> *w
 
 createPipe :: !PHANDLE !PHANDLE !SECURITY_ATTRIBUTES !DWORD !*w -> (!Bool, !*w)
 peekNamedPipe :: !HANDLE !LPVOID !DWORD !LPDWORD !LPDWORD !LPDWORD !*w -> (!Bool, !*w)
+
+GetSystemTimeAsFileTime :: !{#Int} !*World -> (!{#Int},!*World)

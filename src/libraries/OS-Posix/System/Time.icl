@@ -172,7 +172,7 @@ nsTime w
 # (p, w) = mallocSt 16 w
 # (r, w) = clock_gettime 0 p w
 //For completeness sake
-| r == -1 = abort "clock_gettime error: everyone should have permission to open CLOCK_REALTIME?"
+| r <> 0 = abort "clock_gettime error: everyone should have permission to open CLOCK_REALTIME?"
 # (tv_sec, p) = readIntP p 0
 # (tv_nsec, p) = readIntP p 8
 = ({Timespec | tv_sec = tv_sec, tv_nsec = tv_nsec}, freeSt p w)

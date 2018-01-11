@@ -2,6 +2,10 @@ implementation module System.Time
 
 import StdString, StdArray, StdClass, StdOverloaded, StdInt, StdMisc
 import System._Pointer
+import System._WinBase
+import Data.Integer
+import Data.List
+from Data.Func import $
 import Text
 
 import code from library "msvcrt.txt"
@@ -159,3 +163,20 @@ packTm32 tm = 	{ tm.sec
 				, tm.yday
 				, tm.isdst
 				}
+				
+//Number of ticks difference between the windows and linux epoch
+TICKSDIFF :== {integer_s=0,integer_a={-1240428288,2}} * TICKSPERSEC
+//Number of ticks per second on windows machines
+TICKSPERSEC :== {integer_s=10000000,integer_a={}}
+BIGTWO :== {integer_s=2,integer_a={}}
+				
+nsTime :: !*World -> (!Timespec, !*World)
+nsTime w
+# (is, w) = GetSystemTimeAsFileTime (createArray 2 0) w
+# ticks = uintToInt is.[0] + foldr ($) (uintToInt is.[1]) (repeatn 32 ((*) BIGTWO)) - TICKSDIFF
+= ({Timespec | tv_sec=toInt (ticks / TICKSPERSEC), tv_nsec=toInt (ticks rem TICKSPERSEC) *100}, w)
+
+uintToInt :: Int -> Integer
+uintToInt i
+| i < 0 = toInteger i + {integer_s=0,integer_a={0,1}}
+= toInteger i
