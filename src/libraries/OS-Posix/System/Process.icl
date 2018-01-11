@@ -88,6 +88,95 @@ where
           , world
           )
 
+defaultPtyOptions :: ProcessPtyOptions
+defaultPtyOptions =
+	{ProcessPtyOptions
+	|childInNewSession = False
+	,childControlsTty  = False
+	,useRawIO          = False
+	}
+
+runProcessPty :: !FilePath ![String] !(Maybe String) !ProcessPtyOptions !*World -> (MaybeOSError (ProcessHandle, ProcessIO), *World)
+runProcessPty path args mCurrentDirectory opts world
+	# (masterPty, world) = posix_openpt (O_RDWR bitor O_NOCTTY) world
+	| masterPty == -1    = getLastOSError world
+	# (slavePty, world)  = grantpt masterPty world
+	| slavePty == -1     = getLastOSError world
+	# (slavePty, world)  = unlockpt masterPty world
+	| slavePty == -1     = getLastOSError world
+	# (slavePty, world)  = ptsname masterPty world
+	| slavePty == 0      = getLastOSError world
+	# (slavePty, world)  = open slavePty (O_RDWR bitor O_NOCTTY) world
+	| slavePty == -1     = getLastOSError world
+	= runProcessFork (childProcess  slavePty masterPty)
+	                 (parentProcess slavePty masterPty)
+	                 world
+where
+	childProcess :: !Int !Int !Int !Int !*World -> (!MaybeOSError (!ProcessHandle, !ProcessIO), !*World)
+	childProcess slavePty masterPty pipeExecErrorOut pipeExecErrorIn world
+		//Disable echo
+		//sizeof(struct termios) on linux gives 60, lets play safe
+		# termios      = malloc 64
+		| termios == 0 = abort "malloc failed"
+		# (res, world) = tcgetattr slavePty termios world
+		| res == -1    = getLastOSError world
+
+		//Apply the termios transformation
+		# world        = (if opts.useRawIO cfmakeraw (flip const)) termios world
+		# (res, world) = tcsetattr slavePty TCSANOW termios world
+		| res == -1    = getLastOSError world
+		# world        = freeSt termios world
+
+		//Close the master side
+		# (res, world) = close masterPty world
+		| res == -1    = getLastOSError world
+		
+		//Connect the pty to the stdio
+		# (res, world) = dup2 slavePty STDIN_FILENO world
+		| res == -1    = getLastOSError world
+		# (res, world) = dup2 slavePty STDOUT_FILENO world
+		| res == -1    = getLastOSError world
+		# (res, world) = dup2 slavePty STDERR_FILENO world
+		| res == -1    = getLastOSError world
+
+		//Set the correct ioctl settings
+		# world        = (if opts.childInNewSession setsid id) world
+		# (res, world) = if opts.childControlsTty (0, world)
+			(ioctl TCSANOW TIOCSCTTY 1 world)
+		| res == -1    = getLastOSError world
+		//Start
+		# (_, world)   = runProcessChildProcessExec path args mCurrentDirectory pipeExecErrorOut pipeExecErrorIn world
+		// this is never executed as 'childProcessExec' never returns
+		= (undef, world)
+
+	parentProcess :: !Int !Int !Int !Int !Int !*World -> (!MaybeOSError (!ProcessHandle, !ProcessIO), !*World)
+	parentProcess slavePty masterPty pid pipeExecErrorOut pipeExecErrorIn world
+		//sizeof(struct termios) on linux gives 60, lets play safe
+		# termios          = malloc 64
+		| termios == 0     = abort "malloc failed"
+		# (res, world)     = tcgetattr masterPty termios world
+		| res == -1        = getLastOSError world
+
+		//Apply the termios transformation
+		# world            = (if opts.useRawIO cfmakeraw (flip const)) termios world
+		# (res, world)     = tcsetattr slavePty TCSANOW termios world
+		| res == -1        = getLastOSError world
+
+		//Close the slave side
+		# (res, world)     = close slavePty world
+		| res == -1        = getLastOSError world
+		# world            = freeSt termios world
+		//Start
+		# (mbPHandle, world) = runProcessParentProcessCheckError pid pipeExecErrorOut pipeExecErrorIn world
+		| isError mbPHandle  = (liftError mbPHandle, world)
+		= ( Ok ( fromOk mbPHandle
+		       , { stdIn  = WritePipe masterPty
+		         , stdOut = ReadPipe masterPty
+		         , stdErr = ReadPipe masterPty
+		         }
+		       )
+		  , world)
+
 runProcessFork :: !(    Int Int *World -> (!MaybeOSError a, !*World))
                   !(Int Int Int *World -> (!MaybeOSError a, !*World))
                   !*World
@@ -109,8 +198,8 @@ runProcessChildProcessExec :: !FilePath ![String] !(Maybe String) !Int !Int !*Wo
 runProcessChildProcessExec path args mCurrentDirectory pipeExecErrorOut pipeExecErrorIn world
     # (res, world) = close pipeExecErrorOut world
     | res == -1    = passLastOSErrorToParent pipeExecErrorIn world
-    // set O_CLOEXEC such that parent is informed if 'execvp' succeeds
-    # (res, world) = fcntlArg pipeExecErrorIn F_SETFD O_CLOEXEC world
+    // set FD_CLOEXEC such that parent is informed if 'execvp' succeeds
+    # (res, world) = fcntlArg pipeExecErrorIn F_SETFD FD_CLOEXEC world
     | res == -1    = passLastOSErrorToParent pipeExecErrorIn world
 	//Chdir
 	# (res,world) = case mCurrentDirectory of
@@ -153,7 +242,6 @@ runProcessMakeArgv argv_list world
 		= abort "malloc failed"
 	# args_memory = memcpy_string_to_pointer args_memory args_string args_size
 	# (argv, args_memory) = readP (createArgv argv_list) args_memory
-    # world = freeSt args_memory world
 	= (argv, world)
 where
 	argvLength [a:as] l
@@ -314,7 +402,8 @@ closeProcessIO :: !ProcessIO !*World -> (!MaybeOSError (), !*World)
 closeProcessIO {stdIn = WritePipe fdStdIn, stdOut = ReadPipe fdStdOut, stdErr = ReadPipe fdStdErr} world
     # (res, world) = close fdStdIn world
     | res == -1    = getLastOSError world
-    # (res, world) = close fdStdOut world
+    // if 'runProcessPty' is used, the same file descriptor is used for stdIn & stdOut
+    # (res, world) = if (fdStdIn == fdStdOut) (0, world) (close fdStdOut world)
     | res == -1    = getLastOSError world
     # (res, world) = close fdStdErr world
     | res == -1    = getLastOSError world

@@ -8,6 +8,9 @@ definition module Data.Either
 from Control.Applicative import class Applicative, class *>, class <*
 from Control.Monad import class Monad
 from Data.Functor import class Functor
+from Data.Foldable import class Foldable
+from Data.Traversable import class Traversable
+from Data.Bifunctor import class Bifunctor
 
 :: Either a b = Left a | Right b
 
@@ -22,4 +25,9 @@ instance <* (Either e)
 
 instance Monad (Either e)
 
-either :: (.a -> .c) (.b -> .c) (Either .a .b) -> .c
+instance Foldable (Either a)
+instance Traversable (Either a)
+
+instance Bifunctor Either
+
+either :: (.a -> .c) (.b -> .c) !(Either .a .b) -> .c

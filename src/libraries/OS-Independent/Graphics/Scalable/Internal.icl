@@ -13,7 +13,7 @@ from StdBool import &&
 import qualified Data.Set as DS
 import Text.HTML
 from Data.Functor import class Functor (..)
-import GenLexOrd
+import Data.Generics.GenLexOrd
 
 instance / Span where
   / p=:(PxSpan 0.0)        _               = p

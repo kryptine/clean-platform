@@ -6,7 +6,7 @@ from Data.Monoid import class Monoid, class Semigroup
 import qualified Data.Monoid as DM
 from StdFunc import id, o, flip, const
 
-getConst :: (Const a b) -> a
+getConst :: !(Const a b) -> a
 getConst (Const x) = x
 
 instance Functor (Const m) where
@@ -22,7 +22,7 @@ instance Applicative (Const m) | Monoid m where
   pure _ = Const 'DM'.mempty
   (<*>) (Const f) (Const v) = Const ('DM'.mappend f v)
 
-unwrapMonad :: (WrappedMonad m a) -> m a
+unwrapMonad :: !(WrappedMonad m a) -> m a
 unwrapMonad (WrapMonad x) = x
 
 instance Functor (WrappedMonad m) | Monad m where
@@ -39,28 +39,6 @@ instance Alternative (WrappedMonad m) | MonadPlus m where
   empty = WrapMonad mzero
   (<|>) (WrapMonad u) (WrapMonad v) = WrapMonad (mplus u v)
 
-instance Applicative ((->) r) where
-  pure x      = const x
-  (<*>) f g   = \x -> f x (g x)
-
-instance Applicative Maybe where
-  pure x              = Just x
-  (<*>) Nothing   _   = Nothing
-  (<*>) (Just f)  ma  = fmap f ma
-
-instance Applicative [] where
-  pure x      = [x]
-  (<*>) xs x  = liftA2 id xs x
-
-instance Alternative Maybe where
-  empty             = Nothing
-  (<|>) Nothing  r  = r
-  (<|>) l        _  = l
-
-instance Alternative [] where
-  empty         = []
-  (<|>) fa fa`  = fa ++ fa`
-
 some :: (f a) -> f [a] | Alternative f
 some v = some_v
   where  many_v  = some_v <|> lift []
@@ -73,18 +51,7 @@ many v = many_v
 
 instance *> f where *> fa fb = id <$ fa <*> fb
 
-instance *> Maybe
-where
-	*> (Just _) m = m
-	*> _        _ = Nothing
-
 instance <* f where <* fa fb = liftA2 const fa fb
-
-instance <* Maybe
-where
-	<* Nothing _  = Nothing
-	<* m (Just _) = m
-	<* _ _        = Nothing
 
 (<**>) infixl 4 :: (f a) (f (a -> b)) -> f b | Applicative f
 (<**>) fa fab = liftA2 (flip ($)) fa fab

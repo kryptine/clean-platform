@@ -76,17 +76,50 @@ readdir	:: !Pointer !*w -> (!Pointer,!*w)
 readdir dir world = code {
 	ccall readdir "p:p:A"
 }
-
 pipe :: !Pointer !*w -> (!Int, !*w)
 pipe arr world = code {
     ccall pipe "p:I:A"
 }
-
+posix_openpt :: !Int !*w -> (!Int, !*w)
+posix_openpt flags w = code {
+	ccall posix_openpt "I:I:A"
+}
+grantpt     :: !Int !*w -> (!Int, !*w)
+grantpt fp w = code {
+	ccall grantpt "I:I:A"
+}
+unlockpt    :: !Int !*w -> (!Int, !*w)
+unlockpt fp w = code {
+	ccall unlockpt "I:I:A"
+}
+ptsname     :: !Int !*w -> (!Pointer, !*w)
+ptsname fp w = code {
+	ccall ptsname "I:p:A"
+}
+open        :: !Pointer !Int !*w -> (!Int, !*w)
+open p flags w = code {
+	ccall open "pI:I:A"
+}
+tcgetattr   :: !Int !Pointer !*w -> (!Int, !*w)
+tcgetattr fp f w = code {
+	ccall tcgetattr "Ip:I:A"
+}
+cfmakeraw   :: !Pointer !*w -> *w
+cfmakeraw p w = code {
+	ccall cfmakeraw "p:V:A"
+}
+tcsetattr   :: !Int !Int !Pointer !*w -> (!Int, !*w)
+tcsetattr fp strategy p w = code {
+	ccall tcsetattr "IIp:I:A"
+}
+setsid :: !*w -> *w
+setsid w = code {
+	ccall setsid ":V:A"
+}
 dup2 :: !Int !Int !*w -> (!Int, !*w)
 dup2 old new world = code {
     ccall dup2 "II:I:A"
 }
-
 close :: !Int !*w -> (!Int, !*w)
 close fd world = code {
     ccall close "I:I:A"
@@ -122,9 +155,18 @@ kill pid sig world = code {
     ccall kill "II:I:A"
 }
 
+timegm :: !{#Int} -> Int
+timegm tm = code {
+	ccall timegm "A:I"
+}
+
 malloc :: !Int -> Pointer
 malloc num = code {
-	ccall malloc "p:p"
+	ccall malloc "I:p"
+}
+mallocSt	:: !Int !*w -> (!Pointer, !*w)
+mallocSt num w = code {
+	ccall malloc "I:p:A"
 }
 free :: !Pointer -> Int
 free ptr = code {
@@ -137,6 +179,10 @@ freeSt ptr world = code {
 memcpy_string_to_pointer :: !Pointer !{#Char} !Int -> Pointer
 memcpy_string_to_pointer p s n = code {
     ccall memcpy "psp:p"
+}
+clock_gettime :: !Int !Pointer !*w -> (!Int, !*w)
+clock_gettime _ _ _ = code {
+	ccall clock_gettime "Ip:I:A"
 }
 
 //Mapping to/from byte arrays

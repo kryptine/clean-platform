@@ -35,7 +35,7 @@ from Data.Maybe import :: Maybe
  */
 
 class Pretty a where
-  pretty        :: a -> Doc
+  pretty        :: !a -> Doc
 
 instance Pretty [a] | Pretty a
 
@@ -58,8 +58,8 @@ instance Pretty (Maybe a) | Pretty a
 list :: ([Doc] -> Doc)
 tupled :: ([Doc] -> Doc)
 semiBraces :: ([Doc] -> Doc)
-encloseSep :: Doc Doc Doc [Doc] -> Doc
-punctuate :: Doc [Doc] -> [Doc]
+encloseSep :: Doc Doc Doc ![Doc] -> Doc
+punctuate :: Doc ![Doc] -> [Doc]
 
 sep :: ([Doc] -> Doc)
 fillSep :: ([Doc] -> Doc)
@@ -69,7 +69,7 @@ cat :: ([Doc] -> Doc)
 fillCat :: ([Doc] -> Doc)
 hcat :: ([Doc] -> Doc)
 vcat :: ([Doc] -> Doc)
-fold :: (Doc Doc ->Doc) [Doc] -> Doc
+fold :: (Doc Doc ->Doc) ![Doc] -> Doc
 (<->) infixr 6 :: Doc Doc -> Doc
 (<+>) infixr 6 :: Doc Doc -> Doc
 (</>) infixr 5 :: Doc Doc -> Doc
@@ -107,10 +107,10 @@ equals :: Doc
  * Combinators for prelude types
  * ----------------------------------------------------------- */
 
-string :: String -> Doc
-bool :: Bool -> Doc
-int :: Int -> Doc
-real :: Real -> Doc
+string :: !String -> Doc
+bool :: !Bool -> Doc
+int :: !Int -> Doc
+real :: !Real -> Doc
 
 /* -----------------------------------------------------------
  * semi primitive: fill and fillBreak
@@ -133,12 +133,12 @@ align :: Doc -> Doc
 ::  SimpleDoc
 
 empty :: Doc
-char :: Char -> Doc
-text :: String -> Doc
+char :: !Char -> Doc
+text :: !String -> Doc
 line :: Doc
 linebreak :: Doc
 beside :: Doc Doc -> Doc
-nest :: Int Doc -> Doc
+nest :: !Int Doc -> Doc
 column :: (Int -> Doc) -> Doc
 nesting :: (Int -> Doc) -> Doc
 
@@ -146,6 +146,6 @@ nesting :: (Int -> Doc) -> Doc
  * Renderers
  * ----------------------------------------------------------- */
 
-renderPretty :: Real Int Doc -> SimpleDoc
-renderCompact :: Doc -> SimpleDoc
-display :: SimpleDoc -> String
+renderPretty :: Real Int !Doc -> SimpleDoc
+renderCompact :: !Doc -> SimpleDoc
+display :: !SimpleDoc -> String

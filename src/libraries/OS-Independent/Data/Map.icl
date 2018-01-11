@@ -6,9 +6,10 @@ from StdBool import &&, ||
 from StdFunc import id, flip, o, const
 from StdTuple import snd
 from StdMisc import abort, undef
-from GenEq import generic gEq
+import StdString, StdTuple
+from Data.Generics.GenEq import generic gEq
 import qualified StdList as SL
-import Data.Maybe, Text.JSON
+import Data.Maybe, Text.JSON, Data.Generics.GenLexOrd
 from Data.Set import :: Set
 import qualified Data.Set as DS
 import Data.Monoid, Data.Functor, Control.Applicative
@@ -54,8 +55,6 @@ instance Monoid (Map k v) | < k where
 mapSize :: !(Map k a) -> Int
 mapSize Tip              = 0
 mapSize (Bin sz _ _ _ _) = sz
-
-:: LexOrd = LT | GT | EQ
 
 //lexOrd :: !a !a -> LexOrd | < a
 lexOrd x y :== if (x < y) LT (if (x > y) GT EQ)
@@ -406,27 +405,6 @@ alter f k (Bin sx kx x l r) = case lexOrd k kx of
 //////////////////////////////////////////////////////////////////////
 //  Indexing
 //////////////////////////////////////////////////////////////////////
-// | /O(log n)/. Return the /index/ of a key, which is its zero-based index in
-// the sequence sorted by keys. The index is a number from /0/ up to, but not
-// including, the 'mapSize' of the map. Calls 'abort` when the key is not
-// a 'member` of the map.
-//
-// > findIndex 2 (fromList [(5,"a"), (3,"b")])    Error: element is not in the map
-// > findIndex 3 (fromList [(5,"a"), (3,"b")]) == 0
-// > findIndex 5 (fromList [(5,"a"), (3,"b")]) == 1
-// > findIndex 6 (fromList [(5,"a"), (3,"b")])    Error: element is not in the map
-
-// See Note: Type of local 'go' function
-findIndex :: !k !(Map k a) -> Int | < k
-findIndex k m = go 0 k m
-  where
-    go :: !Int !k !(Map k a) -> Int | < k
-    go _   _ Tip  = abort "Map.findIndex: element is not in the map"
-    go idx k (Bin _ kx _ l r) = case lexOrd k kx of
-      LT -> go idx k l
-      GT -> go (idx + mapSize l + 1) k r
-      EQ -> idx + mapSize l
-
 // | /O(log n)/. Lookup the /index/ of a key, which is its zero-based index in
 // the sequence sorted by keys. The index is a number from /0/ up to, but not
 // including, the 'mapSize' of the map.
@@ -449,66 +427,46 @@ getIndex k m = go 0 k m
 
 // | /O(log n)/. Retrieve an element by its /index/, i.e. by its zero-based
 // index in the sequence sorted by keys. If the /index/ is out of range (less
-// than zero, greater or equal to 'mapSize' of the map), 'abort` is called.
+// than zero, greater or equal to 'mapSize' of the map), 'Nothing` is returned.
 //
-// > elemAt 0 (fromList [(5,"a"), (3,"b")]) == (3,"b")
-// > elemAt 1 (fromList [(5,"a"), (3,"b")]) == (5, "a")
-// > elemAt 2 (fromList [(5,"a"), (3,"b")])    Error: index out of range
+// > elemAt 0 (fromList [(5,"a"), (3,"b")]) == Just (3,"b")
+// > elemAt 1 (fromList [(5,"a"), (3,"b")]) == Just (5, "a")
+// > elemAt 2 (fromList [(5,"a"), (3,"b")]) == Nothing
 
-elemAt :: !Int !(Map k a) -> (!k, !a)
-elemAt _ Tip = abort "Map.elemAt: index out of range"
+elemAt :: !Int !(Map k a) -> Maybe (!k, !a)
+elemAt _ Tip = Nothing
 elemAt i (Bin _ kx x l r)
   #! mapSizeL = mapSize l
   = case lexOrd i mapSizeL of
       LT -> elemAt i l
       GT -> elemAt (i - mapSizeL - 1) r
-      EQ -> (kx,x)
+      EQ -> Just (kx,x)
 
 // | /O(log n)/. Update the element at /index/, i.e. by its zero-based index in
 // the sequence sorted by keys. If the /index/ is out of range (less than zero,
-// greater or equal to 'mapSize' of the map), 'abort` is called.
+// greater or equal to 'mapSize' of the map), 'Nothing` is returned.
 //
-// > updateAt (\ _ _ -> Just "x") 0    (fromList [(5,"a"), (3,"b")]) == fromList [(3, "x"), (5, "a")]
-// > updateAt (\ _ _ -> Just "x") 1    (fromList [(5,"a"), (3,"b")]) == fromList [(3, "b"), (5, "x")]
-// > updateAt (\ _ _ -> Just "x") 2    (fromList [(5,"a"), (3,"b")])    Error: index out of range
-// > updateAt (\ _ _ -> Just "x") (-1) (fromList [(5,"a"), (3,"b")])    Error: index out of range
-// > updateAt (\_ _  -> Nothing)  0    (fromList [(5,"a"), (3,"b")]) == singleton 5 "a"
-// > updateAt (\_ _  -> Nothing)  1    (fromList [(5,"a"), (3,"b")]) == singleton 3 "b"
-// > updateAt (\_ _  -> Nothing)  2    (fromList [(5,"a"), (3,"b")])    Error: index out of range
-// > updateAt (\_ _  -> Nothing)  (-1) (fromList [(5,"a"), (3,"b")])    Error: index out of range
+// > updateAt (\ _ _ -> Just "x") 0    (fromList [(5,"a"), (3,"b")]) == Just (fromList [(3, "x"), (5, "a")])
+// > updateAt (\ _ _ -> Just "x") 1    (fromList [(5,"a"), (3,"b")]) == Just (fromList [(3, "b"), (5, "x")])
+// > updateAt (\ _ _ -> Just "x") 2    (fromList [(5,"a"), (3,"b")]) == Nothing
+// > updateAt (\ _ _ -> Just "x") (-1) (fromList [(5,"a"), (3,"b")]) == Nothing
+// > updateAt (\_ _  -> Nothing)  0    (fromList [(5,"a"), (3,"b")]) == Just (singleton 5 "a")
+// > updateAt (\_ _  -> Nothing)  1    (fromList [(5,"a"), (3,"b")]) == Just (singleton 3 "b")
+// > updateAt (\_ _  -> Nothing)  2    (fromList [(5,"a"), (3,"b")]) == Nothing
+// > updateAt (\_ _  -> Nothing)  (-1) (fromList [(5,"a"), (3,"b")]) == Nothing
 
-updateAt :: !(k a -> Maybe a) !Int !(Map k a) -> Map k a
+updateAt :: !(k a -> Maybe a) !Int !(Map k a) -> Maybe (Map k a)
 updateAt f i t =
   case t of
-    Tip = abort "Map.updateAt: index out of range"
+    Tip = Nothing
     Bin sx kx x l r
       #! mapSizeL = mapSize l
       = case lexOrd i mapSizeL of
-          LT -> balanceR kx x (updateAt f i l) r
-          GT -> balanceL kx x l (updateAt f (i-mapSizeL-1) r)
+          LT -> flip (balanceR kx x) r <$> updateAt f i l
+          GT -> balanceL kx x l <$> updateAt f (i-mapSizeL-1) r
           EQ -> case f kx x of
-                  Just x` -> Bin sx kx x` l r
-                  Nothing -> glue l r
-
-// | /O(log n)/. Delete the element at /index/, i.e. by its zero-based index in
-// the sequence sorted by keys. If the /index/ is out of range (less than zero,
-// greater or equal to 'mapSize' of the map), 'abort` is called.
-//
-// > deleteAt 0  (fromList [(5,"a"), (3,"b")]) == singleton 5 "a"
-// > deleteAt 1  (fromList [(5,"a"), (3,"b")]) == singleton 3 "b"
-// > deleteAt 2 (fromList [(5,"a"), (3,"b")])     Error: index out of range
-// > deleteAt (-1) (fromList [(5,"a"), (3,"b")])  Error: index out of range
-
-deleteAt :: !Int !(Map k a) -> Map k a
-deleteAt i t =
-  case t of
-    Tip = abort "Map.deleteAt: index out of range"
-    Bin _ kx x l r
-      #! mapSizeL = mapSize l
-      = case lexOrd i mapSizeL of
-          LT -> balanceR kx x (deleteAt i l) r
-          GT -> balanceL kx x l (deleteAt (i-mapSizeL-1) r)
-          EQ -> glue l r
+                  Just x` -> Just (Bin sx kx x` l r)
+                  Nothing -> Just (glue l r)
 
 
 //////////////////////////////////////////////////////////////////////
@@ -1931,11 +1889,11 @@ bin k x l r = Bin (mapSize l + mapSize r + 1) k x l r
 //  actually seems one of the faster methods to gLexOrd{|*|} two trees
 //  and it is certainly the simplest :-)
 ////////////////////////////////////////////////////////////////////
-instance == (Map k a) | == k & == a where
+instance == (Map k a) | Eq k & Eq a where
   (==) t1 t2  = (mapSize t1 == mapSize t2) && (toAscList t1 == toAscList t2)
 
-instance == (a, b) | == a & == b where
-  (==) (x1, y1) (x2, y2) = x1 == x2 && y1 == y2
+instance < (Map k v) | Ord k & Ord v where
+    (<) t1 t2 = toAscList t1 < toAscList t2
 
 ////////////////////////////////////////////////////////////////////
 //  Functor
@@ -2208,7 +2166,6 @@ where // TODO
       #! (right,k,v)    = takeMax right
       #! (hleft,left)   = height left
       #! (hright,right) = height right
-      #! h              = (max hleft hright) + 1
       = (balance nk nv left right, k, v)
 
 	//Determines the height of the parent node of two sub trees
@@ -2567,4 +2524,5 @@ gEq{|Map|} fk fv mx my = length mxl == length myl && and [fk kx ky && fv vx vy \
 where
 	mxl = toList mx
 	myl = toList my
+gLexOrd{|Map|} kLexOrd vLexOrd x y = gLexOrd{|* -> *|} (gLexOrd{|* -> * -> *|} kLexOrd vLexOrd) (toAscList x) (toAscList y)
 

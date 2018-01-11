@@ -14,7 +14,7 @@ newStack n = { CircularStack
              , stackData  = 'DIS'.newMap
              }
 
-push :: a (CircularStack a) -> CircularStack a
+push :: !a !(CircularStack a) -> CircularStack a
 push x stack
   = { stack
     & stackData  = 'DIS'.put stack.nextIdx x stack.stackData
@@ -24,7 +24,7 @@ push x stack
     , nextIdx    = (stack.nextIdx + 1) modulo stack.maxSize
     }
 
-pop :: (CircularStack a) -> (Maybe a, CircularStack a)
+pop :: !(CircularStack a) -> (!Maybe a, !CircularStack a)
 pop stack
   | emptyStack stack = (Nothing, stack)
   | otherwise
@@ -34,20 +34,20 @@ pop stack
           & nextIdx = topIdx
           , actualSize = stack.actualSize - 1})
 
-peek :: (CircularStack a) -> Maybe a
+peek :: !(CircularStack a) -> Maybe a
 peek stack
   | emptyStack stack = Nothing
   | otherwise        = 'DIS'.get (topElemIdx stack) stack.stackData
 
-topElemIdx :: (CircularStack a) -> Int
+topElemIdx :: !(CircularStack a) -> Int
 topElemIdx stack
   | stack.nextIdx == 0 = stack.maxSize - 1
   | otherwise          = stack.nextIdx - 1
 
-emptyStack :: (CircularStack a) -> Bool
+emptyStack :: !(CircularStack a) -> Bool
 emptyStack stack = stack.actualSize == 0
 
-toList :: (CircularStack a) -> [a]
+toList :: !(CircularStack a) -> [a]
 toList stack
   | emptyStack stack = []
   | otherwise
@@ -56,7 +56,7 @@ toList stack
           Just x -> [x : toList stack]
           _      -> toList stack
 
-fromList :: [a] -> CircularStack a
+fromList :: ![a] -> CircularStack a
 fromList xs = foldr push (newStack (length xs)) xs
 
 (modulo) infixr 4 :: !Int !Int -> Int

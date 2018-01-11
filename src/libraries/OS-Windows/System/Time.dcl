@@ -59,9 +59,15 @@ gmTime		:: !*World -> (!Tm, !*World)
 */
 localTime	:: !*World -> (!Tm, !*World)
 /**
-* Convert a Tm record (local time) to a Timestamp value
+* Convert a Tm record (local time) to a Timestamp value.
+* This is not a pure function as it depends on the current local time zone.
 */
-mkTime		:: !Tm -> Timestamp
+mkTime		:: !Tm !*World-> (!Timestamp, !*World)
+/**
+* Convert a Tm record (UTC) to a Timestamp value.
+* No time zone conversion is done.
+*/
+timeGm		:: !Tm -> Timestamp
 /**
 * Calculate the difference in seconds between two times
 */
@@ -82,3 +88,9 @@ toGmTime :: !Timestamp -> Tm
 derefTm :: !Int -> Tm
 packTm :: !Tm -> {#Int}
 gmTimeC :: !{#Int} -> Int
+
+/**
+ * Get subsecond precision time
+ */
+nsTime :: !*World -> (!Timespec, !*World)
+:: Timespec = {tv_sec :: !Int, tv_nsec :: !Int}

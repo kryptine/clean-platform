@@ -2,6 +2,7 @@ implementation module System.Time
 
 import StdString, StdArray, StdClass, StdOverloaded, StdInt
 import System._Pointer, System.OS
+import System._Pointer, System._Posix
 import Text
 
 //String buffer size
@@ -80,15 +81,18 @@ localTime world
     	ccall localtime "A:p:p"
 	}
 
-mkTime :: !Tm -> Timestamp
-mkTime tm 
-	# t = mkTimeC (packTm tm)
-	= Timestamp t
-	where
-	mkTimeC :: !{#Int} -> Int
-	mkTimeC tm = code {
-		ccall mktime "A:I"
+mkTime :: !Tm !*World-> (!Timestamp, !*World)
+mkTime tm world
+	# (t, world) = mkTimeC (packTm tm) world
+	= (Timestamp t, world)
+where
+	mkTimeC :: !{#Int} !*World -> (!Int, !*World)
+	mkTimeC tm world = code {
+		ccall mktime "A:I:A"
 	}
+
+timeGm :: !Tm -> Timestamp
+timeGm tm = Timestamp (timegm (packTm tm))
 
 diffTime :: !Timestamp !Timestamp -> Int
 diffTime (Timestamp t1) (Timestamp t2) = t1 - t2
@@ -162,4 +166,18 @@ unpackTm buf off =
 	}
 
 sizeOfTm :: Int
+<<<<<<< HEAD
 sizeOfTm = IF_ANDROID 44 36 
+=======
+sizeOfTm = 36 
+
+nsTime :: !*World -> (!Timespec, !*World)
+nsTime w
+# (p, w) = mallocSt 16 w
+# (r, w) = clock_gettime 0 p w
+//For completeness sake
+| r <> 0 = abort "clock_gettime error: everyone should have permission to open CLOCK_REALTIME?"
+# (tv_sec, p) = readIntP p 0
+# (tv_nsec, p) = readIntP p 8
+= ({Timespec | tv_sec = tv_sec, tv_nsec = tv_nsec}, freeSt p w)
+>>>>>>> 77b02c8b9aa43e18ae3cbce41eecfb3b7ee03b3c

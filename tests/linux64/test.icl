@@ -1,30 +1,17 @@
 module test
 
-//StdLib compatability
+// Deprecated libraries: ArgEnv
+import qualified ArgEnv
+// Deprecated libraries: MersenneTwister
+import qualified MersenneTwister
+// Deprecated libraries: StdLib
 import qualified StdLib
 import qualified StdArrayExtensions
 import qualified StdListExtensions
 import qualified StdMaybe
 import qualified StdLibMisc
 
-//Haskell code??????????????
-//import qualified Data.Graph.Inductive.Internal.Heap
-//import qualified Data.Graph.Inductive.Tree
-//import qualified Data.Graph.Inductive.Query.SP
-//import qualified Data.Graph.Inductive.Query.Dominators
-//import qualified Data.Graph.Inductive.Query.MaxFlow2
-//import qualified Data.Graph.Inductive.Query.ArtPoint
-//import qualified Data.Graph.Inductive.Query.TransClos
-//import qualified Data.Graph.Inductive.Query.DFS
-//import qualified Data.Graph.Inductive.Query.MST
-//import qualified Data.Graph.Inductive.Query.GVD
-//import qualified Data.Graph.Inductive.Query.Monad
-//import qualified Data.Graph.Inductive.Query.BCC
-//import qualified Data.Graph.Inductive.Query.Indep
-
-//Broken example
-//import qualified Text.Parsers.ZParsers.MetarDemo.MetarParser
-
+// Main libraries
 import qualified Control.Applicative
 import qualified Control.Arrow
 import qualified Control.Category
@@ -51,7 +38,23 @@ import qualified Data.Foldable
 import qualified Data.Func
 import qualified Data.Functor
 import qualified Data.Functor.Identity
-import qualified Data.Generic
+import qualified Data.Generics
+import qualified Data.Generics._Array
+import qualified Data.Generics.GenBimap
+import qualified Data.Generics.GenCompress
+import qualified Data.Generics.GenDefault
+import qualified Data.Generics.GenEq
+import qualified Data.Generics.GenFMap
+import qualified Data.Generics.GenFDomain
+import qualified Data.Generics.GenHylo
+import qualified Data.Generics.GenLexOrd
+import qualified Data.Generics.GenMap
+import qualified Data.Generics.GenMapSt
+import qualified Data.Generics.GenMonad
+import qualified Data.Generics.GenParse
+import qualified Data.Generics.GenPrint
+import qualified Data.Generics.GenReduce
+import qualified Data.Generics.GenZip
 import qualified Data.Graph
 import qualified Data.Graph.Inductive
 import qualified Data.Graph.Inductive.Basic
@@ -71,17 +74,24 @@ import qualified Data.IntMap.Base
 import qualified Data.IntMap.Strict
 import qualified Data.IntSet
 import qualified Data.IntSet.Base
+import qualified Data.Integer
+import qualified Data.Integer.Add
+import qualified Data.Integer.Div
+import qualified Data.Integer.Mul
+import qualified Data.Integer.ToInteger
+import qualified Data.Integer.ToString
 import qualified Data.List
+import qualified Data.OrdList
 import qualified Data.Map
 import qualified Data.Matrix
 import qualified Data.Maybe
 import qualified Data.Monoid
 import qualified Data.Queue
 import qualified Data.Set
+import qualified Data.Stack
 import qualified Data.Traversable
 import qualified Data.Tree
 import qualified Data.Tuple
-import qualified Data.Void
 import qualified Data.Word8
 import qualified Database.SQL
 import qualified Database.SQL.MySQL
@@ -89,6 +99,8 @@ import qualified Database.SQL.SQLite
 import qualified Database.SQL._MySQL
 import qualified Database.SQL._SQLite
 import qualified Database.SQL.RelationalMapping
+import qualified Debug.Performance
+import qualified Graphics.Layout
 import qualified Graphics.Scalable
 import qualified Graphics.Scalable.Internal
 import qualified Internet.HTTP
@@ -105,9 +117,12 @@ import qualified System.GetOpt
 import qualified System.IO
 import qualified System.OS
 import qualified System.OSError
+import qualified System.Platform
 import qualified System.Process
 import qualified System.TTS
 import qualified System.Time
+import qualified System._FilePath
+import qualified System._Platform
 import qualified System._Pointer
 import qualified System._Posix
 import qualified System._Unsafe
@@ -118,6 +133,7 @@ import qualified Text.Encodings.MIME
 import qualified Text.Encodings.UrlEncoding
 import qualified Text.HTML
 import qualified Text.JSON
+import qualified Text.Language
 import qualified Text.LaTeX
 import qualified Text.PPrint
 import qualified Text.Parsers.CParsers.ParserCombinators
@@ -136,6 +152,7 @@ import qualified Text.Unicode
 import qualified Text.Unicode.Encodings.JS
 import qualified Text.Unicode.Encodings.UTF8
 import qualified Text.Unicode.UChar
+import qualified Text.URI
 import qualified Text.XML
 
 Start = "Hello World!"

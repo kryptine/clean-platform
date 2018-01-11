@@ -8,16 +8,19 @@ from Data.Monoid   import class Monoid, class Semigroup
 :: Const a b = Const a
 :: WrappedMonad m a = WrapMonad (m a)
 
-unwrapMonad :: (WrappedMonad m a) -> m a
+unwrapMonad :: !(WrappedMonad m a) -> m a
 
-getConst :: (Const a b) -> a
+getConst :: !(Const a b) -> a
 
-instance Applicative ((->) r)
-instance Applicative Maybe
-instance Applicative []
+class Applicative f | Functor f
+where
+	pure           :: a -> f a
+	(<*>) infixl 4 :: !(f (a -> b)) (f a) -> f b
 
-instance Alternative Maybe
-instance Alternative []
+class Alternative f | Applicative f
+where
+	empty          :: f a
+	(<|>) infixl 3 :: !(f a) (f a) -> f a
 
 instance Functor (Const m)
 instance Functor (WrappedMonad m) | Monad m
@@ -29,14 +32,6 @@ instance Alternative (WrappedMonad m) | MonadPlus m
 
 instance Semigroup (Const a b) | Semigroup a
 instance Monoid (Const a b) | Monoid a
-
-class Applicative f | Functor f where
-  pure            :: a -> f a
-  (<*>) infixl 4  :: (f (a -> b)) (f a) -> f b
-
-class Alternative f | Applicative f where
-  empty           :: f a
-  (<|>) infixl 3  :: (f a) (f a) -> f a
 
 some :: (f a) -> f [a] | Alternative f
 
@@ -52,9 +47,8 @@ many :: (f a) -> f [a] | Alternative f
  * Be aware that the execution order has to be correct: the left hand side must
  * be evaluated before the right hand side.
  */
-class (*>) infixl 4 f :: (f a) (f b) -> f b | Applicative f
+class (*>) infixl 4 f :: !(f a) (f b) -> f b | Applicative f
 instance *> f
-instance *> Maybe
 
 /**
  * Sequence actions and take the value of the left argument.
@@ -63,9 +57,8 @@ instance *> Maybe
  * Be aware that the execution order has to be correct: the left hand side must
  * be evaluated before the right hand side.
  */
-class (<*) infixl 4 f :: (f a) (f b) -> f a | Applicative f
+class (<*) infixl 4 f :: !(f a) (f b) -> f a | Applicative f
 instance <* f
-instance <* Maybe
 
 (<**>) infixl 4 :: (f a) (f (a -> b)) -> f b | Applicative f
 

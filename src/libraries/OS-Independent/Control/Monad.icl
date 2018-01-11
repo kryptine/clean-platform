@@ -3,55 +3,22 @@ implementation module Control.Monad
 from Control.Applicative  import class Applicative (..), lift
 from Data.Functor         import class Functor (..)
 from Data.List            import map, zipWith, replicate
-from Data.Maybe           import :: Maybe, Nothing, Just
-from StdList              import foldr, ++
+from StdList              import foldr
 from StdFunc              import flip, id, o, const
 from StdInt               import class +, instance + Int
 
-instance Monad ((->) r) where
-  bind ma a2mb = \r -> a2mb (ma r) r
-
-instance Monad [] where
-  bind m k = foldr ((++) o k) [] m
-
-instance Monad Maybe where
-  bind (Just x) k  = k x
-  bind Nothing  _  = Nothing
-
-instance MonadPlus [] where
-  mzero        = []
-  mplus xs ys  = xs ++ ys
-
-instance MonadPlus Maybe where
-  mzero = Nothing
-
-  mplus Nothing ys  = ys
-  mplus xs      _   = xs
-
-(>>=) infixl 1 :: (m a) (a -> m b) -> m b | Monad m
-(>>=) ma a2mb = bind ma a2mb
-
-(`b`) infixl 1    :: (m a) (a -> m b) -> m b | Monad m
-(`b`) ma a2mb = bind ma a2mb
-
-(>>|) infixl 1 :: (m a) (m b) -> m b | Monad m
-(>>|) ma mb = ma >>= \_ -> mb
-
-(=<<) infixr 1 :: (a -> m b) (m a) -> m b | Monad m
-(=<<) f x = x >>= f
-
-sequence :: .[a b] -> a [b] | Monad a
+sequence :: !.[a b] -> a [b] | Monad a
 sequence ms = foldr k (lift []) ms
   where
     k m m` = m >>= \x -> m` >>= \xs -> lift [x:xs]
 
-sequence_ :: .[a b] -> a () | Monad a
+sequence_ :: !.[a b] -> a () | Monad a
 sequence_ ms = foldr (>>|) (lift ()) ms
 
-mapM :: (.a -> b c) [.a] -> b [c] | Monad b
+mapM :: (.a -> b c) ![.a] -> b [c] | Monad b
 mapM f as = sequence (map f as)
 
-mapM_ :: (.a -> b c) [.a] -> b () | Monad b
+mapM_ :: (.a -> b c) ![.a] -> b () | Monad b
 mapM_ f as = sequence_ (map f as)
 
 forM :: u:([v:a] -> w:((v:a -> b c) -> b [c])) | Monad b, [w <= u,w <= v]
@@ -66,14 +33,14 @@ forever a = let a` = a >>| a` in a`
 join :: (a (a b)) -> a b | Monad a
 join x = x >>= id
 
-zipWithM :: (.a -> .(.b -> c d)) [.a] [.b] -> c [d] | Monad c
+zipWithM :: (.a -> .(.b -> c d)) ![.a] [.b] -> c [d] | Monad c
 zipWithM f xs ys = sequence (zipWith f xs ys)
 
-foldM :: (a -> .(b -> c a)) a [b] -> c a | Monad c
+foldM :: (a -> .(b -> c a)) a ![b] -> c a | Monad c
 foldM _ a []      = lift a
 foldM f a [x:xs]  = f a x >>= \fax -> foldM f fax xs
 
-replicateM :: .Int (a b) -> a [b] | Monad a
+replicateM :: !.Int (a b) -> a [b] | Monad a
 replicateM n x = sequence (replicate n x)
 
 (>=>) infixr 1 :: u:(.a -> b c) (c -> b d) -> v:(.a -> b d) | Monad b, [v <= u]

@@ -6,7 +6,7 @@ from StdOverloaded	import class ==, class <
 from StdBool        import not
 from StdFunc        import id
 from Text.JSON      import generic JSONEncode, generic JSONDecode, :: JSONNode
-from GenEq import generic gEq
+from Data.Generics.GenEq import generic gEq
 from Data.Monoid    import class Monoid, class Semigroup
 import qualified StdList as SL
 from Data.List import foldr

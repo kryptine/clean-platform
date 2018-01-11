@@ -10,7 +10,7 @@ import Data.Maybe
 //import           Data.Graph.Inductive.Graph
 from Data.Graph.Inductive.Graph import class Graph, class DynGraph, :: LNode, :: Node, :: LEdge, :: Edge
 import qualified Data.Graph.Inductive.Graph as DG
-from             Data.Map import :: Map, instance == Map
+from             Data.Map import :: Map, instance == (Map k v)
 import qualified Data.Map as DM
 import qualified Data.List as DL
 
@@ -19,7 +19,7 @@ import qualified Data.List as DL
   , key :: Int
   }
 
-instance == (NodeMap a) | == a where
+instance == (NodeMap a) | Eq a where
   (==) {map, key} {map = map`, key = key`} = key == key` && map == map`
 
 // | Create a new, empty mapping.

@@ -28,7 +28,7 @@ instance Alternative (Parser s t)
 
 class Splittable f where
   getNonPure :: (f a) -> Maybe (f a)
-  getPure :: (f a) -> Maybe a
+  getPure :: !(f a) -> Maybe a
 
 instance Splittable (Parser s t)
 
@@ -46,9 +46,9 @@ instance Functor (Gram f) | Functor f
 
 instance Functor (PAlt f) | Functor f
 
-(<<||>) infixl 4 :: (Gram f (b -> a)) (Gram f b) -> Gram f a | Functor f
+(<<||>) infixl 4 :: !(Gram f (b -> a)) (Gram f b) -> Gram f a | Functor f
 
-(<||>) infixl 4 :: (Gram f (b -> a)) (Gram f b) -> Gram f a | Functor f
+(<||>) infixl 4 :: !(Gram f (b -> a)) !(Gram f b) -> Gram f a | Functor f
 
 instance Applicative (Gram f) | Functor f
 
@@ -56,13 +56,13 @@ instance Alternative (Gram f) | Functor f
 
 instance Monad (Gram f) | Functor f
 
-mkP :: (Gram f a) -> f a | Monad f & Applicative f & Alternative f
+mkP :: !(Gram f a) -> f a | Monad f & Applicative f & Alternative f
 
-sepBy :: (Gram f a) (f b) -> f a | Monad, Applicative, Alternative, *> f
+sepBy :: !(Gram f a) (f b) -> f a | Monad, Applicative, Alternative, *> f
 
-insertSep :: (f b) (Gram f a) -> Gram f a | Monad, Applicative, Alternative, *> f
+insertSep :: (f b) !(Gram f a) -> Gram f a | Monad, Applicative, Alternative, *> f
 
-gmList :: (Gram f a) -> Gram f [a] | Functor f
+gmList :: !(Gram f a) -> Gram f [a] | Functor f
 
 // PARSER CONSTRUCTORS:
 
@@ -106,13 +106,13 @@ epsilon			:: Parser s t r
 //(<|>)	infixr 4 :: (Parser s t r) (Parser s t r)		-> Parser s t r
 
 // or-combinator tries the second alternative only if the first one fails
-(<!>)	infixr 4 :: (Parser s t r) (Parser s t r)		-> Parser s t r
+(<!>)	infixr 4 :: !(Parser s t r) !(Parser s t r)		-> Parser s t r
 
 // monadic sequential-combinator
-(<&>)	infixr 6 :: (Parser s t u) (u -> Parser s t v)	-> Parser s t v
+(<&>)	infixr 6 :: !(Parser s t u) (u -> Parser s t v)	-> Parser s t v
 
 // arrow-style sequential-combinator
-(<++>)	infixl 6 :: (Parser s t (r->u)) (Parser s t r)	-> Parser s t u
+(<++>)	infixl 6 :: !(Parser s t (r->u)) !(Parser s t r)	-> Parser s t u
 
 /*	p1 <&>  p2 <!> p3 and
 	p1 <++> p2 <!> p3 share the following behavior:
@@ -128,7 +128,7 @@ epsilon			:: Parser s t r
 */
 
 class Orr c
-where	(<-!>) infixr 4 :: !(c s r u t) (Parser s t r) -> Parser s t r
+where	(<-!>) infixr 4 :: !(c s r u t) !(Parser s t r) -> Parser s t r
 
 :: MonadicSeq s r u t = (<&->) infixr 6 (Parser s t u) (u -> Parser s t r)
 instance Orr MonadicSeq
@@ -139,10 +139,10 @@ instance Orr ArrowSeq
 // PARSER TRANSFORMERS:
 
 // makes a parser non-deterministic: returns only the first result
-first				:: (Parser s t r) -> Parser s t r
+first				:: !(Parser s t r) -> Parser s t r
 
 // resulting parser applies the check to the recognized item and falis if the check fails
-(checkIf) infix 7	:: (Parser s t r) (r -> Bool) -> Parser s t r
+(checkIf) infix 7	:: !(Parser s t r) (r -> Bool) -> Parser s t r
 
 // resulting parser applies the check to the recognized item and fails if the check fails
 // the string is an error message carried over to the resulting parser. NOT TESTED YET
@@ -152,10 +152,10 @@ first				:: (Parser s t r) -> Parser s t r
 rewind				:: (Parser s t r) -> Parser s t r
 
 // resulting parser drops all symbols from the input that satisfy the check
-dropCheck			:: (s -> Bool) (Parser s t r) -> Parser s t r
+dropCheck			:: (s -> Bool) !(Parser s t r) -> Parser s t r
 
 // resulting parser will consume at most the given number of symbols and fials if more would be needed
-atMost				:: !Int (Parser s t r) -> Parser s t r
+atMost				:: !Int !(Parser s t r) -> Parser s t r
 
 // PARSER TRANSFORMERS THAT LEAVE AND RE-ENTER THE REALM OF CONTINUATIONS:
 
@@ -172,13 +172,13 @@ drill			:: (Parser s r r) String -> Parser [s] t r
 
 // sortResultBy and minResultBy take a 'less' function
 // if (less r1 r2) then r1 appears first in the output (else r2)
-sortResultBy	:: (r r -> Bool)  (Parser s r r) -> Parser s t r
+sortResultBy	:: (r r -> Bool)  !(Parser s r r) -> Parser s t r
 
 //delivers all minimum results non-deterministically
-minResultBy 	:: (r r -> Bool) (Parser s r r) -> Parser s t r
+minResultBy 	:: (r r -> Bool) !(Parser s r r) -> Parser s t r
 
 //delivers all longest results non-deterministically
-longest			:: (Parser s r r) -> Parser s t r
+longest			:: !(Parser s r r) -> Parser s t r
 
 // FOR ERROR REPORTING:
 
@@ -187,7 +187,7 @@ longest			:: (Parser s r r) -> Parser s t r
 	and use named constants whose values be defined in a separate language module, so one could easily change to a
 	different language to state the error messages in
 */
-(:>)	infixl 8 :: String (Parser s t r) -> Parser s t r
+(:>)	infixl 8 :: String !(Parser s t r) -> Parser s t r
 
 // gives a name (a hypothesis level) to the second parser in the <&> combinator
 (:=>)	infixl 8 :: (r -> String) (r -> Parser s t r) -> (r -> Parser s t r)

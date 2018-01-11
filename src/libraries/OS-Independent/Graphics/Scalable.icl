@@ -6,6 +6,7 @@ from StdFunc import flip
 from StdTuple import fst, snd
 from StdOrdList import minList, maxList
 from StdOverloaded import class toReal
+import Data.Generics.GenEq
 import Data.List
 import Data.Maybe
 from Data.Set import :: Set, instance == (Set a), instance < (Set a)
