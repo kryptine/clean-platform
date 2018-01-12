@@ -15,6 +15,7 @@ from Data.Func import $
 import Data.Functor
 import Data.Generics.GenEq
 import Data.List
+from Data.Map import :: Map, newMap
 import Data.Maybe
 
 import TypeDef
@@ -48,8 +49,8 @@ groupVars [(v,t):rest] groups = case partition (\g -> isMember (Var v) g || isMe
 	Nothing  -> False
 	Just tvs -> isGeneralisingUnifier tvs
 where
-	(_, a`) = prepare_unification True  [] a
-	(_, b`) = prepare_unification False [] b
+	(_, a`) = prepare_unification True  newMap a
+	(_, b`) = prepare_unification False newMap b
 
 (specialises) infix 4 :: !Type !Type -> Bool
 (specialises) a b = b generalises a
@@ -57,10 +58,10 @@ where
 (isomorphic_to) infix 4 :: !Type !Type -> Bool
 (isomorphic_to) a b = fromMaybe False (isIsomorphicUnifier <$> unify a` b`)
 where
-	(_, a`) = prepare_unification True  [] a
-	(_, b`) = prepare_unification False [] b
+	(_, a`) = prepare_unification True  newMap a
+	(_, b`) = prepare_unification False newMap b
 
-prepare_unification :: !Bool [TypeDef] !Type -> ([TypeDef], Type)
+prepare_unification :: !Bool (Map String [TypeDef]) !Type -> ([TypeDef], Type)
 prepare_unification b db (Func [] t _) = prepare_unification b db t
 prepare_unification isleft db t
 # (syns, t) = resolve_synonyms db t

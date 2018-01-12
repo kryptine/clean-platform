@@ -13,6 +13,7 @@ from Data.Func import $
 import Data.Functor
 import Data.Generics.GenEq
 import Data.List
+import qualified Data.Map as M
 import Data.Maybe
 import Data.Tuple
 from Text import class Text (concat), instance Text String
@@ -179,12 +180,11 @@ propagate_uniqueness (Forall vs t tc)
 propagate_uniqueness t
 	= t
 
-resolve_synonyms :: [TypeDef] Type -> ([TypeDef], Type)
+resolve_synonyms :: ('M'.Map String [TypeDef]) Type -> ([TypeDef], Type)
 resolve_synonyms tds (Type t ts)
 	# (syns, ts) = appFst (removeDupTypedefs o flatten) $ unzip $ map (resolve_synonyms tds) ts
 	= case candidates of
-		[]
-			= (syns, Type t ts)
+		[] = (syns, Type t ts)
 		[syn=:{td_args, td_rhs=TDRSynonym synt}:_]
 			# newargs = map ((+++) "__" o fromVar) td_args
 			# (Just t)
@@ -196,9 +196,9 @@ resolve_synonyms tds (Type t ts)
 				= appFst ((++) [syn:syns]) $ resolve_synonyms tds t
 			= appFst ((++) [syn:syns]) $ resolve_synonyms tds t
 where
-	candidates = [td \\ td=:{td_rhs=TDRSynonym syn} <- tds
-		| td.td_name == t && length td.td_args <= length ts
-		&& (isType syn || length td.td_args == length ts)]
+	candidates = [td \\ td=:{td_rhs=TDRSynonym syn} <- fromMaybe [] $ 'M'.get t tds
+		| length td.td_args <= tslen && (isType syn || length td.td_args == tslen)]
+	where tslen = length ts
 resolve_synonyms tds (Func is r tc)
 	# (syns, [r:is]) = appFst (removeDupTypedefs o flatten) $ unzip $ map (resolve_synonyms tds) [r:is]
 	= (syns, Func is r tc)
@@ -257,7 +257,7 @@ reduceArities (Forall [] t []) = reduceArities t
 reduceArities (Forall tvs t tc) = Forall tvs (reduceArities t) tc
 reduceArities (Arrow mt) = Arrow (reduceArities <$> mt)
 
-normalise_type :: ![TypeDef] !Type -> (!Type, ![TypeDef], ![TypeVar])
+normalise_type :: !('M'.Map String [TypeDef]) !Type -> (!Type, ![TypeDef], ![TypeVar])
 normalise_type tds t
 # t        = reduceArities t
 # (syns,t) = resolve_synonyms tds t

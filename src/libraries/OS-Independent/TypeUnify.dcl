@@ -6,7 +6,8 @@ definition module TypeUnify
 
 import TypeDef
 
-from Data.Maybe import ::Maybe
+from Data.Map import :: Map
+from Data.Maybe import :: Maybe
 
 /**
  * Check whether a unification result indicates that the left type generalised
@@ -41,11 +42,11 @@ isIsomorphicUnifier :: [TVAssignment] -> Bool
  * incorrect results.
  *
  * @param True if this is the left type
- * @param A list of all known type definitions to use for resolving synonyms
+ * @param Known type definitions to use for resolving synonyms
  * @param The type to prepare
  * @result The type synonyms used and the type after preparation
  */
-prepare_unification :: !Bool [TypeDef] !Type -> ([TypeDef], Type)
+prepare_unification :: !Bool (Map String [TypeDef]) !Type -> ([TypeDef], Type)
 
 /**
  * Finish unification, yielding a unifier.

@@ -11,7 +11,8 @@ from StdOverloaded import class toString (toString)
 
 from Control.Monad import class Applicative, class Monad, foldM
 from Data.Functor import class Functor
-from Data.Maybe import ::Maybe
+from Data.Map import :: Map
+from Data.Maybe import :: Maybe
 
 /**
  * Pretty printer
@@ -49,7 +50,7 @@ propagate_uniqueness :: Type -> Type
  * @param The type to resolve
  * @param The used synonyms and the new type
  */
-resolve_synonyms :: [TypeDef] Type -> ([TypeDef], Type)
+resolve_synonyms :: (Map String [TypeDef]) Type -> ([TypeDef], Type)
 
 /**
  * Apply a variable assignment on a type, if possible
@@ -80,4 +81,4 @@ reduceArities :: !Type -> Type
  *   iteration over the node does not introduce higher variables before lower
  *   ones (i.e., you will encounter v2 before v3).
  */
-normalise_type :: ![TypeDef] !Type -> (!Type, ![TypeDef], ![TypeVar])
+normalise_type :: !(Map String [TypeDef]) !Type -> (!Type, ![TypeDef], ![TypeVar])
