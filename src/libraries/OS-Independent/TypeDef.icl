@@ -124,6 +124,9 @@ recordsToFunctions _ = []
 td_name :: TypeDef -> String
 td_name {td_name} = td_name
 
+td_rhs :: TypeDef -> TypeDefRhs
+td_rhs {td_rhs} = td_rhs
+
 typedef :: String Bool [Type] TypeDefRhs -> TypeDef
 typedef name uniq args rhs
 	= {td_name=name, td_uniq=uniq, td_args=args, td_rhs=rhs}
