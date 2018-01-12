@@ -99,6 +99,7 @@ where
 			= concat (c1 -- "\n" --
 				concat [concat ("\t| " -- c -- "\n") \\ c <- cs])
 		makeADT True cs = concat (makeADT False cs -- "\t| ..")
+	print _ (TDRNewType c) = " =: " -- c
 	print _ (TDRRecord _ exi fields) = " =\n\t" --
 		if (isEmpty exi) [] ("E." -- printersperse False " " exi -- ": ") --
 		makeRecord exi fields

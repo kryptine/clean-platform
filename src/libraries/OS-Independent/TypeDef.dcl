@@ -78,6 +78,7 @@ from Data.Maybe import :: Maybe
 :: TypeDefRhs
 	= TDRCons Bool [Constructor]
 		//* A list of constructors. The boolean indicates if the type is extensible
+	| TDRNewType Constructor         //* A newtype
 	| TDRMoreConses [Constructor]    //* More constructors for an extensible ADT
 	| TDRRecord String [TypeVar] [RecordField]
 		//* A record with its internal identifier, existentially quantified variables and fields

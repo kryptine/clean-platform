@@ -82,6 +82,8 @@ where
 			(map 'T'.toRecordField pss)
 	toTypeDefRhs (TypeSpec atype)
 		= 'T'.TDRSynonym ('T'.toType atype)
+	toTypeDefRhs (NewTypeCons cons)
+		= 'T'.TDRNewType ('T'.toConstructor cons)
 	toTypeDefRhs (EmptyRhs _)
 		= 'T'.TDRAbstract Nothing
 	toTypeDefRhs (AbstractTypeSpec _ atype)

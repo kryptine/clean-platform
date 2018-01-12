@@ -107,13 +107,15 @@ removeTypeContexts (Forall ts t _) = Forall (map removeTypeContexts ts) (removeT
 removeTypeContexts (Arrow t) = Arrow (removeTypeContexts <$> t)
 
 constructorsToFunctions :: TypeDef -> [(String,Type,Maybe Priority)]
-constructorsToFunctions {td_name,td_uniq,td_args,td_rhs=TDRCons _ conses}
-	= [(c.cons_name, Func c.cons_args return c.cons_context, c.cons_priority) \\ c <- conses]
-where return = if td_uniq Uniq id $ Type td_name td_args
-constructorsToFunctions {td_name,td_uniq,td_args,td_rhs=TDRMoreConses conses}
-	= [(c.cons_name, Func c.cons_args return c.cons_context, c.cons_priority) \\ c <- conses]
-where return = if td_uniq Uniq id $ Type td_name td_args
-constructorsToFunctions _ = []
+constructorsToFunctions {td_name,td_uniq,td_args,td_rhs} = case td_rhs of
+	TDRCons _ conses     -> map consfun conses
+	TDRMoreConses conses -> map consfun conses
+	TDRNewType cons      -> [consfun cons]
+	_                    -> []
+where
+	consfun :: Constructor -> (String, Type, Maybe Priority)
+	consfun c = (c.cons_name, Func c.cons_args ret c.cons_context, c.cons_priority)
+	where ret = if td_uniq Uniq id $ Type td_name td_args
 
 recordsToFunctions :: TypeDef -> [(String,Type)]
 recordsToFunctions {td_name,td_uniq,td_args,td_rhs=TDRRecord _ _ fields}
