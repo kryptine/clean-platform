@@ -168,7 +168,6 @@ strictTRZipWith3    :: !(a b c -> d) ![a] ![b] ![c] -> [d]
 strictTRZipWith3Rev :: !(a b c -> d) ![a] ![b] ![c] -> [d]
 strictTRZipWith3Acc :: !(a b c -> d) ![a] ![b] ![c] ![d] -> [d]
 
-// variants of the fold functions that use a queue instead of a fixed size list:
 /**
  * Left-associative fold of a list.
  * Variant that use a queue instead of a fixed size list.
