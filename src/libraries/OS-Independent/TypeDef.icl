@@ -7,9 +7,11 @@ import StdTuple
 from StdString import instance == {#Char}
 import StdBool
 from StdFunc import o, id
+
 from Data.Func import $
 import Data.Functor
 import Data.Generics.GenEq
+import Data.List
 import Data.Maybe
 
 derive gEq Maybe, Type, TypeRestriction, Kind
@@ -25,6 +27,15 @@ subtypes t=:(Uniq t`) = removeDup [t : subtypes t`]
 subtypes t=:(Forall vs t` tc) = removeDup [t : flatten (map subtypes [t`:vs])]
 subtypes t=:(Var _) = [t]
 subtypes t=:(Arrow mt) = [t:flatten (map subtypes (maybeToList mt))]
+
+allRestrictions :: Type -> [TypeRestriction]
+allRestrictions (Type _ ts) = concatMap allRestrictions ts
+allRestrictions (Func is r tc) = tc ++ concatMap allRestrictions [r:is]
+allRestrictions (Cons _ ts) = concatMap allRestrictions ts
+allRestrictions (Uniq t) = allRestrictions t
+allRestrictions (Forall _ t tc) = tc ++ allRestrictions t
+allRestrictions (Var _) = []
+allRestrictions (Arrow t) = fromMaybe [] (allRestrictions <$> t)
 
 allVars :: (Type -> [TypeVar])
 allVars = removeDup o map name o filter (\t -> isCons t || isVar t) o subtypes
@@ -144,3 +155,12 @@ removeDupTypedefs :: [TypeDef] -> [TypeDef]
 removeDupTypedefs [] = []
 removeDupTypedefs [td:tds]
 	= [td:removeDupTypedefs $ filter (\d -> d.td_name <> td.td_name) tds]
+
+typeRhsRestrictions :: TypeDefRhs -> [TypeRestriction]
+typeRhsRestrictions (TDRCons _ cs) = flatten [c.cons_context \\ c <- cs]
+typeRhsRestrictions (TDRNewType c) = c.cons_context
+typeRhsRestrictions (TDRMoreConses cs) = flatten [c.cons_context \\ c <- cs]
+typeRhsRestrictions (TDRRecord _ _ _) = []
+typeRhsRestrictions (TDRSynonym _) = []
+typeRhsRestrictions (TDRAbstract _) = []
+typeRhsRestrictions (TDRAbstractSynonym _) = []

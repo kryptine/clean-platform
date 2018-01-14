@@ -135,6 +135,12 @@ class toRecordField a :: a -> RecordField
 subtypes :: Type -> [Type]
 
 /**
+ * All type restrictions that occur in this type, also further down the data
+ * structure.
+ */
+allRestrictions :: Type -> [TypeRestriction]
+
+/**
  * A list of type variables used in a type
  */
 allVars :: (Type -> [TypeVar])
@@ -283,3 +289,8 @@ recordfield :: String Type -> RecordField
  * Alternative removeDup for TypeDefs, only considering the td_name field
  */
 removeDupTypedefs :: [TypeDef] -> [TypeDef]
+
+/**
+ * All context restrictions in a TypeDefRhs
+ */
+typeRhsRestrictions :: TypeDefRhs -> [TypeRestriction]
