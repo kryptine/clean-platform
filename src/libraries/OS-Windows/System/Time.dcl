@@ -103,3 +103,8 @@ instance < Timespec
 instance + Timespec
 instance - Timespec
 instance zero Timespec
+
+/**
+ * Sleep the given time, note that there is only millisecond precision sleeping
+ */
+nanoSleep :: !Timespec !*w -> *w

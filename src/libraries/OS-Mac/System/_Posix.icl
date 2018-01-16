@@ -185,6 +185,10 @@ clock_gettime :: !Int !Pointer !*w -> (!Int, !*w)
 clock_gettime _ _ _ = code {
 	ccall clock_gettime "Ip:I:A"
 }
+nanosleep :: !Pointer !Pointer !*w -> (!Int, !*w)
+nanosleep _ _ _ = code {
+	ccall nanosleep "pp:I:A"
+}
 
 //Mapping to/from byte arrays
 unpackStat :: !{#Char} -> Stat

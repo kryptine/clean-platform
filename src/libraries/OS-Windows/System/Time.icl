@@ -210,3 +210,8 @@ where
 
 instance zero Timespec
 where zero = {tv_sec=0, tv_nsec=0}
+
+nanoSleep :: !Timespec !*w -> *w
+nanoSleep ts w
+# ms = ts.tv_sec*1000+ts.tv_nsec/1000
+= sleep ms w

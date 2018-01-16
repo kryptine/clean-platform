@@ -206,3 +206,12 @@ where
 
 instance zero Timespec
 where zero = {tv_sec=0, tv_nsec=0}
+
+nanoSleep :: !Timespec !*w -> *w
+nanoSleep ts w
+# (p, w) = mallocSt 16 w
+# p = writeInt p 0 ts.tv_sec
+# p = writeInt p 8 ts.tv_nsec
+# (res, w) = nanosleep p 0 w
+| res <> 0 = abort "nanosleep error: did I just got interrupted?"
+= freeSt p w

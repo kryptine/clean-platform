@@ -76,6 +76,7 @@ select_     :: !Int !Pointer !Pointer !Pointer !Pointer !*w -> (!Int, !*w)
 kill        :: !Int !Int !*w -> (!Int, !*w)
 timegm      :: !{#Int} -> Int
 clock_gettime :: !Int !Pointer !*w -> (!Int, !*w)
+nanosleep :: !Pointer !Pointer !*w -> (!Int, !*w)
 
 //Memory (impure)
 malloc	:: !Int -> Pointer
