@@ -16,6 +16,10 @@ instance Applicative (StateT s m) | Monad m where
   pure a = state (\s -> (a, s))
   (<*>) sf sa = ap sf sa
 
+instance Alternative (StateT s m) | Alternative m where
+  empty = StateT (const empty)
+  (<|>) fa fb = StateT \cs->runStateT fa cs <|> runStateT fb cs
+
 instance Monad (StateT s m) | Monad m where
   bind m k = StateT (\s -> (runStateT m s >>= \(a, s`) -> runStateT (k a) s`))
 

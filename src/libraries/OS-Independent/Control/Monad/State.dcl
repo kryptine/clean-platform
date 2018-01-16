@@ -1,7 +1,7 @@
 definition module Control.Monad.State
 
 from Control.Monad import class Monad
-from Control.Applicative import class Applicative
+from Control.Applicative import class Applicative, class Alternative
 from Data.Functor import class Functor
 from Data.Functor.Identity import :: Identity
 from Control.Monad.Trans import class MonadTrans
@@ -28,5 +28,6 @@ withStateT :: (s -> s) .(StateT s m c) -> StateT s m c
 
 instance Functor (StateT s m) | Monad m
 instance Applicative (StateT s m) | Monad m
+instance Alternative (StateT s m) | Alternative m
 instance Monad (StateT s m) | Monad m
 instance MonadTrans (StateT s)
