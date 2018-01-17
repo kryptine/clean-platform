@@ -40,8 +40,11 @@ instance print Priority
 /**
  * Propagate uniqueness up, as described in section 9.2 of the Clean language
  * report.
+ * @param A predicate function indicating a type by that name is always unique
+ *   (like, e.g., World)
+ * @param The type to modify
  */
-propagate_uniqueness :: Type -> Type
+propagate_uniqueness :: (String -> Bool) Type -> Type
 
 /**
  * Resolve all synonyms in a type
@@ -73,6 +76,7 @@ reduceArities :: !Type -> Type
  * Normalise a type, that is, rewrite it to an equivalent type that can be
  * compared to other types for equality using ==. The transformations applied:
  *
+ * - Resolve always-unique types (like World).
  * - Resolve synonyms.
  * - Propagate uniqueness.
  * - Rewrite Conses without arguments to Vars.
@@ -81,4 +85,4 @@ reduceArities :: !Type -> Type
  *   iteration over the node does not introduce higher variables before lower
  *   ones (i.e., you will encounter v2 before v3).
  */
-normalise_type :: !(Map String [TypeDef]) !Type -> (!Type, ![TypeDef], ![TypeVar])
+normalise_type :: (String -> Bool) !(Map String [TypeDef]) !Type -> (!Type, ![TypeDef], ![TypeVar])

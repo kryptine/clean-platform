@@ -42,11 +42,12 @@ isIsomorphicUnifier :: [TVAssignment] -> Bool
  * incorrect results.
  *
  * @param True if this is the left type
+ * @param A predicate indicating if a type is always unique, like, e.g., World
  * @param Known type definitions to use for resolving synonyms
  * @param The type to prepare
  * @result The type synonyms used and the type after preparation
  */
-prepare_unification :: !Bool (Map String [TypeDef]) !Type -> ([TypeDef], Type)
+prepare_unification :: !Bool (String -> Bool) (Map String [TypeDef]) !Type -> ([TypeDef], Type)
 
 /**
  * Finish unification, yielding a unifier.

@@ -266,6 +266,11 @@ recordsToFunctions :: TypeDef -> [(String,Type)]
 td_name :: TypeDef -> String
 
 /**
+ * Wrapper around the td_uniq field of the TypeDef record
+ */
+td_uniq :: TypeDef -> Bool
+
+/**
  * Wrapper around the td_rhs field of the TypeDef record
  */
 td_rhs :: TypeDef -> TypeDefRhs

@@ -49,8 +49,8 @@ groupVars [(v,t):rest] groups = case partition (\g -> isMember (Var v) g || isMe
 	Nothing  -> False
 	Just tvs -> isGeneralisingUnifier tvs
 where
-	(_, a`) = prepare_unification True  newMap a
-	(_, b`) = prepare_unification False newMap b
+	(_, a`) = prepare_unification True  (const False) newMap a
+	(_, b`) = prepare_unification False (const False) newMap b
 
 (specialises) infix 4 :: !Type !Type -> Bool
 (specialises) a b = b generalises a
@@ -58,14 +58,14 @@ where
 (isomorphic_to) infix 4 :: !Type !Type -> Bool
 (isomorphic_to) a b = fromMaybe False (isIsomorphicUnifier <$> unify a` b`)
 where
-	(_, a`) = prepare_unification True  newMap a
-	(_, b`) = prepare_unification False newMap b
+	(_, a`) = prepare_unification True  (const False) newMap a
+	(_, b`) = prepare_unification False (const False) newMap b
 
-prepare_unification :: !Bool (Map String [TypeDef]) !Type -> ([TypeDef], Type)
-prepare_unification b db (Func [] t _) = prepare_unification b db t
-prepare_unification isleft db t
+prepare_unification :: !Bool (String -> Bool) (Map String [TypeDef]) !Type -> ([TypeDef], Type)
+prepare_unification b alwaysUnique db (Func [] t _) = prepare_unification b alwaysUnique db t
+prepare_unification isleft alwaysUnique db t
 # (syns, t) = resolve_synonyms db t
-# t = propagate_uniqueness t
+# t = propagate_uniqueness alwaysUnique t
 # t = reduceArities t
 # t = renameVars t
 = (syns, t)

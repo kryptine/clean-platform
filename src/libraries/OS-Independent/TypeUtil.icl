@@ -2,7 +2,7 @@ implementation module TypeUtil
 
 import StdArray
 import StdBool
-from StdFunc import flip, o
+from StdFunc import flip, id, o
 import StdOrdList
 import StdString
 import StdTuple
@@ -167,18 +167,18 @@ where
 	print _ (RightAssoc i) = "infixr " -- i
 	print _ (NoAssoc i)    = "infix " -- i
 
-propagate_uniqueness :: Type -> Type
-propagate_uniqueness (Type t ts)
-	# ts = map propagate_uniqueness ts
-	= if (any isUniq ts) (Uniq (Type t ts)) (Type t ts)
-propagate_uniqueness (Func is r tc)
-	= Func (map propagate_uniqueness is) (propagate_uniqueness r) tc
-propagate_uniqueness (Cons v ts)
-	# ts = map propagate_uniqueness ts
-	= if (any isUniq ts) (Uniq (Cons v ts)) (Cons v ts)
-propagate_uniqueness (Forall vs t tc)
-	= Forall vs (propagate_uniqueness t) tc
-propagate_uniqueness t
+propagate_uniqueness :: (String -> Bool) Type -> Type
+propagate_uniqueness p (Type t ts)
+	# ts = map (propagate_uniqueness p) ts
+	= if (p t || any isUniq ts) Uniq id (Type t ts)
+propagate_uniqueness p (Func is r tc)
+	= Func (map (propagate_uniqueness p) is) (propagate_uniqueness p r) tc
+propagate_uniqueness p (Cons v ts)
+	# ts = map (propagate_uniqueness p) ts
+	= if (any isUniq ts) Uniq id (Cons v ts)
+propagate_uniqueness p (Forall vs t tc)
+	= Forall vs (propagate_uniqueness p t) tc
+propagate_uniqueness p t
 	= t
 
 resolve_synonyms :: ('M'.Map String [TypeDef]) Type -> ([TypeDef], Type)
@@ -258,11 +258,11 @@ reduceArities (Forall [] t []) = reduceArities t
 reduceArities (Forall tvs t tc) = Forall tvs (reduceArities t) tc
 reduceArities (Arrow mt) = Arrow (reduceArities <$> mt)
 
-normalise_type :: !('M'.Map String [TypeDef]) !Type -> (!Type, ![TypeDef], ![TypeVar])
-normalise_type tds t
+normalise_type :: (String -> Bool) !('M'.Map String [TypeDef]) !Type -> (!Type, ![TypeDef], ![TypeVar])
+normalise_type alwaysUnique tds t
 # t        = reduceArities t
 # (syns,t) = resolve_synonyms tds t
-# t        = propagate_uniqueness t
+# t        = propagate_uniqueness alwaysUnique t
 # t        = optConses t
 # (t,vars) = rename t
 = (t,syns,vars)
