@@ -100,9 +100,9 @@ where
 				concat [concat ("\t| " -- c -- "\n") \\ c <- cs])
 		makeADT True cs = concat (makeADT False cs -- "\t| ..")
 	print _ (TDRNewType c) = " =: " -- c
-	print _ (TDRRecord _ exi fields) = " =\n\t" --
-		if (isEmpty exi) [] ("E." -- printersperse False " " exi -- ": ") --
-		makeRecord exi fields
+	print _ (TDRRecord _ exi fields) = " =" --
+		if (isEmpty exi) [] (" E." -- printersperse False " " exi -- ":") --
+		"\n\t" -- makeRecord exi fields
 	where
 		makeRecord :: [TypeVar] [RecordField] -> String
 		makeRecord _ [] = "{}"
