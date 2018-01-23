@@ -10,6 +10,7 @@ CLMLIBS:=\
 	-I ../../src/libraries/OS-Posix\
 	-I ../../src/libraries/OS-Linux\
 	-I ../../src/libraries/OS-Linux-64\
+	-I ../../src/libraries/Platform-x86\
 	-I $(CLEAN_HOME)/lib/StdEnv\
 	-I $(CLEAN_HOME)/lib/Dynamics\
 	-I $(CLEAN_HOME)/lib/TCPIP\
