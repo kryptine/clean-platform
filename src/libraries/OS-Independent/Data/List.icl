@@ -389,6 +389,10 @@ union                   = unionBy (==)
 unionBy :: (a -> .(a -> .Bool)) !.[a] .[a] -> .[a]
 unionBy eq xs ys        =  xs ++ foldl (flip (deleteBy eq)) (nubBy eq ys) xs
 
+hasDup :: ![a] -> Bool | Eq a
+hasDup []     = False
+hasDup [x:xs] = isMember x xs || hasDup xs
+
 isMemberGen :: !a !.[a] -> Bool | gEq{|*|} a
 isMemberGen x [hd:tl]	= hd === x || isMemberGen x tl
 isMemberGen x []		= False
@@ -496,3 +500,16 @@ strictTRZipWith3Acc :: !(a b c -> d) ![a] ![b] ![c] ![d] -> [d]
 strictTRZipWith3Acc f [a:as] [b:bs] [c:cs] acc
   = strictTRZipWith3Acc f as bs cs [f a b c : acc]
 strictTRZipWith3Acc _ _ _ _ acc = acc
+
+qfoldl :: (a -> b -> [b]) (a -> b -> a) a ![b] -> a
+qfoldl _ _ a []
+	= a
+qfoldl f g a [b:bs]
+	= let a` = g a b in qfoldl f g a` (bs ++ f a` b)
+
+qfoldr :: (a -> b -> [b]) (b -> a -> a) a ![b] -> a
+qfoldr _ _ a []
+	= a
+qfoldr f g a [b:bs]
+	= let a` = g b a in qfoldr f g a` (bs ++ f a` b)
+
