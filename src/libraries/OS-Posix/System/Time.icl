@@ -1,6 +1,6 @@
 implementation module System.Time
 
-import StdString, StdArray, StdClass, StdOverloaded, StdInt, StdMisc
+import StdString, StdArray, StdClass, StdOverloaded, StdInt, StdMisc, StdBool
 import System.OS
 import System._Pointer, System._Posix
 import Text
@@ -207,3 +207,7 @@ where
 
 instance zero Timespec
 where zero = {tv_sec=0, tv_nsec=0}
+
+instance == Timespec
+where
+	(==) t1 t2 = t1.tv_sec == t2.tv_sec && t1.tv_nsec == t2.tv_nsec

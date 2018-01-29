@@ -103,3 +103,4 @@ instance < Timespec
 instance + Timespec
 instance - Timespec
 instance zero Timespec
+instance == Timespec
