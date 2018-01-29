@@ -1,6 +1,7 @@
 implementation module System.Time
 
 import StdString, StdArray, StdClass, StdOverloaded, StdInt, StdMisc
+import System.OS
 import System._Pointer, System._Posix
 import Text
 
@@ -165,7 +166,7 @@ unpackTm buf off =
 	}
 
 sizeOfTm :: Int
-sizeOfTm = 36 
+sizeOfTm = IF_ANDROID 44 36 
 
 nsTime :: !*World -> (!Timespec, !*World)
 nsTime w

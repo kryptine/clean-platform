@@ -4,6 +4,7 @@
             Path:   {Application}/lib/StdEnv
             Path:   {Application}/lib/Generics
             Path:   {Application}/lib/StdLib
+            Path:   {Application}/lib/clean-platform/Platform-x86
             Path:   {Application}/lib/clean-platform/OS-Independent
             Path:   {Application}/lib/clean-platform/OS-Independent/Data
             Path:   {Application}/lib/clean-platform/OS-Independent/Database
