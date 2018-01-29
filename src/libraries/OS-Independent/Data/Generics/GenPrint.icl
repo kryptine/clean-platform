@@ -275,6 +275,7 @@ gPrint{|{!}|} f xs st
 	$ printList f [ x \\ x <-: xs] 
 	$ printChar '}'
 	@ st
+derive gPrint (,), (,,), (,,,), (,,,,), (,,,,,), (,,,,,,), (,,,,,,,)
 
 //derive gOutput (,), (,,), (,,,), (,,,,), (,,,,,), (,,,,,,), (,,,,,,,)
 	
