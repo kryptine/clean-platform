@@ -2,6 +2,7 @@ implementation module Graphics.Scalable.Types
 
 import Data.Maybe
 import Data.List
+import Data.Generics.GenEq
 from Text.HTML import :: SVGColor (..)
 from Data.Set import :: Set, instance == (Set a), instance < (Set a)
 import StdBool, StdInt, StdReal, StdString
