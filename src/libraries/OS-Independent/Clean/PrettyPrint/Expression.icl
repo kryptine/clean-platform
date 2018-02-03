@@ -165,7 +165,7 @@ where
 // Case .. of
 instance print CaseAlt
 where
-	print st ca = print st (ca.calt_pattern :+: " = " :+: ca.calt_rhs)
+	print st ca = print st (ca.calt_pattern :+: " -> " :+: ca.calt_rhs)
 
 // Local definitions
 instance Join LocalDefs

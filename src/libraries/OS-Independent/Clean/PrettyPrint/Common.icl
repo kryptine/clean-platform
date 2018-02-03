@@ -19,6 +19,7 @@ where
 			, ("_nil",  "[|]")
 			, ("_|Nil", "[|]")
 			, ("_#Nil", "[#]")
+			, ("_Unit", "()")
 			]
 
 instance print Import
