@@ -154,12 +154,12 @@ instance print Constructor
 where
 	print _ {cons_name,cons_args,cons_exi_vars=evars,cons_context,cons_priority}
 		= if (isEmpty evars) [] ("E." -- printersperse False " " evars -- ": ") --
-			cons_name -- " " -- prio -- printersperse True " " cons_args --
+			name -- " " -- prio -- printersperse True " " cons_args --
 			if (isEmpty cons_context) [] (" & " -- cons_context)
 	where
-		prio = case cons_priority of
-			Nothing -> []
-			Just p  -> p -- " "
+		(name,prio) = case cons_priority of
+			Nothing -> ([cons_name],             [])
+			Just p  -> ("(" -- cons_name -- ")", p -- " ")
 
 instance print Priority
 where
