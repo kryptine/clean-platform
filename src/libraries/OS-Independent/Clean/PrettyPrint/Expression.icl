@@ -86,7 +86,8 @@ where
 	print st (PE_Generic id k)
 		= print st (id :+: "{|" :+: k :+: "|}")
 	// | PE_ArrayPattern ![ElemAssignment]
-	// | PE_Matches !Ident /*expr*/!ParsedExpr /*pattern*/!ParsedExpr !Position
+	print st (PE_Matches _ e p _)
+		= print st (e :+: "=:(" :+: p :+: ")")
 	// | PE_Any_Code !(CodeBinding Ident) !(CodeBinding Ident) ![String]
 	// | PE_TypeSignature !ArrayKind !ParsedExpr
 	// | PE_Empty
