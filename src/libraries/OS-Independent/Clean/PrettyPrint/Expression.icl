@@ -68,7 +68,7 @@ where
 		sel = case psk of
 			ParsedNormalSelector     = "."
 			(ParsedUniqueSelector _) = "!"
-	print st (PE_UpdateComprehension base (PE_Update _ sels new) _ qs) //TODO verify
+	print st (PE_UpdateComprehension base (PE_Update _ sels new) _ qs)
 		= print st ("{" :+: base :+: " & " :+: printParsedSelections st sels :+: "=" :+: new :+: " \\\\ " :+: join st ", " qs :+: "}")
 	print st (PE_ArrayCompr ak pe qs)
 		= print st ("{" :+: ak :+: pe :+: " \\\\ " :+: join st ", " qs :+: "}")
@@ -85,7 +85,8 @@ where
 		= printp st ("dynamic " :+: pe)
 	print st (PE_Generic id k)
 		= print st (id :+: "{|" :+: k :+: "|}")
-	// | PE_ArrayPattern ![ElemAssignment]
+	print st (PE_ArrayPattern eas)
+		= print st ("{" :+: join st "," eas :+: "}")
 	print st (PE_Matches _ e p _)
 		= print st (e :+: "=:(" :+: p :+: ")")
 	// | PE_Any_Code !(CodeBinding Ident) !(CodeBinding Ident) ![String]
@@ -150,6 +151,10 @@ where
 	print _ OverloadedArray = ""
 	print _ StrictArray     = "!"
 	print _ UnboxedArray    = "#"
+
+instance print ElemAssignment
+where
+	print st b = print st ("[" :+: join st "," b.bind_dst :+: "]=" :+: b.bind_src)
 
 // Records
 instance print FieldAssignment
