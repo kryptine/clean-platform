@@ -218,19 +218,16 @@ splitS x (Bin _ y l r)
  *--------------------------------------------------------------------*/
  
 // | /O(n+m)/. Difference of two sets. 
-// The implementation uses an efficient /hedge/ algorithm comparable with /hedge-union/.
 difference :: !(Set a) !(Set a) -> Set a | < a & == a
 difference Tip _   = Tip
 difference t1 Tip  = t1
-difference t1 t2   = hedgeDiff NothingS NothingS t1 t2
-
-hedgeDiff :: !(MaybeS a) !(MaybeS a) !(Set a) !(Set a) -> Set a | < a & == a
-hedgeDiff _   _   Tip           _ = Tip
-hedgeDiff blo bhi (Bin _ x l r) Tip = link x (filterGt blo l) (filterLt bhi r)
-hedgeDiff blo bhi t (Bin _ x l r) = merge (hedgeDiff blo bmi (trim blo bmi t) l)
-                                          (hedgeDiff bmi bhi (trim bmi bhi t) r)
-  where bmi = JustS x
-
+difference t1 (Bin _ x l2 r2) = case split  x t1 of
+	(l1, r1)
+		| size l1l2 + size r1r2 == size t1 -> t1
+		| otherwise -> merge l1l2 r1r2
+	where
+		l1l2 = difference l1 l2
+		r1r2 = difference r1 r2
 
 /*--------------------------------------------------------------------
  * Intersection
