@@ -154,5 +154,6 @@ import qualified Text.Unicode.Encodings.UTF8
 import qualified Text.Unicode.UChar
 import qualified Text.URI
 import qualified Text.XML
+import qualified Testing.TestEvents
 
 Start = "Hello World!"
