@@ -14,14 +14,14 @@ from Text.JSON import generic JSONEncode, generic JSONDecode, :: JSONNode, :: Ma
  * A Specialised JSONEncode instance is used for this type, which
  * has to be adapted in case the type definition is changed!
  */
-:: StartEvent = { name    :: !String
+:: StartEvent = { name    :: !String //* The test's name
                 }
 /**
  * Event emitted after a test has finished.
  */
-:: EndEvent   = { name    :: !String
-                , event   :: !EndEventType
-                , message :: !String
+:: EndEvent   = { name    :: !String       //* The test's name
+                , event   :: !EndEventType //* The event's type, indicating success
+                , message :: !String       //* Message providing an explanation for the result
                 }
 
 /**
@@ -30,7 +30,9 @@ from Text.JSON import generic JSONEncode, generic JSONDecode, :: JSONNode, :: Ma
  * Specialised JSONEncode/JSONDecode instances are used for this type, which
  * have to be adapted in case the type definition is changed!
  */
-:: EndEventType = Passed | Failed | Skipped
+:: EndEventType = Passed  //* The test passed
+                | Failed  //* The test failed
+                | Skipped //* The test was not executed, but should be executed and pass for future versions
 
 derive JSONEncode StartEvent, EndEvent
 derive JSONDecode StartEvent, EndEvent
