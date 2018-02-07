@@ -11,8 +11,8 @@ from Text.JSON import generic JSONEncode, generic JSONDecode, :: JSONNode, :: Ma
 
 /**
  * Event emitted when a test is started.
- * A Specialised JSONEncode instance is used for this type, which
- * has to be adapted in case the type definition is changed!
+ * Specialised JSONEncode/JSONDecode instances are used for this type, which
+ * have to be adapted in case the type definition is changed!
  */
 :: StartEvent = { name    :: !String //* The test's name
                 }
