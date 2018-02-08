@@ -6,9 +6,7 @@ import StdGeneric
 generic gDefault a ::  a 
 
 gDefault{|Int|}  				= 0
-gDefault{|Bool|}  				= False
 gDefault{|Real|}  				= 0.0
-gDefault{|Char|}  				= '-'
 gDefault{|String|}  			= ""
 gDefault{|UNIT|} 			 	= UNIT
 gDefault{|EITHER|} dl dr   	= LEFT   dl
