@@ -10,6 +10,15 @@ definition module Testing.TestEvents
 from Text.JSON import generic JSONEncode, generic JSONDecode, :: JSONNode, :: Maybe
 
 /**
+ * Events that are emitted from tests.
+ * Specialised JSONEncode/JSONDecode instances are used for this type, which
+ * have to be adapted in case the type definition is changed!
+ */
+:: TestEvent
+	= StartEvent StartEvent //* A test has started
+	| EndEvent   EndEvent   //* A test has finished
+
+/**
  * Event emitted when a test is started.
  * Specialised JSONEncode/JSONDecode instances are used for this type, which
  * have to be adapted in case the type definition is changed!
@@ -34,6 +43,5 @@ from Text.JSON import generic JSONEncode, generic JSONDecode, :: JSONNode, :: Ma
                 | Failed  //* The test failed
                 | Skipped //* The test was not executed, but should be executed and pass for future versions
 
-derive JSONEncode StartEvent, EndEvent
-derive JSONDecode StartEvent, EndEvent
-
+derive JSONEncode TestEvent, StartEvent, EndEvent
+derive JSONDecode TestEvent, StartEvent, EndEvent

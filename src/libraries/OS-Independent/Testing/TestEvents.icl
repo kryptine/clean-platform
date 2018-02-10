@@ -2,6 +2,15 @@ implementation module Testing.TestEvents
 
 import Text.JSON, Control.Monad, StdFunc, StdTuple, StdList, Data.Maybe, Control.Applicative
 
+JSONEncode{|TestEvent|} c (StartEvent se) = JSONEncode{|*|} c se
+JSONEncode{|TestEvent|} c (EndEvent ee)   = JSONEncode{|*|} c ee
+
+JSONDecode{|TestEvent|} b json = case JSONDecode{|*|} b json of
+	(Just se, json) -> (Just (StartEvent se), json)
+	_               -> case JSONDecode{|*|} b json of
+		(Just ee, json) -> (Just (EndEvent ee), json)
+		(Nothing, json) -> (Nothing, json)
+
 JSONEncode{|StartEvent|} _ startEvent = [ JSONObject [ ("name",  JSONString startEvent.StartEvent.name)
                                                      , ("event", JSONString "start")
                                                      ]
@@ -40,4 +49,3 @@ JSONDecode{|EndEventType|} _ nodes = (Nothing, nodes)
 
 derive JSONEncode EndEvent
 derive JSONDecode EndEvent
-
