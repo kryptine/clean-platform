@@ -53,7 +53,7 @@ addTrailingPathSeparator path = if (hasTrailingPathSeparator path) path (path ++
 splitFileName  :: !FilePath -> (String, String)
 splitFileName path = 
 	case lastIndexOf {pathSeparator} path of
-		-1 -> (path, "")
+		-1 -> ("", path)
 		i  -> (subString 0 i path, subString (i+1) (size path - i - 1) path)
 
 takeDirectory :: !FilePath -> FilePath
