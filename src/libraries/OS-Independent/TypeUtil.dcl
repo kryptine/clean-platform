@@ -22,7 +22,7 @@ from Data.Maybe import :: Maybe
  * @param The element to print
  * @result A list of strings that should be concatenated
  */
-class print a :: Bool a -> [String]
+class print a :: !Bool !a -> [String]
 
 instance print String
 instance print Int
