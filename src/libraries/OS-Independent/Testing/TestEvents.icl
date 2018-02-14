@@ -37,6 +37,7 @@ where
         Passed  -> "passed"
         Failed  -> "failed"
         Skipped -> "skipped"
+        Lost    -> "lost"
 
 JSONDecode{|EndEventType|} _ [JSONString eTypeStr : rest] = (mbEType, rest)
 where
@@ -44,6 +45,7 @@ where
         "passed"  -> Just Passed
         "failed"  -> Just Failed
         "skipped" -> Just Skipped
+        "lost"    -> Just Lost
         _         -> Nothing
 JSONDecode{|EndEventType|} _ nodes = (Nothing, nodes)
 
