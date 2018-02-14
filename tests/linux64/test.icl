@@ -43,6 +43,7 @@ import qualified Data.Generics._Array
 import qualified Data.Generics.GenBimap
 import qualified Data.Generics.GenCompress
 import qualified Data.Generics.GenDefault
+import qualified Data.Generics.GenDiff
 import qualified Data.Generics.GenEq
 import qualified Data.Generics.GenFMap
 import qualified Data.Generics.GenFDomain
