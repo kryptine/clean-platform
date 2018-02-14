@@ -39,12 +39,15 @@ where
 		color +++
 		if p` "(" "" +++
 		d.value +++
+		reset +++
 		concat (map ((+++) " " o display True) d.children) +++
+		color +++
 		if p` ")" "" +++
-		"\033[0m"
+		reset
 	where
 		color = case d.status of
-			Common  -> "\033[0m"
+			Common  -> reset
 			Added   -> "\033[0;32m"
 			Removed -> "\033[0;31m"
+		reset = "\033[0m"
 		p` = p && not (isEmpty d.children)
