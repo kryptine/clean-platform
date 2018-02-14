@@ -43,6 +43,7 @@ from Text.JSON import generic JSONEncode, generic JSONDecode, :: JSONNode, :: Ma
 :: EndEventType = Passed  //* The test passed
                 | Failed  //* The test failed
                 | Skipped //* The test was not executed, but should be executed and pass for future versions
+                | Lost    //* The test crashed
 
 /**
  * Reasons for failing a test.
