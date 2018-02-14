@@ -28,9 +28,10 @@ from Text.JSON import generic JSONEncode, generic JSONDecode, :: JSONNode, :: Ma
 /**
  * Event emitted after a test has finished.
  */
-:: EndEvent   = { name    :: !String       //* The test's name
-                , event   :: !EndEventType //* The event's type, indicating success
-                , message :: !String       //* Message providing an explanation for the result
+:: EndEvent   = { name       :: !String           //* The test's name
+                , event      :: !EndEventType     //* The event's type, indicating success
+                , message    :: !String           //* Message providing an explanation for the result
+                , failReason :: !Maybe FailReason //* The reason for failure, when `event` is `Failed`
                 }
 
 /**
@@ -43,5 +44,12 @@ from Text.JSON import generic JSONEncode, generic JSONDecode, :: JSONNode, :: Ma
                 | Failed  //* The test failed
                 | Skipped //* The test was not executed, but should be executed and pass for future versions
 
-derive JSONEncode TestEvent, StartEvent, EndEvent
-derive JSONDecode TestEvent, StartEvent, EndEvent
+/**
+ * Reasons for failing a test.
+ */
+:: FailReason
+	= CounterExample JSONNode          //* A counter-example for a property was found
+	| ExpectedButGot JSONNode JSONNode //* An equality test failed
+
+derive JSONEncode TestEvent, StartEvent, EndEvent, FailReason
+derive JSONDecode TestEvent, StartEvent, EndEvent, FailReason
