@@ -28,10 +28,9 @@ from Text.JSON import generic JSONEncode, generic JSONDecode, :: JSONNode, :: Ma
 /**
  * Event emitted after a test has finished.
  */
-:: EndEvent   = { name       :: !String           //* The test's name
-                , event      :: !EndEventType     //* The event's type, indicating success
-                , message    :: !String           //* Message providing an explanation for the result
-                , failReason :: !Maybe FailReason //* The reason for failure, when `event` is `Failed`
+:: EndEvent   = { name    :: !String       //* The test's name
+                , event   :: !EndEventType //* The event's type, indicating success
+                , message :: !String       //* Message providing an explanation for the result
                 }
 
 /**
@@ -40,10 +39,10 @@ from Text.JSON import generic JSONEncode, generic JSONDecode, :: JSONNode, :: Ma
  * Specialised JSONEncode/JSONDecode instances are used for this type, which
  * have to be adapted in case the type definition is changed!
  */
-:: EndEventType = Passed  //* The test passed
-                | Failed  //* The test failed
-                | Skipped //* The test was not executed, but should be executed and pass for future versions
-                | Lost    //* The test crashed
+:: EndEventType = Passed            //* The test passed
+                | Failed FailReason //* The test failed
+                | Skipped           //* The test was not executed, but should be executed and pass for future versions
+                | Lost              //* The test crashed
 
 /**
  * Reasons for failing a test.
