@@ -11,10 +11,14 @@ import StdGeneric
 	, children :: ![Diff]     //* Diffs on the childrens of this node.
 	}
 
+/**
+ * The status of a node head in a {{`Diff`}}.
+ */
 :: DiffStatus
-	= Common
-	| Added
-	| Removed
+	= Common  //* The complete node is common to both values
+	| Changed //* The node head is common, but there are diffs in the children
+	| Added   //* The node is added
+	| Removed //* The node is removed
 
 /**
  * Compute the {{`Diff`}} between two values.
@@ -26,4 +30,4 @@ derive gDiff []
 /**
  * A String representation of a {{`Diff`}} using ANSI escape codes.
  */
-diffToConsole :: ([Diff] -> String)
+diffToConsole :: [Diff] -> String
