@@ -29,11 +29,21 @@ gDiff{|String|} x y = eqDiff x y
 gDiff{|UNIT|} UNIT UNIT = []
 gDiff{|PAIR|} fx fy (PAIR x1 y1) (PAIR x2 y2) = fx x1 x2 ++ fy y1 y2
 gDiff{|OBJECT|} fx (OBJECT x) (OBJECT y)  = fx x y
-gDiff{|CONS of d|} fx (CONS x) (CONS y)   =
+gDiff{|CONS of d|} fx (CONS x) (CONS y)   = let children = fx x y in
 	[{ status   = if (all (\d -> d.status=:Common) children) Common Changed
 	 , value    = d.gcd_name
 	 , children = children
-	 }] where children = fx x y
+	 }]
+gDiff{|RECORD of d|} fx (RECORD x) (RECORD y) = let children = fx x y in
+	[{ status   = if (all (\d -> d.status=:Common) children) Common Changed
+	 , value    = d.grd_name
+	 , children = children
+	 }]
+gDiff{|FIELD of d|} fx (FIELD x) (FIELD y) = let children = fx x y in
+	[{ status   = if (all (\d -> d.status=:Common) children) Common Changed
+	 , value    = d.gfd_name +++ "="
+	 , children = children
+	 }]
 gDiff{|EITHER|} fl fr (LEFT x)  (LEFT y)  = fl x y
 gDiff{|EITHER|} fl fr (RIGHT x) (RIGHT y) = fr x y
 gDiff{|EITHER|} fl fr (LEFT x)  (RIGHT y) = map (setStatus Removed) (fl x x) ++ map (setStatus Added) (fr y y)
@@ -49,7 +59,7 @@ eqDiff x y
 	, {status=Added,   value=printToString y, children=[]}
 	]
 
-derive gDiff []
+derive gDiff [], (,), (,,), (,,,), (,,,,), (,,,,,), (,,,,,,), (,,,,,,,)
 
 :: PrState =
 	{ indent :: !Int

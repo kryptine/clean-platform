@@ -24,8 +24,9 @@ import StdGeneric
  * Compute the {{`Diff`}} between two values.
  */
 generic gDiff a :: a a -> [Diff]
-derive gDiff Int, UNIT, PAIR, EITHER, OBJECT, CONS of d
-derive gDiff []
+derive gDiff UNIT, PAIR, EITHER, OBJECT, CONS of d, RECORD of d, FIELD of d
+derive gDiff Int, Char, Bool, String
+derive gDiff [], (,), (,,), (,,,), (,,,,), (,,,,,), (,,,,,,), (,,,,,,,)
 
 /**
  * A String representation of a {{`Diff`}} using ANSI escape codes.
