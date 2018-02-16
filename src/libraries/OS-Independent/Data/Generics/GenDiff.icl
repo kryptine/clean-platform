@@ -11,6 +11,7 @@ import Control.Applicative
 import Control.Monad
 import Control.Monad.Identity
 import Control.Monad.State
+import Data.Generics.GenPrint
 import Data.List
 import Data.Maybe
 from Text import class Text(concat), instance Text String
@@ -21,9 +22,10 @@ setStatus :: DiffStatus Diff -> Diff
 setStatus s d = {d & status=s, children=map (setStatus s) d.children}
 
 generic gDiff a :: a a -> [Diff]
-gDiff{|Int|} x y
-| x == y    = [{status=Common, value=toString x, children=[]}]
-| otherwise = [{status=Removed, value=toString x, children=[]}, {status=Added, value=toString y, children=[]}]
+gDiff{|Int|} x y = eqDiff x y
+gDiff{|Char|} x y = eqDiff x y
+gDiff{|Bool|} x y = eqDiff x y
+gDiff{|String|} x y = eqDiff x y
 gDiff{|UNIT|} UNIT UNIT = []
 gDiff{|PAIR|} fx fy (PAIR x1 y1) (PAIR x2 y2) = fx x1 x2 ++ fy y1 y2
 gDiff{|OBJECT|} fx (OBJECT x) (OBJECT y)  = fx x y
@@ -36,6 +38,16 @@ gDiff{|EITHER|} fl fr (LEFT x)  (LEFT y)  = fl x y
 gDiff{|EITHER|} fl fr (RIGHT x) (RIGHT y) = fr x y
 gDiff{|EITHER|} fl fr (LEFT x)  (RIGHT y) = map (setStatus Removed) (fl x x) ++ map (setStatus Added) (fr y y)
 gDiff{|EITHER|} fl fr (RIGHT x) (LEFT y)  = map (setStatus Removed) (fr x x) ++ map (setStatus Added) (fl y y)
+
+eqDiff :: a a -> [Diff] | ==, gPrint{|*|} a
+eqDiff x y
+| x == y =
+	[ {status=Common,  value=printToString x, children=[]}
+	]
+| otherwise =
+	[ {status=Removed, value=printToString x, children=[]}
+	, {status=Added,   value=printToString y, children=[]}
+	]
 
 derive gDiff []
 
