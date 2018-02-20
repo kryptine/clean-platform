@@ -75,3 +75,18 @@ parseTestOpts opts ["--strategy":args] = case args of
 	[s:args]              -> Error $ "Unknown strategy '" +++ s +++ "'"
 	[]                    -> Error "--strategy requires a parameter"
 parseTestOpts opts [arg:args] = Error $ "Unknown option '" +++ arg +++ "'"
+
+optionDoc :: [String]
+optionDoc =
+	[ "General options:"
+	, "  --help/-h               Show this help"
+	, "  --hide/-H TYPE          Comma-separated list of types of messages to hide (start,pass,fail,skip,lost)"
+	, "  --output-format/-f FMT  The output format (json,human)"
+	, "  --strategy/-S STRATEGY  The test order strategy, where STRATEGY is one of"
+	, "      default               Order of the --run parameters"
+	, "      failed-first          First run the tests that failed last time; if they past continue with the rest"
+	, "Test options:"
+	, "  --run/-r EXE            Execute tests from executable EXE"
+	, "  --option/-O OPT         Add OPT to the command line of the previously added run"
+	, "  --name/-n NAME          Give the previously added run the name NAME"
+	]

@@ -32,3 +32,5 @@ derive gDefault MessageType, Options, OutputFormat, Run, Strategy
 messageType :: TestEvent -> MessageType
 
 parseTestOpts :: Options [String] -> MaybeErrorString Options
+
+optionDoc :: [String]
