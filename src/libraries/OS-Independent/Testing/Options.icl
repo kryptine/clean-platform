@@ -32,6 +32,7 @@ LONG_OPTIONS =:
 	, ("-n", "--name")
 	, ("-O", "--option")
 	, ("-r", "--run")
+	, ("-s", "--skip")
 	, ("-S", "--strategy")
 	]
 
@@ -69,6 +70,9 @@ parseTestOpts opts ["--output-format":args] = case args of
 parseTestOpts opts ["--run":args] = case args of
 	[exe:args] -> parseTestOpts {opts & runs=[{gDefault{|*|} & executable=exe, name=exe}:opts.runs]} args
 	[]         -> Error "--run requires a parameter"
+parseTestOpts opts ["--skip":args] = case args of
+	[name:args] -> parseTestOpts {opts & skip=opts.skip ++ [name]} args
+	[]          -> Error "--skip requires a parameter"
 parseTestOpts opts ["--strategy":args] = case args of
 	["default":args]      -> parseTestOpts {opts & strategy=S_Default} args
 	["failed-first":args] -> parseTestOpts {opts & strategy=S_FailedFirst} args
@@ -82,6 +86,7 @@ optionDoc =
 	, "  --help/-h               Show this help"
 	, "  --hide/-H TYPE          Comma-separated list of types of messages to hide (start,pass,fail,skip,lost)"
 	, "  --output-format/-f FMT  The output format (json,human)"
+	, "  --skip/-S NAME          Skip tests with this name"
 	, "  --strategy/-S STRATEGY  The test order strategy, where STRATEGY is one of"
 	, "      default               Order of the --run parameters"
 	, "      failed-first          First run the tests that failed last time; if they past continue with the rest"

@@ -9,6 +9,7 @@ from Testing.TestEvents import :: TestEvent
 
 :: Options =
 	{ runs     :: ![Run]
+	, skip     :: ![String]
 	, help     :: !Bool
 	, output   :: !OutputFormat
 	, hide     :: ![MessageType]
