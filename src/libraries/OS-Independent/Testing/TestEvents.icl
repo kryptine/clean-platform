@@ -77,5 +77,46 @@ where
         _         -> Nothing
 JSONDecode{|EndEventType|} _ nodes = (Nothing, nodes)
 
-derive JSONEncode FailReason
-derive JSONDecode FailReason
+JSONEncode{|FailedAssertion|} _ fa = [JSONArray arr]
+where
+	arr = case fa of
+		ExpectedRelation x r y ->
+			[ JSONString "expected"
+			, x
+			, hd (JSONEncode{|*|} False r)
+			, y
+			]
+
+JSONDecode{|FailedAssertion|} _ [JSONArray arr:rest] = (mbFA, rest)
+where
+	mbFA = case arr of
+		[JSONString "expected":x:r:y:[]] -> case JSONDecode{|*|} False [r] of
+			(Just r, []) -> Just (ExpectedRelation x r y)
+			_ -> Nothing
+		_ -> Nothing
+
+JSONEncode{|Relation|} _ r = [JSONString s]
+where
+	s = case r of
+		Eq -> "=="
+		Ne -> "<>"
+		Lt -> "<"
+		Le -> "<="
+		Gt -> ">"
+		Ge -> ">="
+
+JSONDecode{|Relation|} _ [JSONString s:rest] = (mbRel, rest)
+where
+	mbRel = case s of
+		"==" -> Just Eq
+		"<>" -> Just Ne
+		"<"  -> Just Lt
+		"<=" -> Just Le
+		">"  -> Just Gt
+		">=" -> Just Ge
+		_    -> Nothing
+
+derive JSONEncode FailReason, CounterExample
+derive JSONDecode FailReason, CounterExample
+
+Start = toString (toJSON {name="", message="", event=Failed (CounterExamples [{counterExample=JSONNull, failedAssertions=[ExpectedRelation (JSONInt 1) Eq (JSONInt 2)]}])})
