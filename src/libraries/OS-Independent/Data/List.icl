@@ -108,7 +108,7 @@ where
   (vs,ws,xs,ys,zs) = unzip5 vwxyzs
 
 replaceInList :: !(a a -> Bool) !a ![a] -> [a]
-replaceInList cond new []         = [new]
+replaceInList _ _ []         = []
 replaceInList cond new [x:xs]
     | cond new x            = [new : xs]
     | otherwise             = [x : replaceInList cond new xs]
