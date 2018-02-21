@@ -39,10 +39,43 @@ from Text.JSON import generic JSONEncode, generic JSONDecode, :: JSONNode, :: Ma
  * Specialised JSONEncode/JSONDecode instances are used for this type, which
  * have to be adapted in case the type definition is changed!
  */
-:: EndEventType = Passed  //* The test passed
-                | Failed  //* The test failed
-                | Skipped //* The test was not executed, but should be executed and pass for future versions
-                | Lost    //* The test crashed
+:: EndEventType = Passed            //* The test passed
+                | Failed FailReason //* The test failed
+                | Skipped           //* The test was not executed, but should be executed and pass for future versions
+                | Lost              //* The test crashed
 
-derive JSONEncode TestEvent, StartEvent, EndEvent
-derive JSONDecode TestEvent, StartEvent, EndEvent
+/**
+ * Reasons for failing a test.
+ */
+:: FailReason
+	= FailedAssertions [FailedAssertion]    //* Assertions that caused the test to fail
+	| CounterExamples [CounterExample]      //* Example values for which the test failed
+	| FailedChildren [(String, FailReason)] //* Subtests failed; the tuples are of name and failing reason
+
+/**
+ * A counter-example to a test.
+ */
+:: CounterExample =
+	{ counterExample   :: !JSONNode          //* The value that disproves the property
+	, failedAssertions :: ![FailedAssertion] //* The assertions that failed in testing the property for that value
+	}
+
+/**
+ * A failed test assertion.
+ */
+:: FailedAssertion
+	= ExpectedRelation JSONNode Relation JSONNode //* A relation test failed
+
+/**
+ * A relation between two values.
+ */
+:: Relation
+	= Eq //* Equality
+	| Ne //* Negated equality
+	| Lt //* Lesser than
+	| Le //* Lesser than or equal to
+	| Gt //* Greater than
+	| Ge //* Greater than or equal to
+
+derive JSONEncode TestEvent, StartEvent, EndEvent, FailReason, CounterExample, FailedAssertion, Relation
+derive JSONDecode TestEvent, StartEvent, EndEvent, FailReason, CounterExample, FailedAssertion, Relation

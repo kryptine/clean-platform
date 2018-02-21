@@ -1,6 +1,8 @@
 implementation module Testing.TestEvents
 
 import Text.JSON, Control.Monad, StdFunc, StdTuple, StdList, Data.Maybe, Control.Applicative
+import Data.Functor
+import Data.List
 
 JSONEncode{|TestEvent|} c (StartEvent se) = JSONEncode{|*|} c se
 JSONEncode{|TestEvent|} c (EndEvent ee)   = JSONEncode{|*|} c ee
@@ -25,29 +27,94 @@ where
                  (pure {StartEvent | name = name})
                  mzero
 
-    getField :: String -> Maybe a | JSONDecode{|*|} a
-    getField fieldName = case filter ((==) fieldName o fst) objFields of
-        [(_, jsonNode)] -> fromJSON jsonNode
-        _               -> mzero
+	getField :: String -> Maybe a | JSONDecode{|*|} a
+	getField field = lookup field objFields >>= fromJSON
 JSONDecode{|StartEvent|} _ _ = (Nothing, [])
 
-JSONEncode{|EndEventType|} _ eType = [JSONString eTypeStr]
+JSONEncode{|EndEvent|} _ endEvent = [JSONObject
+	[ ("name", JSONString endEvent.EndEvent.name)
+	, ("message", JSONString endEvent.message)
+	, ("event", JSONString (typeToString endEvent.event))
+	: case endEvent.event of
+		Failed r -> [("failReason", case JSONEncode{|*|} False r of
+			[JSONArray r] -> JSONArray r
+			r             -> JSONArray r)]
+		_        -> []
+	]]
 where
-    eTypeStr = case eType of
-        Passed  -> "passed"
-        Failed  -> "failed"
-        Skipped -> "skipped"
-        Lost    -> "lost"
+	typeToString :: EndEventType -> String
+	typeToString Passed     = "passed"
+	typeToString (Failed r) = "failed"
+	typeToString Skipped    = "skipped"
+	typeToString Lost       = "lost"
 
+JSONDecode{|EndEvent|} _ [JSONObject fields:rest] = (mbEvent, rest)
+where
+	mbEvent :: Maybe EndEvent
+	mbEvent =
+		getField "name" >>= \name ->
+		getField "event" >>= \event ->
+		getField "message" >>= \message ->
+		let e = {name=name, message=message, event=Passed} in case event of
+			"passed"  -> pure e
+			"failed"  -> (\r -> {e & event=Failed r}) <$> getField "failReason"
+			"skipped" -> pure {e & event=Skipped}
+			"lost"    -> pure {e & event=Lost}
+
+	getField :: String -> Maybe a | JSONDecode{|*|} a
+	getField field = lookup field fields >>= fromJSON
+JSONDecode{|EndEvent|} _ _ = (Nothing, [])
+
+JSONDecode{|EndEventType|} b [JSONString "failed" : rest] = case JSONDecode{|*|} b rest of
+	(Just r,rest) -> (Just (Failed r), rest)
+	_             -> (Nothing, rest)
 JSONDecode{|EndEventType|} _ [JSONString eTypeStr : rest] = (mbEType, rest)
 where
     mbEType = case eTypeStr of
         "passed"  -> Just Passed
-        "failed"  -> Just Failed
         "skipped" -> Just Skipped
         "lost"    -> Just Lost
         _         -> Nothing
 JSONDecode{|EndEventType|} _ nodes = (Nothing, nodes)
 
-derive JSONEncode EndEvent
-derive JSONDecode EndEvent
+JSONEncode{|FailedAssertion|} _ fa = [JSONArray arr]
+where
+	arr = case fa of
+		ExpectedRelation x r y ->
+			[ JSONString "expected"
+			, x
+			, hd (JSONEncode{|*|} False r)
+			, y
+			]
+
+JSONDecode{|FailedAssertion|} _ [JSONArray arr:rest] = (mbFA, rest)
+where
+	mbFA = case arr of
+		[JSONString "expected":x:r:y:[]] -> case JSONDecode{|*|} False [r] of
+			(Just r, []) -> Just (ExpectedRelation x r y)
+			_ -> Nothing
+		_ -> Nothing
+
+JSONEncode{|Relation|} _ r = [JSONString s]
+where
+	s = case r of
+		Eq -> "=="
+		Ne -> "<>"
+		Lt -> "<"
+		Le -> "<="
+		Gt -> ">"
+		Ge -> ">="
+
+JSONDecode{|Relation|} _ [JSONString s:rest] = (mbRel, rest)
+where
+	mbRel = case s of
+		"==" -> Just Eq
+		"<>" -> Just Ne
+		"<"  -> Just Lt
+		"<=" -> Just Le
+		">"  -> Just Gt
+		">=" -> Just Ge
+		_    -> Nothing
+
+derive JSONEncode FailReason, CounterExample
+derive JSONDecode FailReason, CounterExample
