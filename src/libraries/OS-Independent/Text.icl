@@ -214,9 +214,7 @@ where
 	subString start length cs = take length (drop start cs)
 
 	replaceSubString :: ![Char] ![Char] ![Char] -> [Char]
-	replaceSubString repl by cs = case indexOf repl cs of
-		-1 -> cs
-		i  -> concat [take i cs, by, drop (i + length repl) cs]
+	replaceSubString repl by cs = join by (split repl cs)
 
 	trim :: ![Char] -> [Char]
 	trim cs = ltrim (rtrim cs)
