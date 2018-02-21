@@ -44,6 +44,7 @@ class Text s
 	*
 	* @param The search string.
 	* @param The string that is being searched.
+	* @result The index of the first occurrence, or -1 if it does not occur
 	*/
 	indexOf 			:: !s !s -> Int
 	
@@ -147,6 +148,7 @@ class Text s
 * Instances of the text operations for plain ASCII strings.
 */
 instance Text String
+instance Text [Char]
 instance + String
 
 (<+) infixr 5 :: a b -> String | toString a & toString b
