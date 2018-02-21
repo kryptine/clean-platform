@@ -127,6 +127,8 @@ import qualified System._Platform
 import qualified System._Pointer
 import qualified System._Posix
 import qualified System._Unsafe
+import qualified Testing.Options
+import qualified Testing.TestEvents
 import qualified Text
 import qualified Text.CSV
 import qualified Text.Encodings.Base64
@@ -155,6 +157,5 @@ import qualified Text.Unicode.Encodings.UTF8
 import qualified Text.Unicode.UChar
 import qualified Text.URI
 import qualified Text.XML
-import qualified Testing.TestEvents
 
 Start = "Hello World!"
