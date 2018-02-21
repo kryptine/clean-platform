@@ -21,9 +21,9 @@ derive gDefault MessageType, Options, OutputFormat, Run, Strategy
 messageType :: TestEvent -> MessageType
 messageType (StartEvent _) = MT_Started
 messageType (EndEvent ee) = case ee.event of
-	Passed  -> MT_Passed
-	Failed  -> MT_Failed
-	Skipped -> MT_Skipped
+	Passed   -> MT_Passed
+	Failed _ -> MT_Failed
+	Skipped  -> MT_Skipped
 
 LONG_OPTIONS =:
 	[ ("-f", "--output-format")
