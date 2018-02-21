@@ -81,15 +81,17 @@ where
 			_ -> Nothing
 		_ -> Nothing
 
-JSONEncode{|Relation|} _ r = [JSONString s]
+instance toString Relation
 where
-	s = case r of
+	toString r = case r of
 		Eq -> "=="
 		Ne -> "<>"
 		Lt -> "<"
 		Le -> "<="
 		Gt -> ">"
 		Ge -> ">="
+
+JSONEncode{|Relation|} _ r = [JSONString (toString r)]
 
 JSONDecode{|Relation|} _ [JSONString s:rest] = (mbRel, rest)
 where

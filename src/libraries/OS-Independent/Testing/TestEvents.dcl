@@ -7,6 +7,7 @@ definition module Testing.TestEvents
  * events further.
  */
 
+from StdOverloaded import class toString
 from Text.JSON import generic JSONEncode, generic JSONDecode, :: JSONNode, :: Maybe
 
 /**
@@ -84,3 +85,5 @@ from Text.JSON import generic JSONEncode, generic JSONDecode, :: JSONNode, :: Ma
 
 derive JSONEncode TestEvent, StartEvent, EndEvent, FailReason, CounterExample, FailedAssertion, Relation
 derive JSONDecode TestEvent, StartEvent, EndEvent, FailReason, CounterExample, FailedAssertion, Relation
+
+instance toString Relation
