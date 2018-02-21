@@ -118,5 +118,3 @@ where
 
 derive JSONEncode FailReason, CounterExample
 derive JSONDecode FailReason, CounterExample
-
-Start = toString (toJSON {name="", message="", event=Failed (CounterExamples [{counterExample=JSONNull, failedAssertions=[ExpectedRelation (JSONInt 1) Eq (JSONInt 2)]}])})
