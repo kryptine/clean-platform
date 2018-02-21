@@ -18,6 +18,14 @@ from Text import class Text(concat), instance Text String
 
 instance zero Diff where zero = {status=Common, value="", children=[]}
 
+instance == DiffStatus
+where
+	== Common  Common  = True
+	== Changed Changed = True
+	== Added   Added   = True
+	== Removed Removed = True
+	== _       _       = False
+
 setStatus :: DiffStatus Diff -> Diff
 setStatus s d = {d & status=s, children=map (setStatus s) d.children}
 
@@ -25,6 +33,7 @@ generic gDiff a :: a a -> [Diff]
 gDiff{|Int|} x y = eqDiff x y
 gDiff{|Char|} x y = eqDiff x y
 gDiff{|Bool|} x y = eqDiff x y
+gDiff{|Real|} x y = eqDiff x y
 gDiff{|String|} x y = eqDiff x y
 gDiff{|UNIT|} UNIT UNIT = []
 gDiff{|PAIR|} fx fy (PAIR x1 y1) (PAIR x2 y2) = fx x1 x2 ++ fy y1 y2
@@ -77,7 +86,7 @@ newline ds =
 	print "\n"
 where
 	head = case ds of
-		Common  -> ""
+		Common  -> " "
 		Changed -> "\033[0;33m~"
 		Added   -> "\033[0;32m+"
 		Removed -> "\033[0;31m-"
