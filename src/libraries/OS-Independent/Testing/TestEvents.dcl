@@ -51,6 +51,7 @@ from Text.JSON import generic JSONEncode, generic JSONDecode, :: JSONNode, :: Ma
 	= FailedAssertions [FailedAssertion]    //* Assertions that caused the test to fail
 	| CounterExamples [CounterExample]      //* Example values for which the test failed
 	| FailedChildren [(String, FailReason)] //* Subtests failed; the tuples are of name and failing reason
+	| OtherFailReason String                //* Another reason
 
 /**
  * A counter-example to a test.
@@ -62,12 +63,16 @@ from Text.JSON import generic JSONEncode, generic JSONDecode, :: JSONNode, :: Ma
 
 /**
  * A failed test assertion.
+ * Specialised JSONEncode/JSONDecode instances are used for this type, which
+ * have to be adapted in case the type definition is changed!
  */
 :: FailedAssertion
 	= ExpectedRelation JSONNode Relation JSONNode //* A relation test failed
 
 /**
  * A relation between two values.
+ * Specialised JSONEncode/JSONDecode instances are used for this type, which
+ * have to be adapted in case the type definition is changed!
  */
 :: Relation
 	= Eq //* Equality
