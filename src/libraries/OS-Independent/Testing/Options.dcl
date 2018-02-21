@@ -18,7 +18,7 @@ from Testing.TestEvents import :: TestEvent
 
 :: MessageType = MT_Started | MT_Passed | MT_Failed | MT_Skipped | MT_Lost
 :: OutputFormat = OF_JSON | OF_HumanReadable
-:: Strategy = S_FailedFirst | S_Default
+:: Strategy = S_Default | S_FailedFirst
 
 :: Run =
 	{ name       :: !String
