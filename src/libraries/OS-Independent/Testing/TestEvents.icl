@@ -46,7 +46,6 @@ where
 	typeToString Passed     = "passed"
 	typeToString (Failed r) = "failed"
 	typeToString Skipped    = "skipped"
-	typeToString Lost       = "lost"
 
 JSONDecode{|EndEvent|} _ [JSONObject fields:rest] = (mbEvent, rest)
 where
@@ -59,23 +58,10 @@ where
 			"passed"  -> pure e
 			"failed"  -> (\r -> {e & event=Failed r}) <$> getField "failReason"
 			"skipped" -> pure {e & event=Skipped}
-			"lost"    -> pure {e & event=Lost}
 
 	getField :: String -> Maybe a | JSONDecode{|*|} a
 	getField field = lookup field fields >>= fromJSON
 JSONDecode{|EndEvent|} _ _ = (Nothing, [])
-
-JSONDecode{|EndEventType|} b [JSONString "failed" : rest] = case JSONDecode{|*|} b rest of
-	(Just r,rest) -> (Just (Failed r), rest)
-	_             -> (Nothing, rest)
-JSONDecode{|EndEventType|} _ [JSONString eTypeStr : rest] = (mbEType, rest)
-where
-    mbEType = case eTypeStr of
-        "passed"  -> Just Passed
-        "skipped" -> Just Skipped
-        "lost"    -> Just Lost
-        _         -> Nothing
-JSONDecode{|EndEventType|} _ nodes = (Nothing, nodes)
 
 JSONEncode{|FailedAssertion|} _ fa = [JSONArray arr]
 where
