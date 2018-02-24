@@ -1,6 +1,7 @@
 implementation module Text
 
 import StdOverloaded, StdString, StdArray, StdChar, StdInt, StdBool, StdClass, StdList
+import Data.List
 
 instance Text String
 	where
@@ -158,6 +159,90 @@ instance Text String
 	
 	dropChars :: !Int !String -> String	
 	dropChars n s = s % (n, n + size s - n - 1)
+
+instance Text [Char]
+where
+	textSize :: ![Char] -> Int
+	textSize cs = length cs
+
+	concat :: ![[Char]] -> [Char]
+	concat css = flatten css
+
+	split :: ![Char] ![Char] -> [[Char]]
+	split by cs = case indexOf by cs of
+		-1 -> [cs]
+		i  -> [take i cs:split by (drop (i + length by) cs)]
+
+	join :: ![Char] ![[Char]] -> [Char]
+	join g cs = concat (intersperse g cs)
+
+	indexOf :: ![Char] ![Char] -> Int
+	indexOf []  _  = -1
+	indexOf sub cs = index 0 sub cs
+	where
+		index :: !Int ![Char] ![Char] -> Int
+		index n sub cs
+		| startsWith sub cs = n
+		| otherwise         = case cs of
+			[]     -> -1
+			[_:cs] -> index (n+1) sub cs
+
+	lastIndexOf :: ![Char] ![Char] -> Int
+	lastIndexOf sub cs = case indexOf (reverse sub) (reverse cs) of
+		-1 -> -1
+		i  -> length cs - length sub - i
+
+	indexOfAfter :: !Int ![Char] ![Char] -> Int
+	indexOfAfter i sub cs = case indexOf sub (drop i cs) of
+		-1 -> -1
+		j  -> i + j
+
+	startsWith :: ![Char] ![Char] -> Bool
+	startsWith []     _      = True
+	startsWith [x:xs] [c:cs] = x == c && startsWith xs cs
+	startsWith _      _      = False
+
+	endsWith :: ![Char] ![Char] -> Bool
+	endsWith xs cs
+	| lcs < lxs = False
+	| otherwise = xs == drop (lcs - lxs) cs
+	where
+		lcs = length cs
+		lxs = length xs
+
+	subString :: !Int !Int ![Char] -> [Char]
+	subString start length cs = take length (drop start cs)
+
+	replaceSubString :: ![Char] ![Char] ![Char] -> [Char]
+	replaceSubString repl by cs = join by (split repl cs)
+
+	trim :: ![Char] -> [Char]
+	trim cs = ltrim (rtrim cs)
+
+	ltrim :: ![Char] -> [Char]
+	ltrim cs = dropWhile isSpace cs
+
+	rtrim :: ![Char] -> [Char]
+	rtrim cs = reverse (ltrim (reverse cs))
+
+	lpad :: ![Char] !Int !Char -> [Char]
+	lpad cs n p = repeatn (max 0 (n - length cs)) p ++ cs
+
+	rpad :: ![Char] !Int !Char -> [Char]
+	rpad cs n p = cs ++ repeatn (max 0 (n - length cs)) p
+
+	toLowerCase :: ![Char] -> [Char]
+	toLowerCase cs = map toLower cs
+
+	toUpperCase :: ![Char] -> [Char]
+	toUpperCase cs = map toUpper cs
+
+	upperCaseFirst :: ![Char] -> [Char]
+	upperCaseFirst []     = []
+	upperCaseFirst [c:cs] = [toUpper c:cs]
+
+	dropChars :: !Int ![Char] -> [Char]
+	dropChars n cs = drop n cs
 
 instance + String
 where
