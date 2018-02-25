@@ -75,12 +75,13 @@ from Text.JSON import generic JSONEncode, generic JSONDecode, :: JSONNode, :: Ma
  * have to be adapted in case the type definition is changed!
  */
 :: Relation
-	= Eq //* Equality
-	| Ne //* Negated equality
-	| Lt //* Lesser than
-	| Le //* Lesser than or equal to
-	| Gt //* Greater than
-	| Ge //* Greater than or equal to
+	= Eq            //* Equality
+	| Ne            //* Negated equality
+	| Lt            //* Lesser than
+	| Le            //* Lesser than or equal to
+	| Gt            //* Greater than
+	| Ge            //* Greater than or equal to
+	| Other !String //* Custom relation
 
 derive JSONEncode TestEvent, StartEvent, EndEvent, FailReason, CounterExample, FailedAssertion, Relation
 derive JSONDecode TestEvent, StartEvent, EndEvent, FailReason, CounterExample, FailedAssertion, Relation

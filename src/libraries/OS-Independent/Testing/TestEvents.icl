@@ -81,16 +81,18 @@ where
 			(Just r, []) -> Just (ExpectedRelation x r y)
 			_ -> Nothing
 		_ -> Nothing
+JSONDecode{|FailedAssertion|} _ _ = (Nothing, [])
 
 instance toString Relation
 where
 	toString r = case r of
-		Eq -> "=="
-		Ne -> "<>"
-		Lt -> "<"
-		Le -> "<="
-		Gt -> ">"
-		Ge -> ">="
+		Eq      -> "=="
+		Ne      -> "<>"
+		Lt      -> "<"
+		Le      -> "<="
+		Gt      -> ">"
+		Ge      -> ">="
+		Other f -> f
 
 JSONEncode{|Relation|} _ r = [JSONString (toString r)]
 
@@ -103,7 +105,8 @@ where
 		"<=" -> Just Le
 		">"  -> Just Gt
 		">=" -> Just Ge
-		_    -> Nothing
+		f    -> Just (Other f)
+JSONDecode{|Relation|} _ _ = (Nothing, [])
 
 derive JSONEncode FailReason, CounterExample
 derive JSONDecode FailReason, CounterExample
