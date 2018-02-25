@@ -1,6 +1,6 @@
 implementation module Testing.TestEvents
 
-import Text.JSON, Control.Monad, StdFunc, StdTuple, StdList, Data.Maybe, Control.Applicative
+import Text.JSON, Control.Monad, StdFunc, StdTuple, StdList, Data.Maybe, Control.Applicative, Data.Func
 import Data.Functor
 import Data.List
 
@@ -36,7 +36,7 @@ JSONEncode{|EndEvent|} _ endEvent = [JSONObject
 	, ("message", JSONString endEvent.message)
 	, ("event", JSONString (typeToString endEvent.event))
 	: case endEvent.event of
-		Failed r -> [("failReason", case JSONEncode{|*|} False r of
+		Failed (Just r) -> [("failReason", case JSONEncode{|*|} False r of
 			[JSONArray r] -> JSONArray r
 			r             -> JSONArray r)]
 		_        -> []
@@ -56,8 +56,9 @@ where
 		getField "message" >>= \message ->
 		let e = {name=name, message=message, event=Passed} in case event of
 			"passed"  -> pure e
-			"failed"  -> (\r -> {e & event=Failed r}) <$> getField "failReason"
+			"failed"  -> pure {e & event = Failed $ getField "failReason"}
 			"skipped" -> pure {e & event=Skipped}
+            _         -> Nothing
 
 	getField :: String -> Maybe a | JSONDecode{|*|} a
 	getField field = lookup field fields >>= fromJSON

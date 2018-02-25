@@ -40,9 +40,9 @@ from Text.JSON import generic JSONEncode, generic JSONDecode, :: JSONNode, :: Ma
  * Specialised JSONEncode/JSONDecode instances are used for this type, which
  * have to be adapted in case the type definition is changed!
  */
-:: EndEventType = Passed            //* The test passed
-                | Failed FailReason //* The test failed
-                | Skipped           //* The test was not executed, but should be executed and pass for future versions
+:: EndEventType = Passed                     //* The test passed
+                | Failed !(Maybe FailReason) //* The test failed
+                | Skipped                    //* The test was not executed, but should be executed and pass for future versions
 
 /**
  * Reasons for failing a test.
@@ -52,13 +52,12 @@ from Text.JSON import generic JSONEncode, generic JSONDecode, :: JSONNode, :: Ma
 	| CounterExamples [CounterExample]      //* Example values for which the test failed
 	| FailedChildren [(String, FailReason)] //* Subtests failed; the tuples are of name and failing reason
 	| Crashed                               //* The test crashed
-	| OtherFailReason String                //* Another reason
 
 /**
  * A counter-example to a test.
  */
 :: CounterExample =
-	{ counterExample   :: !JSONNode          //* The value that disproves the property
+	{ counterExample   :: ![JSONNode]        //* The values that disproves the property
 	, failedAssertions :: ![FailedAssertion] //* The assertions that failed in testing the property for that value
 	}
 
