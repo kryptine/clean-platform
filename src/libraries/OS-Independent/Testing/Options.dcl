@@ -11,6 +11,7 @@ from Testing.TestEvents import :: TestEvent
 	{ runs     :: ![Run]
 	, skip     :: ![String]
 	, help     :: !Bool
+	, list     :: !Bool
 	, output   :: !OutputFormat
 	, hide     :: ![MessageType]
 	, strategy :: !Strategy
