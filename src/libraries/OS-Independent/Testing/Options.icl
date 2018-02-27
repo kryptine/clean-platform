@@ -29,6 +29,7 @@ LONG_OPTIONS =:
 	[ ("-f", "--output-format")
 	, ("-h", "--help")
 	, ("-H", "--hide")
+	, ("-l", "--list")
 	, ("-n", "--name")
 	, ("-O", "--option")
 	, ("-r", "--run")
@@ -52,6 +53,7 @@ where
 	parseMT "skip"  = Ok MT_Skipped
 	parseMT "lost"  = Ok MT_Lost
 	parseMT s       = Error $ "Unknown message type '" +++ s +++ "'"
+parseTestOpts opts ["--list":args] = parseTestOpts {opts & list=True} args
 parseTestOpts opts ["--name":args] = case args of
 	[name:args] -> case opts.runs of
 		[]      -> Error "-n used before -r"
@@ -84,6 +86,7 @@ optionDoc :: [String]
 optionDoc =
 	[ "General options:"
 	, "  --help/-h               Show this help"
+	, "  --list/-l               List all test names provided by the program"
 	, "  --hide/-H TYPE          Comma-separated list of types of messages to hide (start,pass,fail,skip,lost)"
 	, "  --output-format/-f FMT  The output format (json,human)"
 	, "  --skip/-S NAME          Skip tests with this name"
