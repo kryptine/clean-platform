@@ -35,5 +35,3 @@ testOptionDescription = WithShortHelp $ Options
 		"NAME"
 		"Skip test NAME"
 	]
-
-Start = parseOptions testOptionDescription ["-h"] gDefault{|*|}
