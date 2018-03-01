@@ -2,7 +2,7 @@ implementation module Text.Parsers.ZParsers.ParsersKernel
 
 // ****************************************************************************************
 //	Clean Library Module
-//	Erik Zuurbier eri.zuurbier@tiscali.nl
+//	Erik Zuurbier erik.zuurbier@planet.nl
 //	Copyright 2005 HILT bv & Radboud University Nijmegen, The Netherlands
 // ****************************************************************************************
 
