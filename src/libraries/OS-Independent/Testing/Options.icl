@@ -12,7 +12,7 @@ gDefault{|Bool|} = False
 derive gDefault TestOptions, TestRun
 
 testOptionDescription :: Option TestOptions
-testOptionDescription = WithShortHelp $ Options
+testOptionDescription = WithHelp True $ Options
 	[ Shorthand "-l" "--list" $ Flag
 		"--list"
 		(\opts -> Ok {opts & list=True})

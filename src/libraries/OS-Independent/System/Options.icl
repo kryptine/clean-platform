@@ -54,9 +54,14 @@ where
 		[res:_] -> Just res
 	where
 		optps = [p \\ OptParser p <- map optParser ps]
-	optParser wh=:(WithHelp p) = OptParser \args opts -> case args of
-		["--help":args] -> Just (Error $ map toString $ helpText wh)
-		_               -> let (OptParser p`) = optParser p in p` args opts
+	optParser wh=:(WithHelp short p) = OptParser \args opts -> case args of
+		[h:args] | isMember h ["--help":if short ["-h"] []]
+			-> Just (Error $ map toString $ cleanupHelpText $ helpText wh)
+		_   -> let (OptParser p`) = optParser p in p` args opts
+	optParser (Biject fr to optp) = OptParser \args opts ->
+		fmap (appFst (to opts)) <$> p args (fr opts)
+	where (OptParser p) = optParser optp
+	optParser (AddHelpLines _ p) = optParser p
 
 	helpText (Flag a _ h) = [OptionHelpText [a] [] h []]
 	helpText (Option o _ n h) = [OptionHelpText [o] [n] h []]
@@ -67,10 +72,20 @@ where
 		| isMember long opts = OptionHelpText (opts ++ [short]) args help add
 		| otherwise          = oht
 	helpText (Options ps) = concatMap helpText ps
-	helpText (WithHelp p) =
-		[ OptionHelpText ["--help"] [] "Show this help text" []
+	helpText (WithHelp short p) =
+		[ OptionHelpText ["--help":if short ["-h"] []] [] "Show this help text" []
 		: helpText p
 		]
+	helpText (Biject _ _ p) = helpText p
+	helpText (AddHelpLines lines p) = case helpText p of
+		[OptionHelpText opts args help add:rest] -> [OptionHelpText opts args help (add ++ lines):rest]
+		[]                                       -> []
 
-WithShortHelp :: ((t opts) -> Option opts) | OptionDescription t
-WithShortHelp = Shorthand "-h" "--help" o WithHelp
+cleanupHelpText :: [HelpText] -> [HelpText]
+cleanupHelpText [oht=:OptionHelpText opts _ _ _:rest] = [oht:cleanupHelpText $ catMaybes $ map cleanup rest]
+where
+	cleanup :: HelpText -> Maybe HelpText
+	cleanup (OptionHelpText opts` args help add) = case [o \\ o <- opts` | not (isMember o opts)] of
+		[]   -> Nothing
+		opts -> Just $ OptionHelpText opts args help add
+cleanupHelpText [] = []

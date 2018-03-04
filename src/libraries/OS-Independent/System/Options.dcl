@@ -70,12 +70,12 @@ parseOptions :: (t opts) [String] opts -> MaybeError [String] opts | OptionDescr
 		//* A shorthand translates a short option into a long one: short version, long version, child parser
 	| E.t: Options [t opts] & OptionDescription t
 		//* A collections of option descriptions
-	| E.t: WithHelp (t opts) & OptionDescription t
-		//* Adds a --help option to display the help text
-
-/**
- * Like {{`WithHelp`}} combined with `{{Shorthand}} "-h" "--help"`
- */
-WithShortHelp :: ((t opts) -> Option opts) | OptionDescription t
+	| E.t: WithHelp Bool (t opts) & OptionDescription t
+		//* Adds a --help option to display the help text. If the Bool is True, -h is used as well
+	| E.a t: Biject (opts -> a) (opts a -> opts) (t a) & OptionDescription t
+		//* Lift an option description to another domain (useful for combining different descriptions together)
+	| E.t: AddHelpLines [String] (t opts) & OptionDescription t
 
 instance OptionDescription Option
+
+cleanupHelpText :: [HelpText] -> [HelpText]
