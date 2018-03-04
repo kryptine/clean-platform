@@ -29,6 +29,8 @@ from Data.Maybe import :: Maybe
 
 instance toString HelpText
 
+showHelpText :: [HelpText] -> String
+
 /**
  * Types instantiating this class can be combined to form new parsers.
  */

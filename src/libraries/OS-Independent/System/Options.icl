@@ -1,8 +1,10 @@
 implementation module System.Options
 
+import StdArray
 import StdClass
 from StdFunc import flip, o
 import StdList
+import StdOrdList
 import StdString
 
 import Data.Error
@@ -11,16 +13,27 @@ import Data.Functor
 import Data.List
 import Data.Maybe
 import Data.Tuple
-from Text import class Text(join), instance Text String
+from Text import class Text(join,rpad), instance Text String
 
 instance toString HelpText
 where
-	// TODO: make this prettier and dependent on the rest of the help text
 	toString (OptionHelpText opts args help additional) = join " "
 		[ join "/" opts
 		, join " " args
 		, join "\n  " [help:additional]
 		]
+
+showHelpText :: [HelpText] -> String
+showHelpText help = join "\n" $ map (\(OptionHelpText opts args help add) ->
+		rpad (join "/" opts +++ " " +++ join " " args) (maxLeftWidth + 2) ' '
+		+++ join "\n  " [help:add]) help
+where
+	maxLeftWidth = maxList $ map leftWidth help
+
+	leftWidth :: HelpText -> Int
+	leftWidth (OptionHelpText opts args _ _) =
+		sum (map size opts) + length opts - 1 + 1 +
+		sum (map size args) + length args - 1
 
 parseOptions :: (t opts) [String] opts -> MaybeError [String] opts | OptionDescription t
 parseOptions p args opts = parse (optParser p) args opts
@@ -56,7 +69,7 @@ where
 		optps = [p \\ OptParser p <- map optParser ps]
 	optParser wh=:(WithHelp short p) = OptParser \args opts -> case args of
 		[h:args] | isMember h ["--help":if short ["-h"] []]
-			-> Just (Error $ map toString $ cleanupHelpText $ helpText wh)
+			-> Just $ Error [showHelpText $ cleanupHelpText $ helpText wh]
 		_   -> let (OptParser p`) = optParser p in p` args opts
 	optParser (Biject fr to optp) = OptParser \args opts ->
 		fmap (appFst (to opts)) <$> p args (fr opts)
