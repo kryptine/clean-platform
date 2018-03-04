@@ -48,10 +48,10 @@ from Text.JSON import generic JSONEncode, generic JSONDecode, :: JSONNode, :: Ma
  * Reasons for failing a test.
  */
 :: FailReason
-	= FailedAssertions [FailedAssertion]    //* Assertions that caused the test to fail
-	| CounterExamples [CounterExample]      //* Example values for which the test failed
-	| FailedChildren [(String, FailReason)] //* Subtests failed; the tuples are of name and failing reason
-	| Crashed                               //* The test crashed
+	= FailedAssertions [FailedAssertion]          //* Assertions that caused the test to fail
+	| CounterExamples [CounterExample]            //* Example values for which the test failed
+	| FailedChildren [(String, Maybe FailReason)] //* Subtests failed; the tuples are of name and failing reason
+	| Crashed                                     //* The test crashed
 
 /**
  * A counter-example to a test.
