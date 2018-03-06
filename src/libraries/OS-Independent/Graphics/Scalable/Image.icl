@@ -3,10 +3,6 @@ implementation module Graphics.Scalable.Image
 from StdList      import repeat
 from Data.Maybe   import :: Maybe (..), instance Functor Maybe, maybeToList
 from Data.Functor import class Functor (..)
-import iTasks.UI.Editor
-import iTasks.Extensions.Platform
-import iTasks.UI.JS.Encoding
-import iTasks.Extensions.SVG.Internal.SVGEditor
 import Graphics.Scalable.Internal.Image`
 
 :: Image m :== Image` m
@@ -169,11 +165,3 @@ tag t image = Tag` t image
 tagWithSrc :: !*TagSource !(Image m) -> *(!(!Image m, !ImageTag), !*TagSource)
 tagWithSrc [(nut, t) : tsrc] image
   = ((Tag` t image, nut), tsrc)
-
-fromSVGEditor :: !(SVGEditor s v) -> Editor s | iTask s & JSEncode{|*|} s
-fromSVGEditor {SVGEditor | initView,renderImage,updView,updModel}
-  = fromSVGEditor` {SVGEditor` | initView`    = initView
-                               , renderImage` = renderImage
-                               , updView`     = updView
-                               , updModel`    = updModel
-                   }

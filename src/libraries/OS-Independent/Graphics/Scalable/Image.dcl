@@ -8,9 +8,9 @@ definition module Graphics.Scalable.Image
 
 import Math.Geometry
 import Graphics.Scalable.Types
-import Graphics.Scalable.Internal.Image`
+from Graphics.Scalable.Internal.Image` import :: Image`
 
-:: Image m
+:: Image m :== Image` m
 
 /** empty w h = image:
 		@image has no visible content, and a span box that is (maxSpan [zero,@w]) wide and (maxSpan [zero,@h]) high.
@@ -251,16 +251,3 @@ instance margin (!Span, !Span, !Span, !Span)
 
 tag        :: !*ImageTag !(Image m) -> Image m
 tagWithSrc :: !*TagSource !(Image m) -> *(!(!Image m, !ImageTag), !*TagSource)
-
-// SVGEditor let's you specify an editor as an interactive SVG image
-:: SVGEditor m v =
-	{ initView    :: m -> v                      // Initialize a 'view' value that holds temporary data while editing
-	, renderImage :: m v *TagSource -> Image v   // Render an interactive image that 
-	, updView     :: m v -> v                    // When the model is externally updated, the view needs to be updated too
-	, updModel    :: m v -> m                    // When the view is updated (using the image), the change needs to be merged back into the view
-	}
-
-fromSVGEditor :: !(SVGEditor s v) -> Editor s | iTask s & JSEncode{|*|} s
-
-from iTasks.UI.Editor import :: Editor
-import iTasks.UI.JS.Encoding
