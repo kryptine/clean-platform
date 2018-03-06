@@ -6,7 +6,6 @@ import StdString
 import StdChar
 
 import code from "ctty."
-import code from library "msvcrt.txt"
 
 :: *TTY :== Int
 
