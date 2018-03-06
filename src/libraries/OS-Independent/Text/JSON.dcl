@@ -86,7 +86,7 @@ jsonUnescape :: !String -> String
 jsonQuery :: !String !JSONNode -> Maybe a | JSONDecode{|*|} a
 
 /**
-* Generic encoding function. This function should not be used(
+* Generic encoding function. This function should not be used
 * directly but always through the toJSON function. It must be derived
 * for each type you want to encode in JSON format.
 */
