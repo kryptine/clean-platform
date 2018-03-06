@@ -1,7 +1,9 @@
 Clean System Files/[^.]*
 TTY
 sapl
-TTY.prj
 test
+*.exe
+*.prj
+*.prp
 *-sapl
 *-www
