@@ -10,9 +10,7 @@ definition module Text.JSON
 
 import StdGeneric
 from StdFile import class <<<
-from StdList import ++
-from StdList import flatten
-from StdList import map
+from StdList import ++, flatten, map
 from StdBool import not
 from StdOverloaded import class fromString, class toString, class ==(..)
 from StdString import instance == {#Char}
