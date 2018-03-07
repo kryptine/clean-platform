@@ -1,15 +1,17 @@
 CLEAN_HOME?=/opt/clean
 
-test: test.icl TTY.icl TTY.dcl Clean\ System\ Files/ctty.o
-	clm -dynamics -I $(CLEAN_HOME)/lib/Dynamics $(basename $<) -o $@
-
 ifeq ($(OS), Windows_NT)
-Clean\ System\ Files/ctty.o: tty_win.c
+DETECTED_OS=Windows
 else
-Clean\ System\ Files/ctty.o: tty_posix.c
+DETECTED_OS=POSIX
 endif
+
+test: test.icl TTY.icl TTY.dcl Clean\ System\ Files/ctty.o
+	clm -dynamics -I $(DETECTED_OS) -I $(CLEAN_HOME)/lib/Dynamics $(basename $<) -o $@
+
+Clean\ System\ Files/ctty.o: $(DETECTED_OS)/tty.c
 	mkdir -p Clean\ System\ Files
-	gcc -c $< -o "$@"
+	gcc -c "$<" -o "$@"
 
 clean:
-	$(RM) -r Clean\ System\ Files/* test
+	$(RM) -r $(DETECTED_OS)/Clean\ System\ Files/* Clean\ System\ Files/* test

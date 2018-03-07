@@ -10,7 +10,7 @@
 #include <termios.h>
 #include <sys/ioctl.h>
 
-#include "Clean.h"
+#include "../Clean.h"
 
 #ifdef DEBUG
 #define debug(s) {puts(s); fflush(stdout);}

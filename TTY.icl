@@ -4,6 +4,7 @@ import _SystemArray
 import StdClass
 import StdString
 import StdChar
+import Platform
 
 import code from "ctty."
 
