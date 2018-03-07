@@ -10,8 +10,6 @@ definition module Text.JSON
 
 import StdGeneric
 from StdFile import class <<<
-from StdList import ++, flatten, map
-from StdBool import not
 from StdOverloaded import class fromString, class toString, class ==(..)
 from StdString import instance == {#Char}
 from Data.List import !?
@@ -91,18 +89,23 @@ jsonQuery :: !String !JSONNode -> Maybe a | JSONDecode{|*|} a
 * for each type you want to encode in JSON format.
 */
 generic JSONEncode t :: !Bool !t -> [JSONNode]
-derive  JSONEncode Int, Real, Char, Bool, String, [], (,), (,,), (,,,), (,,,,), (,,,,,), (,,,,,,), (,,,,,,,), {}, {!}, Maybe, JSONNode
+derive  JSONEncode Int, Real, Char, Bool, String, UNIT, [], (,), (,,), (,,,), (,,,,), (,,,,,), (,,,,,,), (,,,,,,,), {}, {!}, Maybe, JSONNode,
+	EITHER, CONS of {gcd_name}, OBJECT
 
-JSONEncode{|UNIT|} _ (UNIT) = []
-JSONEncode{|PAIR|} fx fy _ (PAIR x y) = fx False x ++ fy False y
-JSONEncode{|EITHER|} fx fy _ (LEFT x) = fx False x
-JSONEncode{|EITHER|} fx fy _ (RIGHT y) = fy False y
-JSONEncode{|OBJECT|} fx _ (OBJECT x) = fx False x
-JSONEncode{|CONS of {gcd_name}|} fx _ (CONS x)
-  = [JSONArray [JSONString gcd_name : fx False x]]
 JSONEncode{|RECORD of {grd_fields}|} fx _ (RECORD x)
-	= [JSONObject [(name, o) \\ o <- fx False x & name <- grd_fields | not (o=:JSONNull)]]
+  = [JSONObject [(name, o) \\ o <- fx False x & name <- grd_fields | isNotNull o]]
+  where
+  isNotNull :: !JSONNode -> Bool
+  isNotNull JSONNull = False
+  isNotNull _ = True
+
 JSONEncode{|FIELD|} fx _ (FIELD x) = fx True x
+
+JSONEncode{|PAIR|} fx fy _ (PAIR x y) = fx False x ++ fy False y
+where
+	(++) infixr 5::![.a] !u:[.a] -> u:[.a]
+	(++) [hd:tl]	list	= [hd:tl ++ list]
+	(++) nil 		list	= list
 
 /**
 * Generic decoding function. This function should not be used
@@ -110,23 +113,8 @@ JSONEncode{|FIELD|} fx _ (FIELD x) = fx True x
 * for each type you want to parse from JSON format.
 */
 generic JSONDecode t :: !Bool ![JSONNode] -> (!Maybe t,![JSONNode])
-derive  JSONDecode Int, Real, Char, Bool, String, [], (,), (,,), (,,,), (,,,,), (,,,,,), (,,,,,,), (,,,,,,,), {}, {!}, Maybe, JSONNode
+derive  JSONDecode Int, Real, Char, Bool, String, UNIT, EITHER, CONS of {gcd_name}, OBJECT, [], (,), (,,), (,,,), (,,,,), (,,,,,), (,,,,,,), (,,,,,,,), {}, {!}, Maybe, JSONNode
 
-JSONDecode{|UNIT|} _ l					= (Just UNIT, l)
-JSONDecode{|EITHER|} fx fy _ l = case fx False l of
-	(Just x, xs)				= (Just (LEFT x),xs)
-	(Nothing, xs)				= case fy False l of
-		(Just y, ys)			= (Just (RIGHT y),ys)
-		(Nothing, ys)			= (Nothing, l)
-JSONDecode{|OBJECT|} fx _ l = case fx False l of
-	(Just x, xs)	= (Just (OBJECT x),xs)
-	_				= (Nothing, l)
-JSONDecode{|CONS of {gcd_name}|} fx _ l=:[JSONArray [JSONString name:fields] :xs]
-	| name == gcd_name				= case fx False fields of
-		(Just x, _)					= (Just (CONS x), xs)
-		_							= (Nothing, l)
-	| otherwise						= (Nothing, l)		
-JSONDecode{|CONS|} fx _ l = (Nothing, l)
 JSONDecode{|PAIR|} fx fy _ l = d1 fy (fx False l) l
   where
   d1 :: !(Bool [JSONNode] -> (!Maybe b, ![JSONNode])) !(!Maybe a, ![JSONNode]) ![JSONNode]
@@ -137,6 +125,7 @@ JSONDecode{|PAIR|} fx fy _ l = d1 fy (fx False l) l
   d2 :: !a !(!Maybe b, ![JSONNode]) ![JSONNode] -> (!Maybe (PAIR a b), ![JSONNode])
   d2 x (Just y, ys) l = (Just (PAIR x y), ys)
   d2 x (Nothing, _) l = (Nothing, l)
+
 JSONDecode{|RECORD|} fx _ l=:[obj=:JSONObject fields : xs] = d (fx False [obj]) xs l
   where
   d :: !(Maybe a, b) ![JSONNode] ![JSONNode] -> (!Maybe (RECORD a), ![JSONNode])
@@ -148,6 +137,7 @@ JSONDecode{|RECORD|} fx _ l=:[obj=:JSONArray fields : xs] = d (fx False [obj]) x
   d (Just x, _)  xs l = (Just (RECORD x),xs)
   d (Nothing, _) xs l = (Nothing, l)
 JSONDecode{|RECORD|} fx _ l = (Nothing,l)
+
 JSONDecode{|FIELD of {gfd_name}|} fx _ l =:[JSONObject fields]
   #! field = findField gfd_name fields
   = case fx True field of
