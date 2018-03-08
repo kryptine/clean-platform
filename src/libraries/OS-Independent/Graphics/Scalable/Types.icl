@@ -20,7 +20,7 @@ instance <  FontDef    where  <  fd1 fd2 =  fd1.fontfamily  < fd2.fontfamily
                                          || fd1.fontvariant < fd2.fontvariant
                                          || fd1.fontweight  < fd2.fontweight
 derive gEq FontDef
-import GenPrint
+import Data.Generics.GenPrint
 derive gPrint FontDef
 instance toString FontDef where toString font = printToString font
 
