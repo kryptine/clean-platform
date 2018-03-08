@@ -84,6 +84,7 @@ import qualified Data.Integer.ToString
 import qualified Data.List
 import qualified Data.OrdList
 import qualified Data.Map
+import qualified Data.MapCollection
 import qualified Data.Matrix
 import qualified Data.Maybe
 import qualified Data.Monoid
@@ -102,8 +103,10 @@ import qualified Data.Word8
 //import qualified Database.SQL.RelationalMapping
 import qualified Debug.Performance
 import qualified Graphics.Layout
-import qualified Graphics.Scalable
-import qualified Graphics.Scalable.Internal
+import qualified Graphics.Scalable.Image
+import qualified Graphics.Scalable.Types
+import qualified Graphics.Scalable.Internal.Image`
+import qualified Graphics.Scalable.Internal.Types
 import qualified Internet.HTTP
 import qualified Internet.HTTP.CGI
 import qualified Math.Geometry
