@@ -402,8 +402,9 @@ closeProcessIO :: !ProcessIO !*World -> (!MaybeOSError (), !*World)
 closeProcessIO {stdIn = WritePipe fdStdIn, stdOut = ReadPipe fdStdOut, stdErr = ReadPipe fdStdErr} world
     # (res, world) = close fdStdIn world
     | res == -1    = getLastOSError world
-    // if 'runProcessPty' is used, the same file descriptor is used for stdIn & stdOut
-    # (res, world) = if (fdStdIn == fdStdOut) (0, world) (close fdStdOut world)
+    // if 'runProcessPty' is used, the same file descriptor is used for stdIn, stdOut & stdErr
+    | fdStdIn == fdStdOut = (Ok (), world)
+    # (res, world) = close fdStdOut world
     | res == -1    = getLastOSError world
     # (res, world) = close fdStdErr world
     | res == -1    = getLastOSError world
