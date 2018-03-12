@@ -10,8 +10,6 @@ definition module Text.JSON
 
 import StdGeneric
 from StdFile import class <<<
-from StdList import ++, flatten, map
-from StdBool import not
 from StdOverloaded import class fromString, class toString, class ==(..)
 from StdString import instance == {#Char}
 from Data.List import !?
@@ -95,13 +93,21 @@ derive  JSONEncode Int, Real, Char, Bool, String, [], (,), (,,), (,,,), (,,,,), 
 
 JSONEncode{|UNIT|} _ (UNIT) = []
 JSONEncode{|PAIR|} fx fy _ (PAIR x y) = fx False x ++ fy False y
+where
+	(++) infixr 5::![.a] !u:[.a] -> u:[.a]
+	(++) [hd:tl]	list	= [hd:tl ++ list]
+	(++) nil 		list	= list
 JSONEncode{|EITHER|} fx fy _ (LEFT x) = fx False x
 JSONEncode{|EITHER|} fx fy _ (RIGHT y) = fy False y
 JSONEncode{|OBJECT|} fx _ (OBJECT x) = fx False x
 JSONEncode{|CONS of {gcd_name}|} fx _ (CONS x)
   = [JSONArray [JSONString gcd_name : fx False x]]
 JSONEncode{|RECORD of {grd_fields}|} fx _ (RECORD x)
-	= [JSONObject [(name, o) \\ o <- fx False x & name <- grd_fields | not (o=:JSONNull)]]
+	= [JSONObject [(name, o) \\ o <- fx False x & name <- grd_fields | isNotNull o]]
+where
+	isNotNull :: !JSONNode -> Bool
+	isNotNull JSONNull = False
+	isNotNull _ = True
 JSONEncode{|FIELD|} fx _ (FIELD x) = fx True x
 
 /**

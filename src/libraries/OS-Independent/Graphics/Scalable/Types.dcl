@@ -4,7 +4,7 @@ from Data.Maybe import :: Maybe (..)
 from Data.Set   import :: Set
 from Text.HTML  import :: SVGColor
 from StdOverloaded import class zero (..), class + (..), class -  (..), class ~ (..), class sign (..), 
-                          class abs  (..), class < (..), class == (..), class toReal (..), class / (..), class * (..)
+                          class abs  (..), class < (..), class == (..), class toReal (..), class / (..), class * (..), class toString (..)
 from Graphics.Scalable.Internal.Types import
   :: Span, class *. (..), class /. (..), instance zero Span, instance + Span, instance -  Span, instance * Span,  instance / Span,
                                          instance abs  Span, instance ~ Span, instance *. Span, instance *. Real, instance *. Int,
