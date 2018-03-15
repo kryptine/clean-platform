@@ -20,8 +20,9 @@ testOptionDescription = WithHelp True $ Options
 	, Shorthand "-O" "--option" $ Option
 		"--option"
 		(\opt opts -> case opts.runs of
-			[]     -> Error ["--option used before --run"]
-			[r:rs] -> Ok {opts & runs=[{r & options=r.options ++ [opt]}:rs]})
+			[] -> Error ["--option used before --run"]
+			rs -> let r = last rs in
+				Ok {opts & runs=init rs ++ [{r & options=r.options ++ [opt]}]})
 		"OPT"
 		"Add OPT to the options of the previously added test"
 	, Shorthand "-r" "--run"  $ Option
