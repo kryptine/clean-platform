@@ -1,7 +1,7 @@
 module _Tests.Data.Set
 
 /**
- * Many tests are taken from Peter Achten's StdSetTest in
+ * Some tests are taken from Peter Achten's StdSetTest in
  * https://gitlab.science.ru.nl/peter88/FP_Example_Solutions/.
  */
 
@@ -12,6 +12,7 @@ import StdOrdList
 import StdString
 import StdTuple
 
+from Data.Func import on, `on`
 import Data.Generics.GenLexOrd
 from Data.Set import :: Set, instance == (Set a)
 import qualified Data.Set as S
@@ -41,6 +42,8 @@ Start w = exposeProperties [Quiet, Tests 500000]
 	, EP minView
 	, EP maxView
 	, EP union
+	, EP difference
+	, EP intersection
 	]
 	w
 
@@ -123,6 +126,35 @@ where xs` = 'S'.fromList xs
 
 union :: [Elem] [Elem] -> Property
 union xs ys =
-	all (flip 'S'.member u) (xs ++ ys) /\
-	all (\x -> isMember x xs || isMember x ys) ('S'.toList u)
+	check contains u (xs ++ ys) /\ // No missing elements
+	check all_in u (xs ++ ys) /\   // No junk
+	no_duplicates u                // Data structure integrity
 where u = 'S'.union ('S'.fromList xs) ('S'.fromList ys)
+
+difference :: [Elem] [Elem] -> Property
+difference xs ys =
+	check does_not_contain d ys /\                           // No remaining elements
+	check contains d [x \\ x <- xs | not (isMember x ys)] /\ // All good elements
+	no_duplicates d                                          // Data structure integrity
+where d = 'S'.difference ('S'.fromList xs) ('S'.fromList ys)
+
+intersection :: [Elem] [Elem] -> Property
+intersection xs ys =
+	check does_not_contain i [x \\ x <- xs | not (isMember x ys)] /\ // No junk
+	check does_not_contain i [y \\ y <- ys | not (isMember y xs)] /\ // No junk
+	check contains i [x \\ x <- xs | isMember x ys] /\               // All good elements
+	no_duplicates i                                                  // Data structure integrity
+where i = 'S'.intersection ('S'.fromList xs) ('S'.fromList ys)
+
+// Helpers
+does_not_contain :: ('S'.Set Elem) [Elem] -> Bool
+does_not_contain d ys = all (flip 'S'.notMember d) ys
+
+contains :: ('S'.Set Elem) [Elem] -> Bool
+contains d xs = all (flip 'S'.member d) xs
+
+all_in :: ('S'.Set Elem) [Elem] -> Bool
+all_in s xs = all (flip isMember xs) ('S'.toList s)
+
+no_duplicates :: ('S'.Set Elem) -> Property
+no_duplicates s = xs =.= removeDup xs where xs = 'S'.toList s

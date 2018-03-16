@@ -14,7 +14,6 @@ CLMLIBS:=\
 	-IL StdEnv\
 	-IL Dynamics\
 	-IL TCPIP\
-	-I ../../../gast/Libraries\
 	-IL Gast
 
 BINARIES:=test gentest
