@@ -103,6 +103,28 @@ findWithDefault def k (Bin _ kx x l r) = if (k < kx)
                                               (findWithDefault def k r)
                                               x)
 
+// | /O(n)/. The expression @('findKey' a map)@ returns (Just k) if (k,a) is a member of (toList map).
+// It returns Nothing in any other case.
+findKey :: !a !(Map k a) -> Maybe k | == a
+findKey a m = findKeyBy (==) a m
+
+// | /O(n)/. The expression @('findKeyBy' compare a map)@ returns (Just k) if (k,a`) is a member of
+// (toList map) such that (compare a` a) is True.
+// It returns Nothing in any other case.
+findKeyBy :: !(a a -> Bool) !a !(Map k a) -> Maybe k
+findKeyBy compare a m = listToMaybe [k` \\ (k`,v) <- toList m | compare v a]
+
+// | /O(n)/. The expression @('findKeyWithDefault' k a map)@ returns k` if (k`,@a@) is a member of (toList @map@).
+// It returns @k@ in any other case.
+findKeyWithDefault :: !k !a !(Map k a) -> k | == a
+findKeyWithDefault k a m = findKeyWithDefaultBy (==) k a m
+
+// | /O(n)/. The expression @('findKeyWithDefaultBy' compare k a map)@ returns k` if (k`,a`) is a member of 
+// (toList @map@) such that (@compare@ a` @a@) is True.
+// It returns @k@ in any other case.
+findKeyWithDefaultBy :: !(a a -> Bool) !k !a !(Map k a) -> k
+findKeyWithDefaultBy compare k a m = fromMaybe k (findKeyBy compare a m)
+
 // | /O(log n)/. Find largest key smaller than the given one and return the
 // corresponding (key, value) pair.
 //

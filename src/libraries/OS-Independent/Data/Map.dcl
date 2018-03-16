@@ -200,6 +200,44 @@ find :: !k !(Map k a) -> a | < k
  */
 findWithDefault :: !a !k !(Map k a) -> a | < k
 
+
+/**
+ * Find the (Just key) of an element in a Map.
+ * When the element does not exist, return Nothing.
+ *
+ * @param The element you're looking for.
+ */
+findKey :: !a !(Map k a) -> Maybe k | == a
+
+/**
+ * Find the (Just key) of an element in a Map, using the function to compare elements.
+ * When the element does not exist, return Nothing.
+ *
+ * @param The comparison function for comparing values in the Map with the second parameter.
+ * @param The element you're looking for.
+ */
+findKeyBy :: !(a a -> Bool) !a !(Map k a) -> Maybe k
+
+/**
+ * Find the key of an element in a Map.
+ * If the element is not a member, return the first parameter.
+ *
+ * @param The result if the second parameter does not occur as a value in the Map.
+ * @param The element you're looking for.
+ */
+findKeyWithDefault :: !k !a !(Map k a) -> k | == a
+
+/**
+ * Find the key of an element in a Map, using the function to compare elements.
+ * If the element is not a member, return the second parameter.
+ *
+ * @param The comparison function for comparing values in the Map with the third parameter.
+ * @param The result if the third parameter does not occur as a value in the Map.
+ * @param The element you're looking for.
+ */
+findKeyWithDefaultBy :: !(a a -> Bool) !k !a !(Map k a) -> k
+
+
 alter :: !((Maybe a) -> Maybe a) !k !(Map k a) -> Map k a | < k
 
 /**
