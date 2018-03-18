@@ -6,8 +6,9 @@ module _Tests.Data.Set
  */
 
 import StdBool
-from StdFunc import flip
+from StdFunc import const, flip, o
 import StdList
+import qualified StdList
 import StdOrdList
 import StdString
 import StdTuple
@@ -22,6 +23,8 @@ import Gast.CommandLine
 
 derive genShow Maybe, Set
 derive JSONEncode Set
+
+derive bimap []
 
 Start w = exposeProperties [Quiet, Tests 500000]
 	[ EP member
@@ -44,12 +47,26 @@ Start w = exposeProperties [Quiet, Tests 500000]
 	, EP union
 	, EP difference
 	, EP intersection
+	, EP filter
+	, EP partition
+	, EP split
+	, EP splitMember
 	]
 	w
 
 :: Elem :== Char
 
-derive bimap []
+:: Predicate a
+	= ConstTrue
+	| IsMember [a]
+
+pred :: (Predicate a) -> a -> Bool | Eq a
+pred ConstTrue     = const True
+pred (IsMember cs) = flip isMember cs
+
+derive ggen Predicate
+derive genShow Predicate
+derive JSONEncode Predicate
 
 member :: Elem [Elem] -> Property
 member x xs = 'S'.member x ('S'.fromList xs) <==> isMember x xs
@@ -145,6 +162,52 @@ intersection xs ys =
 	check contains i [x \\ x <- xs | isMember x ys] /\               // All good elements
 	no_duplicates i                                                  // Data structure integrity
 where i = 'S'.intersection ('S'.fromList xs) ('S'.fromList ys)
+
+filter :: (Predicate Elem) [Elem] -> Property
+filter p xs = sort ('S'.toList ('S'.filter (pred p) ('S'.fromList xs))) =.= sort (removeDup ('StdList'.filter (pred p) xs))
+
+partition :: (Predicate Elem) [Elem] -> Property
+partition p xs =
+	all p` true` /\               // Right split
+	all (not o p`) false` /\
+	all (flip isMember xs) xs` /\ // No junk
+	all (flip isMember xs`) xs /\ // All members used
+	no_duplicates true /\         // Data structure integrity
+	no_duplicates false
+where
+	p` = pred p
+	(true,false) = 'S'.partition p` ('S'.fromList xs)
+	(true`,false`) = ('S'.toList true, 'S'.toList false)
+	xs` = true` ++ false`
+
+split :: Elem [Elem] -> Property
+split p xs =
+	all ((>) p) lt` /\                // Right split
+	all ((<) p) gt` /\
+	all (flip isMember xsminp) xs` /\ // No junk
+	all (flip isMember xs`) xsminp /\ // All members used
+	no_duplicates lt /\               // Data structure integrity
+	no_duplicates gt
+where
+	xsminp = 'StdList'.filter ((<>) p) xs
+	(lt,gt) = 'S'.split p ('S'.fromList xs)
+	(lt`,gt`) = ('S'.toList lt, 'S'.toList gt)
+	xs` = lt` ++ gt`
+
+splitMember :: Elem [Elem] -> Property
+splitMember p xs =
+	all ((>) p) lt` /\                // Right split
+	all ((<) p) gt` /\
+	all (flip isMember xsminp) xs` /\ // No junk
+	all (flip isMember xs`) xsminp /\ // All members used
+	bool =.= isMember p xs /\         // Boolean is correct
+	no_duplicates lt /\               // Data structure integrity
+	no_duplicates gt
+where
+	xsminp = 'StdList'.filter ((<>) p) xs
+	(lt,bool,gt) = 'S'.splitMember p ('S'.fromList xs)
+	(lt`,gt`) = ('S'.toList lt, 'S'.toList gt)
+	xs` = lt` ++ gt`
 
 // Helpers
 does_not_contain :: ('S'.Set Elem) [Elem] -> Bool
