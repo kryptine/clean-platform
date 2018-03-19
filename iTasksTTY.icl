@@ -68,10 +68,10 @@ where
 
 liftWorld f = \iw=:{world}->{iw & world=f world}
 
-syncSerialChannel :: TTYSettings (b -> String) (String -> a) (Shared ([a],[b],Bool)) -> Task () | iTask a & iTask b
-syncSerialChannel opts enc dec rw = Task eval
+syncSerialChannel :: TTYSettings (b -> String) (String -> (Either String [a], String)) (Shared ([a],[b],Bool)) -> Task () | iTask a & iTask b
+syncSerialChannel opts enc dec rw = withShared "" \sh->Task $ eval sh
 	where
-		eval event evalOpts tree=:(TCInit taskId ts) iworld
+		eval sh event evalOpts tree=:(TCInit taskId ts) iworld
 		# (mtty, iworld) = getTTYResource opts.devicePath iworld
 		= case mtty of
 			Just (tty, _) = (ExceptionResult (exception "This tty was already open"), iworld)
@@ -81,15 +81,15 @@ syncSerialChannel opts enc dec rw = Task eval
 				= (ExceptionResult (exception err), {iworld & world=world})
 				(True, tty, world)
 				# iworld = {iworld & world=world}
-				= case addBackgroundTask (BackgroundTask (serialDeviceBackgroundTask opts.devicePath enc dec rw)) iworld of
+				= case addBackgroundTask (BackgroundTask (serialDeviceBackgroundTask opts.devicePath enc dec sh rw)) iworld of
 					(Error e, iworld) = (ExceptionResult (exception "background task couldn't be added"), iworld)
 					(Ok bgid, iworld) = (ValueResult NoValue {TaskEvalInfo|lastEvent=ts,removedTasks=[],refreshSensitive=True} rep (TCBasic taskId ts JSONNull False),
 						{iworld & resources=[TTYd (opts.devicePath, bgid, tty):iworld.resources]})
 
-		eval _ _ tree=:(TCBasic _ ts _ _) iworld
+		eval _ _ _ tree=:(TCBasic _ ts _ _) iworld
 		= (ValueResult NoValue {TaskEvalInfo|lastEvent=ts,removedTasks=[],refreshSensitive=False} rep tree, iworld)
 
-		eval event evalOpts tree=:(TCDestroy _) iworld=:{IWorld|resources,world}
+		eval _ event evalOpts tree=:(TCDestroy _) iworld=:{IWorld|resources,world}
 		# (mtty, iworld) = getTTYResource opts.devicePath iworld
 		= case mtty of
 			Nothing = (ExceptionResult (exception "This tty was already closed"), iworld)
@@ -102,7 +102,6 @@ syncSerialChannel opts enc dec rw = Task eval
 
 		rep = ReplaceUI $ stringDisplay $ "Serial client " <+++ opts.devicePath
 
-import StdDebug, StdMisc
 /*
  * The actual backgroundtask synchronizing the device
  *
@@ -113,8 +112,8 @@ import StdDebug, StdMisc
  * @param IWorld
  * @return Maybe an exception
  */
-serialDeviceBackgroundTask :: String (b -> String) (String -> a) (Shared ([a],[b],Bool)) !*IWorld -> (MaybeError TaskException (), *IWorld) | iTask a & iTask b
-serialDeviceBackgroundTask dp enc dec rw iworld
+serialDeviceBackgroundTask :: String (b -> String) (String -> (Either String [a], String)) (Shared String) (Shared ([a],[b],Bool)) !*IWorld -> (MaybeError TaskException (), *IWorld) | iTask a & iTask b
+serialDeviceBackgroundTask dp enc dec accShare rw iworld
 	= case read rw iworld of
 		(Error e, iworld) = (Error $ exception "share couldn't be read", iworld)
 
@@ -122,16 +121,29 @@ serialDeviceBackgroundTask dp enc dec rw iworld
 		(Ok (_,_,True), iworld) = (Ok (), iworld)
 
 		(Ok (r,s,ss), iworld)
+		# (merr, iworld) = read accShare iworld
+		| isError merr = (liftError merr, iworld)
+		# (Ok acc) = merr
 		# (mtty, iworld) = getTTYResource dp iworld
 		= case mtty of
 			Nothing = (Error (exception "The tty device is gone"), iworld)
 			Just (tty, bgid)
 			# tty = foldr TTYwrite tty $ reverse $ map enc s
-			# (ml, tty) = case TTYavailable tty of
-				(False, tty) = ([], tty)
-				(_, tty) = appFst (pure o dec) $ TTYreadline tty
+			# (newdata, tty) = readWhileAvailable tty
 			# iworld = {iworld & resources=[TTYd (dp, bgid, tty):iworld.resources]}
-			| isEmpty ml && isEmpty s = (Ok (), iworld)
-			# (merr, iworld) = notify rw iworld
-			| isError merr = (Error $ fromError merr, iworld)
-			= write (r++ml,[],False) rw iworld
+			= case dec (acc +++ newdata) of
+				(Left err, newacc) = (Error (exception "Error while parsing"), iworld)
+				(Right msgs, newacc)
+					# (merr, iworld) = if (msgs =: [])
+						(Ok (), iworld)
+						(write (r++msgs, [], False) rw iworld)
+					| isError merr = (liftError merr, iworld)
+					= write newacc accShare iworld
+
+readWhileAvailable :: !*TTY -> (String, !*TTY)
+readWhileAvailable tty
+# (available, tty) = TTYavailable tty
+| not available = ("", tty)
+# (c, tty) = TTYread tty
+# (cs, tty) = readWhileAvailable tty
+= (toString (toChar c) +++ cs, tty)

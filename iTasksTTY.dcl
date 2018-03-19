@@ -9,4 +9,4 @@ getTTYDevices :: !*env -> *(![String], !*env)
 
 enterTTYSettings :: Task TTYSettings
 
-syncSerialChannel :: TTYSettings (b -> String) (String -> a) (Shared ([a],[b],Bool)) -> Task () | iTask a & iTask b
+syncSerialChannel :: TTYSettings (b -> String) (String -> (Either String [a], String)) (Shared ([a],[b],Bool)) -> Task () | iTask a & iTask b
