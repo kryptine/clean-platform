@@ -11,7 +11,7 @@ import Data.List
 import Data.Generics.GenEq
 from Data.Set import :: Set, instance == (Set a), instance < (Set a), fold, fromList, toList, toAscList
 from Data.Map import :: Map, findKeyWith
-from Data.Maybe import :: Maybe (..), fromJust, maybeToList, instance Functor Maybe, instance == Maybe
+from Data.Maybe import :: Maybe (..), fromJust, maybeToList, instance Functor Maybe, instance == (Maybe a)
 import Data.Error
 from Data.Functor        import class Functor (..)
 from Control.Applicative import class Applicative (..)
