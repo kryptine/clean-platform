@@ -1,4 +1,4 @@
-definition module System.Terminal.VT100
+definition module Text.Terminal.VT100
 
 from StdOverloaded import class zero
 from Text.HTML import :: HtmlTag

@@ -1,4 +1,4 @@
-implementation module System.Terminal.VT100
+implementation module Text.Terminal.VT100
 
 from StdFunc import o, flip
 from Data.Func import $
