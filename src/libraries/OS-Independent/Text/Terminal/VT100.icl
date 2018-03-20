@@ -1,5 +1,6 @@
 implementation module Text.Terminal.VT100
 
+import _SystemArray
 from StdFunc import o, flip
 from Data.Func import $
 from Text import class Text(split,join,concat), instance Text String
@@ -44,15 +45,12 @@ instance zero VT100Settings where
 			]
 		}
 
-import _SystemArray
-
 :: Cell :== (Map String String, Char)
 :: *Screen :== *{*{Cell}}
 
 vt100render :: VT100Settings -> (String -> HtmlTag)
 vt100render s = TtTag [] o render o (\c->rvt {createArray (s.cols+1) ('DM'.newMap, ' ')\\_<-[0..s.rows+1]} 0 0 'DM'.newMap c) o fromString
 where
-	//Thanks to camil
 	shift :: !*{*{Cell}} -> *{*{Cell}}
 	shift arr = loop (s.rows-1) arr $ createArray (s.cols+1) ('DM'.newMap, ' ')
 	where

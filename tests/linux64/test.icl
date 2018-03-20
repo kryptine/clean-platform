@@ -123,6 +123,7 @@ import qualified System.OS
 import qualified System.OSError
 import qualified System.Platform
 import qualified System.Process
+import qualified System.Terminal.VT100
 import qualified System.TTS
 import qualified System.Time
 import qualified System._FilePath
