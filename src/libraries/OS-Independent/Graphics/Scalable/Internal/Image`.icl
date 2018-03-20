@@ -10,7 +10,7 @@ from StdTuple import fst, snd
 import Data.List
 import Data.Generics.GenEq
 from Data.Set import :: Set, instance == (Set a), instance < (Set a), fold, fromList, toList, toAscList
-from Data.Map import :: Map, findKeyBy
+from Data.Map import :: Map, findKeyWith
 from Data.Maybe import :: Maybe (..), fromJust, maybeToList, instance Functor Maybe, instance == Maybe
 import Data.Error
 from Data.Functor        import class Functor (..)
@@ -670,7 +670,7 @@ where
 attr` (MaskAttr` mask) image font_spans text_spans imgTables=:{ImgTables | imgUniqIds = no}
   #! (img,imgTables) = toImg image font_spans text_spans {ImgTables | imgTables & imgUniqIds = no-1}
   #! (m`, imgTables=:{ImgTables | imgMasks = curMasks, imgSpans = curSpans}) = toImg mask font_spans text_spans imgTables
-  #! (mask_key,masks) = case findKeyBy equivImg m` curMasks of
+  #! (mask_key,masks) = case findKeyWith (equivImg m`) curMasks of
                            Just k  = (k, curMasks)                                                  // similar mask already present, so use it's identification
                            nothing = (m`.Img.uniqId, 'DM'.put m`.Img.uniqId m` curMasks)            // similar mask not yet present, so add it to mask collection
   = ( mkTransformImg no img (MaskImg mask_key)                                                      // this *must* be the id of the mask image, because for that an svg-definition is generated
