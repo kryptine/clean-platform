@@ -80,4 +80,11 @@ parseOptions :: (t opts) [String] opts -> MaybeError [String] opts | OptionDescr
 
 instance OptionDescription Option
 
+/**
+ * Certain {{`Option`}} descriptors can override 'lower' option descriptors,
+ * which can lead to incorrect information in {{`HelpText`}}s (for instance,
+ * multiple options can have the same {{`Shorthand`}} if it is overridden. This
+ * function removes these inconsistencies that can arise from combining
+ * option descriptors together.
+ */
 cleanupHelpText :: [HelpText] -> [HelpText]
