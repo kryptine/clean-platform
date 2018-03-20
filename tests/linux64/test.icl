@@ -123,7 +123,6 @@ import qualified System.OS
 import qualified System.OSError
 import qualified System.Platform
 import qualified System.Process
-import qualified System.Terminal.VT100
 import qualified System.TTS
 import qualified System.Time
 import qualified System._FilePath
@@ -140,8 +139,8 @@ import qualified Text.Encodings.MIME
 import qualified Text.Encodings.UrlEncoding
 import qualified Text.HTML
 import qualified Text.JSON
-import qualified Text.Language
 import qualified Text.LaTeX
+import qualified Text.Language
 import qualified Text.PPrint
 import qualified Text.Parsers.CParsers.ParserCombinators
 import qualified Text.Parsers.Simple.Chars
@@ -154,6 +153,7 @@ import qualified Text.Parsers.ZParsers.ParsersDerived
 import qualified Text.Parsers.ZParsers.ParsersKernel
 import qualified Text.Show
 import qualified Text.StringAppender
+import qualified Text.Terminal.VT100
 import qualified Text.URI
 import qualified Text.Unicode
 import qualified Text.Unicode.Encodings.JS
