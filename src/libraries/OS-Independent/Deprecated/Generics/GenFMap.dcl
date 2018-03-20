@@ -1,3 +1,3 @@
 definition module GenFMap
 
-import Data.Generics.GenFMap
+import Data.Generics.FMap

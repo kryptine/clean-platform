@@ -8,7 +8,7 @@ import StdOrdList
 import StdTuple
 
 import Data.Functor
-import Data.Generics.GenEq
+import Data.Generics.Eq
 import Data.Maybe
 import Data.Monoid
 from Data.Foldable import class Foldable(foldMap)

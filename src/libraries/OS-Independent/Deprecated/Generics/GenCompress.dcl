@@ -1,3 +1,3 @@
 definition module GenCompress
 
-import Data.Generics.GenCompress
+import Data.Generics.Compress

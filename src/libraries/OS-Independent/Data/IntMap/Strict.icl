@@ -6,7 +6,7 @@ from StdFunc import o, id, const
 from StdMisc import abort
 from StdInt import class < (..), instance < Int, instance == Int, class + (..), instance + Int, bitand
 from StdList import foldl
-from Data.Generics.GenEq import generic gEq
+from Data.Generics.Eq import generic gEq
 import Data.Maybe, Data.Either, Data.Functor
 from Data.IntMap.Base import :: IntMap (..), :: Prefix, :: Mask, nomatch, bin, empty, fromDistinctAscList, mask, shorter, branchMask
 from Text.JSON import generic JSONEncode, generic JSONDecode, :: JSONNode

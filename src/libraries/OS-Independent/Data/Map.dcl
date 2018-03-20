@@ -10,8 +10,8 @@ from StdOverloaded	import class ==, class <
 from StdBool        import not
 from StdFunc        import id
 from Text.JSON      import generic JSONEncode, generic JSONDecode, :: JSONNode
-from Data.Generics.GenEq import generic gEq
-from Data.Generics.GenLexOrd import generic gLexOrd, :: LexOrd
+from Data.Generics.Eq import generic gEq
+from Data.Generics.LexOrd import generic gLexOrd, :: LexOrd
 from Data.Monoid    import class Monoid, class Semigroup
 import qualified StdList as SL
 from Data.List import foldr
