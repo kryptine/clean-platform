@@ -20,11 +20,11 @@ instance zero Diff where zero = {status=Common, value="", children=[]}
 
 instance == DiffStatus
 where
-	== Common  Common  = True
-	== Changed Changed = True
-	== Added   Added   = True
-	== Removed Removed = True
-	== _       _       = False
+	== Common    Common    = True
+	== Changed   Changed   = True
+	== OnlyRight OnlyRight = True
+	== OnlyLeft  OnlyLeft  = True
+	== _         _         = False
 
 setStatus :: DiffStatus Diff -> Diff
 setStatus s d = {d & status=s, children=map (setStatus s) d.children}
@@ -55,8 +55,8 @@ gDiff{|FIELD of d|} fx (FIELD x) (FIELD y) = let children = fx x y in
 	 }]
 gDiff{|EITHER|} fl fr (LEFT x)  (LEFT y)  = fl x y
 gDiff{|EITHER|} fl fr (RIGHT x) (RIGHT y) = fr x y
-gDiff{|EITHER|} fl fr (LEFT x)  (RIGHT y) = map (setStatus Removed) (fl x x) ++ map (setStatus Added) (fr y y)
-gDiff{|EITHER|} fl fr (RIGHT x) (LEFT y)  = map (setStatus Removed) (fr x x) ++ map (setStatus Added) (fl y y)
+gDiff{|EITHER|} fl fr (LEFT x)  (RIGHT y) = map (setStatus OnlyLeft) (fl x x) ++ map (setStatus OnlyRight) (fr y y)
+gDiff{|EITHER|} fl fr (RIGHT x) (LEFT y)  = map (setStatus OnlyLeft) (fr x x) ++ map (setStatus OnlyRight) (fl y y)
 
 eqDiff :: a a -> [Diff] | ==, gPrint{|*|} a
 eqDiff x y
@@ -64,8 +64,8 @@ eqDiff x y
 	[ {status=Common,  value=printToString x, children=[]}
 	]
 | otherwise =
-	[ {status=Removed, value=printToString x, children=[]}
-	, {status=Added,   value=printToString y, children=[]}
+	[ {status=OnlyLeft,  value=printToString x, children=[]}
+	, {status=OnlyRight, value=printToString y, children=[]}
 	]
 
 derive gDiff [], (,), (,,), (,,,), (,,,,), (,,,,,), (,,,,,,), (,,,,,,,)
@@ -86,10 +86,10 @@ newline ds =
 	print "\n"
 where
 	head = case ds of
-		Common  -> " "
-		Changed -> "\033[0;33m~"
-		Added   -> "\033[0;32m+"
-		Removed -> "\033[0;31m-"
+		Common    -> " "
+		Changed   -> "\033[0;33m~"
+		OnlyRight -> "\033[0;32m>"
+		OnlyLeft  -> "\033[0;31m<"
 
 indent :: DiffStatus (State PrState a) -> State PrState ()
 indent ds st =
@@ -106,19 +106,17 @@ where
 	display :: Bool Diff -> State PrState ()
 	display p d =
 		print reset >>|
-		if p` (print ")" >>| newline d.status) (pure ()) >>|
 		print color >>|
 		sequence [indent c.status (display True c) \\ c <- reverse d.children] >>|
 		print reset >>|
 		print d.value >>|
-		print (if p` "(" "") >>|
 		print color
 	where
 		color = case d.status of
-			Common  -> reset
-			Changed -> "\033[0;33m"
-			Added   -> "\033[0;32m"
-			Removed -> "\033[0;31m"
+			Common    -> reset
+			Changed   -> "\033[0;33m"
+			OnlyRight -> "\033[0;32m"
+			OnlyLeft  -> "\033[0;31m"
 		reset = "\033[0m"
 		p` = p && not (isEmpty d.children)
 
