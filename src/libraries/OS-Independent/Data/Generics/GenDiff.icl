@@ -101,7 +101,7 @@ indent print =
 	modify (\st -> {st & indent=st.indent-1})
 
 diffToConsole :: [Diff] -> String
-diffToConsole ds = concat (dropSpace (execState (display diff) {indent= -1,output=[],inlist=False}).output)
+diffToConsole ds = concat (dropSpace (execState (display diff) {indent= -1,output=["\033[0m"],inlist=False}).output)
 where
 	diff = {status=Common, value="", children=ds}
 
