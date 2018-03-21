@@ -11,10 +11,12 @@ import Control.Applicative
 import Control.Monad
 import Control.Monad.Identity
 import Control.Monad.State
+import Data.Functor
 import Data.Generics.GenPrint
 import Data.List
+import qualified Data.Map as M
 import Data.Maybe
-from Text import class Text(concat), instance Text String
+from Text import class Text(concat), instance Text String, <+
 
 instance zero Diff where zero = {status=Common, value="", children=[]}
 
@@ -73,6 +75,7 @@ derive gDiff [], (,), (,,), (,,,), (,,,,), (,,,,,), (,,,,,,), (,,,,,,,)
 :: PrState =
 	{ indent :: !Int
 	, output :: ![String]
+	, inlist :: !Bool
 	}
 
 print :: a -> State PrState () | toString a
@@ -86,42 +89,45 @@ newline ds =
 	print "\n"
 where
 	head = case ds of
-		Common    -> " "
+		Common    -> "\033[0m "
 		Changed   -> "\033[0;33m~"
 		OnlyRight -> "\033[0;32m>"
 		OnlyLeft  -> "\033[0;31m<"
 
-indent :: DiffStatus (State PrState a) -> State PrState ()
-indent ds st =
+indent :: (State PrState a) -> State PrState ()
+indent print =
 	modify (\st -> {st & indent=st.indent+1}) >>|
-	st >>|
-	newline ds >>|
+	print >>|
 	modify (\st -> {st & indent=st.indent-1})
 
 diffToConsole :: [Diff] -> String
-diffToConsole ds = concat (dropWhile isSpace (execState (display False diff) {indent= -1,output=[]}).output)
+diffToConsole ds = concat (dropSpace (execState (display diff) {indent= -1,output=[],inlist=False}).output)
 where
 	diff = {status=Common, value="", children=ds}
 
-	display :: Bool Diff -> State PrState ()
-	display p d =
-		print reset >>|
-		print color >>|
-		sequence [indent c.status (display True c) \\ c <- reverse d.children] >>|
-		print reset >>|
-		print d.value >>|
-		print color
+	display :: Diff -> State PrState ()
+	display d =
+		gets (\st -> st.inlist) >>= \inlist ->
+		case inlist && isMember d.value ["_Cons","_Nil"] of
+			True ->
+				sequence [display c \\ c <- reverse d.children] >>|
+				print "\033[0m"
+			False ->
+				modify (\st -> {st & inlist=d.value == "_Cons"}) >>|
+				sequence [indent (display c) \\ c <- reverse d.children] >>|
+				modify (\st -> {st & inlist=inlist}) >>|
+				print ('M'.findWithDefault d.value d.value constructors) >>|
+				newline d.status
 	where
-		color = case d.status of
-			Common    -> reset
-			Changed   -> "\033[0;33m"
-			OnlyRight -> "\033[0;32m"
-			OnlyLeft  -> "\033[0;31m"
-		reset = "\033[0m"
-		p` = p && not (isEmpty d.children)
+		constructors = 'M'.fromList
+			[ ("_Nil", "[]")
+			, ("_Cons", "[]")
+			: [("_Tuple" <+ i, "(" <+ repeatn (i-1) ',' <+ ")") \\ i <- [2..32]]
+			]
 
-	isSpace :: String -> Bool
-	isSpace "\033[0m" = True
-	isSpace "\n" = True
-	isSpace "" = True
-	isSpace _ = False
+	dropSpace :: [String] -> [String]
+	dropSpace org=:["\033[0m ":ss] = case dropWhile ((==) "") ss of
+		["\n":ss] -> dropSpace ss
+		_         -> org
+	dropSpace ["\n":ss] = dropSpace ss
+	dropSpace ss = ss
