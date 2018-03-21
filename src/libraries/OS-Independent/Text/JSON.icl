@@ -1,7 +1,7 @@
 implementation module Text.JSON
 
 import StdGeneric, Data.Maybe, StdList, StdOrdList, StdString, _SystemArray, StdTuple, StdBool, StdFunc, StdOverloadedList, StdFile
-import Data.List, Text, Text.PPrint
+import Data.List, Text, Text.PPrint, Text.JSON
 
 //Basic JSON serialization
 instance toString JSONNode
@@ -472,13 +472,14 @@ JSONEncode{|OBJECT|} fx _ (OBJECT x) = fx False x
 JSONEncode{|CONS of {gcd_name}|} fx _ (CONS x)
   = [JSONArray [JSONString gcd_name : fx False x]]
 JSONEncode{|RECORD of {grd_fields}|} fx _ (RECORD x)
-  = [JSONObject [(name, o) \\ o <- fx False x & name <- grd_fields | isNotNull o]]
-  where
-  isNotNull :: !JSONNode -> Bool
-  isNotNull JSONNull = False
-  isNotNull _ = True
+	= [JSONObject [(name, o) \\ o <- fx False x & name <- grd_fields | isNotNull o]]
+where
+	isNotNull :: !JSONNode -> Bool
+	isNotNull JSONNull = False
+	isNotNull _ = True
 JSONEncode{|FIELD|} fx _ (FIELD x) = fx True x
-JSONEncode{|[]|} fx _ x = [JSONArray (flatten [fx False e \\ e <- x])]
+JSONEncode{|[]|} fx _ x = [JSONArray (flatten (map (fx False) x))]
+//JSONEncode{|[]|} fx _ x = [JSONArray (flatten [fx False e \\ e <- x])]
 JSONEncode{|(,)|} fx fy _ (x,y) = [JSONArray (fx False x ++ fy False y)]
 JSONEncode{|(,,)|} fx fy fz _ (x,y,z) = [JSONArray (fx False x ++ fy False y ++ fz False z)]
 JSONEncode{|(,,,)|} fx fy fz fi _ (x,y,z,i) = [JSONArray (fx False x ++ fy False y ++ fz False z ++ fi False i)]
