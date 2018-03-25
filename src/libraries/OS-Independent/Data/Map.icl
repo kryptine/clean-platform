@@ -7,9 +7,9 @@ from StdFunc import id, flip, o, const
 from StdTuple import snd
 from StdMisc import abort, undef
 import StdString, StdTuple
-from Data.Generics.Eq import generic gEq
+from Data.GenEq import generic gEq
 import qualified StdList as SL
-import Data.Maybe, Text.JSON, Data.Generics.LexOrd
+import Data.Maybe, Text.JSON, Data.GenLexOrd
 from Data.Set import :: Set
 import qualified Data.Set as DS
 import Data.Monoid, Data.Functor, Control.Applicative

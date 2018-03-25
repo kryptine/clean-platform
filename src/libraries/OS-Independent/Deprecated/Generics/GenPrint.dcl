@@ -1,3 +1,3 @@
 definition module GenPrint
 
-import Data.Generics.Print
+import Text.GenPrint

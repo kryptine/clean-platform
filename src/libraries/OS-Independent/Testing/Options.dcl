@@ -1,6 +1,6 @@
 definition module Testing.Options
 
-from Data.Generics.Default import generic gDefault
+from Data.GenDefault import generic gDefault
 from System.Options import :: Option
 
 /**

@@ -1,3 +1,3 @@
 definition module GenHylo
 
-import Data.Generics.Hylo
+import Control.GenHylo

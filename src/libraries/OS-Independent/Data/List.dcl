@@ -1,7 +1,7 @@
 definition module Data.List
 
 import StdList
-from Data.Generics.Eq import generic gEq
+from Data.GenEq import generic gEq
 from Data.Functor import class Functor
 from Data.Maybe import :: Maybe
 from Data.Monoid import class Semigroup, class Monoid

@@ -1,3 +1,3 @@
 definition module GenMapSt
 
-import Data.Generics.MapSt
+import Control.GenMapSt

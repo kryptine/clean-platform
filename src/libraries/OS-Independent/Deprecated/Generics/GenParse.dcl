@@ -1,3 +1,3 @@
 definition module GenParse
 
-import Data.Generics.Parse
+import Text.GenParse

@@ -1,3 +1,3 @@
 definition module GenReduce
 
-import Data.Generics.Reduce
+import Control.GenReduce

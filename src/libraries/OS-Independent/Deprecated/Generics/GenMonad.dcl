@@ -1,3 +1,3 @@
 definition module GenMonad
 
-import Data.Generics.Monad
+import Control.GenMonad
