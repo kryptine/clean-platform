@@ -160,6 +160,6 @@ import qualified Text.Unicode.Encodings.JS
 import qualified Text.Unicode.Encodings.UTF8
 import qualified Text.Unicode.UChar
 import qualified Text.URI
-import qualified Text.XML
+import qualified Text.GenXML
 
 Start = "Hello World!"

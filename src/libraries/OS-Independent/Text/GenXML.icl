@@ -1,4 +1,4 @@
-implementation module Text.XML
+implementation module Text.GenXML
 
 import StdArray, StdBool, StdInt, StdList, StdTuple, StdGeneric, StdFunc, StdString
 import Data.Error, Data.Either, Data.Maybe, Text, Data.GenEq

@@ -1,4 +1,4 @@
-definition module Text.XML
+definition module Text.GenXML
 
 /**
 * This module provides data types for easy construction of XML documents and
