@@ -2,20 +2,20 @@ definition module Data.Generics
 
 import StdGeneric
 
-import Data.GenEq
-import Data.GenLexOrd
+import Control.GenBimap
+import Control.GenFMap
+import Control.GenHylo
 import Control.GenMap
 import Control.GenMapSt
-import Control.GenReduce
-import Data.GenZip 
-import Text.GenPrint
-import Text.GenParse
-import Data.GenCompress
 import Control.GenMonad
-import Control.GenHylo
-import Control.GenFMap
-import Control.GenBimap
+import Control.GenReduce
+import Data.GenCompress
+import Data.GenEq
 import Data.GenFDomain
+import Data.GenLexOrd
+import Data.GenZip 
+import Text.GenParse
+import Text.GenPrint
 
 fromOBJECT :: !(OBJECT x) -> x
 fromCONS   :: !(CONS x)   -> x
