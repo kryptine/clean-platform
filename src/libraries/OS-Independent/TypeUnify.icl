@@ -13,7 +13,7 @@ import Control.Monad
 import Control.Monad.State
 from Data.Func import $
 import Data.Functor
-import Data.Generics.GenEq
+import Data.GenEq
 import Data.List
 from Data.Map import :: Map, newMap
 import Data.Maybe

@@ -11,7 +11,7 @@ import Control.Applicative
 import Control.Monad
 from Data.Func import $
 import Data.Functor
-import Data.Generics.GenEq
+import Data.GenEq
 import Data.List
 import qualified Data.Map as M
 import Data.Maybe

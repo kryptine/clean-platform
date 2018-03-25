@@ -6,7 +6,7 @@ import StdString
 import StdTuple
 
 import Data.Either
-import Data.Generics.GenEq
+import Data.GenEq
 import Data.Maybe
 from Data.Func import $
 from Data.List import instance Functor [], instance Applicative [], instance Alternative []

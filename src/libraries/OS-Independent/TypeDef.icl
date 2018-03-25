@@ -10,7 +10,7 @@ from StdFunc import o, id
 
 from Data.Func import $
 import Data.Functor
-import Data.Generics.GenEq
+import Data.GenEq
 import Data.List
 import Data.Maybe
 
