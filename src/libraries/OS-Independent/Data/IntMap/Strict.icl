@@ -4,6 +4,7 @@ implementation module Data.IntMap.Strict
 
 from StdFunc import o, id, const
 from StdMisc import abort
+from StdString import instance == {#Char}
 from StdInt import class < (..), instance < Int, instance == Int, class + (..), instance + Int, bitand
 from StdList import foldl
 from Data.Generics.Eq import generic gEq
