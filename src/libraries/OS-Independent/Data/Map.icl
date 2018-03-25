@@ -9,7 +9,7 @@ from StdMisc import abort, undef
 import StdString, StdTuple
 from Data.GenEq import generic gEq
 import qualified StdList as SL
-import Data.Maybe, Text.JSON, Data.GenLexOrd
+import Data.Maybe, Text.GenJSON, Data.GenLexOrd
 from Data.Set import :: Set
 import qualified Data.Set as DS
 import Data.Monoid, Data.Functor, Control.Applicative

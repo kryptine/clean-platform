@@ -1,7 +1,7 @@
-implementation module Text.JSON
+implementation module Text.GenJSON
 
 import StdGeneric, Data.Maybe, StdList, StdOrdList, StdString, _SystemArray, StdTuple, StdBool, StdFunc, StdOverloadedList, StdFile
-import Data.List, Text, Text.PPrint, Text.JSON
+import Data.List, Text, Text.PPrint, Text.GenJSON
 
 //Basic JSON serialization
 instance toString JSONNode

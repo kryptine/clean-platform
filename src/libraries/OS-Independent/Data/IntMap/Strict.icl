@@ -10,7 +10,7 @@ from StdList import foldl
 from Data.GenEq import generic gEq
 import Data.Maybe, Data.Either, Data.Functor
 from Data.IntMap.Base import :: IntMap (..), :: Prefix, :: Mask, nomatch, bin, empty, fromDistinctAscList, mask, shorter, branchMask
-from Text.JSON import generic JSONEncode, generic JSONDecode, :: JSONNode
+from Text.GenJSON import generic JSONEncode, generic JSONDecode, :: JSONNode
 
 foldr :: !(a b -> b) !b !(IntMap a) -> b
 foldr f z t =

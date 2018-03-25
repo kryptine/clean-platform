@@ -1,4 +1,4 @@
-definition module Text.JSON
+definition module Text.GenJSON
 /*
 * This module provides functions to encode and decode any Clean data type
 * to JSON format. It provides two generic functions JSONEncode and JSONDecode

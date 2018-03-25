@@ -1,6 +1,6 @@
 implementation module Testing.TestEvents
 
-import Text.JSON, Control.Monad, StdFunc, StdTuple, StdList, Data.Maybe, Control.Applicative, Data.Func
+import Text.GenJSON, Control.Monad, StdFunc, StdTuple, StdList, Data.Maybe, Control.Applicative, Data.Func
 import Data.Functor
 import Data.List
 

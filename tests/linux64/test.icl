@@ -138,7 +138,7 @@ import qualified Text.Encodings.Base64
 import qualified Text.Encodings.MIME
 import qualified Text.Encodings.UrlEncoding
 import qualified Text.HTML
-import qualified Text.JSON
+import qualified Text.GenJSON
 import qualified Text.LaTeX
 import qualified Text.Language
 import qualified Text.PPrint
