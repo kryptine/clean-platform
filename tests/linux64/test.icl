@@ -52,7 +52,6 @@ import qualified Data.GenEq
 import qualified Data.GenFDomain
 import qualified Data.GenLexOrd
 import qualified Data.GenZip
-import qualified Data.Generics
 //import qualified Data.Graph
 //import qualified Data.Graph.Inductive
 //import qualified Data.Graph.Inductive.Basic
