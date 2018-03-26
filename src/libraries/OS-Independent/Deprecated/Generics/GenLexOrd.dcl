@@ -1,3 +1,3 @@
 definition module GenLexOrd
 
-import Data.Generics.GenLexOrd
+import Data.GenLexOrd

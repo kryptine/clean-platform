@@ -24,15 +24,22 @@ abbreviation should be written using only capitals (e.g. GUI,SQL,HTTP).
 Function names should be written in lowerCamelCase. By starting types and
 constructors with a capital and functions without one, the difference between
 a constructor and a function is immediately clear for the reader of a program.
+Generic function names should normally start with `g`, and the next character
+should be a capital.
 
 ## Module names 
 
 For modules, the same guidelines apply as for naming types. Names should be
-informative and preferably short. When a library module is not meant for direct
-imports by end users, but should only used by experts in modules that for
-example provide a more friendly interface, you should prefix the name of that
-module with an underscore character (`_`) or place it in a separate `Internal`
-submodule.
+informative and preferably short.
+
+- When a library module is not meant for direct imports by end users, but
+  should only used by experts in modules that for example provide a more
+  friendly interface, you should prefix the name of that module with an
+  underscore character (`_`) or place it in a separate `Internal` submodule.
+
+- When a module (mainly) provides generic functions for functionality that
+  could also be reasonably implemented differently, it should be prefixed with
+  `Gen`.
 
 ## Argument order 
 
@@ -103,9 +110,9 @@ _general_ classes are:
   - [ ] `Monoid, Semigroup` from `Data.Monoid`
   - [ ] `Monad` from `Control.Monad` and applicable monads from `Control.Monad.*`
   - [ ] `Applicative, Alternative` from `Control.Applicative`
-  - [ ] `gEq{|*|}` from `Data.Generics.GenEq`
-  - [ ] `gDefault{|*|}` from `Data.Generics.GenDefault`
-  - [ ] `GenFDomain` from `Data.Generics.GenFDomain`
+  - [ ] `gEq{|*|}` from `Data.GenEq`
+  - [ ] `gDefault{|*|}` from `Data.GenDefault`
+  - [ ] `GenFDomain` from `Data.GenFDomain`
   - [ ] everything from `StdOverloaded`
   - [ ] ...
 

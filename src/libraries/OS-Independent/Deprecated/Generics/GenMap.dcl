@@ -1,3 +1,3 @@
 definition module GenMap
 
-import Data.Generics.GenMap
+import Control.GenMap
