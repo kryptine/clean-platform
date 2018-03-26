@@ -92,6 +92,7 @@ import qualified Data.Tree
 import qualified Data.Tuple
 import qualified Data.Word8
 import qualified Data._Array
+import qualified Data.Generics
 //import qualified Database.SQL
 //import qualified Database.SQL.MySQL
 //import qualified Database.SQL.RelationalMapping
