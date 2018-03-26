@@ -91,8 +91,8 @@ where
 defaultPtyOptions :: ProcessPtyOptions
 defaultPtyOptions =
 	{ProcessPtyOptions
-	|childInNewSession = False
-	,childControlsTty  = False
+	|childInNewSession = True
+	,childControlsTty  = True
 	,useRawIO          = False
 	}
 
