@@ -305,8 +305,9 @@ empty` xspan yspan font_spans text_spans imgTables=:{ImgTables | imgNewTexts = t
 text` :: !FontDef !String !FontSpans !TextSpans !(ImgTables m) -> (!Img,!ImgTables m)
 text` font str font_spans text_spans imgTables=:{ImgTables | imgNewFonts = curFonts, imgNewTexts = txts, imgSpans = curSpans, imgUniqIds = no}
   #! (w,txts) = spanImgTexts text_spans (LookupSpan (TextXSpan font` str)) txts
+  #! curFonts = if ('DM'.member font` font_spans) curFonts ('DS'.insert font` curFonts)
   = ( mkBasicHostImg no (TextImg font` str) 'DS'.newSet
-    , {ImgTables | imgTables & imgNewFonts = 'DS'.insert font` curFonts
+    , {ImgTables | imgTables & imgNewFonts = curFonts
                              , imgNewTexts = txts
                              , imgSpans    = 'DM'.put no (w,PxSpan h`) curSpans
                              , imgUniqIds  = no-1
