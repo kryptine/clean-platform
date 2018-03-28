@@ -22,8 +22,8 @@ where
 	fmap f l = [f e \\ e <- l]
 
 instance Applicative [] where
-	pure x     = [x]
-	(<*>) xs x = liftA2 id xs x
+	pure x      = [x]
+	(<*>) fs xs = [f x\\f<-fs, x<-xs]
 
 instance Alternative [] where
 	empty        = []
