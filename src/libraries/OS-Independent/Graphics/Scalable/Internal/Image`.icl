@@ -8,7 +8,7 @@ from StdOrdList import minList, maxList
 import StdString
 from StdTuple import fst, snd
 import Data.List
-import Data.Generics.GenEq
+import Data.GenEq
 from Data.Set import :: Set, instance == (Set a), instance < (Set a), fold, fromList, toList, toAscList
 from Data.Map import :: Map, findKeyWith
 from Data.Maybe import :: Maybe (..), fromJust, maybeToList, instance Functor Maybe, instance == (Maybe a)
