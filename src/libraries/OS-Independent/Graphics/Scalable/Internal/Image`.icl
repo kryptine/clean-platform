@@ -8,9 +8,10 @@ from StdOrdList import minList, maxList
 import StdString
 from StdTuple import fst, snd
 import Data.List
+import Data.Generics.GenEq
 from Data.Set import :: Set, instance == (Set a), instance < (Set a), fold, fromList, toList, toAscList
-from Data.Map import :: Map
-from Data.Maybe import :: Maybe (..), fromJust, maybeToList, instance Functor Maybe
+from Data.Map import :: Map, findKeyWith
+from Data.Maybe import :: Maybe (..), fromJust, maybeToList, instance Functor Maybe, instance == (Maybe a)
 import Data.Error
 from Data.Functor        import class Functor (..)
 from Control.Applicative import class Applicative (..)
@@ -142,6 +143,19 @@ import Graphics.Scalable.Internal.Types
   | FlipYImg
   | MaskImg   !ImgTagNo                                        // the id-img pair is stored in the ImgMasks table
 
+derive gEq ImgTransform, Span, LookupSpan, BasicImg, FontDef, BasicImgAttr, SVGColor, Angle, ImageTag
+instance == ImgTransform where == a b = a === b
+
+equivImg :: !Img !Img -> Bool
+equivImg {Img | transform = tfs,  offsets = offs,  host = h,  overlays = overs }
+         {Img | transform = tfs`, offsets = offs`, host = h`, overlays = overs`}
+	= tfs == tfs` && offs === offs` && equivHostImg h h` && gEq{|*->*|} equivImg overs overs`
+
+equivHostImg :: !HostImg !HostImg -> Bool
+equivHostImg (BasicHostImg basic attrs) (BasicHostImg basic` attrs`) = basic === basic` && attrs === attrs`
+equivHostImg (RawHostImg   txt)         (RawHostImg   txt`)          = txt == txt`
+equivHostImg (CompositeImg img)         (CompositeImg img`)          = equivImg img img`
+equivHostImg _                          _                            = False
 
 toImg :: !(Image` m) !FontSpans !TextSpans !(ImgTables m) -> (!Img,!ImgTables m)
 toImg (Empty`    w h)                                font_spans text_spans tables = empty`      w h                              font_spans text_spans tables
@@ -656,8 +670,11 @@ where
 attr` (MaskAttr` mask) image font_spans text_spans imgTables=:{ImgTables | imgUniqIds = no}
   #! (img,imgTables) = toImg image font_spans text_spans {ImgTables | imgTables & imgUniqIds = no-1}
   #! (m`, imgTables=:{ImgTables | imgMasks = curMasks, imgSpans = curSpans}) = toImg mask font_spans text_spans imgTables
-  = ( mkTransformImg no img (MaskImg m`.Img.uniqId)                                                 // this *must* be the id of m`, because for that an svg-definition is generated as the mask-image
-    , {ImgTables | imgTables & imgMasks = 'DM'.put m`.Img.uniqId m` curMasks                        // so, m` is a new mask image
+  #! (mask_key,masks) = case findKeyWith (equivImg m`) curMasks of
+                           Just k  = (k, curMasks)                                                  // similar mask already present, so use it's identification
+                           nothing = (m`.Img.uniqId, 'DM'.put m`.Img.uniqId m` curMasks)            // similar mask not yet present, so add it to mask collection
+  = ( mkTransformImg no img (MaskImg mask_key)                                                      // this *must* be the id of the mask image, because for that an svg-definition is generated
+    , {ImgTables | imgTables & imgMasks = masks
                              , imgSpans = 'DM'.put no ('DM'.find img.Img.uniqId curSpans) curSpans  // span of (mask m img) = span of img
       }
     )
