@@ -1,7 +1,7 @@
 definition module TypeUnify
 
 /**
- * Functions to unify Clean types
+ * Functions to unify Clean types.
  */
 
 import TypeDef
@@ -22,24 +22,24 @@ isGeneralisingUnifier :: [TVAssignment] -> Bool
 isIsomorphicUnifier :: [TVAssignment] -> Bool
 
 /**
- * True iff the first type is more general or equal to the second type.
+ * `True` iff the first type is more general or equal to the second type.
  */
 (generalises) infix 4 :: !Type !Type -> Bool
 
 /**
- * True iff the first type is more specific or equal to the second type.
+ * `True` iff the first type is more specific or equal to the second type.
  */
 (specialises) infix 4 :: !Type !Type -> Bool
 
 /**
- * True if two types are isomorphic to each other.
+ * `True` if two types are isomorphic to each other.
  */
 (isomorphic_to) infix 4 :: !Type !Type -> Bool
 
 /**
  * Prepare a type for unification. Unification always happens between a 'left'
  * and a 'right' type. Unification of two left or two right types may yield
- * incorrect results.
+ * unexpected results.
  *
  * @param True if this is the left type
  * @param A predicate indicating if a type is always unique, like, e.g., World

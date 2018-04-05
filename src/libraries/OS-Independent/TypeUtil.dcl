@@ -1,7 +1,7 @@
 definition module TypeUtil
 
 /**
- * Utility functions for Clean types
+ * Utility functions for Clean types.
  */
 
 import TypeDef
@@ -15,7 +15,7 @@ from Data.Map import :: Map
 from Data.Maybe import :: Maybe
 
 /**
- * Pretty printer
+ * Pretty printer.
  *
  * @var The type to print
  * @param True iff parentheses should be placed around compound elements
@@ -47,7 +47,7 @@ instance print Priority
 propagate_uniqueness :: (String -> Bool) Type -> Type
 
 /**
- * Resolve all synonyms in a type
+ * Resolve all synonyms in a type.
  *
  * @param The type synonyms to use
  * @param The type to resolve
@@ -56,33 +56,42 @@ propagate_uniqueness :: (String -> Bool) Type -> Type
 resolve_synonyms :: (Map String [TypeDef]) Type -> ([TypeDef], Type)
 
 /**
- * Apply a variable assignment on a type, if possible
+ * Apply a variable assignment on a type, if possible.
  */
 assign :: !TVAssignment !Type -> Maybe Type
 
 /**
- * Apply a list of variable assignments on a type
+ * Apply a list of variable assignments on a type.
  *
  * @type [TVAssignment] Type -> Maybe Type
  */
 assignAll :== flip (foldM (flip assign))
 
 /**
- * Make all functions arity 1 by transforming a b -> c to a -> b -> c
+ * Make all functions arity 1 by transforming `a b -> c` to `a -> b -> c`.
  */
 reduceArities :: !Type -> Type
 
 /**
  * Normalise a type, that is, rewrite it to an equivalent type that can be
- * compared to other types for equality using ==. The transformations applied:
+ * compared to other types for equality using {{`==`}}. The transformations
+ * applied:
  *
- * - Resolve always-unique types (like World).
- * - Resolve synonyms.
- * - Propagate uniqueness.
- * - Rewrite Conses without arguments to Vars.
- * - Rewrite functions to arity 1.
+ * - Resolve always-unique types (like {{`World`}}; cf. {{`propagate_uniqueness`}}).
+ * - Propagate uniqueness (cf. {{`propagate_uniqueness`}}).
+ * - Resolve synonyms (cf. {{`resolve_synonyms`}}.
+ * - Rewrite {{`Cons`}}es without arguments to {{`Var`}}s.
+ * - Rewrite functions to arity 1 (cf. {{`reduceArities`}}).
  * - Rewrite variables to v1, v2, v3, ... s.t. a left first depth first
  *   iteration over the node does not introduce higher variables before lower
  *   ones (i.e., you will encounter v2 before v3).
+ *
+ * @param A predicate function indicating a type by that name is always unique
+ *   (like, e.g., World)
+ * @param The type synonyms to use
+ * @param The type to normalise
+ * @result The normalised types
+ * @result The used type synonyms
+ * @result The renamed type variables, in order
  */
 normalise_type :: (String -> Bool) !(Map String [TypeDef]) !Type -> (!Type, ![TypeDef], ![TypeVar])
