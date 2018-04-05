@@ -1,7 +1,7 @@
 definition module CleanPrettyPrint
 
 /**
- * Pretty-printer for types in the Clean compiler
+ * Pretty-printer for types in the Clean compiler.
  */
 
 from syntax import
@@ -13,20 +13,20 @@ from syntax import
 	:: TypeContext
 
 /**
- * Pretty-printer
+ * Pretty-printer.
  *
  * @var The type to print
  */
 class cpp t where
 	/**
-	 * Normal pretty-printer
+	 * Normal pretty-printer.
 	 * @param The value to print
 	 * @result A string representation of the parameter
 	 */
 	cpp :: t -> String
 
 	/**
-	 * Pretty-printer which places parentheses around the result if necessary
+	 * Pretty-printer which places parentheses around the result if necessary.
 	 * @param The value to print
 	 * @result A string representation of the parameter
 	 */
