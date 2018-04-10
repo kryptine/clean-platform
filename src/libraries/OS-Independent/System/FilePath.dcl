@@ -1,6 +1,6 @@
 definition module System.FilePath
 /**
-	Module for manipulation of file and directory paths
+* Module for manipulation of file and directory paths
 */
 
 from Data.Error import :: MaybeError

@@ -98,6 +98,9 @@ size :: !(IntMap a) -> Int
 
 member :: !Int !(IntMap a) -> Bool
 
+/**
+ * @type !Int !(IntMap a) -> Bool
+ */
 notMember k m :== not (member k m)
 
 find :: !Int !(IntMap a) -> a
