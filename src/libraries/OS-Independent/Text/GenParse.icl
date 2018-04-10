@@ -1,8 +1,7 @@
 implementation module Text.GenParse
 
 import StdGeneric, StdEnv
-from Data.Maybe import :: Maybe(..)
-from StdMaybe import mapMaybe
+from Data.Maybe import :: Maybe(..), mapMaybe
 
 //---------------------------------------------------------------------------
 
