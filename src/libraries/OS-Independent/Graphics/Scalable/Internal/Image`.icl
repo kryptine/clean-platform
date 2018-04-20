@@ -1,147 +1,28 @@
 implementation module Graphics.Scalable.Internal.Image`
 
-import _SystemArray
-from StdBool import &&, ||
-from StdFunc import o, seqList, :: St (..)
-from StdMisc import abort
+from StdBool    import &&, ||
+from StdFunc    import o, seqList, :: St (..)
+from StdMisc    import abort
 from StdOrdList import minList, maxList
-import StdString
-from StdTuple import fst, snd
+from StdTuple   import fst, snd
+import StdEnum, StdString
 import Data.List
 import Data.Generics.GenEq
-from Data.Set import :: Set, instance == (Set a), instance < (Set a), fold, fromList, toList, toAscList
-from Data.Map import :: Map, findKeyWith
+import Data.MapCollection
+import qualified Data.Set as DS
+import qualified Data.Map as DM
+from Data.Set   import :: Set, instance == (Set a), instance < (Set a), fold, fromList, toList, toAscList
+from Data.Map   import :: Map, findKeyWith, instance Functor (Map k)
 from Data.Maybe import :: Maybe (..), fromJust, maybeToList, instance Functor Maybe, instance == (Maybe a)
 import Data.Error
 from Data.Functor        import class Functor (..)
 from Control.Applicative import class Applicative (..)
 import Control.Monad
-import Data.MapCollection
-import qualified Data.Set as DS
-import qualified Data.Map as DM
 from Text.HTML import :: SVGColor (..)
 import Math.Geometry
 import Graphics.Scalable.Types
 import Graphics.Scalable.Internal.Types
 
-:: Image` m
-  = Empty`    !Span !Span
-  | Circle`   !Span
-  | Ellipse`  !Span !Span
-  | Square`   !Span
-  | Rect`     !Span !Span
-  | Polyline` ![ImageSpan]
-  | Polygon`  ![ImageSpan]
-  | Text`     !FontDef !String
-  | Rotate`   !Angle          !(Image` m)
-  | Flipx`                    !(Image` m)
-  | Flipy`                    !(Image` m)
-  | Fit`      !Span !Span     !(Image` m)
-  | Fitx`     !Span           !(Image` m)
-  | Fity`     !Span           !(Image` m)
-  | Scale`    !Real !Real     !(Image` m)
-  | Skewx`    !Angle          !(Image` m)
-  | Skewy`    !Angle          !(Image` m)
-  | Attr`     !(ImageAttr` m) !(Image` m)
-  | Margin`   !Margins`       !(Image` m)
-  | Tag`      !ImageTag       !(Image` m)
-  | Overlay`                             ![XYAlign]                 ![ImageOffset] ![Image` m] !(Host` m)
-  | Grid`     !GridDimension !GridLayout ![XYAlign] ![Span] ![Span] ![ImageOffset] ![Image` m] !(Host` m)
-:: ImageAttr` m
-  = BasicImageAttr` !BasicImgAttr
-  | LineMarkerAttr` !(LineMarkerAttr m)
-  | MaskAttr`       !(Image` m)
-  | HandlerAttr`    !(ImgEventhandler m)
-:: ImgTables m
-  = { imgEventhandlers :: !ImgEventhandlers m
-    , imgNewFonts      :: !ImgFonts
-    , imgNewTexts      :: !ImgTexts
-    , imgMasks         :: !ImgMasks
-    , imgLineMarkers   :: !ImgLineMarkers
-    , imgPaths         :: !ImgPaths
-    , imgSpans         :: !ImgSpans
-    , imgGrids         :: !GridSpans
-    , imgTags          :: !ImgTags
-    , imgUniqIds       :: !ImgTagNo
-    }
-:: FontSpans          :== Map FontDef FontDescent              // of each font, the font descent
-:: TextSpans          :== Map FontDef (Map String TextSpan)    // of each font, of each text of that font, the width
-:: ImgEventhandlers m :== Map ImgTagNo [ImgEventhandler m]     // the registered event handlers of the image identified by the id (once registered, an event handler can not be overruled)
-:: ImgTexts           :== Map FontDef (Set String)             // of each font, the collection of texts
-:: ImgMasks           :== Map ImgTagNo Img                     // of each mask, the mask-image (associate the id with (MaskImg id))
-:: ImgLineMarkers     :== Map ImgTagNo LineMarkers             // of each poly(gon/line) with markers, its markers
-:: ImgPaths           :== Map ImgTagNo ImgPath                 // of each poly(gon/line), initially its connecting points, and secondly, its span
-:: ImgSpans           :== Map ImgTagNo ImageSpan               // of each image, its (width,height)
-:: GridSpans          :== Map ImgTagNo GridSpan                // of each grid, the spans of its columns and the spans of its rows
-:: ImgTags            :== Map ImageTag ImgTagNo                // map user-tag to system number
-:: FontDescent        :== Real
-:: TextSpan           :== Real
-:: ImgEventhandler m
-  = ImgEventhandlerOnClickAttr     !(OnClickAttr     m)
-  | ImgEventhandlerOnMouseDownAttr !(OnMouseDownAttr m)
-  | ImgEventhandlerOnMouseUpAttr   !(OnMouseUpAttr   m)
-  | ImgEventhandlerOnMouseOverAttr !(OnMouseOverAttr m)
-  | ImgEventhandlerOnMouseMoveAttr !(OnMouseMoveAttr m)
-  | ImgEventhandlerOnMouseOutAttr  !(OnMouseOutAttr  m)
-  | ImgEventhandlerDraggableAttr   !(DraggableAttr   m)
-:: ImgPath
-  = { pathPoints   :: ![ImageOffset]                           // the connecting points of the path
-    , pathSpan     :: !ImageSpan                               // the span of the path (also stored in imgSpans after resolving span-expressions)
-    }
-:: LineMarkers
-  = { lineStart    :: !Maybe Img
-    , lineMid      :: !Maybe Img
-    , lineEnd      :: !Maybe Img
-    }
-:: Margins`
-  = { n            :: !Span
-    , e            :: !Span
-    , s            :: !Span
-    , w            :: !Span
-    }
-:: GridSpan
-  = { col_spans    :: ![Span]
-    , row_spans    :: ![Span]
-    }
-:: Img
-  = { uniqId       :: !ImgTagNo                                // the unique system identification within the entire image
-    , host         :: !HostImg                                 // the host of this image
-    , transform    :: !Maybe ImgTransform                      // the optional transform of the basic/composite image
-    , overlays     :: ![Img]                                   // the back-to-front ordering of images 'on top of' host
-    , offsets      :: ![ImageOffset]                           // the offsets matching one-by-one with .overlays
-    }
-:: HostImg
-  = BasicHostImg !BasicImg !(Set BasicImgAttr)
-  | RawHostImg   !String
-  | CompositeImg !Img
-:: BasicImg
-  = EmptyImg
-  | TextImg      !FontDef !String
-  | CircleImg
-  | RectImg
-  | EllipseImg
-  | PolylineImg
-  | PolygonImg
-:: BasicImgAttr                                                // attributes that are applicable only on basic images
-  = BasicImgDashAttr          ![Int]
-  | BasicImgFillAttr          !SVGColor
-  | BasicImgFillOpacityAttr   !Real
-  | BasicImgStrokeAttr        !SVGColor
-  | BasicImgStrokeOpacityAttr !Real
-  | BasicImgStrokeWidthAttr   !Span
-  | BasicImgXRadiusAttr       !Span
-  | BasicImgYRadiusAttr       !Span
-:: ImgTransform
-  = RotateImg !Angle
-  | SkewXImg  !Angle
-  | SkewYImg  !Angle
-  | FitImg    !Span !Span
-  | FitXImg   !Span
-  | FitYImg   !Span
-  | ScaleImg  !Real !Real
-  | FlipXImg
-  | FlipYImg
-  | MaskImg   !ImgTagNo                                        // the id-img pair is stored in the ImgMasks table
 
 derive gEq ImgTransform, Span, LookupSpan, BasicImg, FontDef, BasicImgAttr, SVGColor, Angle, ImageTag
 instance == ImgTransform where == a b = a === b
@@ -157,33 +38,94 @@ equivHostImg (RawHostImg   txt)         (RawHostImg   txt`)          = txt == tx
 equivHostImg (CompositeImg img)         (CompositeImg img`)          = equivImg img img`
 equivHostImg _                          _                            = False
 
-toImg :: !(Image` m) !FontSpans !TextSpans !(ImgTables m) -> (!Img,!ImgTables m)
-toImg (Empty`    w h)                                font_spans text_spans tables = empty`      w h                              font_spans text_spans tables
-toImg (Text`     fontDef txt)                        font_spans text_spans tables = text`       fontDef txt                      font_spans text_spans tables
-toImg (Circle`     r)                                font_spans text_spans tables = circle`       r                              font_spans text_spans tables
-toImg (Ellipse`  w h)                                font_spans text_spans tables = ellipse`    w h                              font_spans text_spans tables
-toImg (Square`     e)                                font_spans text_spans tables = square`       e                              font_spans text_spans tables
-toImg (Rect`     w h)                                font_spans text_spans tables = rect`       w h                              font_spans text_spans tables
-toImg (Polyline` ps)                                 font_spans text_spans tables = polyline`   ps                               font_spans text_spans tables
-toImg (Polygon`  ps)                                 font_spans text_spans tables = polygon`    ps                               font_spans text_spans tables
-toImg (Rotate`     a img)                            font_spans text_spans tables = rotate`     a img                            font_spans text_spans tables
-toImg (Flipx`        img)                            font_spans text_spans tables = flipx`        img                            font_spans text_spans tables
-toImg (Flipy`        img)                            font_spans text_spans tables = flipy`        img                            font_spans text_spans tables
-toImg (Fit`      w h img)                            font_spans text_spans tables = fit`      w h img                            font_spans text_spans tables
-toImg (Fitx`     w   img)                            font_spans text_spans tables = fitx`       w img                            font_spans text_spans tables
-toImg (Fity`       h img)                            font_spans text_spans tables = fity`       h img                            font_spans text_spans tables
-toImg (Scale`  rw rh img)                            font_spans text_spans tables = scale`  rw rh img                            font_spans text_spans tables
-toImg (Skewx`      a img)                            font_spans text_spans tables = skewx`      a img                            font_spans text_spans tables
-toImg (Skewy`      a img)                            font_spans text_spans tables = skewy`      a img                            font_spans text_spans tables
-toImg (Overlay` aligns offsets imgs h)               font_spans text_spans tables = overlay` aligns offsets imgs h               font_spans text_spans tables
-toImg (Grid` dim layout aligns ws hs offsets imgs h) font_spans text_spans tables = grid` dim layout aligns ws hs offsets imgs h font_spans text_spans tables
-toImg (Attr`    attr img)                            font_spans text_spans tables = attr`    attr img                            font_spans text_spans tables
-toImg (Margin`    ms img)                            font_spans text_spans tables = margin`    ms img                            font_spans text_spans tables
-toImg (Tag`        t img)                            font_spans text_spans tables = tag`        t img                            font_spans text_spans tables
+toImg :: !(Image` m) !ImgNodePath !FontSpans !TextSpans !(ImgTables m) -> (!Img,!ImgTables m)
+toImg (Empty`    w h)                                p font_spans text_spans tables = empty`      w h                                font_spans text_spans tables
+toImg (Text`     fontDef txt)                        p font_spans text_spans tables = text`       fontDef txt                        font_spans text_spans tables
+toImg (Circle`     r)                                p font_spans text_spans tables = circle`       r                                font_spans text_spans tables
+toImg (Ellipse`  w h)                                p font_spans text_spans tables = ellipse`    w h                                font_spans text_spans tables
+toImg (Square`     e)                                p font_spans text_spans tables = square`       e                                font_spans text_spans tables
+toImg (Rect`     w h)                                p font_spans text_spans tables = rect`       w h                                font_spans text_spans tables
+toImg (Polyline` ps)                                 p font_spans text_spans tables = polyline`   ps                                 font_spans text_spans tables
+toImg (Polygon`  ps)                                 p font_spans text_spans tables = polygon`    ps                                 font_spans text_spans tables
+toImg (Rotate`     a img)                            p font_spans text_spans tables = rotate`     a img                            p font_spans text_spans tables
+toImg (Flipx`        img)                            p font_spans text_spans tables = flipx`        img                            p font_spans text_spans tables
+toImg (Flipy`        img)                            p font_spans text_spans tables = flipy`        img                            p font_spans text_spans tables
+toImg (Fit`      w h img)                            p font_spans text_spans tables = fit`      w h img                            p font_spans text_spans tables
+toImg (Fitx`     w   img)                            p font_spans text_spans tables = fitx`       w img                            p font_spans text_spans tables
+toImg (Fity`       h img)                            p font_spans text_spans tables = fity`       h img                            p font_spans text_spans tables
+toImg (Scale`  rw rh img)                            p font_spans text_spans tables = scale`  rw rh img                            p font_spans text_spans tables
+toImg (Skewx`      a img)                            p font_spans text_spans tables = skewx`      a img                            p font_spans text_spans tables
+toImg (Skewy`      a img)                            p font_spans text_spans tables = skewy`      a img                            p font_spans text_spans tables
+toImg (Overlay` aligns offsets imgs h)               p font_spans text_spans tables = overlay` aligns offsets imgs h               p font_spans text_spans tables
+toImg (Grid` dim layout aligns ws hs offsets imgs h) p font_spans text_spans tables = grid` dim layout aligns ws hs offsets imgs h p font_spans text_spans tables
+toImg (Attr`    attr img)                            p font_spans text_spans tables = attr`    attr img                            p font_spans text_spans tables
+toImg (Margin`    ms img)                            p font_spans text_spans tables = margin`    ms img                            p font_spans text_spans tables
+toImg (Tag`        t img)                            p font_spans text_spans tables = tag`        t img                            p font_spans text_spans tables
 
-toImgs :: ![Image` m] !FontSpans !TextSpans !(ImgTables m) -> (![Img],!ImgTables m)
-toImgs images font_spans text_spans imgTables
-	= strictTRMapSt (\img tables -> toImg img font_spans text_spans tables) images imgTables
+toImgs :: ![Image` m] !ImgNodePath !FontSpans !TextSpans !(ImgTables m) -> (![Img],!ImgTables m)
+toImgs images p font_spans text_spans imgTables
+	= strictTRMapSt (\(i,img) tables -> toImg img [ViaChild i:p] font_spans text_spans tables) (zip2 [0..] images) imgTables
+
+getImgEventhandler :: !(Image` m) !ImgNodePath -> Maybe (ImgEventhandler m)
+getImgEventhandler img p
+	= case getImgAtNodePath img p of
+		Just (Attr` (HandlerAttr` f) _)
+			= Just f
+		_   = Nothing
+
+getImgAtNodePath :: !(Image` m) !ImgNodePath -> Maybe (Image` m)
+getImgAtNodePath img []     = Just img
+getImgAtNodePath img [ViaChild i:p]
+| i < 0 || i >= length imgs = Nothing
+| otherwise                 = getImgAtNodePath (imgs !! i) p
+where
+	imgs                    = imgChildNodes img
+getImgAtNodePath img [ViaHost:p]
+	= case imgHostNode img of
+		Just img            = getImgAtNodePath img p
+		nothing             = nothing
+
+imgChildNodes :: !(Image` m) -> [Image` m]
+imgChildNodes (Empty`          _ _)      = []
+imgChildNodes (Text`           _ _)      = []
+imgChildNodes (Circle`           _)      = []
+imgChildNodes (Ellipse`        _ _)      = []
+imgChildNodes (Square`           _)      = []
+imgChildNodes (Rect`           _ _)      = []
+imgChildNodes (Polyline`         _)      = []
+imgChildNodes (Polygon`          _)      = []
+imgChildNodes (Rotate`         _ img)    = [img]
+imgChildNodes (Flipx`            img)    = [img]
+imgChildNodes (Flipy`            img)    = [img]
+imgChildNodes (Fit`          _ _ img)    = [img]
+imgChildNodes (Fitx`         _   img)    = [img]
+imgChildNodes (Fity`           _ img)    = [img]
+imgChildNodes (Scale`        _ _ img)    = [img]
+imgChildNodes (Skewx`          _ img)    = [img]
+imgChildNodes (Skewy`          _ img)    = [img]
+imgChildNodes (Overlay`      _ _ imgs _) = imgs
+imgChildNodes (Grid` _ _ _ _ _ _ imgs _) = imgs
+imgChildNodes (Attr`           _ img)    = [img]
+imgChildNodes (Margin`         _ img)    = [img]
+imgChildNodes (Tag`            _ img)    = [img]
+
+imgHostNode :: !(Image` m) -> Maybe (Image` m)
+imgHostNode (Overlay`      _ _ _ (Host` h)) = Just h
+imgHostNode (Grid` _ _ _ _ _ _ _ (Host` h)) = Just h
+imgHostNode _                               = Nothing
+
+defuncImgEventhandlers :: !(ImgEventhandlers m) -> ImgEventhandlers`
+defuncImgEventhandlers es
+	= fmap (map (\(p,f) -> (p,defunc f))) es
+where
+	defunc :: !(ImgEventhandler m) -> ImgEventhandler`
+	defunc (ImgEventhandlerOnClickAttr     {OnClickAttr     | local}) = {ImgEventhandler` | handler = ImgEventhandlerOnClickAttr`,     local=local}
+	defunc (ImgEventhandlerOnMouseDownAttr {OnMouseDownAttr | local}) = {ImgEventhandler` | handler = ImgEventhandlerOnMouseDownAttr`, local=local}
+	defunc (ImgEventhandlerOnMouseUpAttr   {OnMouseUpAttr   | local}) = {ImgEventhandler` | handler = ImgEventhandlerOnMouseUpAttr`,   local=local}
+	defunc (ImgEventhandlerOnMouseOverAttr {OnMouseOverAttr | local}) = {ImgEventhandler` | handler = ImgEventhandlerOnMouseOverAttr`, local=local}
+	defunc (ImgEventhandlerOnMouseMoveAttr {OnMouseMoveAttr | local}) = {ImgEventhandler` | handler = ImgEventhandlerOnMouseMoveAttr`, local=local}
+	defunc (ImgEventhandlerOnMouseOutAttr  {OnMouseOutAttr  | local}) = {ImgEventhandler` | handler = ImgEventhandlerOnMouseOutAttr`,  local=local}
+	defunc (ImgEventhandlerDraggableAttr   _)                         = {ImgEventhandler` | handler = ImgEventhandlerDraggableAttr`,   local=False}
 
 defaultFilledImgAttributes :: Set BasicImgAttr
 defaultFilledImgAttributes
@@ -235,20 +177,6 @@ normalizePolyPoints offsets
   #! minX = minSpan (strictTRMap fst offsets)
   #! minY = minSpan (strictTRMap snd offsets)
   = strictTRMap (\(x, y) -> (x - minX, y - minY)) offsets
-
-getLineMarkers :: !(Markers` m) !FontSpans !TextSpans !(ImgTables m) -> (!LineMarkers,!ImgTables m)
-getLineMarkers {Markers` | markerStart`, markerMid`, markerEnd`} font_spans text_spans imgTables
-  #! (startm,imgTables) = getMarkerImg markerStart` font_spans text_spans imgTables
-  #! (midm,  imgTables) = getMarkerImg markerMid`   font_spans text_spans imgTables
-  #! (endm,  imgTables) = getMarkerImg markerEnd`   font_spans text_spans imgTables
-  = ({LineMarkers | lineStart = startm, lineMid = midm, lineEnd = endm},imgTables)
-where
-	getMarkerImg :: !(Maybe (Image` m)) !FontSpans !TextSpans !(ImgTables m) -> (!Maybe Img,!ImgTables m)
-	getMarkerImg Nothing _ _ imgTables
-	  = (Nothing,imgTables)
-	getMarkerImg (Just image) font_spans text_spans imgTables
-	  #! (marker,imgTables) = toImg image font_spans text_spans imgTables
-	  = (Just marker,imgTables)
 
 grid_dimension :: !GridDimension !Int -> (!Int,!Int)
 grid_dimension (Rows    no) no_of_elts = let no` = max 1 no in (no_of_elts / no` + sign (no_of_elts rem no`), no`)
@@ -417,62 +345,62 @@ polygon` offsets font_spans text_spans imgTables=:{ImgTables | imgNewTexts = txt
 where
 	no_of_offsets = length offsets
 
-rotate` :: !Angle !(Image` m) !FontSpans !TextSpans !(ImgTables m) -> (!Img,!ImgTables m)
-rotate` a image font_spans text_spans imgTables=:{ImgTables | imgUniqIds = no}
-  #! (img,imgTables`=:{ImgTables | imgSpans = curSpans}) = toImg image font_spans text_spans {ImgTables | imgTables & imgUniqIds = no-1}
+rotate` :: !Angle !(Image` m) !ImgNodePath !FontSpans !TextSpans !(ImgTables m) -> (!Img,!ImgTables m)
+rotate` a image p font_spans text_spans imgTables=:{ImgTables | imgUniqIds = no}
+  #! (img,imgTables`=:{ImgTables | imgSpans = curSpans}) = toImg image [ViaChild 0:p] font_spans text_spans {ImgTables | imgTables & imgUniqIds = no-1}
   = ( mkTransformImg no img (RotateImg (normalize a))
     , {ImgTables | imgTables` & imgSpans = 'DM'.put no ('DM'.find img.Img.uniqId curSpans) curSpans}    // span of (rotate img) = span of img
     )
 
-flipx` :: !(Image` m) !FontSpans !TextSpans !(ImgTables m) -> (!Img,!ImgTables m)
-flipx` image font_spans text_spans imgTables=:{ImgTables | imgUniqIds = no}
-  #! (img,imgTables=:{ImgTables | imgSpans = curSpans}) = toImg image font_spans text_spans {ImgTables | imgTables & imgUniqIds = no-1}
+flipx` :: !(Image` m) !ImgNodePath !FontSpans !TextSpans !(ImgTables m) -> (!Img,!ImgTables m)
+flipx` image p font_spans text_spans imgTables=:{ImgTables | imgUniqIds = no}
+  #! (img,imgTables=:{ImgTables | imgSpans = curSpans}) = toImg image [ViaChild 0:p] font_spans text_spans {ImgTables | imgTables & imgUniqIds = no-1}
   = ( mkTransformImg no img FlipXImg
     , {ImgTables | imgTables & imgSpans = 'DM'.put no ('DM'.find img.Img.uniqId curSpans) curSpans}    // span of (flipx img) = span of img
     )
 
-flipy` :: !(Image` m) !FontSpans !TextSpans !(ImgTables m) -> (!Img,!ImgTables m)
-flipy` image font_spans text_spans imgTables=:{ImgTables | imgUniqIds = no}
-  #! (img,imgTables=:{ImgTables | imgSpans = curSpans}) = toImg image font_spans text_spans {ImgTables | imgTables & imgUniqIds = no-1}
+flipy` :: !(Image` m) !ImgNodePath !FontSpans !TextSpans !(ImgTables m) -> (!Img,!ImgTables m)
+flipy` image p font_spans text_spans imgTables=:{ImgTables | imgUniqIds = no}
+  #! (img,imgTables=:{ImgTables | imgSpans = curSpans}) = toImg image [ViaChild 0:p] font_spans text_spans {ImgTables | imgTables & imgUniqIds = no-1}
   = ( mkTransformImg no img FlipYImg
     , {ImgTables | imgTables & imgSpans = 'DM'.put no ('DM'.find img.Img.uniqId curSpans) curSpans}    // span of (flipy img) = span of img
     )
 
-fit` :: !Span !Span !(Image` m) !FontSpans !TextSpans !(ImgTables m) -> (!Img,!ImgTables m)
-fit` xspan yspan image font_spans text_spans imgTables=:{ImgTables | imgNewTexts = txts, imgSpans = curSpans, imgUniqIds = no}
+fit` :: !Span !Span !(Image` m) !ImgNodePath !FontSpans !TextSpans !(ImgTables m) -> (!Img,!ImgTables m)
+fit` xspan yspan image p font_spans text_spans imgTables=:{ImgTables | imgNewTexts = txts, imgSpans = curSpans, imgUniqIds = no}
   #! (xspan`,txts)   = spanImgTexts text_spans xspan txts
   #! (yspan`,txts)   = spanImgTexts text_spans yspan txts
   #! dx              = positive_span xspan`
   #! dy              = positive_span yspan`
-  #! (img,imgTables) = toImg image font_spans text_spans {ImgTables | imgTables & imgNewTexts = txts
-                                                                                , imgSpans    = 'DM'.put no (dx,dy) curSpans
-                                                                                , imgUniqIds  = no-1
-                                                         }
+  #! (img,imgTables) = toImg image [ViaChild 0:p] font_spans text_spans {ImgTables | imgTables & imgNewTexts = txts
+                                                                                               , imgSpans    = 'DM'.put no (dx,dy) curSpans
+                                                                                               , imgUniqIds  = no-1
+                                                                        }
   = ( mkTransformImg no img (FitImg dx dy), imgTables )
 
-fitx` :: !Span !(Image` m) !FontSpans !TextSpans !(ImgTables m) -> (!Img,!ImgTables m)
-fitx` xspan image font_spans text_spans imgTables=:{ImgTables | imgNewTexts = txts, imgUniqIds = no}
+fitx` :: !Span !(Image` m) !ImgNodePath !FontSpans !TextSpans !(ImgTables m) -> (!Img,!ImgTables m)
+fitx` xspan image p font_spans text_spans imgTables=:{ImgTables | imgNewTexts = txts, imgUniqIds = no}
   #! (xspan`,txts)   = spanImgTexts text_spans xspan txts
   #! dx              = positive_span xspan`
-  #! (img,imgTables=:{ImgTables | imgSpans = curSpans}) = toImg image font_spans text_spans {ImgTables | imgTables & imgNewTexts = txts, imgUniqIds = no-1}
+  #! (img,imgTables=:{ImgTables | imgSpans = curSpans}) = toImg image [ViaChild 0:p] font_spans text_spans {ImgTables | imgTables & imgNewTexts = txts, imgUniqIds = no-1}
   #! (oldx,oldy) = 'DM'.find img.Img.uniqId curSpans
   = ( mkTransformImg no img (FitXImg dx)
     , {ImgTables | imgTables & imgSpans = 'DM'.put no (dx,oldy * (dx / oldx)) curSpans}
     )
 
-fity` :: !Span !(Image` m) !FontSpans !TextSpans !(ImgTables m) -> (!Img,!ImgTables m)
-fity` yspan image font_spans text_spans imgTables=:{ImgTables | imgNewTexts = txts, imgUniqIds = no}
+fity` :: !Span !(Image` m) !ImgNodePath !FontSpans !TextSpans !(ImgTables m) -> (!Img,!ImgTables m)
+fity` yspan image p font_spans text_spans imgTables=:{ImgTables | imgNewTexts = txts, imgUniqIds = no}
   #! (yspan`,txts)   = spanImgTexts text_spans yspan txts
   #! dy              = positive_span yspan`
-  #! (img,imgTables=:{ImgTables | imgSpans = curSpans}) = toImg image font_spans text_spans {ImgTables | imgTables & imgNewTexts = txts, imgUniqIds = no-1}
+  #! (img,imgTables=:{ImgTables | imgSpans = curSpans}) = toImg image [ViaChild 0:p] font_spans text_spans {ImgTables | imgTables & imgNewTexts = txts, imgUniqIds = no-1}
   #! (oldx,oldy) = 'DM'.find img.Img.uniqId curSpans
   = ( mkTransformImg no img (FitYImg dy)
     , {ImgTables | imgTables & imgSpans = 'DM'.put no (oldx * (dy / oldy),dy) curSpans}
     )
 
-scale` :: !Real !Real !(Image` m) !FontSpans !TextSpans !(ImgTables m) -> (!Img,!ImgTables m)
-scale` fx fy image font_spans text_spans imgTables=:{ImgTables | imgNewTexts = curTexts, imgUniqIds = no}
-  #! (img,imgTables=:{ImgTables | imgSpans = curSpans}) = toImg image font_spans text_spans {ImgTables | imgTables & imgUniqIds = no-1}
+scale` :: !Real !Real !(Image` m) !ImgNodePath !FontSpans !TextSpans !(ImgTables m) -> (!Img,!ImgTables m)
+scale` fx fy image p font_spans text_spans imgTables=:{ImgTables | imgNewTexts = curTexts, imgUniqIds = no}
+  #! (img,imgTables=:{ImgTables | imgSpans = curSpans}) = toImg image [ViaChild 0:p] font_spans text_spans {ImgTables | imgTables & imgUniqIds = no-1}
   #! (dx,dy) = 'DM'.find img.Img.uniqId curSpans
   = ( mkTransformImg no img (ScaleImg fx` fy`)
     , {ImgTables | imgTables & imgSpans = 'DM'.put no (dx *. fx`, dy *. fy`) curSpans}
@@ -481,25 +409,25 @@ where
 	fx` = max zero fx
 	fy` = max zero fy
 
-skewx` :: !Angle !(Image` m) !FontSpans !TextSpans !(ImgTables m) -> (!Img,!ImgTables m)
-skewx` a image font_spans text_spans imgTables=:{ImgTables | imgNewTexts = curTexts, imgUniqIds = no}
-  #! (img,imgTables=:{ImgTables | imgSpans = curSpans}) = toImg image font_spans text_spans {ImgTables | imgTables & imgUniqIds = no-1}
+skewx` :: !Angle !(Image` m) !ImgNodePath !FontSpans !TextSpans !(ImgTables m) -> (!Img,!ImgTables m)
+skewx` a image p font_spans text_spans imgTables=:{ImgTables | imgNewTexts = curTexts, imgUniqIds = no}
+  #! (img,imgTables=:{ImgTables | imgSpans = curSpans}) = toImg image [ViaChild 0:p] font_spans text_spans {ImgTables | imgTables & imgUniqIds = no-1}
   = ( mkTransformImg no img (SkewXImg (normalize a))
     , {ImgTables | imgTables & imgSpans = 'DM'.put no ('DM'.find img.Img.uniqId curSpans) curSpans}
     )
 
-skewy` :: !Angle !(Image` m) !FontSpans !TextSpans !(ImgTables m) -> (!Img,!ImgTables m)
-skewy` a image font_spans text_spans imgTables=:{ImgTables | imgNewTexts = curTexts, imgUniqIds = no}
-  #! (img,imgTables=:{ImgTables | imgSpans = curSpans}) = toImg image font_spans text_spans {ImgTables | imgTables & imgUniqIds = no-1}
+skewy` :: !Angle !(Image` m) !ImgNodePath !FontSpans !TextSpans !(ImgTables m) -> (!Img,!ImgTables m)
+skewy` a image p font_spans text_spans imgTables=:{ImgTables | imgNewTexts = curTexts, imgUniqIds = no}
+  #! (img,imgTables=:{ImgTables | imgSpans = curSpans}) = toImg image [ViaChild 0:p] font_spans text_spans {ImgTables | imgTables & imgUniqIds = no-1}
   = ( mkTransformImg no img (SkewYImg (normalize a))
     , {ImgTables | imgTables & imgSpans = 'DM'.put no ('DM'.find img.Img.uniqId curSpans) curSpans}
     )
 
-margin` :: !Margins` !(Image` m) !FontSpans !TextSpans !(ImgTables m) -> (!Img,!ImgTables m)
-margin` {Margins` | n,e,s,w} image font_spans text_spans imgTables=:{ImgTables | imgNewTexts = txts, imgUniqIds = no}
+margin` :: !Margins` !(Image` m) !ImgNodePath !FontSpans !TextSpans !(ImgTables m) -> (!Img,!ImgTables m)
+margin` {Margins` | n,e,s,w} image p font_spans text_spans imgTables=:{ImgTables | imgNewTexts = txts, imgUniqIds = no}
   #! (nesw,txts)      = strictTRMapSt (spanImgTexts text_spans) [n,e,s,w] txts
   #! [n,e,s,w : _]    = nesw
-  #! (img,imgTables=:{ImgTables | imgSpans = curSpans}) = toImg image font_spans text_spans {ImgTables | imgTables & imgNewTexts = txts,imgUniqIds = no-1}
+  #! (img,imgTables=:{ImgTables | imgSpans = curSpans}) = toImg image [ViaChild 0:p] font_spans text_spans {ImgTables | imgTables & imgNewTexts = txts,imgUniqIds = no-1}
   #! (img_w,img_h)    = 'DM'.find img.Img.uniqId curSpans
   #! span_host        = (w + img_w + e, n + img_h + s)
   = ({Img | uniqId    = no
@@ -511,18 +439,18 @@ margin` {Margins` | n,e,s,w} image font_spans text_spans imgTables=:{ImgTables |
     ,{ImgTables | imgTables & imgSpans = 'DM'.put no span_host curSpans}
     )
 
-overlay` :: ![XYAlign] ![ImageOffset] ![Image` m] !(Host` m) !FontSpans !TextSpans !(ImgTables m) -> (!Img,!ImgTables m)
-overlay` aligns offsets images host font_spans text_spans imgTables
+overlay` :: ![XYAlign] ![ImageOffset] ![Image` m] !(Host` m) !ImgNodePath !FontSpans !TextSpans !(ImgTables m) -> (!Img,!ImgTables m)
+overlay` aligns offsets images host p font_spans text_spans imgTables
   #! l        = length images
   #! aligns`  = take l (aligns ++ repeat (AtLeft,AtTop))
   #! offsets` = take l (offsets ++ repeat (zero, zero))
-  = overlay aligns` offsets` images host font_spans text_spans imgTables
+  = overlay aligns` offsets` images host p font_spans text_spans imgTables
 where
-	overlay :: ![XYAlign] ![ImageOffset] ![Image` m] !(Host` m) !FontSpans !TextSpans !(ImgTables m) -> (!Img,!ImgTables m)
-	overlay aligns offsets images NoHost` font_spans text_spans imgTables=:{ImgTables | imgNewTexts = txts, imgUniqIds = no}
+	overlay :: ![XYAlign] ![ImageOffset] ![Image` m] !(Host` m) !ImgNodePath !FontSpans !TextSpans !(ImgTables m) -> (!Img,!ImgTables m)
+	overlay aligns offsets images NoHost` p font_spans text_spans imgTables=:{ImgTables | imgNewTexts = txts, imgUniqIds = no}
 	  #! (offsets,txts)   = offsetsImgTexts text_spans offsets txts
 	  #! (imgs,imgTables=:{ImgTables | imgSpans = curSpans})
-	                      = toImgs images font_spans text_spans {ImgTables | imgTables & imgNewTexts = txts, imgUniqIds = no-1}
+	                      = toImgs images p font_spans text_spans {ImgTables | imgTables & imgNewTexts = txts, imgUniqIds = no-1}
 	  #! span_imgs        = [(uniqId,'DM'.find uniqId curSpans) \\ {Img | uniqId} <- imgs]
 	  #! span_host        = bounding_box_of_spans span_imgs
 	  = ({Img | uniqId    = no
@@ -535,11 +463,11 @@ where
 	     }
 	    ,{ImgTables | imgTables & imgSpans = 'DM'.put no span_host curSpans}
 	    )
-	overlay aligns offsets images (Host` image) font_spans text_spans imgTables=:{ImgTables | imgNewTexts = txts, imgUniqIds = no}
+	overlay aligns offsets images (Host` image) p font_spans text_spans imgTables=:{ImgTables | imgNewTexts = txts, imgUniqIds = no}
 	  #! (offsets,txts)   = offsetsImgTexts text_spans offsets txts
-	  #! (imgs,imgTables) = toImgs images font_spans text_spans {ImgTables | imgTables & imgNewTexts = txts, imgUniqIds = no-1}
+	  #! (imgs,imgTables) = toImgs images p font_spans text_spans {ImgTables | imgTables & imgNewTexts = txts, imgUniqIds = no-1}
 	  #! (host,imgTables=:{ImgTables | imgSpans = curSpans})
-	                      = toImg image font_spans text_spans imgTables
+	                      = toImg image [ViaHost:p] font_spans text_spans imgTables
 	  #! span_imgs        = [(uniqId,'DM'.find uniqId curSpans) \\ {Img | uniqId} <- imgs]
 	  #! span_host        = 'DM'.find host.Img.uniqId curSpans
 	  = ({Img | uniqId    = no
@@ -569,23 +497,23 @@ where
 		y_offset_within_host y_img AtMiddleY height = (height - y_img) /. 2
 		y_offset_within_host y_img AtBottom  height = height - y_img
 
-grid` :: !GridDimension !GridLayout ![XYAlign] ![Span] ![Span] ![ImageOffset] ![Image` m] !(Host` m) !FontSpans !TextSpans !(ImgTables m) -> (!Img,!ImgTables m)
-grid` dimension layout aligns column_widths row_heights offsets images host font_spans text_spans imgTables
+grid` :: !GridDimension !GridLayout ![XYAlign] ![Span] ![Span] ![ImageOffset] ![Image` m] !(Host` m) !ImgNodePath !FontSpans !TextSpans !(ImgTables m) -> (!Img,!ImgTables m)
+grid` dimension layout aligns column_widths row_heights offsets images host p font_spans text_spans imgTables
   #! l                       = length images
   #! (no_of_cols,no_of_rows) = grid_dimension dimension l
   #! no_of_cells             = no_of_cols * no_of_rows
   #! aligns`                 = take no_of_cells (aligns  ++ repeat (AtLeft,AtTop))
   #! offsets`                = take no_of_cells (offsets ++ repeat (zero,zero))
   #! images`                 = take no_of_cells (images  ++ repeat (Empty` zero zero))
-  = grid (no_of_cols,no_of_rows) layout aligns` column_widths row_heights offsets` images` host font_spans text_spans imgTables
+  = grid (no_of_cols,no_of_rows) layout aligns` column_widths row_heights offsets` images` host p font_spans text_spans imgTables
 where
-	grid :: !(!Int,!Int) !GridLayout ![XYAlign] ![Span] ![Span] ![ImageOffset] ![Image` m] !(Host` m) !FontSpans !TextSpans !(ImgTables m) -> (!Img,!ImgTables m)
-	grid (no_of_cols,no_of_rows) layout aligns column_widths row_heights offsets images h font_spans text_spans imgTables=:{ImgTables | imgNewTexts = txts, imgUniqIds = no}
+	grid :: !(!Int,!Int) !GridLayout ![XYAlign] ![Span] ![Span] ![ImageOffset] ![Image` m] !(Host` m) !ImgNodePath !FontSpans !TextSpans !(ImgTables m) -> (!Img,!ImgTables m)
+	grid (no_of_cols,no_of_rows) layout aligns column_widths row_heights offsets images h p font_spans text_spans imgTables=:{ImgTables | imgNewTexts = txts, imgUniqIds = no}
 	  #! (offsets,      txts)          = offsetsImgTexts text_spans offsets txts
 	  #! (column_widths,txts)          = strictTRMapSt (spanImgTexts text_spans) column_widths txts
 	  #! (row_heights,  txts)          = strictTRMapSt (spanImgTexts text_spans) row_heights   txts
 	  #! (imgs,imgTables=:{ImgTables | imgSpans = curSpans})
-	                                   = toImgs images font_spans text_spans {ImgTables | imgTables & imgNewTexts = txts, imgUniqIds = no-1}
+	                                   = toImgs images p font_spans text_spans {ImgTables | imgTables & imgNewTexts = txts, imgUniqIds = no-1}
 	  #! imgid_span_align_offsets      = [(uniqId,'DM'.find uniqId curSpans,align,offset) \\ {Img | uniqId} <- imgs & align <- aligns & offset <- offsets]
 	  #! imgid_span_align_offsets_grid = grid_layout (no_of_cols,no_of_rows) layout imgid_span_align_offsets
 	  #! cell_spans                    = [[span \\ (_,span,_,_) <- row] \\ row <- imgid_span_align_offsets_grid]
@@ -595,7 +523,7 @@ where
 	  #! (grid_width,grid_height)      = (sum grid_widths, sum grid_heights)
 	  #! (host,imgTables=:{ImgTables | imgSpans = newSpans, imgGrids = newGrids})
 	                                   = case h of
-	                                       Host` image = toImg image font_spans text_spans imgTables
+	                                       Host` image = toImg image [ViaHost:p] font_spans text_spans imgTables
 	                                       no_host     = empty` grid_width grid_height font_spans text_spans imgTables
 	  #! span_host                     = case h of
 	                                       Host` _     = 'DM'.find host.Img.uniqId newSpans
@@ -649,9 +577,9 @@ where
 	where
 		offsets = flatten cells
 
-attr` :: !(ImageAttr` m) !(Image` m) !FontSpans !TextSpans !(ImgTables m) -> (!Img,!ImgTables m)
-attr` (BasicImageAttr` attr) image font_spans text_spans imgTables
-  #! (img,imgTables=:{ImgTables | imgNewTexts = txts}) = toImg image font_spans text_spans imgTables
+attr` :: !(ImageAttr` m) !(Image` m) !ImgNodePath !FontSpans !TextSpans !(ImgTables m) -> (!Img,!ImgTables m)
+attr` (BasicImageAttr` attr) image p font_spans text_spans imgTables
+  #! (img,imgTables=:{ImgTables | imgNewTexts = txts}) = toImg image [ViaChild 0:p] font_spans text_spans imgTables
   #! (attr`,txts) = imgAttrTexts text_spans attr txts
   #! img`         = {Img | img & host = add_basic_attribute attr` img.Img.host}
   = (img`,{ImgTables | imgTables & imgNewTexts = txts})
@@ -659,18 +587,18 @@ where
 	add_basic_attribute :: !BasicImgAttr !HostImg -> HostImg
 	add_basic_attribute attr (BasicHostImg img attrs) = BasicHostImg img ('DS'.insert attr attrs)
 	add_basic_attribute _    host = host
-attr` (LineMarkerAttr` {LineMarkerAttr | markerImg,markerPos}) image font_spans text_spans imgTables
-  #! (mark,imgTables)                             = toImg markerImg font_spans text_spans imgTables
-  #! (img, imgTables=:{imgLineMarkers = markers}) = toImg image     font_spans text_spans imgTables
+attr` (LineMarkerAttr` {LineMarkerAttr | markerImg,markerPos}) image p font_spans text_spans imgTables
+  #! (mark,imgTables)                             = toImg markerImg [ViaAttr   :p] font_spans text_spans imgTables
+  #! (img, imgTables=:{imgLineMarkers = markers}) = toImg image     [ViaChild 0:p] font_spans text_spans imgTables
   | isPathHostImg img.Img.host                    = (img,{ImgTables | imgTables & imgLineMarkers = 'DM'.alter (add_line_marker mark markerPos) img.Img.uniqId markers})
   | otherwise                                     = (img,imgTables)
 where
 	add_line_marker :: !Img !LineMarkerPos !(Maybe LineMarkers) -> Maybe LineMarkers
 	add_line_marker mark pos Nothing              = Just (setLineMarker pos mark defaultLineMarkers)
 	add_line_marker mark pos (Just markers)       = Just (setLineMarker pos mark markers)
-attr` (MaskAttr` mask) image font_spans text_spans imgTables=:{ImgTables | imgUniqIds = no}
-  #! (img,imgTables) = toImg image font_spans text_spans {ImgTables | imgTables & imgUniqIds = no-1}
-  #! (m`, imgTables=:{ImgTables | imgMasks = curMasks, imgSpans = curSpans}) = toImg mask font_spans text_spans imgTables
+attr` (MaskAttr` mask) image p font_spans text_spans imgTables=:{ImgTables | imgUniqIds = no}
+  #! (img,imgTables) = toImg image [ViaChild 0:p] font_spans text_spans {ImgTables | imgTables & imgUniqIds = no-1}
+  #! (m`, imgTables=:{ImgTables | imgMasks = curMasks, imgSpans = curSpans}) = toImg mask [ViaAttr:p] font_spans text_spans imgTables
   #! (mask_key,masks) = case findKeyWith (equivImg m`) curMasks of
                            Just k  = (k, curMasks)                                                  // similar mask already present, so use it's identification
                            nothing = (m`.Img.uniqId, 'DM'.put m`.Img.uniqId m` curMasks)            // similar mask not yet present, so add it to mask collection
@@ -679,15 +607,15 @@ attr` (MaskAttr` mask) image font_spans text_spans imgTables=:{ImgTables | imgUn
                              , imgSpans = 'DM'.put no ('DM'.find img.Img.uniqId curSpans) curSpans  // span of (mask m img) = span of img
       }
     )
-attr` (HandlerAttr` attr) image font_spans text_spans imgTables
-  #! (img,imgTables=:{imgEventhandlers = es}) = toImg image font_spans text_spans imgTables
-  = (img,{ImgTables | imgTables & imgEventhandlers = 'DM'.alter (add_new_eventhandler attr) img.Img.uniqId es})
+attr` (HandlerAttr` attr) image p font_spans text_spans imgTables
+  #! (img,imgTables=:{imgEventhandlers = es}) = toImg image [ViaChild 0:p] font_spans text_spans imgTables
+  = (img,{ImgTables | imgTables & imgEventhandlers = 'DM'.alter (add_new_eventhandler (reverse p) attr) img.Img.uniqId es})
 where
-	add_new_eventhandler :: !(ImgEventhandler m) !(Maybe [ImgEventhandler m]) -> Maybe [ImgEventhandler m]
-	add_new_eventhandler h Nothing  = Just [h]
-	add_new_eventhandler h (Just hs)
-	| any (match_eventhandler h) hs = Just hs
-	| otherwise                     = Just [h:hs]
+	add_new_eventhandler :: !ImgNodePath !(ImgEventhandler m) !(Maybe [(ImgNodePath,ImgEventhandler m)]) -> Maybe [(ImgNodePath,ImgEventhandler m)]
+	add_new_eventhandler p h Nothing        = Just [(p,h)]
+	add_new_eventhandler p h (Just hs)
+	| any ((match_eventhandler h) o snd) hs = Just hs
+	| otherwise                             = Just [(p,h):hs]
 
 defaultLineMarkers :: LineMarkers
 defaultLineMarkers = {LineMarkers | lineStart = Nothing, lineMid = Nothing, lineEnd = Nothing}
@@ -697,16 +625,6 @@ setLineMarker LineMarkerEnd   img markers = {LineMarkers | markers & lineEnd   =
 setLineMarker LineMarkerMid   img markers = {LineMarkers | markers & lineMid   = Just img}
 setLineMarker LineMarkerStart img markers = {LineMarkers | markers & lineStart = Just img}
 
-match_eventhandler :: !(ImgEventhandler m) !(ImgEventhandler m) -> Bool
-match_eventhandler (ImgEventhandlerOnClickAttr     _) (ImgEventhandlerOnClickAttr     _) = True
-match_eventhandler (ImgEventhandlerOnMouseDownAttr _) (ImgEventhandlerOnMouseDownAttr _) = True
-match_eventhandler (ImgEventhandlerOnMouseUpAttr   _) (ImgEventhandlerOnMouseUpAttr   _) = True
-match_eventhandler (ImgEventhandlerOnMouseOverAttr _) (ImgEventhandlerOnMouseOverAttr _) = True
-match_eventhandler (ImgEventhandlerOnMouseMoveAttr _) (ImgEventhandlerOnMouseMoveAttr _) = True
-match_eventhandler (ImgEventhandlerOnMouseOutAttr  _) (ImgEventhandlerOnMouseOutAttr  _) = True
-match_eventhandler (ImgEventhandlerDraggableAttr   _) (ImgEventhandlerDraggableAttr   _) = True
-match_eventhandler _ _ = False
-
 ImgEventhandlerConsName :: !(ImgEventhandler m) -> String
 ImgEventhandlerConsName (ImgEventhandlerOnClickAttr     _) = "ImgEventhandlerOnClickAttr"
 ImgEventhandlerConsName (ImgEventhandlerOnMouseDownAttr _) = "ImgEventhandlerOnMouseDownAttr"
@@ -715,6 +633,9 @@ ImgEventhandlerConsName (ImgEventhandlerOnMouseOverAttr _) = "ImgEventhandlerOnM
 ImgEventhandlerConsName (ImgEventhandlerOnMouseMoveAttr _) = "ImgEventhandlerOnMouseMoveAttr"
 ImgEventhandlerConsName (ImgEventhandlerOnMouseOutAttr  _) = "ImgEventhandlerOnMouseOutAttr"
 ImgEventhandlerConsName (ImgEventhandlerDraggableAttr   _) = "ImgEventhandlerDraggableAttr"
+
+match_eventhandler :: !(ImgEventhandler m) !(ImgEventhandler m) -> Bool
+match_eventhandler a b = ImgEventhandlerConsName a == ImgEventhandlerConsName b
 
 instance <  (ImgEventhandler m) where <  a b = ImgEventhandlerConsName a <  ImgEventhandlerConsName b
 instance == (ImgEventhandler m) where == a b = ImgEventhandlerConsName a == ImgEventhandlerConsName b
@@ -732,11 +653,11 @@ ImgAttrConsName (BasicImgDashAttr          _) = "BasicImgDashAttr"
 instance <  BasicImgAttr where <  a b = ImgAttrConsName a <  ImgAttrConsName b
 instance == BasicImgAttr where == a b = ImgAttrConsName a == ImgAttrConsName b
 
-tag` :: !ImageTag !(Image` m) !FontSpans !TextSpans !(ImgTables m) -> (!Img,!ImgTables m)
-tag` t=:(ImageTagUser no label) image font_spans txt_spans imgTables
-  #! (img,imgTables=:{ImgTables | imgTags = curTags}) = toImg image font_spans txt_spans imgTables
+tag` :: !ImageTag !(Image` m) !ImgNodePath !FontSpans !TextSpans !(ImgTables m) -> (!Img,!ImgTables m)
+tag` t=:(ImageTagUser no label) image p font_spans txt_spans imgTables
+  #! (img,imgTables=:{ImgTables | imgTags = curTags}) = toImg image [ViaChild 0:p] font_spans txt_spans imgTables
   =  (img,{ImgTables | imgTables & imgTags = 'DM'.put t img.Img.uniqId curTags})
-tag` (ImageTagSystem no) _ _ _ _
+tag` (ImageTagSystem no) _ _ _ _ _
   = abort "Graphics.Scalable.Image: tag applied to unexpected ImageTag"
 
 
@@ -1136,9 +1057,9 @@ where
 		                    )
 	where
 		replace_in_span :: !Real !(Span ImageSpan -> ImageSpan) !(Maybe ImageSpan) -> Maybe ImageSpan
-		replace_in_span r f (Just pair)   = Just (f (PxSpan r) pair)
-		replace_in_span _ _ nothing       = nothing
+		replace_in_span r f (Just pair)    = Just (f (PxSpan r) pair)
+		replace_in_span _ _ nothing        = nothing
 		
 		replace_in_path :: ![ImageOffset] !Real !(Span ImageSpan -> ImageSpan) !(Maybe ImgPath) -> Maybe ImgPath
-		replace_in_path p r f (Just path) = Just {ImgPath | path & pathPoints = p, pathSpan = f (PxSpan r) path.ImgPath.pathSpan}
-		replace_in_path _ _ _ nothing     = nothing
+		replace_in_path ps r f (Just path) = Just {ImgPath | path & pathPoints = ps, pathSpan = f (PxSpan r) path.ImgPath.pathSpan}
+		replace_in_path _ _ _ nothing      = nothing
