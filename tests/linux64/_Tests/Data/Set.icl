@@ -32,7 +32,7 @@ where
 
 derive bimap []
 
-Start w = exposeProperties [Quiet, Tests 500000]
+Start w = exposeProperties [Quiet] [Tests 500000]
 	[ EP member
 	, EP fromList_toList
 	, EP size
