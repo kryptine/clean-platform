@@ -2,7 +2,7 @@ implementation module Graphics.Scalable.Types
 
 import Data.Maybe
 import Data.List
-import Data.Generics.GenEq
+import Data.GenEq
 from Text.HTML import :: SVGColor (..)
 from Data.Set import :: Set, instance == (Set a), instance < (Set a)
 import StdBool, StdInt, StdReal, StdString
@@ -20,7 +20,7 @@ instance <  FontDef    where  <  fd1 fd2 =  fd1.fontfamily  < fd2.fontfamily
                                          || fd1.fontvariant < fd2.fontvariant
                                          || fd1.fontweight  < fd2.fontweight
 derive gEq FontDef
-import Data.Generics.GenPrint
+import Text.GenPrint
 derive gPrint FontDef
 instance toString FontDef where toString font = printToString font
 

@@ -8,7 +8,7 @@ definition module Testing.TestEvents
  */
 
 from StdOverloaded import class toString
-from Text.JSON import generic JSONEncode, generic JSONDecode, :: JSONNode, :: Maybe
+from Text.GenJSON import generic JSONEncode, generic JSONDecode, :: JSONNode, :: Maybe
 
 /**
  * Events that are emitted from tests.

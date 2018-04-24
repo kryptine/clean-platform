@@ -4,7 +4,7 @@ import StdList
 
 import Data.Error
 from Data.Func import $
-import Data.Generics.GenDefault
+import Data.GenDefault
 import Data.Maybe
 import System.Options
 

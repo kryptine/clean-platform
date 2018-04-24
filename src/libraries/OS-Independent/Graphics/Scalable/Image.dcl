@@ -244,9 +244,25 @@ instance tuneImage NoAttr, DashAttr, FillAttr, LineEndMarker, LineMidMarker, Lin
                    OnClickAttr, OnMouseDownAttr, OnMouseUpAttr, OnMouseOverAttr, OnMouseMoveAttr, OnMouseOutAttr, DraggableAttr
 
 class margin a where margin :: !a !(Image m) -> Image m
+
+/** margin a image = image`:
+		adds margin @a to all directions (north, east, south, west) of @image.
+*/
 instance margin Span
+
+/** margin (a,b) image = image`:
+		adds margin @a to north and south, and adds margin @b to east and west of @image.
+*/
 instance margin (!Span, !Span)
+
+/** margin (a,b,c) image = image`:
+		adds margin @a to north, @c to south, and @b to east and west of @image.
+*/
 instance margin (!Span, !Span, !Span)
+
+/** margin (a,b,c,d) image = image`:
+		adds margin @a to north, @b to east, @c to south, and @d to west of @image.
+*/
 instance margin (!Span, !Span, !Span, !Span)
 
 tag        :: !*ImageTag !(Image m) -> Image m

@@ -14,7 +14,7 @@ import StdString
 import StdTuple
 
 from Data.Func import on, `on`
-import Data.Generics.GenLexOrd
+import Data.GenLexOrd
 from Data.Set import :: Set(..), instance == (Set a)
 import qualified Data.Set as S
 
