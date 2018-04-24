@@ -1,6 +1,6 @@
 implementation module TTY
 
-import StdFunc
+import StdFunc, StdBool
 import StdList
 import System.OS
 import Text
@@ -43,7 +43,7 @@ getTTYDevices :: !*World -> *(![String], !*World)
 getTTYDevices w
 	# (ds, w) = getDevices w
 	= (IF_WINDOWS
-		(filter (startsWith "COM") ds)
+		(filter (\s->startsWith "COM" s && size s > 3 && isDigit s.[3]) ds)
 		(map ((+++) "/dev/") (filter isTTY ds))
 	  , w)
 where

@@ -6,6 +6,8 @@ endif
 
 all: listDevices
 
+.SECONDARY: listDevices.prj
+
 %: %.prj %.icl 
 	cpm $<
 

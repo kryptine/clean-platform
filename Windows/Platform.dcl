@@ -1,3 +1,3 @@
 definition module Platform
 
-getDevices :: !*World -> !*([String], !*World)
+getDevices :: !*World -> *([String], !*World)
