@@ -1,6 +1,10 @@
 implementation module TTY
 
-import _SystemArray
+import StdFunc
+import StdList
+import System.OS
+import Text
+import StdArray
 import StdClass
 import StdString
 import StdChar
@@ -34,6 +38,16 @@ instance toInt Parity where
 	toInt p = case p of
 		ParityNone = 0; ParityOdd = 1; ParityEven = 2; ParitySpace = 3;
 		ParityMark = 4
+
+getTTYDevices :: !*World -> *(![String], !*World)
+getTTYDevices w
+	# (ds, w) = getDevices w
+	= (IF_WINDOWS
+		(filter (startsWith "COM") ds)
+		(map ((+++) "/dev/") (filter isTTY ds))
+	  , w)
+where
+	isTTY s = not (isEmpty (filter (flip startsWith s) ["tty", "rfcomm"]))
 
 makeTTYSettings :: String BaudRate ByteSize Parity Bool Bool -> TTYSettings
 makeTTYSettings dp br bs pr sb xx = {TTYSettings | devicePath=dp, baudrate=br,

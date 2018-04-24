@@ -1,5 +1,6 @@
 implementation module iTasksTTY
 
+import System.OS
 import TTY
 
 import StdList
@@ -28,14 +29,6 @@ import iTasks.Internal.TaskEval
 :: *Resource | TTYd *(String, Int, *TTY)
 
 derive class iTask TTYSettings, Parity, BaudRate, ByteSize
-
-getTTYDevices :: !*env -> *(![String], !*env)
-getTTYDevices w = case readDirectory "/dev" w of
-	(Error (errcode, errmsg), w) = abort errmsg
-	(Ok entries, w) = (map ((+++) "/dev/") (filter isTTY entries), w)
-	where
-		isTTY s = not (isEmpty (filter (flip startsWith s) prefixes))
-		prefixes = ["tty", "rfcomm"]
 
 enterTTYSettings :: Task TTYSettings
 enterTTYSettings = accWorld getTTYDevices

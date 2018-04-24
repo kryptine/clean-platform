@@ -13,5 +13,11 @@ Clean\ System\ Files/ctty.o: $(DETECTED_OS)/tty.c
 	mkdir -p Clean\ System\ Files
 	gcc -c "$<" -o "$@"
 
+Monitor.prj:
+	cpm project $(basename $@) create
+	cpm project $@ target iTasks
+	cpm project $@ set -h 2000m -s 20m -dynamics
+	cpm project $@ path add "$$PWD/POSIX"
+
 clean:
 	$(RM) -r $(DETECTED_OS)/Clean\ System\ Files/* Clean\ System\ Files/* test
