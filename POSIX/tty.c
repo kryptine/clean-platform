@@ -151,6 +151,9 @@ void ttyopen(CleanString fn, int baudrate, int bytesize, int parity,
 		tio.c_lflag &= ~(ECHO | ECHONL | ICANON | IEXTEN | ISIG);
 //		tio.c_lflag |= ICANON;
 
+		#ifdef __APPLE__
+		tio.c_cflag |= CLOCAL;
+		#endif
 		tio.c_cc[VMIN]=5;
 		tio.c_cc[VTIME]=0;
 		tcsetattr(*fd, TCSANOW, &tio);
