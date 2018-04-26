@@ -23,6 +23,7 @@ import Math.Geometry
 import Graphics.Scalable.Types
 import Graphics.Scalable.Internal.Types
 
+import StdDebug
 
 derive gEq ImgTransform, Span, LookupSpan, BasicImg, FontDef, BasicImgAttr, SVGColor, Angle, ImageTag
 instance == ImgTransform where == a b = a === b
@@ -76,43 +77,53 @@ getImgEventhandler img p
 getImgAtNodePath :: !(Image` m) !ImgNodePath -> Maybe (Image` m)
 getImgAtNodePath img []     = Just img
 getImgAtNodePath img [ViaChild i:p]
+#! imgs = imgChildNodes img
 | i < 0 || i >= length imgs = Nothing
-| otherwise                 = getImgAtNodePath (imgs !! i) p
-where
-	imgs                    = imgChildNodes img
+| otherwise                 = trace_n ("getImgAtNodePath [ViaChild " +++ toString i +++ ":p] legal index")  // TO LASZLO: if you remove the trace_n, then the client displays the runtime error 'uncaught exception: ABORT: Subscript error in !!,index too large'
+                              (getImgAtNodePath (imgs !! i) p)
 getImgAtNodePath img [ViaHost:p]
 	= case imgHostNode img of
-		Just img            = getImgAtNodePath img p
+		Just img`           = getImgAtNodePath img` p
 		nothing             = nothing
+getImgAtNodePath img [ViaAttr:p]
+	= case imgAttrNode img of
+	    Just img`           = getImgAtNodePath img` p
+	    nothing             = nothing
 
 imgChildNodes :: !(Image` m) -> [Image` m]
-imgChildNodes (Empty`          _ _)      = []
-imgChildNodes (Text`           _ _)      = []
-imgChildNodes (Circle`           _)      = []
-imgChildNodes (Ellipse`        _ _)      = []
-imgChildNodes (Square`           _)      = []
-imgChildNodes (Rect`           _ _)      = []
-imgChildNodes (Polyline`         _)      = []
-imgChildNodes (Polygon`          _)      = []
-imgChildNodes (Rotate`         _ img)    = [img]
-imgChildNodes (Flipx`            img)    = [img]
-imgChildNodes (Flipy`            img)    = [img]
-imgChildNodes (Fit`          _ _ img)    = [img]
-imgChildNodes (Fitx`         _   img)    = [img]
-imgChildNodes (Fity`           _ img)    = [img]
-imgChildNodes (Scale`        _ _ img)    = [img]
-imgChildNodes (Skewx`          _ img)    = [img]
-imgChildNodes (Skewy`          _ img)    = [img]
-imgChildNodes (Overlay`      _ _ imgs _) = imgs
-imgChildNodes (Grid` _ _ _ _ _ _ imgs _) = imgs
-imgChildNodes (Attr`           _ img)    = [img]
-imgChildNodes (Margin`         _ img)    = [img]
-imgChildNodes (Tag`            _ img)    = [img]
+imgChildNodes (Empty`          _ _)         = []
+imgChildNodes (Text`           _ _)         = []
+imgChildNodes (Circle`           _)         = []
+imgChildNodes (Ellipse`        _ _)         = []
+imgChildNodes (Square`           _)         = []
+imgChildNodes (Rect`           _ _)         = []
+imgChildNodes (Polyline`         _)         = []
+imgChildNodes (Polygon`          _)         = []
+imgChildNodes (Rotate`         _ img)       = [img]
+imgChildNodes (Flipx`            img)       = [img]
+imgChildNodes (Flipy`            img)       = [img]
+imgChildNodes (Fit`          _ _ img)       = [img]
+imgChildNodes (Fitx`         _   img)       = [img]
+imgChildNodes (Fity`           _ img)       = [img]
+imgChildNodes (Scale`        _ _ img)       = [img]
+imgChildNodes (Skewx`          _ img)       = [img]
+imgChildNodes (Skewy`          _ img)       = [img]
+imgChildNodes (Overlay`      _ _ imgs _)    = imgs
+imgChildNodes (Grid` _ _ _ _ _ _ imgs _)    = imgs
+imgChildNodes (Attr`           _ img)       = [img]
+imgChildNodes (Margin`         _ img)       = [img]
+imgChildNodes (Tag`            _ img)       = [img]
 
 imgHostNode :: !(Image` m) -> Maybe (Image` m)
 imgHostNode (Overlay`      _ _ _ (Host` h)) = Just h
 imgHostNode (Grid` _ _ _ _ _ _ _ (Host` h)) = Just h
 imgHostNode _                               = Nothing
+
+imgAttrNode :: !(Image` m) -> Maybe (Image` m)
+imgAttrNode (Attr` (LineMarkerAttr` {LineMarkerAttr | markerImg}) _)
+                                            = Just markerImg
+imgAttrNode (Attr` (MaskAttr` img) _)       = Just img
+imgAttrNode _                               = Nothing
 
 defuncImgEventhandlers :: !(ImgEventhandlers m) -> ImgEventhandlers`
 defuncImgEventhandlers es
