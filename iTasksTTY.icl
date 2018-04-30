@@ -128,7 +128,9 @@ serialDeviceBackgroundTask dp enc dec accShare rw iworld
 				(Left err, newacc) = (Error (exception "Error while parsing"), iworld)
 				(Right msgs, newacc)
 					# (merr, iworld) = if (msgs =: [])
-						(Ok (), iworld)
+						if (s =: [])
+							(Ok (), iworld)
+							(write (r, [], False) rw iworld)
 						(write (r++msgs, [], False) rw iworld)
 					| isError merr = (liftError merr, iworld)
 					= write newacc accShare iworld
