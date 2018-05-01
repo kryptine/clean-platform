@@ -7,7 +7,7 @@ DETECTED_OS=POSIX
 endif
 
 test: test.icl TTY.icl TTY.dcl Clean\ System\ Files/ctty.o
-	clm -dynamics -I $(DETECTED_OS) -I $(CLEAN_HOME)/lib/Dynamics $(basename $<) -o $@
+	clm -dynamics -I $(DETECTED_OS) -I $(CLEAN_HOME)/lib/Platform -I $(CLEAN_HOME)/lib/Dynamics $(basename $<) -o $@
 
 Clean\ System\ Files/ctty.o: $(DETECTED_OS)/tty.c
 	mkdir -p Clean\ System\ Files

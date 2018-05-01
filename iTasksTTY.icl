@@ -30,22 +30,6 @@ import iTasks.Internal.TaskEval
 
 derive class iTask TTYSettings, Parity, BaudRate, ByteSize
 
-enterTTYSettings :: Task TTYSettings
-enterTTYSettings = accWorld getTTYDevices
-	>>= \ds->(
-				enterChoice "Device" [] ds 
-			-&&- updateInformation "Baudrate" [] B9600
-			<<@ ArrangeHorizontal)
-		-&&- (
-				updateInformation "Bytesize" [] BytesizeEight
-			-&&- updateInformation "Parity" [] ParityNone
-			<<@ ArrangeHorizontal)
-		-&&- (
-				updateInformation "Stop2bits" [] False
-			-&&- updateInformation "Xonoff" [] False
-			<<@ ArrangeHorizontal)
-	@ \((dev, br), ((bs, pr), (st, xo)))->makeTTYSettings dev br bs pr st xo
-
 getTTYResource :: String *IWorld -> (Maybe *(*TTY, Int), *IWorld)
 getTTYResource dp iw=:{resources}
 # (mt, resources) = getTTYResource` resources
@@ -128,7 +112,9 @@ serialDeviceBackgroundTask dp enc dec accShare rw iworld
 				(Left err, newacc) = (Error (exception "Error while parsing"), iworld)
 				(Right msgs, newacc)
 					# (merr, iworld) = if (msgs =: [])
-						(Ok (), iworld)
+						if (s =: [])
+							(Ok (), iworld)
+							(write (r, [], False) rw iworld)
 						(write (r++msgs, [], False) rw iworld)
 					| isError merr = (liftError merr, iworld)
 					= write newacc accShare iworld
