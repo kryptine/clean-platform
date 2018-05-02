@@ -105,11 +105,13 @@ where
 		(v2,t2) = fromUnifyingAssignment ua2
 
 :: UnificationState =
-	{ assignments :: ![TVAssignment]
-	, goals       :: ![(!Type, !Type)]
+	{ assignments         :: ![TVAssignment]
+	, goals               :: ![(!Type, !Type)]
+	, used_universal_vars :: ![TypeVar]
 	}
-assignments s :== s.UnificationState.assignments
-goals       s :== s.goals
+assignments         s :== s.UnificationState.assignments
+goals               s :== s.goals
+used_universal_vars s :== s.used_universal_vars
 
 :: UnifyM t :== StateT UnificationState Maybe t
 
@@ -132,9 +134,17 @@ applyAssignment v t =
 where
 	checkUniversalisedVariables :: !TypeVar !Type -> UnifyM Type
 	checkUniversalisedVariables v t
-	| v.[0] <> '_' = pure t
+	| v.[0] <> '_' = case t of
+		Var v -> if (v.[0] == '_') fail (pure t)
+		_     -> pure t
 	| otherwise = case t of
-		Var v -> applyInGoals (v,Var v`) >>| pure (Var v`)
+		Var v -> gets used_universal_vars >>= \used
+			| isMember v  used = fail
+			| isMember v` used = fail
+			| otherwise =
+				modify (\s -> {s & used_universal_vars=[v,v`:used]}) >>|
+				applyInGoals (v,Var v`) >>|
+				pure (Var v`)
 			with v` = if (v.[0] == '_') v ("_" +++ v)
 		_     -> fail
 	where
@@ -157,7 +167,7 @@ where
 		_                -> fail
 
 unify :: !Type !Type -> Maybe [TVAssignment]
-unify t u = evalStateT loopUntilDone {assignments=[], goals=[(t,u)]}
+unify t u = evalStateT loopUntilDone {assignments=[], goals=[(t,u)], used_universal_vars=[]}
 where
 	loopUntilDone :: UnifyM [TVAssignment]
 	loopUntilDone = gets goals >>= \goals -> case goals of
