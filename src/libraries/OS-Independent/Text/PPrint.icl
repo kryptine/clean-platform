@@ -49,7 +49,7 @@ tupled          = encloseSep lparen   rparen  comma
 semiBraces :: ([Doc] -> Doc)
 semiBraces      = encloseSep lbrace   rbrace  semi
 
-encloseSep :: Doc Doc Doc [Doc] -> Doc
+encloseSep :: Doc Doc Doc ![Doc] -> Doc
 encloseSep left right sep ds
     = case ds of
         []  -> left <-> right
@@ -62,7 +62,7 @@ zipWith f xs ys = map (\(a,b) = f a b) (zip2 xs ys)
 /* -----------------------------------------------------------
  * punctuate p [d1,d2,...,dn] => [d1 <-> p,d2 <-> p, ... ,dn]
  * ----------------------------------------------------------- */
-punctuate :: Doc [Doc] -> [Doc]
+punctuate :: Doc ![Doc] -> [Doc]
 punctuate p []      = []
 punctuate p [d]     = [d]
 punctuate p [d:ds]  = [(d <-> p) : punctuate p ds]
@@ -96,7 +96,7 @@ hcat            = fold (<->)
 vcat :: ([Doc] -> Doc)
 vcat            = fold (<$$>)
 
-fold :: (Doc Doc ->Doc) [Doc] -> Doc
+fold :: (Doc Doc ->Doc) ![Doc] -> Doc
 fold f []       = empty
 fold f ds       = foldr1 f ds
 
@@ -201,7 +201,7 @@ equals          = char '='
  * ----------------------------------------------------------- */
 
 //string is like "text" but replaces '\n' by "line"
-string :: String -> Doc
+string :: !String -> Doc
 string s		= str s 0 0 (size s) empty
 where
 	str :: String Int Int Int Doc -> Doc
@@ -209,55 +209,55 @@ where
 	str s fr to len acc | s.[to] == '\n' = str s (to + 1) (to + 1) len (acc <-> text (s % (fr, to - 1)) <-> line)
 						| otherwise      = str s fr (to + 1) len acc
 
-bool :: Bool -> Doc
+bool :: !Bool -> Doc
 bool b          = text (toString b)
 
-int :: Int -> Doc
+int :: !Int -> Doc
 int i           = text (toString i)
 
-real :: Real -> Doc
+real :: !Real -> Doc
 real r         = text (toString r)
 
 /* -----------------------------------------------------------
  * overloading "pretty"
  * ----------------------------------------------------------- */
 class Pretty a where
-  pretty        :: a -> Doc
+  pretty        :: !a -> Doc
 
 instance Pretty [a] | Pretty a where
-  pretty :: [a] -> Doc | Pretty a
+  pretty :: ![a] -> Doc | Pretty a
   pretty        xs = list (map pretty xs)
 
 instance Pretty Doc where
-  pretty :: Doc -> Doc
+  pretty :: !Doc -> Doc
   pretty        doc = doc
 
 instance Pretty Bool where
-  pretty :: Bool -> Doc
+  pretty :: !Bool -> Doc
   pretty b      = bool b
 
 instance Pretty Char where
-  pretty :: Char -> Doc
+  pretty :: !Char -> Doc
   pretty c      = char c
 
 instance Pretty Int where
-  pretty :: Int -> Doc
+  pretty :: !Int -> Doc
   pretty i      = int i
 
 instance Pretty Real where
-  pretty :: Real -> Doc
+  pretty :: !Real -> Doc
   pretty r      = real r
 
 instance Pretty (a,b) | Pretty a & Pretty b where
-  pretty :: (a,b) -> Doc | Pretty a & Pretty b
+  pretty :: !(a,b) -> Doc | Pretty a & Pretty b
   pretty (x,y)  = tupled [pretty x, pretty y]
 
 instance Pretty (a,b,c) | Pretty a & Pretty b & Pretty c where
-  pretty :: (a,b,c) -> Doc | Pretty a & Pretty b & Pretty c
+  pretty :: !(a,b,c) -> Doc | Pretty a & Pretty b & Pretty c
   pretty (x,y,z)= tupled [pretty x, pretty y, pretty z]
 
 instance Pretty (Maybe a) | Pretty a where
-  pretty :: (Maybe a) -> Doc | Pretty a
+  pretty :: !(Maybe a) -> Doc | Pretty a
   pretty Nothing        = empty
   pretty (Just x)       = pretty x
 
@@ -312,11 +312,11 @@ empty :: Doc
 empty           = Empty
 
 
-char :: Char -> Doc
+char :: !Char -> Doc
 char '\n'       = line
 char c          = Char c
 
-text :: String -> Doc
+text :: !String -> Doc
 text ""         = Empty
 text s          = Text (size s) s
 
@@ -329,7 +329,7 @@ linebreak       = Line True
 beside :: Doc Doc -> Doc
 beside x y      = Cat x y
 
-nest :: Int Doc -> Doc
+nest :: !Int Doc -> Doc
 nest i x        = Nest i x
 
 column :: (Int -> Doc) -> Doc
@@ -362,7 +362,7 @@ flattenDoc other           = other                     //Empty,Char,Text
 :: Docs   = Nil
           | Cons !Int Doc Docs
 
-renderPretty :: Real Int Doc -> SimpleDoc
+renderPretty :: Real Int !Doc -> SimpleDoc
 renderPretty rfrac w x
     = best 0 0 (Cons 0 x Nil)
     where
@@ -413,7 +413,7 @@ fits w (SLine i x)              = True
  *  fast and fewer characters output, good for machines
  * ----------------------------------------------------------- */
 
-renderCompact :: Doc -> SimpleDoc
+renderCompact :: !Doc -> SimpleDoc
 renderCompact x
     = scan 0 [x]
     where
@@ -433,7 +433,7 @@ renderCompact x
  * Displayers: display
  * ----------------------------------------------------------- */
 
-display :: SimpleDoc -> String
+display :: !SimpleDoc -> String
 display sdoc = display` sdoc (createArray (displaySize sdoc) '\0') 0
 where
 	display` 	SEmpty			dst	offset	= dst

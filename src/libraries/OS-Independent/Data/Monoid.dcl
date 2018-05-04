@@ -2,33 +2,24 @@ definition module Data.Monoid
 
 from StdOverloaded import class +, class *, class zero, class one
 from Data.Maybe import :: Maybe
+import qualified StdList
 
-class Semigroup a where
-  mappend :: a a -> a
+class Semigroup a
+where
+	mappend :: !a a -> a
 
-class Monoid a | Semigroup a where
-  mempty :: a
+	(<++>) infixr 6 :: a a -> a | Semigroup a
+	(<++>) ma mb :== mappend ma mb
 
-mconcat         :: .[a] -> a | Monoid a
-(<++>) infixr 6 :: a a -> a | Semigroup a
+class Monoid a | Semigroup a
+where
+	mempty :: a
 
-instance Semigroup [a]
-instance Semigroup (a -> b) | Semigroup b
+	mconcat :: !.[a] -> a | Monoid a
+	mconcat xs :== 'StdList'.foldr mappend mempty xs
+
 instance Semigroup ()
-instance Semigroup (a, b) | Semigroup a & Semigroup b
-instance Semigroup (a, b, c) | Semigroup a & Semigroup b & Semigroup c
-instance Semigroup (a, b, c, d) | Semigroup a & Semigroup b & Semigroup c & Semigroup d
-instance Semigroup (a, b, c, d, e) | Semigroup a & Semigroup b & Semigroup c & Semigroup d & Semigroup e
-instance Semigroup (Maybe a) | Semigroup a
-
-instance Monoid [a]
-instance Monoid (a -> b) | Monoid b
 instance Monoid ()
-instance Monoid (a, b) | Monoid a & Monoid b
-instance Monoid (a, b, c) | Monoid a & Monoid b & Monoid c
-instance Monoid (a, b, c, d) | Monoid a & Monoid b & Monoid c & Monoid d
-instance Monoid (a, b, c, d, e) | Monoid a & Monoid b & Monoid c & Monoid d & Monoid e
-instance Monoid (Maybe a)
 
 :: Dual a = Dual a
 
@@ -64,18 +55,18 @@ instance Monoid (Product a) | * a & one a
 instance Monoid (First a)
 instance Monoid (Last a)
 
-getDual :: (Dual a) -> a
+getDual :: !(Dual a) -> a
 
-appEndo :: (Endo a) -> (a -> a)
+appEndo :: !(Endo a) -> (a -> a)
 
-getAll :: All -> Bool
+getAll :: !All -> Bool
 
-getAny :: Any -> Bool
+getAny :: !Any -> Bool
 
-getSum :: (Sum a) -> a
+getSum :: !(Sum a) -> a
 
-getProduct :: (Product a) -> a
+getProduct :: !(Product a) -> a
 
-getFirst :: (First a) -> Maybe a
+getFirst :: !(First a) -> Maybe a
 
-getLast :: (Last a) -> Maybe a
+getLast :: !(Last a) -> Maybe a

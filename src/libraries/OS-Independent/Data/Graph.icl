@@ -2,15 +2,17 @@ implementation module Data.Graph
 
 import StdBool
 import StdFunc
-import StdList
+import StdInt
+from StdList import ++, filter, hd, isEmpty, isMember, map, reverse, tl,
+	instance length []
 import StdOrdList
 import StdTuple
 
 import Data.Map
 import Data.Maybe
 import Data.Functor
-import Text.JSON
-from GenEq import generic gEq
+import Text.GenJSON
+from Data.Generics.GenEq import generic gEq
 
 :: Graph n e = 
 	{ nodes		:: !Map NodeIndex (Node n)

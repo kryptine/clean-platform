@@ -87,12 +87,6 @@ pBind pl f = Parser (bind pl)
                          ]
     = (rs`, flatten es`)
 
-(<$) infixl 6 :: a (Parser t b) -> Parser t a
-(<$) x p = pMap (const x) p
-
-($>) infixl 6 :: (Parser t b) a -> Parser t a
-($>) p x = pMap (const x) p
-
 (<<|>) infixr 4 :: (Parser t a) (Parser t a) -> Parser t a
 (<<|>) pl pr = Parser pbl
   where

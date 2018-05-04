@@ -10,7 +10,7 @@ import StdOverloaded
 /**
 * The resolution of the system clock ticks
 */
-CLK_PER_SEC	:== 100
+CLK_PER_SEC	:== 1000000
 
 /**
 * The Tm record structure contains date and time information
@@ -24,7 +24,7 @@ CLK_PER_SEC	:== 100
 		  , year	:: Int	// Years since 1900
 		  , wday	:: Int	// Day of the week (0-6, 0 is Sunday)
 		  , yday	:: Int	// Day of the year (0-365)
-		  , isdst	:: Bool // Daylight saving time flag
+		  , isdst	:: Int	// Daylight saving time flag
 		  }
 
 /**
@@ -60,9 +60,15 @@ gmTime		:: !*World -> (!Tm, !*World)
 */
 localTime	:: !*World -> (!Tm, !*World)
 /**
-* Convert a Tm record (local time) to a Timestamp value
+* Convert a Tm record (local time) to a Timestamp value.
+* This is not a pure function as it depends on the current local time zone.
 */
-mkTime		:: !Tm -> Timestamp
+mkTime		:: !Tm !*World-> (!Timestamp, !*World)
+/**
+* Convert a Tm record (UTC) to a Timestamp value.
+* No time zone conversion is done.
+*/
+timeGm		:: !Tm -> Timestamp
 /**
 * Calculate the difference in seconds between two times
 */
@@ -79,3 +85,17 @@ toLocalTime :: !Timestamp !*World -> (!Tm,!*World)
 * Convert a timestamp to a Tm record (GMT time)
 */
 toGmTime    :: !Timestamp -> Tm
+/**
+ * Get subsecond precision time
+ */
+nsTime :: !*World -> (!Timespec, !*World)
+:: Timespec = {tv_sec :: !Int, tv_nsec :: !Int}
+
+timespecToStamp :: !Timespec -> Timestamp
+timestampToSpec :: !Timestamp -> Timespec
+
+instance < Timespec
+instance + Timespec
+instance - Timespec
+instance zero Timespec
+instance == Timespec

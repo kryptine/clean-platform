@@ -14,3 +14,4 @@ IF_LINUX linux other				:== other
 IF_LINUX32 linux other				:== other
 IF_LINUX64 linux other				:== other
 IF_MAC mac other					:== mac
+IF_ANDROID android other                        :== other

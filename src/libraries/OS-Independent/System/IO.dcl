@@ -5,11 +5,11 @@ from Data.Functor import class Functor
 from Control.Monad import class Monad
 from StdOverloaded import class toString
 
-:: IO a = IO .(*World -> *(a, *World))
+:: IO a = IO .(*World -> *(a, !*World))
 
-execIO :: (IO a) *World -> *World
+execIO :: !(IO a) !*World -> *World
 
-evalIO :: (IO a) *World -> *(a, *World)
+evalIO :: !(IO a) !*World -> *(a, !*World)
 
 withWorld :: (*World -> *(.a, !*World)) -> IO .a
 
@@ -31,5 +31,5 @@ instance Applicative IO
 instance Functor IO
 instance Monad IO
 
-unsafePerformIO :: (*World -> *(.a, *World)) -> .a
-unsafePerformIOTrue :: (*World -> *(a, *World)) -> Bool
+unsafePerformIO :: !(*World -> *(.a, !*World)) -> .a
+unsafePerformIOTrue :: !(*World -> *(a, !*World)) -> Bool

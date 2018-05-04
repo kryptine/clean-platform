@@ -1,9 +1,10 @@
 definition module Text.Parsers.Simple.Core
 
-from Control.Applicative import class Applicative (..), class Alternative (..), *>, <*
+from Control.Applicative import class Applicative (..), class Alternative (..)
 from Control.Monad import class Monad (..), class MonadPlus (..)
 from Data.Either import :: Either (..)
 from Data.Functor import class Functor (..), <$>
+from StdOverloaded import class ==
 
 :: Error :== String
 :: Parser t a
@@ -27,8 +28,6 @@ pError   :: Error -> Parser t a
 
 // Convenience parsers
 (@!) infixr 4 :: (Parser t a) Error -> Parser t a
-(<$) infixl 6 :: a (Parser t b) -> Parser t a
-($>) infixl 6 :: (Parser t b) a -> Parser t a
 
 (<<|>) infixr 4 :: (Parser t a) (Parser t a) -> Parser t a
 (<|>>) infixr 4 :: (Parser t a) (Parser t a) -> Parser t a

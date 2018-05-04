@@ -22,7 +22,7 @@ newAppender :: StringAppender
 * @param The value to be printed
 * @return A StringAppender instance
 */
-append :: StringAppender a -> StringAppender | toString a
+append :: !StringAppender a -> StringAppender | toString a
 
 /**
 * Append a list of values to the output stream using a separator string between the elements
@@ -31,7 +31,7 @@ append :: StringAppender a -> StringAppender | toString a
 * @param Output stream (StringAppender instance) 
 * @return A StringAppender instance
 */
-joinList :: !String [a] StringAppender -> StringAppender | toString a
+joinList :: !String ![a] !StringAppender -> StringAppender | toString a
 
 /**
 * Write StringAppender into a file
@@ -50,7 +50,7 @@ instance toString StringAppender
 
 class Appendable a
 where
-	(<++) infixl 1 :: StringAppender a -> StringAppender
+	(<++) infixl 1 :: !StringAppender !a -> StringAppender
 
 instance Appendable String
 instance Appendable Int

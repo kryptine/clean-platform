@@ -10,12 +10,12 @@ import Text.Unicode
 
 instance fromUnicode UTF8
 where
-	fromUnicode :: UString -> UTF8
+	fromUnicode :: !UString -> UTF8
 	fromUnicode ustr = UTF8 (encodeString ustr)
 			
 instance toUnicode UTF8 
 where
-	toUnicode :: UTF8 -> UString
+	toUnicode :: !UTF8 -> UString
 	toUnicode (UTF8 str) = decodeString str
 
 instance fromString UTF8

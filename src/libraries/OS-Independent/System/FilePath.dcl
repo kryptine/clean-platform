@@ -1,7 +1,10 @@
 definition module System.FilePath
 /**
-	Module for manipulation of file and directory paths
+* Module for manipulation of file and directory paths
 */
+
+from Data.Error import :: MaybeError
+from System.OSError import :: OSError, :: OSErrorCode, :: OSErrorMessage, :: MaybeOSError
 
 :: FilePath :== String
 
@@ -80,4 +83,9 @@ replaceFileName :: !FilePath !String -> FilePath
 * Drop the filename.
 */
 dropFileName :: !FilePath -> FilePath
+
+/**
+ * Get the full path name, without '.', '..' or symbolic links.
+ */
+getFullPathName :: !FilePath !*World -> (!MaybeOSError FilePath, !*World)
 

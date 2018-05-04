@@ -24,6 +24,7 @@ SYSTEMTIME_wSecond_offset		:== 12
 SYSTEMTIME_wMilliseconds_offset	:== 14
 
 :: LPSECURITY_ATTRIBUTES :== Int
+:: SECURITY_ATTRIBUTES   :== {#Int}
 :: LPTHREAD_START_ROUTINE :==Int
 :: LPOVERLAPPED :== Int
 OVERLAPPED_SIZE_BYTES		:== IF_INT_64_OR_32 40 20
@@ -35,6 +36,8 @@ STARTUPINFO_size_bytes :== 68
 STARTUPINFO_size_int :== 17
 STARTUPINFO_cb_int_offset :== 0
 STARTUPINFO_dwFlags_int_offset :== 11
+STARTUPINFO_hStdInput_int_offset :== 14
+STARTUPINFO_hStdOutput_int_offset :== 15
 STARTUPINFO_hStdError_int_offset :== 16
 
 :: LPWIN32_FIND_DATA :== {#Char}
@@ -55,10 +58,13 @@ PROCESS_INFORMATION_size_int :== 4
 PROCESS_INFORMATION_hProcess_int_offset :== 0
 PROCESS_INFORMATION_hThread_int_offset :== 1
 
-SECURITY_ATTRIBUTES_SIZE_BYTES							:== INT_SIZE * 3
+SECURITY_ATTRIBUTES_SIZE_BYTES							:== INT_SIZE * SECURITY_ATTRIBUTES_SIZE_INT
+SECURITY_ATTRIBUTES_SIZE_INT                            :== 3
 SECURITY_ATTRIBUTES_nLength_BYTES_OFFSET				:== 0
+SECURITY_ATTRIBUTES_nLength_INT_OFFSET				    :== 0
 SECURITY_ATTRIBUTES_lpSecurityDescriptor_BYTES_OFFSET	:== INT_SIZE
 SECURITY_ATTRIBUTES_bInheritHandle_BYTES_OFFSET			:== INT_SIZE * 2
+SECURITY_ATTRIBUTES_bInheritHandle_INT_OFFSET			:== 2
 
 /*
  * Macros
@@ -96,18 +102,21 @@ HEAP_ZERO_MEMORY :== 0x00000008
 CREATE_SUSPENDED :== 0x00000004
 SYNCHRONIZE :== 0x00100000
 
+HANDLE_FLAG_INHERIT :== 0x00000001
+
 /*
  * Windows API calls 
  */
 
 closeHandle :: !HANDLE !*w -> (!Bool,!*w)
+setHandleInformation :: !HANDLE !DWORD !DWORD !*w -> (!Bool, !*w)
 	
 createFileA :: !String !DWORD !DWORD !LPSECURITY_ATTRIBUTES 
 	!DWORD !DWORD !HANDLE !*w -> (!HANDLE, !*w)
 	
 readFile :: !HANDLE !LPVOID !DWORD !LPDWORD !LPOVERLAPPED !*w -> (!Bool, !*w)
 
-writeFile :: !HANDLE !LPVOID !DWORD !LPDWORD !LPOVERLAPPED !*w -> (!Bool, !*w)
+writeFile :: !HANDLE !String !DWORD !LPDWORD !LPOVERLAPPED !*w -> (!Bool, !*w)
 
 setEndOfFile :: !HANDLE !*w -> (!Bool, !*w)
 
@@ -117,6 +126,8 @@ unlockFile :: !HANDLE !DWORD !DWORD !DWORD !DWORD !*w -> (!Bool, !*w)
 
 getFileSize :: !HANDLE !LPDWORD !*w -> (!DWORD, !*w)
 
+getFullPathNameA :: !String !DWORD !String !LPTSTR !*w -> (!DWORD, !*w)
+
 createDirectoryA :: !String !LPSECURITY_ATTRIBUTES !*w -> (!Bool, !*w)
 
 createProcessA :: !String !String !LPSECURITY_ATTRIBUTES !LPSECURITY_ATTRIBUTES !Bool !Int !LPVOID
@@ -124,6 +135,8 @@ createProcessA :: !String !String !LPSECURITY_ATTRIBUTES !LPSECURITY_ATTRIBUTES 
 
 createProcessA_dir :: !String !String !LPSECURITY_ATTRIBUTES !LPSECURITY_ATTRIBUTES !Bool !Int !LPVOID
 					!String !LPSTARTUPINFO !LPPROCESS_INFORMATION !*w -> (!Bool,!*w)
+
+terminateProcess :: !HANDLE !Int !*w -> (!Bool, !*w)
 
 deleteFileA :: !String !*w -> (!Int, !*w)
 
@@ -178,3 +191,8 @@ WinGetCurrentThreadId :: !*w -> (!DWORD, !*w)
 WinOpenThread :: !DWORD !Bool !DWORD *w -> (!DWORD, !*w)
 
 sleep :: !DWORD !*w -> *w
+
+createPipe :: !PHANDLE !PHANDLE !SECURITY_ATTRIBUTES !DWORD !*w -> (!Bool, !*w)
+peekNamedPipe :: !HANDLE !LPVOID !DWORD !LPDWORD !LPDWORD !LPDWORD !*w -> (!Bool, !*w)
+
+GetSystemTimeAsFileTime :: !{#Int} !*World -> (!{#Int},!*World)

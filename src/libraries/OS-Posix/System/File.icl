@@ -5,6 +5,8 @@ import StdArray
 import StdFile
 import StdList
 import StdString
+import qualified Text
+from Text import class Text, instance Text String
 
 import System.Time
 import Data.Error
@@ -30,8 +32,8 @@ readAllLines :: !*File -> (!MaybeError FileError [String], !*File)
 readAllLines file
 # (result, file) = rec file []
 = case result of
-	Error e	   = (Error e, file)
-	Ok lines = (Ok lines, file)
+	Error e	 = (Error e, file)
+	Ok lines = (Ok (reverse lines), file)
 where	
 	rec :: *File [String] -> (!MaybeError FileError [String], *File)
 	rec file acc 
@@ -46,7 +48,7 @@ readAll file
 # (result, file) = readAcc file []
 = case result of
 	Error e	   = (Error e, file)
-	Ok contents = (Ok ((foldr (+++) "" (reverse contents))), file)
+	Ok contents = (Ok ('Text'.concat (reverse contents)), file)
 where
 	readAcc :: *File [String] -> (MaybeError FileError [String], *File)
 	readAcc file acc

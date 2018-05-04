@@ -75,23 +75,23 @@ where
 	                | otherwise		= d + toInt 'A' - 10
 
 // Escapes string, using predicate to determine whether character is allowed
-escapeString :: (Char -> Bool) String -> String
+escapeString :: (Char -> Bool) !String -> String
 escapeString f s = toString (concatMap (escapeChar f) (fromString s))
 
 // Convenience function for extracting www-urlencoded data
-uriQueryItems :: URI -> [(String, String)]
+uriQueryItems :: !URI -> [(String, String)]
 uriQueryItems u = maybe [] urlDecodePairs u.uriQuery
 
 // Splits path to segments
-pathToSegments :: String -> [String]
+pathToSegments :: !String -> [String]
 pathToSegments p = 'Text'.split "/" p
 
 // Convenience function for extracting path segments
-uriPathSegments :: URI -> [String]
+uriPathSegments :: !URI -> [String]
 uriPathSegments u = pathToSegments u.uriPath
 
 // Joins path segments, with escaping
-segmentsToPath :: [String] -> String
+segmentsToPath :: ![String] -> String
 segmentsToPath [""] = "/"
 segmentsToPath ss = 'Text'.join "/" (map (escapeString (okInPathSegment)) ss)
 

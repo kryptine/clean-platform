@@ -5,8 +5,11 @@ import StdList
 import StdTuple
 import StdString
 
+import Data.Error
 import Text
 import System.OS
+import System.OSError
+import qualified System._FilePath as _FilePath
 
 pathSeparator :: Char
 pathSeparator = OS_PATH_SEPARATOR
@@ -50,7 +53,7 @@ addTrailingPathSeparator path = if (hasTrailingPathSeparator path) path (path ++
 splitFileName  :: !FilePath -> (String, String)
 splitFileName path = 
 	case lastIndexOf {pathSeparator} path of
-		-1 -> (path, "")
+		-1 -> ("", path)
 		i  -> (subString 0 i path, subString (i+1) (size path - i - 1) path)
 
 takeDirectory :: !FilePath -> FilePath
@@ -72,5 +75,6 @@ replaceFileName path fn = takeDirectory path </> fn
 dropFileName :: !FilePath -> FilePath
 dropFileName path = takeDirectory path
 
-
+getFullPathName :: !FilePath !*World -> (!MaybeOSError FilePath, !*World)
+getFullPathName p w = '_FilePath'.getFullPathName p w
 

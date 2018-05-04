@@ -1,4 +1,4 @@
-GCC=gcc -m32 -c
+CC=gcc -m32 -c
 
 all: clean unicode
 
@@ -8,7 +8,7 @@ clean:
 	rm -f *.o
 
 bsearch.o:
-	$(GCC) -c bsearch.c
+	$(CC) $(CFLAGS) -c bsearch.c
 
 WCsubst.o:
-	$(GCC) -c WCsubst.c
+	$(CC) $(CFLAGS) -c WCsubst.c

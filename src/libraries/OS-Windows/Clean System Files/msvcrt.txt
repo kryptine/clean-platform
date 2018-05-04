@@ -7,3 +7,4 @@ gmtime
 localtime
 mktime
 strftime
+_mkgmtime

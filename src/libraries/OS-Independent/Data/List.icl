@@ -1,7 +1,75 @@
 implementation module Data.List
 
-import Data.Maybe, StdTuple, StdBool, StdEnum, StdFunc, StdList, StdOrdList, Data.Functor, GenEq
-from StdMisc import abort
+import StdBool
+import StdEnum
+import StdFunc
+import StdList
+import StdOrdList
+import StdTuple
+
+import Data.Functor
+import Data.GenEq
+import Data.Maybe
+import Data.Monoid
+from Data.Foldable import class Foldable(foldMap)
+from Data.Traversable import class Traversable
+import qualified Data.Traversable as T
+import Control.Applicative
+import Control.Monad
+
+instance Functor []
+where
+	fmap f l = [f e \\ e <- l]
+
+instance Applicative [] where
+	pure x      = [x]
+	(<*>) fs xs = [f x\\f<-fs, x<-xs]
+
+instance Alternative [] where
+	empty        = []
+	(<|>) fa fa` = fa ++ fa`
+
+instance Monad []
+where
+	bind m k = foldr ((++) o k) [] m
+
+instance MonadPlus []
+where
+	mzero        = []
+	mplus xs ys = xs ++ ys
+
+instance Semigroup [a]
+where
+	mappend xs ys  = xs ++ ys
+
+instance Monoid [a]
+where
+	mempty = []
+
+instance Foldable []
+where
+	fold x = foldMap id x
+	foldMap f x = foldr (mappend o f) mempty x
+	foldr f x y = foldr f x y
+	foldr` f z0 xs = foldl f` id xs z0
+	where f` k x z = k (f x z)
+	foldl f x y = foldl f x y
+	foldl` f x y = foldl f x y
+	foldr1 f x = foldr1 f x
+	foldl1 f x = foldl1 f x
+
+instance Traversable []
+where
+	traverse f x = foldr cons_f (pure []) x
+	where cons_f x ys = (\x xs -> [x:xs]) <$> f x <*> ys
+	mapM f x = mapM f x
+	sequenceA f = 'T'.traverse id f
+	sequence x = 'T'.mapM id x
+
+(!?) infixl 9   :: ![.a] !Int -> Maybe .a
+(!?) [x:_]  0 = Just x
+(!?) [_:xs] i = xs !? (i-1)
+(!?) _      _ = Nothing
 
 // Haskell Data.List compat
 
@@ -19,7 +87,7 @@ product xs = prod xs
 
 // End Haskell Data.List compat
 
-keep :: Int [a] -> [a]
+keep :: !Int ![a] -> [a]
 keep n xs = drop (length xs - n) xs
 
 unzip3 :: ![(.a,.b,.c)] -> ([.a],[.b],[.c])
@@ -40,7 +108,7 @@ where
   (vs,ws,xs,ys,zs) = unzip5 vwxyzs
 
 replaceInList :: !(a a -> Bool) !a ![a] -> [a]
-replaceInList cond new []         = [new]
+replaceInList _ _ []         = []
 replaceInList cond new [x:xs]
     | cond new x            = [new : xs]
     | otherwise             = [x : replaceInList cond new xs]
@@ -59,7 +127,7 @@ intersperse i []      = []
 intersperse i [x]     = [x]
 intersperse i [x:xs]  = [x,i:intersperse i xs]
 
-intercalate :: .[a] [.[a]] -> .[a]
+intercalate :: !.[a] ![.[a]] -> .[a]
 intercalate xs xss = flatten (intersperse xs xss)
 
 transpose :: ![[a]] -> [.[a]]
@@ -85,59 +153,55 @@ permutations xs0        =  [xs0 : perms xs0 []]
             interleave` f [y:ys] r = let (us,zs) = interleave` (f o (\xs -> [y:xs])) ys r
                                      in  ([y:us], [f [t:y:us] : zs])
 
-foldl1 :: (.a -> .(.a -> .a)) [.a] -> .a
+foldl1 :: (.a -> .(.a -> .a)) ![.a] -> .a
 foldl1 f [x:xs]         =  foldl f x xs
 
-concatMap :: (.a -> [.b]) [.a] -> [.b]
+concatMap :: (.a -> [.b]) ![.a] -> [.b]
 concatMap f ls = flatten (map f ls)
 
-maximum :: .[a] -> a | < a
+maximum :: !.[a] -> a | < a
 maximum [x]     = x
 maximum [x:xs]  = max x (maximum xs)
 
-minimum :: .[a] -> a | Ord a
+minimum :: !.[a] -> a | Ord a
 minimum xs =  foldl1 min xs
 
 getItems :: ![a] ![Int] -> [a]
 getItems list indexes = [x \\ x <- list & idx <- [0..] | isMember idx indexes]
-
-instance Functor []
-where
-  fmap f l = [f e \\ e <- l]
 
 scanl :: (a -> .(.b -> a)) a [.b] -> .[a]
 scanl f q ls            =  [q : (case ls of
                                   []     -> []
                                   [x:xs] -> scanl f (f q x) xs)]
 
-scanl1 :: (a -> .(a -> a)) .[a] -> .[a]
+scanl1 :: (a -> .(a -> a)) !.[a] -> .[a]
 scanl1 f [x:xs]         =  scanl f x xs
 scanl1 _ []             =  []
 
-foldr1 :: (.a -> .(.a -> .a)) [.a] -> .a
+foldr1 :: (.a -> .(.a -> .a)) ![.a] -> .a
 foldr1 _ [x]            =  x
 foldr1 f [x:xs]         =  f x (foldr1 f xs)
 
-replicate :: .Int a -> .[a]
+replicate :: !.Int a -> .[a]
 replicate n x           =  take n (repeat x)
 
-cycle :: .[a] -> [a]
+cycle :: !.[a] -> [a]
 cycle xs                = xs`
   where xs` = xs ++ xs`
 
-unfoldr :: (.a -> Maybe (.b,.a)) .a -> [.b]
+unfoldr :: !(.a -> Maybe (.b,.a)) .a -> [.b]
 unfoldr f b  =
   case f b of
    Just (a,new_b) -> [a : unfoldr f new_b]
    Nothing        -> []
 
-break :: (a -> .Bool) .[a] -> .([a],[a])
+break :: (a -> .Bool) !.[a] -> .([a],[a])
 break _ xs=:[]           =  (xs, xs)
 break p xs=:[x:xs`]
            | p x        =  ([],xs)
            | otherwise  =  let (ys,zs) = break p xs` in ([x:ys],zs)
 
-stripPrefix :: .[a] u:[a] -> Maybe v:[a] | == a, [u <= v]
+stripPrefix :: !.[a] u:[a] -> Maybe v:[a] | == a, [u <= v]
 stripPrefix [] ys = Just ys
 stripPrefix [x:xs] [y:ys]
  | x == y = stripPrefix xs ys
@@ -146,7 +210,7 @@ stripPrefix _ _ = Nothing
 group :: .(.[a] -> [.[a]]) | == a
 group                   =  groupBy (==)
 
-groupBy :: (a -> a -> .Bool) .[a] -> [.[a]]
+groupBy :: (a -> a -> .Bool) !.[a] -> [.[a]]
 groupBy _  []           =  []
 groupBy eq [x:xs]       =  [[x:ys] : groupBy eq zs]
                            where (ys,zs) = span (eq x) xs
@@ -161,33 +225,33 @@ tails xs                =  [xs : case xs of
                                   []        -> []
                                   [_ : xs`] -> tails xs`]
 
-isPrefixOf :: .[a] .[a] -> .Bool | == a
+isPrefixOf :: !.[a] .[a] -> .Bool | == a
 isPrefixOf [] _          =  True
 isPrefixOf _  []         =  False
 isPrefixOf [x:xs] [y:ys] =  x == y && isPrefixOf xs ys
 
-isSuffixOf :: .[a] .[a] -> .Bool | == a
+isSuffixOf :: !.[a] .[a] -> .Bool | == a
 isSuffixOf x y          =  isPrefixOf (reverse x) (reverse y)
 
 isInfixOf :: .[a] .[a] -> Bool | == a
 isInfixOf needle haystack = any (isPrefixOf needle) (tails haystack)
 
 // Ported from https://rosettacode.org/wiki/Levenshtein_distance#Haskell
-levenshtein :: .[a] .[a] -> Int | == a
+levenshtein :: !.[a] !.[a] -> Int | == a
 levenshtein xs ys = last (foldl transform [0..length xs] ys)
 where
 	transform ns=:[n:ns`] c = scan (calc c) (n+1) (zip3 xs ns ns`)
 	calc c z (c`, x, y) = minList [y+1, z+1, if (c`<>c) 1 0 + x]
 
-elem :: a .[a] -> .Bool | == a
+elem :: a !.[a] -> .Bool | == a
 elem _ []       = False
 elem x [y:ys]   = x == y || elem x ys
 
-notElem :: a .[a] -> .Bool | == a
+notElem :: a !.[a] -> .Bool | == a
 notElem _ []     =  True
 notElem x [y:ys] =  x <> y && notElem x ys
 
-lookup :: a [(a,.b)] -> Maybe .b | == a
+lookup :: a ![(a,.b)] -> Maybe .b | == a
 lookup  _   []          =  Nothing
 lookup  key [(x,y):xys]
     | key == x          =  Just y
@@ -204,7 +268,7 @@ select p x (ts, fs)
   | p x       = ([x:ts], fs)
   | otherwise = (ts, [x:fs])
 
-foldr` :: !(a .b -> .b) !.b !.[a] -> !.b
+foldr` :: !(a .b -> .b) !.b !.[a] -> .b
 foldr` _ acc []       = acc
 foldr` f acc [x : xs]
   #! tmp = foldr` f acc xs
@@ -219,7 +283,7 @@ elemIndices x   = findIndices (\y -> x==y)
 findIndex :: (.a -> .Bool) -> .([.a] -> .(Maybe Int))
 findIndex p     = listToMaybe o findIndices p
 
-findIndices :: (.a -> .Bool) [.a] -> .[Int]
+findIndices :: (.a -> .Bool) ![.a] -> .[Int]
 findIndices p xs = [ i \\ (x,i) <- zip2 xs [0..] | p x]
 
 zip3 :: ![.a] [.b] [.c] -> [(.a,.b,.c)]
@@ -275,7 +339,7 @@ zipWith5 z [a:as] [b:bs] [c:cs] [d:ds] [e:es]
                    = [ z a b c d e : zipWith5 z as bs cs ds es]
 zipWith5 _ _ _ _ _ _ = []
 
-nub :: .[a] -> .[a] | == a
+nub :: !.[a] -> .[a] | == a
 nub l                   = nub` l []
   where
     nub` [] _           = []
@@ -283,7 +347,7 @@ nub l                   = nub` l []
         | elem x  ls    = nub` xs ls
         | otherwise     = [x : nub` xs [x:ls]]
 
-nubBy :: (a -> .(a -> .Bool)) .[a] -> .[a]
+nubBy :: (a -> .(a -> .Bool)) !.[a] -> .[a]
 nubBy eq l              = nubBy` l []
   where
     nubBy` [] _         = []
@@ -291,14 +355,14 @@ nubBy eq l              = nubBy` l []
        | elem_by eq y xs = nubBy` ys xs
        | otherwise       = [y : nubBy` ys [y:xs]]
 
-elem_by :: (a -> .(.b -> .Bool)) a [.b] -> .Bool
+elem_by :: (a -> .(.b -> .Bool)) a ![.b] -> .Bool
 elem_by _  _ []         =  False
 elem_by eq y [x:xs]     =  eq y x || elem_by eq y xs
 
 delete :: u:(a -> v:(w:[a] -> x:[a])) | == a, [v <= u,w <= x]
 delete                  =  deleteBy (==)
 
-deleteBy :: (a -> .(b -> .Bool)) a u:[b] -> v:[b], [u <= v]
+deleteBy :: (a -> .(b -> .Bool)) a !u:[b] -> v:[b], [u <= v]
 deleteBy _  _ []        = []
 deleteBy eq x [y:ys]    = if (eq x y) ys [y : deleteBy eq x ys]
 
@@ -308,13 +372,13 @@ deleteFirstsBy eq       =  foldl (flip (deleteBy eq))
 difference :: u:(v:[a] -> w:(.[a] -> x:[a])) | == a, [w <= u,w v <= x]
 difference                    =  differenceBy (==)
 
-differenceBy :: (a -> a -> .Bool) u:[a] .[a] -> v:[a], [u <= v]
+differenceBy :: (a -> a -> .Bool) !u:[a] !.[a] -> v:[a], [u <= v]
 differenceBy eq as bs             =  foldl (flip (deleteBy eq)) as bs
 
 intersect :: u:(.[a] -> v:(.[a] -> .[a])) | == a, [v <= u]
 intersect               =  intersectBy (==)
 
-intersectBy :: (a -> b -> .Bool) .[a] .[b] -> .[a]
+intersectBy :: (a -> b -> .Bool) !.[a] !.[b] -> .[a]
 intersectBy _  [] _     =  []
 intersectBy _  _  []    =  []
 intersectBy eq xs ys    =  [x \\ x <- xs | any (eq x) ys]
@@ -322,8 +386,12 @@ intersectBy eq xs ys    =  [x \\ x <- xs | any (eq x) ys]
 union :: u:(.[a] -> v:(.[a] -> .[a])) | == a, [v <= u]
 union                   = unionBy (==)
 
-unionBy :: (a -> .(a -> .Bool)) .[a] .[a] -> .[a]
+unionBy :: (a -> .(a -> .Bool)) !.[a] .[a] -> .[a]
 unionBy eq xs ys        =  xs ++ foldl (flip (deleteBy eq)) (nubBy eq ys) xs
+
+hasDup :: ![a] -> Bool | Eq a
+hasDup []     = False
+hasDup [x:xs] = isMember x xs || hasDup xs
 
 isMemberGen :: !a !.[a] -> Bool | gEq{|*|} a
 isMemberGen x [hd:tl]	= hd === x || isMemberGen x tl
@@ -333,14 +401,14 @@ strictFoldr :: !(.a -> .(.b -> .b)) !.b ![.a] -> .b
 strictFoldr _ b []     = b
 strictFoldr f b [x:xs] = f x (strictFoldr f b xs)
 
-strictFoldrSt :: !(.a -> .(.b *st -> *(.b, *st))) !.b ![.a] *st -> *(.b, *st)
+strictFoldrSt       :: !(.a -> .(.b -> .(.st -> .(.b, .st)))) !.b ![.a] .st -> .(.b, .st)
 strictFoldrSt _ b []     st = (b, st)
 strictFoldrSt f b [x:xs] st
   #! (acc, st) = strictFoldrSt f b xs st
   #! (r, st)   = f x acc st
   = (r, st)
 
-strictFoldlSt :: !(.a -> .(.b *st -> *(.a, *st))) !.a ![.b] *st -> *(.a, *st)
+strictFoldlSt       :: !(.a -> .(.b -> .(.st -> .(.a, .st)))) !.a ![.b] .st -> .(.a, .st)
 strictFoldlSt _ b [] st = (b, st)
 strictFoldlSt f b [x:xs] st
   #! (r, st) = f b x st
@@ -432,4 +500,16 @@ strictTRZipWith3Acc :: !(a b c -> d) ![a] ![b] ![c] ![d] -> [d]
 strictTRZipWith3Acc f [a:as] [b:bs] [c:cs] acc
   = strictTRZipWith3Acc f as bs cs [f a b c : acc]
 strictTRZipWith3Acc _ _ _ _ acc = acc
+
+qfoldl :: (a -> b -> [b]) (a -> b -> a) a ![b] -> a
+qfoldl _ _ a []
+	= a
+qfoldl f g a [b:bs]
+	= let a` = g a b in qfoldl f g a` (bs ++ f a` b)
+
+qfoldr :: (a -> b -> [b]) (b -> a -> a) a ![b] -> a
+qfoldr _ _ a []
+	= a
+qfoldr f g a [b:bs]
+	= let a` = g b a in qfoldr f g a` (bs ++ f a` b)
 

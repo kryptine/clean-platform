@@ -1,7 +1,10 @@
 implementation module Data.Set
 
-import StdClass, StdMisc, StdBool, StdList, StdFunc, StdInt, StdTuple
-import Data.Maybe
+import StdClass, StdMisc, StdBool, StdFunc, StdInt, StdTuple
+import Data.Maybe, Data.GenEq, Data.GenLexOrd, Data.Monoid
+from Data.Foldable import class Foldable (..)
+import qualified StdList
+from StdList import instance == [a]
 
 //mapSet :: !(a -> b) !(Set a) -> Set b | < a & == a & < b & == b
 //mapSet f s = fromList (map f (toList s))
@@ -34,6 +37,35 @@ instance < (Set a) | < a where
       | a > b     = False
       | otherwise = compare as bs
 
+gEq{|Set|} eEq x y = (size x == size y) && gEq{|* -> *|} eEq (toAscList x) (toAscList y)
+gLexOrd{|Set|} eLexOrd x y = gLexOrd{|* -> *|} eLexOrd (toAscList x) (toAscList y)
+
+instance Foldable Set where
+	fold x = foldMap id x
+	foldMap f x = foldr (mappend o f) mempty x
+
+    foldr _ z Tip           = z
+    foldr f z (Bin _ x l r) = foldr f (f x (foldr f z r)) l
+
+	foldr` _ z Tip           = z
+    foldr` f z (Bin _ x l r) = foldr` f (f x (foldr` f z r)) l
+
+    foldl _ z Tip           = z
+    foldl f z (Bin _ x l r) = foldl f (f (foldl f z l) x) r
+
+	foldl` _ z Tip           = z
+    foldl` f z (Bin _ x l r) = foldl` f (f (foldl` f z l) x) r
+
+	foldr1 f (Bin _ x Tip Tip) = x
+    foldr1 f (Bin _ x Tip r)   = foldr f x r
+    foldr1 f (Bin _ x l Tip)   = foldr f x l
+    foldr1 f (Bin _ x l r)     = foldr f (f x (foldr1 f r)) l
+
+	foldl1 f (Bin _ x Tip Tip) = x
+    foldl1 f (Bin _ x Tip r)   = foldl f x r
+    foldl1 f (Bin _ x l Tip)   = foldl f x l
+    foldl1 f (Bin _ x l r)     = foldl f (f (foldr1 f l) x) r
+
 /*--------------------------------------------------------------------
  * Query
  *--------------------------------------------------------------------*/
@@ -53,7 +85,7 @@ instance < (Set a) | < a where
 //size (Bin sz _ _ _) = sz
 
 // | /O(log n)/. Is the element in the set?
-member :: !a !(Set a) -> Bool | < a & == a
+member :: !a !(Set a) -> Bool | < a
 member x Tip = False
 member x (Bin _ y l r)
   | x < y     = member x l
@@ -83,14 +115,14 @@ singleton x = Bin 1 x Tip Tip
 // | /O(log n)/. Insert an element in a set.
 // If the set already contains an element equal to the given value,
 // it is replaced with the new value.
-insert :: !a !.(Set a) -> Set a | < a & == a
+insert :: !a !.(Set a) -> Set a | < a
 insert x Tip = singleton x
 insert x (Bin sz y l r)
   | x < y     = balanceL y (insert x l) r
   | x > y     = balanceR y l (insert x r)
   | otherwise = Bin sz x l r
 
-insertR :: !a !(Set a) -> Set a | < a & == a
+insertR :: !a !(Set a) -> Set a | < a
 insertR x Tip = singleton x
 insertR x t=:(Bin _ y l r)
   | x < y     = balanceL y (insertR x l) r
@@ -98,7 +130,7 @@ insertR x t=:(Bin _ y l r)
   | otherwise = t
 
 // | /O(log n)/. Delete an element from a set.
-delete :: !a !.(Set a) -> Set a | < a & == a
+delete :: !a !.(Set a) -> Set a | < a
 delete x Tip = Tip
 delete x (Bin _ y l r)
   | x < y     = balanceR y (delete x l) r
@@ -118,7 +150,7 @@ delete x (Bin _ y l r)
 //isSubsetOf :: !(Set a) !(Set a) -> Bool | < a & == a
 //isSubsetOf t1 t2 = (size t1 <= size t2) && (isSubsetOfX t1 t2)
 
-isSubsetOfX :: !(Set a) !(Set a) -> Bool | < a & == a
+isSubsetOfX :: !(Set a) !(Set a) -> Bool | < a
 isSubsetOfX Tip _ = True
 isSubsetOfX _ Tip = False
 isSubsetOfX (Bin _ x l r) t
@@ -163,39 +195,39 @@ deleteMax Tip             = Tip
 
 // | /O(n+m)/. The union of two sets, preferring the first set when
 // equal elements are encountered.
-// The implementation uses the efficient /hedge-union/ algorithm.
-// Hedge-union is more efficient on (bigset `union` smallset).
 union :: !u:(Set a) !u:(Set a) -> Set a | < a & == a
-union Tip t2  = t2
-union t1 Tip  = t1
-union t1 t2 = hedgeUnion NothingS NothingS t1 t2
+union t1 Tip = t1
+union t1 (Bin _ x Tip Tip) = insertR x t1
+union (Bin _ x Tip Tip) t2 = insert x t2
+union Tip t2 = t2
+union t1=:(Bin _ x l1 r1) t2 = link x l1l2 r1r2
+where
+	(l2,r2) = splitS x t2
+	l1l2 = union l1 l2
+	r1r2 = union r1 r2
 
-hedgeUnion :: !(MaybeS a) !(MaybeS a) !(Set a) !(Set a) -> Set a | < a & == a
-hedgeUnion _   _   t1  Tip = t1
-hedgeUnion blo bhi Tip (Bin _ x l r) = link x (filterGt blo l) (filterLt bhi r)
-hedgeUnion _   _   t1  (Bin _ x Tip Tip) = insertR x t1
-hedgeUnion blo bhi (Bin _ x l r) t2 = link x (hedgeUnion blo bmi l (trim blo bmi t2))
-                                             (hedgeUnion bmi bhi r (trim bmi bhi t2))
-  where bmi = JustS x
+splitS :: !a !(Set a) -> (!Set a, !Set a) | <, == a
+splitS _ Tip = (Tip,Tip)
+splitS x (Bin _ y l r)
+| x < y     = let (lt,gt) = splitS x l in (lt, link y gt r)
+| x > y     = let (lt,gt) = splitS x r in (link y l lt, gt)
+| otherwise = (l,r)
 
 /*--------------------------------------------------------------------
  * Difference
  *--------------------------------------------------------------------*/
  
 // | /O(n+m)/. Difference of two sets. 
-// The implementation uses an efficient /hedge/ algorithm comparable with /hedge-union/.
 difference :: !(Set a) !(Set a) -> Set a | < a & == a
 difference Tip _   = Tip
 difference t1 Tip  = t1
-difference t1 t2   = hedgeDiff NothingS NothingS t1 t2
-
-hedgeDiff :: !(MaybeS a) !(MaybeS a) !(Set a) !(Set a) -> Set a | < a & == a
-hedgeDiff _   _   Tip           _ = Tip
-hedgeDiff blo bhi (Bin _ x l r) Tip = link x (filterGt blo l) (filterLt bhi r)
-hedgeDiff blo bhi t (Bin _ x l r) = merge (hedgeDiff blo bmi (trim blo bmi t) l)
-                                          (hedgeDiff bmi bhi (trim bmi bhi t) r)
-  where bmi = JustS x
-
+difference t1 (Bin _ x l2 r2) = case split  x t1 of
+	(l1, r1)
+		| size l1l2 + size r1r2 == size t1 -> t1
+		| otherwise -> merge l1l2 r1r2
+	where
+		l1l2 = difference l1 l2
+		r1r2 = difference r1 r2
 
 /*--------------------------------------------------------------------
  * Intersection
@@ -203,7 +235,7 @@ hedgeDiff blo bhi t (Bin _ x l r) = merge (hedgeDiff blo bmi (trim blo bmi t) l)
 
 intersections :: ![Set a] -> Set a | < a & == a
 intersections [t] = t
-intersections [t:ts] = foldl intersection t ts
+intersections [t:ts] = 'StdList'.foldl intersection t ts
 
 // | /O(n+m)/. The intersection of two sets.
 // Elements of the result come from the first set, so for example
@@ -238,7 +270,7 @@ hedgeInt blo bhi (Bin _ x l r) t2
  *--------------------------------------------------------------------*/
 
 // | /O(n)/. Filter all elements that satisfy the predicate.
-filter :: !(a -> Bool) !(Set a) -> Set a | < a & == a
+filter :: !(a -> Bool) !(Set a) -> Set a | < a
 filter _ Tip = Tip
 filter p (Bin _ x l r)
   | p x       = link x (filter p l) (filter p r)
@@ -247,7 +279,7 @@ filter p (Bin _ x l r)
 // | /O(n)/. Partition the set into two sets, one with all elements that satisfy
 // the predicate and one with all elements that don't satisfy the predicate.
 // See also 'split'.
-partition :: !(a -> Bool) !(Set a) -> (!Set a, !Set a) | < a & == a
+partition :: !(a -> Bool) !(Set a) -> (!Set a, !Set a) | < a
 partition _ Tip = (Tip,Tip)
 partition p (Bin _ x l r)
   #! (l1,l2) = partition p l
@@ -277,10 +309,10 @@ fold f z (Bin _ x l r) = fold f (f x (fold f z r)) l
 //toAscList t = fold (\a as -> [a:as]) [] t
 
 // | /O(n*log n)/. Create a set from a list of elements.
-fromList :: ![a] -> Set a | < a & == a
-fromList xs = foldl ins newSet xs
+fromList :: ![a] -> Set a | < a
+fromList xs = 'StdList'.foldl ins newSet xs
   where
-  ins :: !(Set a) !a -> Set a | < a & == a
+  ins :: !(Set a) !a -> Set a | < a
   ins t x = insert x t
 
 /*--------------------------------------------------------------------
@@ -354,7 +386,7 @@ filterLt (JustS b) t = filter` b t
 // | /O(log n)/. The expression (@'split' x set@) is a pair @(set1,set2)@
 // where @set1@ comprises the elements of @set@ less than @x@ and @set2@
 // comprises the elements of @set@ greater than @x@.
-split :: !a !(Set a) -> (!Set a, !Set a) | < a & == a
+split :: !a !(Set a) -> (!Set a, !Set a) | < a
 split _ Tip = (Tip,Tip)
 split x (Bin _ y l r)
   | x < y
@@ -367,7 +399,7 @@ split x (Bin _ y l r)
 
 // | /O(log n)/. Performs a 'split' but also returns whether the pivot
 // element was found in the original set.
-splitMember :: !a !(Set a) -> (!Set a, !Bool, !Set a) | < a & == a
+splitMember :: !a !(Set a) -> (!Set a, !Bool, !Set a) | < a
 splitMember _ Tip = (Tip, False, Tip)
 splitMember x (Bin _ y l r)
   | x < y

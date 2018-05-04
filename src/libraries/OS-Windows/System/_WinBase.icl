@@ -8,7 +8,12 @@ closeHandle handle world
 	= code {
 		ccall CloseHandle@4 "PI:I:I"
 	}
-	
+
+setHandleInformation :: !HANDLE !DWORD !DWORD !*w -> (!Bool, !*w)
+setHandleInformation hObject dwMask dwFlags world = code {
+	ccall SetHandleInformation@12 "PIII:I:I"
+}
+
 createDirectoryA :: !String !LPSECURITY_ATTRIBUTES !*w -> (!Bool, !*w)
 createDirectoryA lpFileName lpSecurityAttributes world
 	= code {
@@ -25,13 +30,13 @@ createFileA lpFileName dwDesiredAccess dwShareMode lpSecurityAttributes
 readFile :: !HANDLE !LPVOID !DWORD !LPDWORD !LPOVERLAPPED !*w -> (!Bool, !*w)
 readFile hFile lpBuffer nNumberOfBytesToRead lpNumberOfBytesRead lpOverlapped world
 	= code {
-		ccall ReadFile@20 "PIpIAp:I:I"
+		ccall ReadFile@20 "PIpIpp:I:I"
 	}
 	
-writeFile :: !HANDLE !LPVOID !DWORD !LPDWORD !LPOVERLAPPED !*w -> (!Bool, !*w)
+writeFile :: !HANDLE !String !DWORD !LPDWORD !LPOVERLAPPED !*w -> (!Bool, !*w)
 writeFile hFile lpBuffer nNumberOfBytesToWrite lpNumberOfBytesWritten lpOverlapped world
 	= code {
-		ccall WriteFile@20 "PIpIAp:I:I"
+		ccall WriteFile@20 "PIsIpp:I:I"
 	}
 	
 setEndOfFile :: !HANDLE !*w -> (!Bool, !*w)
@@ -58,6 +63,12 @@ getFileSize hFile lpFileSizeHigh world
 		ccall GetFileSize@8 "PIA:I:I"
 	}
 
+getFullPathNameA :: !String !DWORD !String !LPTSTR !*w -> (!DWORD, !*w)
+getFullPathNameA lpFileName nBufferLnegth lpBuffer lpFilePart world
+	= code {
+		ccall GetFullPathNameA@16 "PsIsp:I:I"
+	}
+
 createProcessA :: !String !String !LPSECURITY_ATTRIBUTES !LPSECURITY_ATTRIBUTES !Bool !Int !LPVOID
 					!LPCTSTR !LPSTARTUPINFO !LPPROCESS_INFORMATION !*w -> (!Bool,!*w)
 createProcessA lpApplicationName commandLine lpProcessAttributes lpThreadAttributes inheritHandles creationFlags lpEnvironment
@@ -73,7 +84,12 @@ createProcessA_dir lpApplicationName commandLine lpProcessAttributes lpThreadAtt
 	= code {
 		ccall CreateProcessA@40 "PssIIIIIsAA:I:I"
 	}
-	
+
+terminateProcess :: !HANDLE !Int !*w -> (!Bool, !*w)
+terminateProcess hProc exitCode world = code inline {
+	ccall TerminateProcess@8 "PII:I:I"
+}
+
 deleteFileA :: !String !*w -> (!Int, !*w)
 deleteFileA path world = code inline {
 	ccall DeleteFileA@4 "Ps:I:I"
@@ -257,4 +273,22 @@ sleep dwMilliseconds world = code {
 	fill_a 0 1
 	pop_a 1
 	ccall Sleep@4 "PI:V:I"
+}
+
+createPipe :: !PHANDLE !PHANDLE !SECURITY_ATTRIBUTES !DWORD !*w -> (!Bool, !*w)
+createPipe hReadPipe hWritePipe lpPipeAttributes nSize world = code {
+	ccall CreatePipe@16 "PppAI:I:I"
+}
+
+peekNamedPipe :: !HANDLE !LPVOID !DWORD !LPDWORD !LPDWORD !LPDWORD !*w -> (!Bool, !*w)
+peekNamedPipe hNamedPipe lpBuffer nBufferSize lpBytesRead lpTotalBytesAvail lpBytesLeftThisMessage world = code {
+	ccall PeekNamedPipe@24 "PIpIppp:I:I"
+}
+
+GetSystemTimeAsFileTime :: !{#Int} !*World -> (!{#Int},!*World)
+GetSystemTimeAsFileTime i w
+= code {
+	push_a 0
+	ccall GetSystemTimeAsFileTime@4 "PA:I:AA"
+	pop_b 1
 }

@@ -1,7 +1,8 @@
 implementation module System.Time
 
-import StdString, StdArray, StdClass, StdOverloaded, StdInt
-import System._Pointer
+import StdString, StdArray, StdClass, StdOverloaded, StdInt, StdMisc, StdBool
+import System.OS
+import System._Pointer, System._Posix
 import Text
 
 //String buffer size
@@ -80,15 +81,18 @@ localTime world
     	ccall localtime "A:p:p"
 	}
 
-mkTime :: !Tm -> Timestamp
-mkTime tm 
-	# t = mkTimeC (packTm tm)
-	= Timestamp t
-	where
-	mkTimeC :: !{#Int} -> Int
-	mkTimeC tm = code {
-		ccall mktime "A:I"
+mkTime :: !Tm !*World-> (!Timestamp, !*World)
+mkTime tm world
+	# (t, world) = mkTimeC (packTm tm) world
+	= (Timestamp t, world)
+where
+	mkTimeC :: !{#Int} !*World -> (!Int, !*World)
+	mkTimeC tm world = code {
+		ccall mktime "A:I:A"
 	}
+
+timeGm :: !Tm -> Timestamp
+timeGm tm = Timestamp (timegm (packTm tm))
 
 diffTime :: !Timestamp !Timestamp -> Int
 diffTime (Timestamp t1) (Timestamp t2) = t1 - t2
@@ -133,7 +137,7 @@ packTm64 tm =   { tm.sec  + tm.min  << 32
                 , tm.hour + tm.mday << 32
                 , tm.mon  + tm.year << 32
                 , tm.wday + tm.yday << 32
-                , if tm.isdst 1 0
+                , tm.isdst
                 }
 
 packTm32 :: !Tm -> {#Int}
@@ -145,7 +149,7 @@ packTm32 tm =   { tm.sec
                 , tm.year
                 , tm.wday
                 , tm.yday
-                , if tm.isdst 1 0
+                , tm.isdst
                 }
 
 unpackTm :: !{#Char} !Int -> Tm
@@ -158,8 +162,52 @@ unpackTm buf off =
 	, year  = unpackInt4S buf (off + 20)
 	, wday  = unpackInt4S buf (off + 24)
 	, yday  = unpackInt4S buf (off + 28)
-	, isdst = unpackBool buf (off + 32)
+	, isdst = unpackInt4S buf (off + 32)
 	}
 
 sizeOfTm :: Int
-sizeOfTm = 36 
+sizeOfTm = IF_ANDROID 44 36 
+
+nsTime :: !*World -> (!Timespec, !*World)
+nsTime w
+# (p, w) = mallocSt 16 w
+# (r, w) = clock_gettime 0 p w
+//For completeness sake
+| r <> 0 = abort "clock_gettime error: everyone should have permission to open CLOCK_REALTIME?"
+# (tv_sec, p) = readIntP p 0
+# (tv_nsec, p) = readIntP p 8
+= ({Timespec | tv_sec = tv_sec, tv_nsec = tv_nsec}, freeSt p w)
+
+timespecToStamp :: !Timespec -> Timestamp
+timespecToStamp t = Timestamp t.tv_sec
+
+timestampToSpec :: !Timestamp -> Timespec
+timestampToSpec (Timestamp t) = {tv_sec=t,tv_nsec=0}
+
+instance < Timespec
+where
+	(<) t1 t2
+		| t1.tv_sec == t2.tv_sec = t1.tv_nsec < t2.tv_nsec
+		= t1.tv_sec < t2.tv_sec
+
+instance + Timespec
+where
+	(+) t1 t2 = let tv_nsec = t1.tv_nsec + t2.tv_nsec in
+		{ tv_sec  = t1.tv_sec + t2.tv_sec + tv_nsec / 1000000000
+		, tv_nsec = tv_nsec rem 1000000000
+		}
+
+instance - Timespec
+where
+	(-) t1 t2
+		# tv_nsec = t1.tv_nsec - t2.tv_nsec
+		| tv_nsec < 0
+			= {tv_sec = t1.tv_sec - t2.tv_sec - 1, tv_nsec = 1000000000 - tv_nsec}
+			= {tv_sec = t1.tv_sec - t2.tv_sec - 1, tv_nsec = tv_nsec}
+
+instance zero Timespec
+where zero = {tv_sec=0, tv_nsec=0}
+
+instance == Timespec
+where
+	(==) t1 t2 = t1.tv_sec == t2.tv_sec && t1.tv_nsec == t2.tv_nsec

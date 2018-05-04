@@ -1,7 +1,11 @@
 implementation module System.Time
 
-import StdString, StdArray, StdClass, StdOverloaded, StdInt, StdMisc
+import StdString, StdArray, StdClass, StdOverloaded, StdInt, StdMisc, StdBool
 import System._Pointer
+import System._WinBase
+import Data.Integer
+import Data.List
+from Data.Func import $
 import Text
 
 import code from library "msvcrt.txt"
@@ -74,14 +78,22 @@ localTime world
 	# (tm,world)			= localTimeC (packInt t) world
 	= (derefTm tm, world)
 
-mkTime :: !Tm -> Timestamp
-mkTime tm 
-	# t = mkTimeC (packTm tm)
-	= Timestamp t
-	where
-	mkTimeC :: !{#Int} -> Int
-	mkTimeC tm = code {
-		ccall mktime "A:I"
+mkTime :: !Tm !*World-> (!Timestamp, !*World)
+mkTime tm world
+	# (t, world) = mkTimeC (packTm tm) world
+	= (Timestamp t, world)
+where
+	mkTimeC :: !{#Int} !*World -> (!Int, !*World)
+	mkTimeC tm world = code {
+		ccall mktime "A:I:I"
+	}
+
+timeGm :: !Tm -> Timestamp
+timeGm tm = Timestamp (timegmC (packTm tm))
+where
+	timegmC :: !{#Int} -> Int
+	timegmC tm = code {
+		ccall _mkgmtime "A:I"
 	}
 
 diffTime :: !Timestamp !Timestamp -> Int
@@ -126,7 +138,7 @@ derefTm tm =	{ sec	= readInt4S tm 0
 				, year	= readInt4S tm 20
 				, wday	= readInt4S tm 24
 				, yday	= readInt4S tm 28 
-				, isdst	= readInt4S tm 32 <> 0
+				, isdst	= readInt4S tm 32
 				}
 
 packTm :: !Tm -> {#Int}
@@ -137,7 +149,7 @@ packTm64 tm = 	{ tm.sec  + tm.min  << 32
 				, tm.hour + tm.mday << 32
 				, tm.mon  + tm.year << 32
 				, tm.wday + tm.yday << 32
-				, if tm.isdst 1 0
+				, tm.isdst
 				}
 				
 packTm32 :: !Tm -> {#Int}
@@ -149,5 +161,56 @@ packTm32 tm = 	{ tm.sec
 				, tm.year
 				, tm.wday
 				, tm.yday
-				, if tm.isdst 1 0
+				, tm.isdst
 				}
+				
+//Number of ticks difference between the windows and linux epoch
+TICKSDIFF :== {integer_s=0,integer_a={-1240428288,2}} * TICKSPERSEC
+//Number of ticks per second on windows machines
+TICKSPERSEC :== {integer_s=10000000,integer_a={}}
+BIGTWO :== {integer_s=2,integer_a={}}
+				
+nsTime :: !*World -> (!Timespec, !*World)
+nsTime w
+# (is, w) = GetSystemTimeAsFileTime (createArray 2 0) w
+# ticks = uintToInt is.[0] + foldr ($) (uintToInt is.[1]) (repeatn 32 ((*) BIGTWO)) - TICKSDIFF
+= ({Timespec | tv_sec=toInt (ticks / TICKSPERSEC), tv_nsec=toInt (ticks rem TICKSPERSEC) *100}, w)
+
+uintToInt :: Int -> Integer
+uintToInt i
+| i < 0 = toInteger i + {integer_s=0,integer_a={0,1}}
+= toInteger i
+
+timespecToStamp :: !Timespec -> Timestamp
+timespecToStamp t = Timestamp t.tv_sec
+
+timestampToSpec :: !Timestamp -> Timespec
+timestampToSpec (Timestamp t) = {tv_sec=t,tv_nsec=0}
+
+instance < Timespec
+where
+	(<) t1 t2
+		| t1.tv_sec == t2.tv_sec = t1.tv_nsec < t2.tv_nsec
+		= t1.tv_sec < t2.tv_sec
+
+instance + Timespec
+where
+	(+) t1 t2 = let tv_nsec = t1.tv_nsec + t2.tv_nsec in
+		{ tv_sec  = t1.tv_sec + t2.tv_sec + tv_nsec / 1000000000
+		, tv_nsec = tv_nsec rem 1000000000
+		}
+
+instance - Timespec
+where
+	(-) t1 t2
+		# tv_nsec = t1.tv_nsec - t2.tv_nsec
+		| tv_nsec < 0
+			= {tv_sec = t1.tv_sec - t2.tv_sec - 1, tv_nsec = 1000000000 - tv_nsec}
+			= {tv_sec = t1.tv_sec - t2.tv_sec - 1, tv_nsec = tv_nsec}
+
+instance zero Timespec
+where zero = {tv_sec=0, tv_nsec=0}
+
+instance == Timespec
+where
+	(==) t1 t2 = t1.tv_sec == t2.tv_sec && t1.tv_nsec == t2.tv_nsec
