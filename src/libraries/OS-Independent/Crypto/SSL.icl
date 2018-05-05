@@ -12,8 +12,9 @@ import StdTuple
 
 from Data.Func import $
 import Internet.HTTP
-import System._Pointer
 import System.FilePath
+import System._Pointer
+import System._Posix
 
 import code from "sslhelp."
 
@@ -31,6 +32,8 @@ where
 	host = "badssl.com"
 	//host = "untrusted-root.badssl.com"
 	//host = "revoked.com"
+	//host = "rc4-md5.badssl.com"
+	//host = "wrong.host.badssl.com"
 	//host = "sha1-intermediate.badssl.com"
 	//host = "pinning-test.badssl.com"
 	//host = "wrong.host.badssl.com"
@@ -65,7 +68,7 @@ initSSL host port w
 | res <> 1  = abort "CH Res was not 1\n"
 #! (ssl,w)  = BIO_get_ssl web w
 | ssl == 0  = abort "SSL was 0\n"
-#! (res,w)  = SSL_set_cipher_list ssl "HIGH:!aNULL:!kRSA:!PSK:!SRP:!MD5:!RC4" w
+#! (res,w)  = SSL_set_cipher_list ssl "HIGH:!aNULL:!kRSA:!PSK:!SRP:!MD5:!RC4:!SHA1" w
 | res <> 1  = abort "CL Res was not 1\n"
 #! (res,w)  = SSL_set_tlsext_host_name ssl host w
 | res <> 1  = abort "TH Res was not 1\n"
@@ -151,7 +154,6 @@ SSL_set_tlsext_host_name ssl host w
 	= SSL_ctrl_string ssl SSL_CTRL_SET_TLSEXT_HOSTNAME TLSEXT_NAMETYPE_host_name host w
 where TLSEXT_NAMETYPE_host_name = 0
 
-import StdString, StdArray
 SSL_ctrl_string :: !Pointer !Int !Int !String !*World -> *(!Int, !*World)
 SSL_ctrl_string ssl cmd larg parg w = call ssl cmd /*(size parg)*/ larg (packString parg) w
 where
@@ -224,9 +226,4 @@ BIO_read bio p n w = code {
 BIO_test_flags :: !BIO !Int !*World -> *(!Int, !*World)
 BIO_test_flags bio f w = code {
 	ccall BIO_test_flags "pI:I:A"
-}
-
-malloc :: !Int -> Pointer
-malloc n = code {
-	ccall malloc "I:p"
 }
