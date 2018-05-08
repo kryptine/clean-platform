@@ -1,5 +1,75 @@
 definition module Data.Set
 
+/**
+ * @property-bootstrap
+ *   import StdBool, StdChar, StdInt, StdOrdList, StdString, StdTuple
+ *   import StdList => qualified insert, filter
+ *   from Data.Func import on, `on`
+ *   import Data.GenLexOrd
+ *   import Data.Set
+ *
+ *   derive genShow Maybe
+ *   genShow{|Set|} show sep p xs rest = ["Set{":showList (toList xs) ["}":rest]]
+ *   where
+ *       showList [x]    rest = show sep False x rest
+ *       showList [x:xs] rest = show sep False x [",":showList xs rest]
+ *       showList []     rest = rest
+ *
+ *   derive bimap []
+ *
+ *   :: Predicate a = ConstTrue | IsMember [a]
+ *
+ *   pred :: (Predicate a) a -> Bool | Eq a
+ *   pred ConstTrue     _ = True
+ *   pred (IsMember cs) c = isMember c cs
+ *
+ *   derive ggen Predicate
+ *   derive genShow Predicate
+ *   derive JSONEncode Predicate, Set
+ *
+ *   // Check that all elements from a list are in a set.
+ *   contains :: (Set a) [a] -> Bool | < a
+ *   contains d xs = all (\x -> member x d) xs
+ *
+ *   // Check that no elements from a list are in a set.
+ *   does_not_contain :: (Set a) [a] -> Bool | < a
+ *   does_not_contain d ys = all (\y -> notMember y d) ys
+ *
+ *   // Check that all elements from a set are in a list.
+ *   all_in :: (Set a) [a] -> Bool | Eq a
+ *   all_in s xs = all (\e -> isMember e xs) (toList s)
+ *
+ *   // Check that the data structure is still correct.
+ *   integrity :: (Set a) -> Property | Eq, genShow{|*|}, JSONEncode{|*|} a
+ *   integrity s =
+ *     name "no_duplicates" (no_duplicates s) /\
+ *     name "log_size"      (log_size s) /\
+ *     name "sizes_correct" (sizes_correct s)
+ *
+ *   // Check that a set contains no duplicates.
+ *   no_duplicates :: (Set a) -> Property | Eq, genShow{|*|}, JSONEncode{|*|} a
+ *   no_duplicates s = xs =.= removeDup xs where xs = toList s
+ *
+ *   // Check that a set is log(n) in depth.
+ *   log_size :: (Set a) -> Property
+ *   log_size s = check (<) nelem (2 ^ depth s)
+ *   where
+ *     nelem = size s
+ *
+ *     depth :: (Set a) -> Int
+ *     depth Tip = 0
+ *     depth (Bin _ _ l r) = 1 + (max `on` depth) l r
+ *
+ *   // Check that the sizes in a set are correct.
+ *   sizes_correct :: (Set a) -> Property
+ *   sizes_correct Tip = prop True
+ *   sizes_correct b=:(Bin _ _ l r) =
+ *     size b =.= 1 + size l + size r /\
+ *     sizes_correct l /\
+ *     sizes_correct r
+ * @property-test-with a = Char
+ */
+
 from StdOverloaded	import class ==, class < (..)
 from StdClass import class Ord (..), <=, >
 from Data.Maybe		import :: Maybe
@@ -58,6 +128,10 @@ instance Foldable Set
 /**
  * True iff this is the empty set.
  * @type (Set a) -> Bool
+ * @property null_correct: A.xs :: [a]:
+ *   (size xs` == 0 <==> null xs`)
+ *     /\ (xs` == newSet <==> null xs`)
+ *   where xs` = fromList xs
  */
 null s :== case s of
              Tip -> True
@@ -66,12 +140,17 @@ null s :== case s of
 /**
  * The number of elements in the set.
  * @type (Set a) -> Int
+ * @property size_correct: A.xs :: [a]:
+ *   size (fromList xs) =.= length (removeDup xs)
  */
 size s :== case s of
              Tip -> 0
              (Bin sz _ _ _) -> sz
+
 /**
- * Is the element in the set?
+ * Is the element in the set? O(log n).
+ * @property member_correct: A. x :: a; xs :: [a]:
+ *   member x (fromList xs) <==> isMember x xs
  */
 member    :: !a !(Set a) -> Bool | < a
 
@@ -84,6 +163,8 @@ notMember x t :== not (member x t)
 /**
  * Is t1 a subset of t2?
  * @type (Set a) (Set a) -> Bool | <, == a
+ * @property isSubsetOf_correct: A.xs :: [a]; ys :: [a]:
+ *   isSubsetOf (fromList xs) (fromList ys) <==> all (\x -> isMember x ys) xs
  */
 isSubsetOf t1 t2 :== (size t1 <= size t2) && (isSubsetOfX t1 t2)
 
@@ -92,11 +173,16 @@ isSubsetOfX :: !(Set a) !(Set a) -> Bool | < a
 /**
  * Is t1 a proper subset of t2?
  * @type (Set a) (Set a) -> Bool | <, == a
+ * @property isProperSubsetOf_correct: A.xs :: [a]; ys :: [a]:
+ *   isProperSubsetOf (fromList xs) (fromList ys)
+ *     <==> all (\x -> isMember x ys) xs && not (all (\y -> isMember y xs) ys)
  */
 isProperSubsetOf s1 s2 :== (size s1 < size s2) && (isSubsetOf s1 s2)
 
 /**
  * The empty set.
+ * @property newSet_null:
+ *   name "newSet_null" (null newSet)
  */
 newSet :: Set a
 
@@ -104,62 +190,123 @@ newSet :: Set a
  * Create a singleton set.
  */
 singleton :: !u:a -> w:(Set u:a), [w <= u]
+
 /**
  * Insert an element in a set.
  * If the set already contains an element equal to the given value, it is replaced with the new value.
+ *
+ * @property insert_correct: A.x :: a; xs :: [a]:
+ *   let xs` = insert x (fromList xs) in
+ *     check member x xs`    /\ // Membership
+ *     check contains xs` xs /\ // Rest untouched
+ *     integrity xs`            // Data structure integrity
  */
 insert :: !a !.(Set a) -> Set a | < a
 
 /**
  * Delete an element from a set.
+ * @property delete_correct: A.x :: a; xs :: [a]:
+ *   let xs` = delete x (fromList xs) in
+ *     check notMember x xs` /\                         // Membership
+ *     check contains xs` [x` \\ x` <- xs | x` <> x] /\ // Rest untouched
+ *     integrity xs`                                    // Data structure integrity
  */
 delete :: !a !.(Set a) -> Set a | < a
 
 /**
  * The minimal element of a set.
+ * @property findMin_correct: A.xs :: [a]:
+ *   not (isEmpty xs) ==> minList xs == findMin (fromList xs)
  */
 findMin :: !(Set a) -> a
 
 /**
  * The maximal element of a set.
+ * @property findMax_correct: A.xs :: [a]:
+ *   not (isEmpty xs) ==> maxList xs == findMax (fromList xs)
  */
 findMax :: !(Set a) -> a
 
 /**
  * Delete the minimal element.
+ * @property deleteMin_correct: A.xs :: [a]:
+ *   case xs of
+ *     [] -> prop (null (deleteMin newSet))
+ *     xs ->
+ *       check notMember (minList xs) after /\
+ *       size after =.= size before - 1 /\
+ *       integrity after
+ *     with
+ *       before = fromList xs
+ *       after = deleteMin before
  */
 deleteMin :: !.(Set a) -> Set a
 
 /**
  * Delete the maximal element.
+ * @property deleteMax_correct: A.xs :: [a]:
+ *   case xs of
+ *     [] -> prop (null (deleteMax newSet))
+ *     xs ->
+ *       check notMember (maxList xs) after /\
+ *       size after =.= size before - 1 /\
+ *       integrity after
+ *     with
+ *       before = fromList xs
+ *       after = deleteMax before
  */
 deleteMax :: !.(Set a) -> Set a
 
 /**
  * deleteFindMin set = (findMin set, deleteMin set)
+ * @property deleteFindMin_correct: A.xs :: [a]:
+ *   not (isEmpty xs) ==>
+ *     let (m,xs`) = deleteFindMin (fromList xs) in
+ *     m =.= min /\ notMember min xs`
+ *   where min = minList xs
  */
 deleteFindMin :: !.(Set a) -> (!a, !Set a)
 
 /**
  * deleteFindMax set = (findMax set, deleteMax set)
+ * @property deleteFindMax_correct: A.xs :: [a]:
+ *   not (isEmpty xs) ==>
+ *     let (m,xs`) = deleteFindMax (fromList xs) in
+ *     m =.= max /\ notMember max xs`
+ *   where max = maxList xs
  */
 deleteFindMax :: !.(Set a) -> (!a, !Set a)
 
 /**
  * Retrieves the minimal key of the set, and the set stripped of that element,
  * or 'Nothing' if passed an empty set.
+ * @property minView_correct: A.xs :: [a]:
+ *   case xs of
+ *     [] -> Nothing =.= minView xs`
+ *     xs -> Just (deleteFindMin xs`) =.= minView xs`
+ *   where xs` = fromList xs
  */
 minView :: !.(Set a) -> .(Maybe (!a, !Set a))
 
 /**
  * Retrieves the maximal key of the set, and the set stripped of that element,
  * or 'Nothing' if passed an empty set.
+ * @property maxView_correct: A.xs :: [a]:
+ *   case xs of
+ *     [] -> Nothing =.= maxView xs`
+ *     xs -> Just (deleteFindMax xs`) =.= maxView xs`
+ *   where xs` = fromList xs
  */
 maxView :: !.(Set a) -> .(Maybe (!a, !Set a))
 
 /**
  * The union of two sets, preferring the first set when equal elements are
  * encountered.
+ * @property union_correct: A.xs :: [a]; ys :: [a]:
+ *   check contains u (xs ++ ys)    // No missing elements
+ *     /\ check all_in u (xs ++ ys) // No junk
+ *     /\ integrity u               // Data structure integrity
+ *   where u = union (fromList xs) (fromList ys)
  */
 union :: !u:(Set a) !u:(Set a) -> Set a | < a & == a
 
@@ -171,12 +318,23 @@ unions ts :== foldl union newSet ts
 
 /**
  * Difference of two sets.
+ * @property difference_correct: A.xs :: [a]; ys :: [a]:
+ *   check does_not_contain d ys                                // No remaining elements
+ *     /\ check contains d [x \\ x <- xs | not (isMember x ys)] // All good elements
+ *     /\ integrity d                                           // Data structure integrity
+ *   where d = difference (fromList xs) (fromList ys)
  */
 difference :: !(Set a) !(Set a) -> Set a | < a & == a
 
 /**
  * The intersection of two sets.
  * Elements of the result come from the first set
+ * @property intersection_correct: A.xs :: [a]; ys :: [a]:
+ *   check does_not_contain i [x \\ x <- xs | not (isMember x ys)]      // No junk
+ *     /\ check does_not_contain i [y \\ y <- ys | not (isMember y xs)] // No junk
+ *     /\ check contains i [x \\ x <- xs | isMember x ys]               // All good elements
+ *     /\ integrity i                                                   // Data structure integrity
+ *   where i = intersection (fromList xs) (fromList ys)
  */
 intersection :: !(Set a) !(Set a) -> Set a | < a & == a
 
@@ -188,12 +346,28 @@ intersections :: ![Set a] -> Set a | < a & == a
 
 /**
  * Filter all elements that satisfy the predicate.
+ * @property filter_correct: A.p :: Predicate a; xs :: [a]:
+ *   sort (toList (filter (pred p) (fromList xs)))
+ *     =.= sort (removeDup ('StdList'.filter (pred p) xs))
  */
 filter :: !(a -> Bool) !(Set a) -> Set a | < a
 
 /**
  * Partition the set into two sets, one with all elements that satisfy the
  * predicate and one with all elements that don't satisfy the predicate.
+ *
+ * @property partition_correct: A.p :: Predicate a; xs :: [a]:
+ *   all p` true`                       // Right split
+ *     /\ all (\x -> not (p` x)) false`
+ *     /\ all (\x -> isMember x xs) xs` // No junk
+ *     /\ all (\x -> isMember x xs`) xs // All members used
+ *     /\ integrity true                // Data structure integrity
+ *     /\ integrity false
+ * where
+ *   p` = pred p
+ *   (true,false) = partition p` (fromList xs)
+ *   (true`,false`) = (toList true, toList false)
+ *   xs` = true` ++ false`
  */
 partition :: !(a -> Bool) !(Set a) -> (!Set a, !Set a) | < a
 
@@ -202,13 +376,39 @@ partition :: !(a -> Bool) !(Set a) -> (!Set a, !Set a) | < a
  *
  * @param The pivot.
  * @param The set.
- * @return A tuple of two sets containing small and large values.
+ * @result A tuple of two sets containing small and large values.
+ *
+ * @property split_correct: A.p :: a; xs :: [a]:
+ *   all ((>) p) lt`                        // Right split
+ *     /\ all ((<) p) gt`
+ *     /\ all (\x -> isMember x xsminp) xs` // No junk
+ *     /\ all (\x -> isMember x xs`) xsminp // All members used
+ *     /\ integrity lt                      // Data structure integrity
+ *     /\ integrity gt
+ *   where
+ *     xsminp = 'StdList'.filter ((<>) p) xs
+ *     (lt,gt) = split p (fromList xs)
+ *     (lt`,gt`) = (toList lt, toList gt)
+ *     xs` = lt` ++ gt`
  */
 split :: !a !(Set a) -> (!Set a, !Set a) | < a
 
 /**
  * Performs a 'split' but also returns whether the pivot element was found in
  * the original set.
+ * @property splitMember_correct: A.p :: a; xs :: [a]:
+ *   all ((>) p) lt`                        // Right split
+ *     /\ all ((<) p) gt`
+ *     /\ all (\x -> isMember x xsminp) xs` // No junk
+ *     /\ all (\x -> isMember x xs`) xsminp // All members used
+ *     /\ bool =.= isMember p xs            // Boolean is correct
+ *     /\ integrity lt                      // Data structure integrity
+ *     /\ integrity gt
+ *   where
+ *     xsminp = 'StdList'.filter ((<>) p) xs
+ *     (lt,bool,gt) = splitMember p (fromList xs)
+ *     (lt`,gt`) = (toList lt, toList gt)
+ *     xs` = lt` ++ gt`
  */
 splitMember :: !a !(Set a) -> (!Set a, !Bool, !Set a) | < a
 
@@ -220,6 +420,8 @@ fold :: !(a -> .b -> .b) !.b !.(Set a) -> .b
 /**
  * Convert the set to an ascending list of elements.
  * @type (Set a) -> [a]
+ * @property fromList_toList: A.xs :: [a]:
+ *   xs` =.= fromList (toList xs`) where xs` = fromList xs
  */
 toList s :== toAscList s
 
