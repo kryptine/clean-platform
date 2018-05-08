@@ -37,6 +37,8 @@ instance print Kind
 instance print TypeDef
 instance print Priority
 
+instance toString Type
+
 /**
  * Propagate uniqueness up, as described in section 9.2 of the Clean language
  * report.

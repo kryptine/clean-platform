@@ -82,6 +82,8 @@ where
 	print _ (Arrow Nothing)  = ["(->)"]
 	print _ (Arrow (Just t)) = "((->) " -+ t +- ")"
 
+instance toString Type where toString t = concat $ print False t
+
 parens :: Bool [String] -> [String]
 parens False ss = ss
 parens True ss  = ["(":ss] ++ [")"]
