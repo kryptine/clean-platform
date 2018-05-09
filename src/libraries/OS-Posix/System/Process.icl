@@ -21,8 +21,13 @@ import System.OSError
 import System._Pointer
 import System._Posix
 
+import Text.GenJSON
+
 :: WritePipe = WritePipe !Int
 :: ReadPipe  = ReadPipe  !Int
+
+derive JSONEncode WritePipe, ReadPipe
+derive JSONDecode WritePipe, ReadPipe
 
 runProcess :: !FilePath ![String] !(Maybe String) !*World -> (MaybeOSError ProcessHandle, *World)
 runProcess path args mCurrentDirectory world = runProcessFork

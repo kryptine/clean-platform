@@ -22,9 +22,12 @@ import System._Windows
 import qualified System._WinBase as WinBase
 
 import Text
+import Text.GenJSON
 
 :: ReadPipe  = ReadPipe  !Int
 :: WritePipe = WritePipe !Int
+derive JSONEncode WritePipe, ReadPipe
+derive JSONDecode WritePipe, ReadPipe
 
 runProcess :: !FilePath ![String] !(Maybe String) !*World -> (MaybeOSError ProcessHandle, *World)
 runProcess path args mCurrentDirectory world
