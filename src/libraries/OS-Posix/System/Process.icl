@@ -120,8 +120,8 @@ where
 	childProcess :: !Int !Int !Int !Int !*World -> (!MaybeOSError (!ProcessHandle, !ProcessIO), !*World)
 	childProcess slavePty masterPty pipeExecErrorOut pipeExecErrorIn world
 		//Disable echo
-		//sizeof(struct termios) on linux gives 60, lets play safe
-		# termios      = malloc 64
+		//sizeof(struct termios) on linux gives 60, on mac 72, lets play safe
+		# termios      = malloc 128
 		| termios == 0 = abort "malloc failed"
 		# (res, world) = tcgetattr slavePty termios world
 		| res == -1    = getLastOSError world
