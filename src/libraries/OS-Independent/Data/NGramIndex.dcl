@@ -15,7 +15,7 @@ from Data.Maybe import :: Maybe
 :: NGramIndex v =
 	{ n   :: !Int            //* The parameter *n* for the size of the grams
 	, ci  :: !Bool           //* Whether matching is case-insensitive
-	, idx :: !Map [Char] [v] //* The values
+	, idx :: !Map String [v] //* The values
 	}
 
 /**
@@ -41,7 +41,8 @@ index :: !String !v !(NGramIndex v) -> NGramIndex v | Eq v
 
 /**
  * Search for a key in the index.
- * @param The key. For all *n*-grams of the key, the values will be returned
+ * @param The key. For all *n*-grams of the key, the values will be returned.
+ *   If the key has less than *n* characters, it is used as gram itself
  * @result For each matching value, a tuple of the value and the number of
  *   matching *n*-grams is returned
  * 
@@ -54,4 +55,4 @@ search :: !String !(NGramIndex v) -> [(v,Int)] | Eq, Ord v
  * @param The parameter *n*
  * @param The string
  */
-ngrams :: !Bool !Int !String -> [[Char]]
+ngrams :: !Bool !Int !String -> [String]

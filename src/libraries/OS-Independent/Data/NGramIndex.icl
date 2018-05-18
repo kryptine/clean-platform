@@ -5,8 +5,10 @@ import StdChar
 from StdFunc import flip, o
 import StdInt
 from StdList import filter, flatten, isMember, map, removeDup, span, take, ++,
-	instance length [], instance == [a], instance < [a], instance fromString [Char]
+	instance length [], instance == [a], instance < [a],
+	instance fromString [Char], instance toString [Char]
 import StdOrdList
+import StdString
 
 from Data.Func import $
 from Data.List import concatMap, tails
@@ -32,7 +34,7 @@ search :: !String !(NGramIndex v) -> [(v,Int)] | Eq, Ord v
 search s {n,ci,idx} = count
 	$ foldr merge []
 	$ map (fromMaybe [] o flip get idx)
-	$ if (size s >= n) (ngrams ci n s) [map toLower $ fromString s]
+	$ if (size s >= n) (ngrams ci n s) [{toLower c \\ c <-: s}]
 where
 	count :: [v] -> [(v,Int)] | == v
 	count [] = []
@@ -40,10 +42,12 @@ where
 	where
 		(yes,no) = span ((==) x) xs
 
-ngrams :: !Bool !Int !String -> [[Char]]
-ngrams ci n s = removeDup
-	$ filter ((==) n o length)
-	$ map (take n)
-	$ tails
-	$ if ci (map toLower) id
-	$ fromString s
+ngrams :: !Bool !Int !String -> [String]
+ngrams ci n s = removeDup $ loop (size s - n) s
+where
+	loop :: !Int !String -> [String]
+	loop  i s
+	| i < 0     = []
+	| otherwise = [if ci {toLower c \\ c <-: ngram} ngram:loop (i-1) s]
+	where
+		ngram = s % (i,i+n-1)
