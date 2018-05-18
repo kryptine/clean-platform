@@ -1,4 +1,4 @@
-implementation module TypeParse
+implementation module Clean.Types.Parse
 
 from StdFunc import o
 import StdList
@@ -19,8 +19,8 @@ from Text.Parsers.Simple.Core import :: Parser, :: Error,
 	instance Alternative (Parser t), instance Monad (Parser t),
 	parse, pToken, pSepBy, pList, pSatisfy
 
-import TypeDef
-import TypeUtil
+import Clean.Types
+import Clean.Types.Util
 
 (|<<) infixl 1 :: (m a) (m b) -> m a | Monad m
 (|<<) ma mb = ma >>= \a -> mb >>= \_ -> pure a

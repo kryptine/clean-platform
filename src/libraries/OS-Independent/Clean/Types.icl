@@ -1,4 +1,4 @@
-implementation module TypeDef
+implementation module Clean.Types
 
 from StdOverloaded import class ==(..), class length(..)
 from StdClass import class Eq

@@ -1,4 +1,4 @@
-definition module TypeDef
+definition module Clean.Types
 
 /**
  * Definitions of Clean types.

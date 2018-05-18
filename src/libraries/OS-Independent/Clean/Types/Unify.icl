@@ -1,4 +1,4 @@
-implementation module TypeUnify
+implementation module Clean.Types.Unify
 
 import StdArray
 import StdBool
@@ -18,8 +18,8 @@ import Data.List
 from Data.Map import :: Map, newMap
 import Data.Maybe
 
-import TypeDef
-import TypeUtil
+import Clean.Types
+import Clean.Types.Util
 
 derive gEq Maybe, Type, TypeRestriction, Kind
 

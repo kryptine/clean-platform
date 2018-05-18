@@ -1,4 +1,4 @@
-implementation module TypeUtil
+implementation module Clean.Types.Util
 
 import StdArray
 import StdBool
@@ -18,7 +18,7 @@ import Data.Maybe
 import Data.Tuple
 from Text import class Text (concat), instance Text String
 
-import TypeDef
+import Clean.Types
 
 (--) infixr 1 :: a b -> [String] | print a & print b
 (--) a b = print False a ++ print False b

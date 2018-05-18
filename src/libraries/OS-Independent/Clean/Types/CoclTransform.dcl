@@ -1,4 +1,4 @@
-definition module CoclUtils
+definition module Clean.Types.CoclTransform
 
 /**
  * Functions to
@@ -9,10 +9,10 @@ definition module CoclUtils
 
 from Data.Maybe import :: Maybe
 
-from TypeDef import class toType, class toTypeVar, class toTypeDef,
+from Clean.Types import class toType, class toTypeVar, class toTypeDef,
 	class toTypeDefRhs, class toConstructor, class toRecordField,
 	class toTypeContext, class toMaybePriority
-import qualified TypeDef as T
+import qualified Clean.Types as T
 
 // Cocl frontend
 from syntax import ::SymbolType, ::Type, ::TypeVar, ::ParsedSelector,

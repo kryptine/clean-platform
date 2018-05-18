@@ -1,13 +1,13 @@
-definition module TypeUnify
+definition module Clean.Types.Unify
 
 /**
  * Functions to unify Clean types.
  */
 
-import TypeDef
-
 from Data.Map import :: Map
 from Data.Maybe import :: Maybe
+
+import Clean.Types
 
 /**
  * Check whether a unification result indicates that the left type generalised

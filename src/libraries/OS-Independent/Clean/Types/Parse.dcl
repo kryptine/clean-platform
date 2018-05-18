@@ -1,11 +1,11 @@
-definition module TypeParse
+definition module Clean.Types.Parse
 
 /**
  * A parser for Clean types.
  */
 
 from Data.Maybe import :: Maybe
-from TypeDef import :: Type
+from Clean.Types import :: Type
 
 /**
  * Parse a Clean type.

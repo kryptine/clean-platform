@@ -1,10 +1,8 @@
-definition module TypeUtil
+definition module Clean.Types.Util
 
 /**
  * Utility functions for Clean types.
  */
-
-import TypeDef
 
 from StdFunc import flip
 from StdOverloaded import class toString (toString)
@@ -13,6 +11,8 @@ from Control.Monad import class Applicative, class Monad, foldM
 from Data.Functor import class Functor
 from Data.Map import :: Map
 from Data.Maybe import :: Maybe
+
+import Clean.Types
 
 /**
  * Pretty printer.

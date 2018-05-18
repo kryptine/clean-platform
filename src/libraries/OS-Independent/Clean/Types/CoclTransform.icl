@@ -1,4 +1,4 @@
-implementation module CoclUtils
+implementation module Clean.Types.CoclTransform
 
 from StdList import map
 
@@ -10,10 +10,10 @@ from Data.Maybe import :: Maybe (..), instance Functor Maybe,
 	instance Applicative Maybe, instance Monad Maybe
 import qualified Data.Map as M
 
-import qualified Type as T
-from Type import class toType, class toTypeVar, class toTypeDef,
+from Clean.Types import class toType, class toTypeVar, class toTypeDef,
 	class toTypeDefRhs, class toConstructor, class toRecordField,
 	::TypeRestriction
+import qualified Clean.Types as T
 
 import syntax
 import qualified syntax
