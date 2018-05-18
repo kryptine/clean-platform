@@ -1,11 +1,11 @@
-implementation module CleanPrettyPrint.Common
+implementation module Clean.PrettyPrint.Common
 
 import StdEnv
 
-import CleanPrettyPrint.Util
-import CleanPrettyPrint.Definition
-
 import syntax
+
+import Clean.PrettyPrint.Util
+import Clean.PrettyPrint.Definition
 
 instance print Ident
 where

@@ -1,4 +1,4 @@
-implementation module CleanPrettyPrint.Util
+implementation module Clean.PrettyPrint.Util
 
 import StdEnv
 

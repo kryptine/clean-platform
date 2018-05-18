@@ -1,8 +1,8 @@
-definition module CleanPrettyPrint.Util
+definition module Clean.PrettyPrint.Util
 
 /**
  * Utility functions for the pretty-printer. Normally, these need not be used
- * directly, as the cpp class in CleanPrettyPrint is sufficient for most use
+ * directly, as the cpp class in Clean.PrettyPrint is sufficient for most use
  * cases.
  */
 

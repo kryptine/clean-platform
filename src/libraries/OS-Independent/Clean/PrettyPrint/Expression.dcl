@@ -1,8 +1,8 @@
-definition module CleanPrettyPrint.Expression
-
-from CleanPrettyPrint.Util import class print
+definition module Clean.PrettyPrint.Expression
 
 from syntax import :: ParsedExpr, :: Rhs, :: OptGuardedAlts
+
+from Clean.PrettyPrint.Util import class print
 
 instance print ParsedExpr, Rhs
 

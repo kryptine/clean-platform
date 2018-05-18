@@ -1,13 +1,13 @@
-implementation module CleanPrettyPrint
+implementation module Clean.PrettyPrint
 
 import StdEnv
 
 import syntax
 
-import CleanPrettyPrint.Util
-import CleanPrettyPrint.Common
-import CleanPrettyPrint.Expression
-import CleanPrettyPrint.Definition
+import Clean.PrettyPrint.Util
+import Clean.PrettyPrint.Common
+import Clean.PrettyPrint.Expression
+import Clean.PrettyPrint.Definition
 
 instance cpp AType            where cpp x = print zero x; cppp x = print zerop x
 instance cpp ParsedDefinition where cpp x = print zero x; cppp x = print zerop x

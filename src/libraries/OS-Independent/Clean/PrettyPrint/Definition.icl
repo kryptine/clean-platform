@@ -1,12 +1,12 @@
-implementation module CleanPrettyPrint.Definition
+implementation module Clean.PrettyPrint.Definition
 
 import StdEnv
 
-import CleanPrettyPrint.Util
-import CleanPrettyPrint.Common
-import CleanPrettyPrint.Expression
-
 import syntax
+
+import Clean.PrettyPrint.Util
+import Clean.PrettyPrint.Common
+import Clean.PrettyPrint.Expression
 
 instance print ParsedDefinition
 where

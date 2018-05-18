@@ -1,4 +1,4 @@
-definition module CleanPrettyPrint
+definition module Clean.PrettyPrint
 
 /**
  * Pretty-printer for types in the Clean compiler.
