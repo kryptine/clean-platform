@@ -121,7 +121,7 @@ where
 
 		allInequalityVars = flatten [[ineq.ai_demanded.av_ident.id_name, ineq.ai_offered.av_ident.id_name] \\ ineq <- t.st_attr_env]
 
-strictnessListToBools :: StrictnessList -> [Bool]
+strictnessListToBools :: !StrictnessList -> [Bool]
 strictnessListToBools NotStrict        = repeat False
 strictnessListToBools (Strict i)       = [i bitand (1 << e) <> 0 \\ e <- [0..31]]
 strictnessListToBools (StrictList i l) = strictnessListToBools (Strict i) ++ strictnessListToBools l

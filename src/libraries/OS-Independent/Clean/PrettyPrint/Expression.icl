@@ -2,6 +2,8 @@ implementation module Clean.PrettyPrint.Expression
 
 import StdEnv
 
+import Data.List
+
 import syntax
 
 import Clean.PrettyPrint.Util
@@ -218,7 +220,7 @@ where
 	where
 		eq = if (compound_rhs alt_expr) "" " = "
 
-compound_rhs :: OptGuardedAlts -> Bool
+compound_rhs :: !OptGuardedAlts -> Bool
 compound_rhs (GuardedAlts _ _)                 = True
 compound_rhs (UnGuardedExpr {ewl_nodes=[_:_]}) = True
 compound_rhs _                                 = False
@@ -228,11 +230,6 @@ instance print TypeKind
 where
 	print st KindConst = "*"
 	print st (KindArrow ks) = printp st (intersperse "->" (map (print {st & cpp_parens=True}) ks))
-	where
-		intersperse :: !a ![a] -> [a]
-		intersperse i []      = []
-		intersperse i [x]     = [x]
-		intersperse i [x:xs]  = [x,i:intersperse i xs]
 	print st _ = abort "Unknown TypeKind"
 
 // Dynamics

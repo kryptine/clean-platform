@@ -23,14 +23,14 @@ class cpp t where
 	 * @param The value to print
 	 * @result A string representation of the parameter
 	 */
-	cpp :: t -> String
+	cpp :: !t -> String
 
 	/**
 	 * Pretty-printer which places parentheses around the result if necessary.
 	 * @param The value to print
 	 * @result A string representation of the parameter
 	 */
-	cppp :: t -> String
+	cppp :: !t -> String
 
 instance cpp
 	AType,

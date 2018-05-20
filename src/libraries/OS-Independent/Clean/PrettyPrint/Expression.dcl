@@ -10,4 +10,4 @@ instance print ParsedExpr, Rhs
  * `True` iff the right-hand side is a {{`GuardedAlts`}} or {{`UnguardedExpr`}}
  * with at least one {{`ewl_node`}}.
  */
-compound_rhs :: OptGuardedAlts -> Bool
+compound_rhs :: !OptGuardedAlts -> Bool
