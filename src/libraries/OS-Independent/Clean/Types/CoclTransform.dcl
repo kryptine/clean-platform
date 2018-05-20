@@ -33,4 +33,4 @@ instance toConstructor ParsedConstructor
 instance toRecordField ParsedSelector
 instance toMaybePriority Priority
 
-pdType :: 'syntax'.ParsedDefinition -> Maybe 'T'.Type
+pdType :: !'syntax'.ParsedDefinition -> Maybe 'T'.Type

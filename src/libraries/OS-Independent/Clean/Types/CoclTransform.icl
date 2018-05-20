@@ -123,18 +123,18 @@ tds_var_index         tds = tds.tds_var_index
 tds_allows_new_idents tds = tds.tds_allows_new_idents
 tds_map               tds = tds.tds_map
 
-class coclType a :: a -> StateT TypeDerivState Maybe 'T'.Type
+class coclType a :: !a -> StateT TypeDerivState Maybe 'T'.Type
 
-store :: String 'T'.Type -> StateT TypeDerivState Maybe 'T'.Type
+store :: !String !'T'.Type -> StateT TypeDerivState Maybe 'T'.Type
 store id t = modify (\tds -> {tds & tds_map='M'.put id t tds.tds_map}) $> t
 
-allowNewIdents :: Bool -> StateT TypeDerivState Maybe ()
+allowNewIdents :: !Bool -> StateT TypeDerivState Maybe ()
 allowNewIdents b = modify \tds -> {tds & tds_allows_new_idents=b}
 
 fail :: StateT a Maybe b
 fail = StateT \_ -> Nothing
 
-pdType :: 'syntax'.ParsedDefinition -> Maybe 'T'.Type
+pdType :: !'syntax'.ParsedDefinition -> Maybe 'T'.Type
 pdType pd = evalStateT (coclType pd)
 	{ tds_var_index         = 0
 	, tds_allows_new_idents = True

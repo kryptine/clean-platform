@@ -10,4 +10,4 @@ from Clean.Types import :: Type
 /**
  * Parse a Clean type.
  */
-parseType :: [Char] -> Maybe Type
+parseType :: ![Char] -> Maybe Type

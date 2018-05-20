@@ -13,13 +13,13 @@ import Clean.Types
  * Check whether a unification result indicates that the left type generalised
  * the right type.
  */
-isGeneralisingUnifier :: [TVAssignment] -> Bool
+isGeneralisingUnifier :: ![TVAssignment] -> Bool
 
 /**
  * Check whether a unification result indicates that the unified types are
  * isomorphic.
  */
-isIsomorphicUnifier :: [TVAssignment] -> Bool
+isIsomorphicUnifier :: ![TVAssignment] -> Bool
 
 /**
  * `True` iff the first type is more general or equal to the second type.

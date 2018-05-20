@@ -20,16 +20,16 @@ from Text import class Text (concat), instance Text String
 
 import Clean.Types
 
-(--) infixr 1 :: a b -> [String] | print a & print b
+(--) infixr 1 :: !a !b -> [String] | print a & print b
 (--) a b = print False a ++ print False b
-(+-) infixr 1 :: a b -> [String] | print a & print b
+(+-) infixr 1 :: !a !b -> [String] | print a & print b
 (+-) a b = print True a ++ print False b
-(-+) infixr 1 :: a b -> [String] | print a & print b
+(-+) infixr 1 :: !a !b -> [String] | print a & print b
 (-+) a b = print False a ++ print True b
-(+-+) infixr 1 :: a b -> [String] | print a & print b
+(+-+) infixr 1 :: !a !b -> [String] | print a & print b
 (+-+) a b = print True a ++ print True b
 
-printersperse :: Bool a [b] -> [String] | print a & print b
+printersperse :: !Bool !a ![b] -> [String] | print a & print b
 printersperse ia a bs = intercalate (print False a) (map (print ia) bs)
 
 instance toInt Bool where toInt True = 1; toInt False = 0
@@ -84,7 +84,7 @@ where
 
 instance toString Type where toString t = concat $ print False t
 
-parens :: Bool [String] -> [String]
+parens :: !Bool ![String] -> [String]
 parens False ss = ss
 parens True ss  = ["(":ss] ++ [")"]
 
@@ -97,7 +97,7 @@ instance print TypeDefRhs
 where
 	print _ (TDRCons ext cs)         = "\n\t= " -- makeADT ext cs
 	where
-		makeADT :: Bool [Constructor] -> String
+		makeADT :: !Bool ![Constructor] -> String
 		makeADT exten [] = if exten " .." ""
 		makeADT False [c1:cs]
 			= concat (c1 -- "\n" --
@@ -108,7 +108,7 @@ where
 		if (isEmpty exi) [] (" E." -- printersperse False " " exi -- ":") --
 		"\n\t" -- makeRecord exi fields
 	where
-		makeRecord :: [TypeVar] [RecordField] -> String
+		makeRecord :: ![TypeVar] ![RecordField] -> String
 		makeRecord _ [] = "{}"
 		makeRecord exi [f1:fs]
 			= concat ("{ " -- printRf f1 -- "\n" --
@@ -124,7 +124,7 @@ where
 	print _ (TDRAbstract (Just rhs)) = " /*" -- rhs -- " */"
 	print _ (TDRAbstractSynonym t)   = " (:== " -- t -- ")"
 
-typeConstructorName :: Bool Bool String [Type] -> [String]
+typeConstructorName :: !Bool !Bool !String ![Type] -> [String]
 typeConstructorName isInfix isArg t as
 # isInfix = isInfix && not (isEmpty as)
 // Lists
@@ -171,7 +171,7 @@ where
 	print _ (RightAssoc i) = "infixr " -- i
 	print _ (NoAssoc i)    = "infix " -- i
 
-propagate_uniqueness :: (String -> Bool) Type -> Type
+propagate_uniqueness :: (String -> Bool) !Type -> Type
 propagate_uniqueness p (Type t ts)
 	# ts = map (propagate_uniqueness p) ts
 	= if (p t || any isUniq ts) Uniq id (Type t ts)
@@ -185,7 +185,7 @@ propagate_uniqueness p (Forall vs t tc)
 propagate_uniqueness p t
 	= t
 
-resolve_synonyms :: ('M'.Map String [TypeDef]) Type -> ([TypeDef], Type)
+resolve_synonyms :: ('M'.Map String [TypeDef]) !Type -> ([TypeDef], Type)
 resolve_synonyms tds (Type t ts)
 	# (syns, ts) = appFst (removeDupTypedefs o flatten) $ unzip $ map (resolve_synonyms tds) ts
 	= case candidates of
@@ -286,7 +286,7 @@ where
 		renameVars (Forall vs t tc) = Forall (map renameVars vs) (renameVars t) $ map renameVarsInTC tc
 		renameVars (Arrow t)        = Arrow $ renameVars <$> t
 
-		renameVarsInTC :: TypeRestriction -> TypeRestriction
+		renameVarsInTC :: !TypeRestriction -> TypeRestriction
 		renameVarsInTC (Instance c ts)  = Instance c $ map renameVars ts
 		renameVarsInTC (Derivation g t) = Derivation g $ renameVars t
 
@@ -313,6 +313,6 @@ where
 	optConses (Forall vs t tc) = Forall (map optConses vs) (optConses t) $ map optConsesInTR tc
 	optConses (Arrow t)        = Arrow $ optConses <$> t
 
-	optConsesInTR :: TypeRestriction -> TypeRestriction
+	optConsesInTR :: !TypeRestriction -> TypeRestriction
 	optConsesInTR (Instance c ts)  = Instance c $ map optConses ts
 	optConsesInTR (Derivation g t) = Derivation g $ optConses t

@@ -23,22 +23,22 @@ import Clean.Types.Util
 
 derive gEq Maybe, Type, TypeRestriction, Kind
 
-isGeneralisingUnifier :: [TVAssignment] -> Bool
+isGeneralisingUnifier :: ![TVAssignment] -> Bool
 isGeneralisingUnifier tvas = all isOk $ groupVars tvas []
 where
-	isOk :: [Type] -> Bool
+	isOk :: ![Type] -> Bool
 	isOk ts
 	| length [v \\ Var v <- ts | v.[0] == 'r'] >= 2 = False
 	| any (not o isVar) ts && any (\t -> isVar t && isMember (fromVar t).[0] ['_r']) ts = False
 	| otherwise = True
 
-isIsomorphicUnifier :: [TVAssignment] -> Bool
+isIsomorphicUnifier :: ![TVAssignment] -> Bool
 isIsomorphicUnifier tvas = all isOk $ groupVars tvas []
 where
-	isOk :: [Type] -> Bool
+	isOk :: ![Type] -> Bool
 	isOk ts = all isVar ts && length ts == 2
 
-groupVars :: [TVAssignment] [[Type]] -> [[Type]]
+groupVars :: ![TVAssignment] ![[Type]] -> [[Type]]
 groupVars []           groups = map removeDup groups
 groupVars [(v,t):rest] groups = case partition (\g -> isMember (Var v) g || isMember t g) groups of
 	([], gs) -> groupVars rest [[Var v,t]:gs]
@@ -71,7 +71,7 @@ prepare_unification isleft alwaysUnique db t
 = (syns, t)
 where
 	prep = if isleft "l" "r"
-	renameVars :: Type -> Type
+	renameVars :: !Type -> Type
 	renameVars (Var v) = Var (prep +++ v)
 	renameVars (Cons c ts) = Cons (prep +++ c) $ map renameVars ts
 	renameVars (Type t ts) = Type t $ map renameVars ts
@@ -88,14 +88,14 @@ finish_unification syns tvs
 # (tvs1, tvs2) = (map removePrefixes tvs1, map removePrefixes tvs2)
 = {assignments=sortBy order (map LeftToRight tvs1 ++ map RightToLeft tvs2), used_synonyms=removeDupTypedefs syns}
 where
-	startsWith :: Char TVAssignment -> Bool
+	startsWith :: !Char !TVAssignment -> Bool
 	startsWith c (h,_) = h.[0] == c || h.[0] == '_' && h.[1] == c
 
-	removePrefixes :: TVAssignment -> TVAssignment
+	removePrefixes :: !TVAssignment -> TVAssignment
 	removePrefixes (v,t) = (rm v, fromJust $ assignAll (map (\v->(v,Var (rm v))) $ allVars t) t)
 	where rm s = s % (if (s.[0] == '_') 2 1, size s - 1)
 
-	order :: UnifyingAssignment UnifyingAssignment -> Bool
+	order :: !UnifyingAssignment !UnifyingAssignment -> Bool
 	order ua1 ua2
 	| isMember v1 (allVars t2) = False
 	| isMember v2 (allVars t1) = True

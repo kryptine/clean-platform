@@ -46,7 +46,7 @@ instance toString Type
  *   (like, e.g., World)
  * @param The type to modify
  */
-propagate_uniqueness :: (String -> Bool) Type -> Type
+propagate_uniqueness :: (String -> Bool) !Type -> Type
 
 /**
  * Resolve all synonyms in a type.
@@ -55,7 +55,7 @@ propagate_uniqueness :: (String -> Bool) Type -> Type
  * @param The type to resolve
  * @param The used synonyms and the new type
  */
-resolve_synonyms :: (Map String [TypeDef]) Type -> ([TypeDef], Type)
+resolve_synonyms :: (Map String [TypeDef]) !Type -> ([TypeDef], Type)
 
 /**
  * Apply a variable assignment on a type, if possible.

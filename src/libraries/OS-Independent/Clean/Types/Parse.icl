@@ -22,7 +22,7 @@ from Text.Parsers.Simple.Core import :: Parser, :: Error,
 import Clean.Types
 import Clean.Types.Util
 
-(|<<) infixl 1 :: (m a) (m b) -> m a | Monad m
+(|<<) infixl 1 :: !(m a) !(m b) -> m a | Monad m
 (|<<) ma mb = ma >>= \a -> mb >>= \_ -> pure a
 
 derive gEq Token
@@ -54,7 +54,7 @@ isTVar   (TVar   _) = True; isTVar   _ = False
 tokenize :: ([Char] -> Maybe [Token])
 tokenize = fmap reverse o tkz []
 where
-	tkz :: [Token] [Char] -> Maybe [Token]
+	tkz :: ![Token] ![Char] -> Maybe [Token]
 	tkz tks [] = Just tks
 	tkz tks ['-':'>':cs] = tkz [TArrow:tks]               cs
 	tkz tks [',':cs]     = tkz [TComma:tks]               cs
@@ -83,10 +83,10 @@ where
 		with (var, cs`) = span isIdentChar cs
 	tkz _ _ = Nothing
 
-	isIdentChar :: Char -> Bool
+	isIdentChar :: !Char -> Bool
 	isIdentChar c = any (\f->f c) [isLower, isUpper, isDigit, (==)'_', (==) '`']
 
-	isFunny :: Char -> Bool
+	isFunny :: !Char -> Bool
 	isFunny c = isMember c ['~@#$%^?!+-*<>\\/|&=:']
 
 type :: Parser Token Type
@@ -149,7 +149,7 @@ where
 				Nothing -> pure $ pure o Instance name
 				Just _  -> pure $ deriv name
 		where
-			deriv :: String [Type] -> Parser Token TypeRestriction
+			deriv :: !String ![Type] -> Parser Token TypeRestriction
 			deriv d [t] = pure $ Derivation d t
 			deriv _ _   = empty
 
@@ -174,7 +174,7 @@ where
 	bracked p = pToken TBrackOpen >>| p |<< pToken TBrackClose
 	piped p = pToken TPipe >>| p |<< pToken TPipe
 
-parseType :: [Char] -> Maybe Type
+parseType :: ![Char] -> Maybe Type
 parseType cs
 # mbTokens = tokenize cs
 | isNothing mbTokens = Nothing
