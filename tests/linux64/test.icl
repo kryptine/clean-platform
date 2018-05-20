@@ -83,6 +83,7 @@ import qualified Data.MapCollection
 import qualified Data.Matrix
 import qualified Data.Maybe
 import qualified Data.Monoid
+import qualified Data.NGramIndex
 import qualified Data.OrdList
 import qualified Data.Queue
 import qualified Data.Set
