@@ -3,6 +3,76 @@ definition module Data.Map
  * This module provides a dynamic Map type for creating mappings from keys to values
  * Internally it uses an AVL tree to organize the key-value pairs stored in the mapping
  * such that lookup, insert and delete operations can be performed in O(log n).
+ *
+ * @property-bootstrap
+ *   import StdBool, StdChar, StdInt, StdString, StdTuple
+ *   from StdList import all, isMember, removeDup, reverse, instance length []
+ *   from Data.Func import on, `on`
+ *   from Data.List import nubBy
+ *   import Data.Map
+ *
+ *   :: GMap k v =
+ *     { gma  :: !v
+ *     , gmb  :: !v
+ *     , gmc  :: !v
+ *     , gmd  :: !v
+ *     , gme  :: !v
+ *     , gmf  :: !v
+ *     , rest :: ![(k,v)]
+ *     }
+ *
+ *   class Key k
+ *   where keya :: k; keyb :: k; keyc :: k; keyd :: k; keye :: k; keyf :: k
+ *
+ *   instance Key Char
+ *   where keya = 'a'; keyb = 'b'; keyc = 'c'; keyd = 'd'; keye = 'e'; keyf = 'f'
+ *
+ *   derive ggen GMap
+ *   derive genShow GMap, Map, Maybe
+ *   derive JSONEncode GMap
+ *   derive bimap []
+ *
+ *   kvs :: (GMap k v) -> [(k,v)] | Key k
+ *   kvs gm =
+ *     [ (keya,gm.gma)
+ *     , (keyb,gm.gmb)
+ *     , (keyc,gm.gmc)
+ *     , (keyd,gm.gmd)
+ *     , (keye,gm.gme)
+ *     , (keyf,gm.gmf)
+ *     : gm.rest
+ *     ]
+ *
+ *   genMap :: (GMap k v) -> Map k v | Key, <, == k
+ *   genMap gm = fromList (kvs gm)
+ *
+ *   all_present :: [(k,v)] (Map k v) -> Bool | <, == k & == v
+ *   all_present kvs m = all (\(k,v) -> get k m == Just v) kvs`
+ *   where
+ *     kvs` = nubBy ((==) `on` fst) (reverse kvs) // Remove duplicate keys, assuming the last takes precedence
+ *
+ *   all_from :: (Map k v) [(k,v)] -> Bool | Eq k & Eq v
+ *   all_from Tip _ = True
+ *   all_from (Bin _ k v l r) kvs = isMember (k,v) kvs && all_from l kvs && all_from r kvs
+ *
+ *   log_size :: (Map k v) -> Property
+ *   log_size m = check (<) nelem (2 ^ depth m)
+ *   where
+ *     nelem = mapSize m
+ *
+ *     depth :: (Map a b) -> Int
+ *     depth Tip = 0
+ *     depth (Bin _ _ _ l r) = 1 + (max `on` depth) l r
+ *
+ *   sizes_correct :: (Map k v) -> Property
+ *   sizes_correct Tip = prop True
+ *   sizes_correct b=:(Bin _ _ _ l r) =
+ *   	mapSize b =.= 1 + mapSize l + mapSize r /\
+ *   	sizes_correct l /\
+ *   	sizes_correct r
+ *
+ * @property-test-with k = Char
+ * @property-test-with v = Char
  */
 
 from Data.Maybe		import :: Maybe (..)
@@ -40,6 +110,10 @@ instance <  (Map k v) | Ord k & Ord v
 /**
  * Check if a Map is empty.
  * @type (Map k a) -> Bool
+ * @property null_correct: A.gm :: GMap k v:
+ *   let m = genMap gm in
+ *     (mapSize m == 0 <==> null m) /\
+ *     (m == newMap <==> null m)
  */
 null mp :== case mp of
               Tip -> True
@@ -48,6 +122,8 @@ null mp :== case mp of
 /**
  * Create an empty Map.
  * @return An empty map
+ * @property newMap_null:
+ *   name "newMap_null" (null newMap)
  */
 newMap      :: w:(Map k u:v), [ w <= u]
 
@@ -58,6 +134,8 @@ singleton   :: !k !v -> Map k v
 
 /**
  * The number of elements in a Map.
+ * @property mapSize_correct: A.gm :: GMap k v:
+ *   mapSize (genMap gm) =.= length (removeDup [k \\ (k,_) <- kvs gm])
  */
 mapSize     :: !(Map k v) -> Int
 
@@ -68,6 +146,14 @@ mapSize     :: !(Map k v) -> Int
  * @param The value to add/update at the key position
  * @param The original mapping
  * @return The modified mapping with the added value
+ * @property put_correct: A.gm :: GMap k v; k :: k; v :: v:
+ *   get k m` =.= Just v /\                                           // Correctly put
+ *     check all_present [kv \\ kv=:(k`,_) <- toList m | k <> k`] m` /\ // Other elements untouched
+ *     log_size m` /\                                                   // Data structure integrity
+ *     sizes_correct m`
+ *   where
+ *     m = genMap gm
+ *     m` = put k v m
  */
 put :: !k !a !(Map k a) -> Map k a | < k
 
@@ -95,12 +181,20 @@ get k m :== get` k m
 getU :: !k !w:(Map k v) -> x:(!Maybe v, !y:(Map k v)) | == k & < k, [ x <= y, w <= y]
 
 /**
-* Removes the value at a given key position. The mapping itself can be spine unique.
-*
-* @param The key to remove
-* @param The original mapping
-* @return The modified mapping with the value/key removed
-*/
+ * Removes the value at a given key position. The mapping itself can be spine unique.
+ *
+ * @param The key to remove
+ * @param The original mapping
+ * @return The modified mapping with the value/key removed
+ * @property del_correct: A.gm :: GMap k v; k :: k:
+ *   get k m` =.= Nothing /\                                            // Correctly deleted
+ *     check all_present [kv \\ kv=:(k`,_) <- toList m | k <> k`] m` /\ // Other elements untouched
+ *     log_size m` /\                                                   // Data structure integrity
+ *     sizes_correct m`
+ *   where
+ *     m = genMap gm
+ *     m` = del k m
+ */
 del :: !k !(Map k a) -> Map k a | < k
 
 /**
@@ -166,6 +260,11 @@ toAscList m :== foldrWithKey (\k x xs -> [(k,x):xs]) [] m
  *
  * @param A list of key/value tuples
  * @return A mapping containing all the tuples in the list
+ * @property fromList_correct: A.gm :: GMap k v:
+ *   let m = genMap gm in
+ *     check all_present (kvs gm) m /\ // All elements put
+ *     check all_from m (kvs gm) /\    // No other elements
+ *     log_size m                      // Data structure integrity
  */
 fromList :: !u:[v:(!a, !b)] -> Map a b | == a & < a, [u <= v]
 

@@ -31,9 +31,9 @@ definition module Data.Set
  *   derive genShow Maybe
  *   genShow{|Set|} show sep p xs rest = ["Set{":showList (toList xs) ["}":rest]]
  *   where
- *       showList [x]    rest = show sep False x rest
- *       showList [x:xs] rest = show sep False x [",":showList xs rest]
- *       showList []     rest = rest
+ *     showList [x]    rest = show sep False x rest
+ *     showList [x:xs] rest = show sep False x [",":showList xs rest]
+ *     showList []     rest = rest
  *
  *   derive bimap []
  *
