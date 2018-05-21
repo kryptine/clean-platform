@@ -43,9 +43,6 @@ definition module Data.Map
  *     : gm.rest
  *     ]
  *
- *   genMap :: (GMap k v) -> Map k v | Key, <, == k
- *   genMap gm = fromList (kvs gm)
- *
  *   all_present :: [(k,v)] (Map k v) -> Bool | <, == k & == v
  *   all_present kvs m = all (\(k,v) -> get k m == Just v) kvs`
  *   where
@@ -73,6 +70,9 @@ definition module Data.Map
  *
  * @property-test-with k = Char
  * @property-test-with v = Char
+ *
+ * @property-test-generator (GMap k v) -> Map k v | Key, <, == k
+ *   gen gm = fromList (kvs gm)
  */
 
 from Data.Maybe		import :: Maybe (..)
@@ -110,9 +110,8 @@ instance <  (Map k v) | Ord k & Ord v
 /**
  * Check if a Map is empty.
  * @type (Map k a) -> Bool
- * @property null_correct: A.gm :: GMap k v:
- *   let m = genMap gm in
- *     (mapSize m == 0 <==> null m) /\
+ * @property null_correct: A.m :: Map k v:
+ *   (mapSize m == 0 <==> null m) /\
  *     (m == newMap <==> null m)
  */
 null mp :== case mp of
@@ -123,7 +122,7 @@ null mp :== case mp of
  * Create an empty Map.
  * @return An empty map
  * @property newMap_null:
- *   name "newMap_null" (null newMap)
+ *   null newMap
  */
 newMap      :: w:(Map k u:v), [ w <= u]
 
@@ -134,8 +133,8 @@ singleton   :: !k !v -> Map k v
 
 /**
  * The number of elements in a Map.
- * @property mapSize_correct: A.gm :: GMap k v:
- *   mapSize (genMap gm) =.= length (removeDup [k \\ (k,_) <- kvs gm])
+ * @property mapSize_correct: A.m :: Map k v:
+ *   mapSize m =.= length (removeDup (keys m))
  */
 mapSize     :: !(Map k v) -> Int
 
@@ -146,13 +145,12 @@ mapSize     :: !(Map k v) -> Int
  * @param The value to add/update at the key position
  * @param The original mapping
  * @return The modified mapping with the added value
- * @property put_correct: A.gm :: GMap k v; k :: k; v :: v:
+ * @property put_correct: A.m :: Map k v; k :: k; v :: v:
  *   get k m` =.= Just v /\                                           // Correctly put
  *     check all_present [kv \\ kv=:(k`,_) <- toList m | k <> k`] m` /\ // Other elements untouched
  *     log_size m` /\                                                   // Data structure integrity
  *     sizes_correct m`
  *   where
- *     m = genMap gm
  *     m` = put k v m
  */
 put :: !k !a !(Map k a) -> Map k a | < k
@@ -186,13 +184,12 @@ getU :: !k !w:(Map k v) -> x:(!Maybe v, !y:(Map k v)) | == k & < k, [ x <= y, w 
  * @param The key to remove
  * @param The original mapping
  * @return The modified mapping with the value/key removed
- * @property del_correct: A.gm :: GMap k v; k :: k:
+ * @property del_correct: A.m :: Map k v; k :: k:
  *   get k m` =.= Nothing /\                                            // Correctly deleted
  *     check all_present [kv \\ kv=:(k`,_) <- toList m | k <> k`] m` /\ // Other elements untouched
  *     log_size m` /\                                                   // Data structure integrity
  *     sizes_correct m`
  *   where
- *     m = genMap gm
  *     m` = del k m
  */
 del :: !k !(Map k a) -> Map k a | < k
@@ -260,11 +257,12 @@ toAscList m :== foldrWithKey (\k x xs -> [(k,x):xs]) [] m
  *
  * @param A list of key/value tuples
  * @return A mapping containing all the tuples in the list
- * @property fromList_correct: A.gm :: GMap k v:
- *   let m = genMap gm in
- *     check all_present (kvs gm) m /\ // All elements put
- *     check all_from m (kvs gm) /\    // No other elements
- *     log_size m                      // Data structure integrity
+ * @property fromList_correct: A.elems :: [(k,v)]:
+ *   check all_present elems m /\ // All elements put
+ *     check all_from m elems /\  // No other elements
+ *     log_size m                 // Data structure integrity
+ *   where
+ *     m = fromList elems
  */
 fromList :: !u:[v:(!a, !b)] -> Map a b | == a & < a, [u <= v]
 

@@ -87,7 +87,11 @@ definition module Data.Set
  *     size b =.= 1 + size l + size r /\
  *     sizes_correct l /\
  *     sizes_correct r
+ *
  * @property-test-with a = Char
+ *
+ * @property-test-generator [a] -> Set a | < a
+ *   gen xs = fromList xs
  */
 
 from StdOverloaded	import class ==, class < (..)
@@ -111,10 +115,9 @@ instance Foldable Set
 /**
  * True iff this is the empty set.
  * @type (Set a) -> Bool
- * @property null_correct: A.xs :: [a]:
- *   (size xs` == 0 <==> null xs`)
- *     /\ (xs` == newSet <==> null xs`)
- *   where xs` = fromList xs
+ * @property null_correct: A.s :: Set a:
+ *   (size s == 0 <==> null s)
+ *     /\ (s == newSet <==> null s)
  */
 null s :== case s of
              Tip -> True
@@ -123,8 +126,8 @@ null s :== case s of
 /**
  * The number of elements in the set.
  * @type (Set a) -> Int
- * @property size_correct: A.xs :: [a]:
- *   size (fromList xs) =.= length (removeDup xs)
+ * @property size_correct: A.s :: Set a:
+ *   size s =.= length (toList s)
  */
 size s :== case s of
              Tip -> 0
@@ -133,8 +136,8 @@ size s :== case s of
 /**
  * Is the element in the set?
  * @complexity O(log n)
- * @property member_correct: A. x :: a; xs :: [a]:
- *   member x (fromList xs) <==> isMember x xs
+ * @property member_correct: A.x :: a; s :: Set a:
+ *   member x s <==> isMember x (toList s)
  */
 member    :: !a !(Set a) -> Bool | < a
 
@@ -149,8 +152,8 @@ notMember x t :== not (member x t)
  * Is t1 a subset of t2?
  * @type (Set a) (Set a) -> Bool | <, == a
  * @complexity O(n+m)
- * @property isSubsetOf_correct: A.xs :: [a]; ys :: [a]:
- *   isSubsetOf (fromList xs) (fromList ys) <==> all (\x -> isMember x ys) xs
+ * @property isSubsetOf_correct: A.xs :: Set a; ys :: Set a:
+ *   isSubsetOf xs ys <==> all (\x -> isMember x (toList ys)) (toList xs)
  */
 isSubsetOf t1 t2 :== (size t1 <= size t2) && (isSubsetOfX t1 t2)
 
@@ -160,9 +163,11 @@ isSubsetOfX :: !(Set a) !(Set a) -> Bool | < a
  * Is t1 a proper subset of t2?
  * @type (Set a) (Set a) -> Bool | <, == a
  * @complexity O(n+m)
- * @property isProperSubsetOf_correct: A.xs :: [a]; ys :: [a]:
- *   isProperSubsetOf (fromList xs) (fromList ys)
- *     <==> all (\x -> isMember x ys) xs && not (all (\y -> isMember y xs) ys)
+ * @property isProperSubsetOf_correct: A.xs :: Set a; ys :: Set a:
+ *   isProperSubsetOf xs ys
+ *     <==> all (\x -> isMember x ys`) xs` && not (all (\y -> isMember y xs`) ys`)
+ *   where
+ *     (xs`,ys`) = (toList xs, toList ys)
  */
 isProperSubsetOf s1 s2 :== (size s1 < size s2) && (isSubsetOf s1 s2)
 
@@ -170,7 +175,7 @@ isProperSubsetOf s1 s2 :== (size s1 < size s2) && (isSubsetOf s1 s2)
  * The empty set.
  * @complexity O(1)
  * @property newSet_null:
- *   name "newSet_null" (null newSet)
+ *   null newSet
  */
 newSet :: Set a
 
@@ -185,11 +190,11 @@ singleton :: !u:a -> w:(Set u:a), [w <= u]
  * the given value, it is replaced with the new value.
  *
  * @complexity O(log n)
- * @property insert_correct: A.x :: a; xs :: [a]:
- *   let xs` = insert x (fromList xs) in
- *     check member x xs`    /\ // Membership
- *     check contains xs` xs /\ // Rest untouched
- *     integrity xs`            // Data structure integrity
+ * @property insert_correct: A.x :: a; xs :: Set a:
+ *   let xs` = insert x xs in
+ *     check member x xs` /\             // Membership
+ *     check contains xs` (toList xs) /\ // Rest untouched
+ *     integrity xs`                     // Data structure integrity
  */
 insert :: !a !.(Set a) -> Set a | < a
 
@@ -197,81 +202,75 @@ insert :: !a !.(Set a) -> Set a | < a
  * Delete an element from a set.
  *
  * @complexity O(log n)
- * @property delete_correct: A.x :: a; xs :: [a]:
- *   let xs` = delete x (fromList xs) in
- *     check notMember x xs` /\                         // Membership
- *     check contains xs` [x` \\ x` <- xs | x` <> x] /\ // Rest untouched
- *     integrity xs`                                    // Data structure integrity
+ * @property delete_correct: A.x :: a; xs :: Set a:
+ *   let xs` = delete x xs in
+ *     check notMember x xs` /\                                // Membership
+ *     check contains xs` [x` \\ x` <- toList xs | x` <> x] /\ // Rest untouched
+ *     integrity xs`                                           // Data structure integrity
  */
 delete :: !a !.(Set a) -> Set a | < a
 
 /**
  * The minimal element of a set.
  * @complexity O(log n)
- * @property findMin_correct: A.xs :: [a]:
- *   not (isEmpty xs) ==> minList xs == findMin (fromList xs)
+ * @property findMin_correct: A.xs :: Set a:
+ *   not (null xs) ==> minList (toList xs) == findMin xs
  */
 findMin :: !(Set a) -> a
 
 /**
  * The maximal element of a set.
  * @complexity O(log n)
- * @property findMax_correct: A.xs :: [a]:
- *   not (isEmpty xs) ==> maxList xs == findMax (fromList xs)
+ * @property findMax_correct: A.xs :: Set a:
+ *   not (null xs) ==> maxList (toList xs) == findMax xs
  */
 findMax :: !(Set a) -> a
 
 /**
  * Delete the minimal element.
  * @complexity O(log n)
- * @property deleteMin_correct: A.xs :: [a]:
+ * @property deleteMin_correct: A.xs :: Set a:
  *   case xs of
- *     [] -> prop (null (deleteMin newSet))
- *     xs ->
- *       check notMember (minList xs) after /\
- *       size after =.= size before - 1 /\
- *       integrity after
- *     with
- *       before = fromList xs
- *       after = deleteMin before
+ *     Tip -> prop (null (deleteMin newSet))
+ *     xs  -> let xs` = deleteMin xs in
+ *       check notMember (minList (toList xs)) xs` /\
+ *       size xs` =.= size xs - 1 /\
+ *       integrity xs`
  */
 deleteMin :: !.(Set a) -> Set a
 
 /**
  * Delete the maximal element.
  * @complexity O(log n)
- * @property deleteMax_correct: A.xs :: [a]:
+ * @property deleteMax_correct: A.xs :: Set a:
  *   case xs of
- *     [] -> prop (null (deleteMax newSet))
- *     xs ->
- *       check notMember (maxList xs) after /\
- *       size after =.= size before - 1 /\
- *       integrity after
- *     with
- *       before = fromList xs
- *       after = deleteMax before
+ *     Tip -> prop (null (deleteMax newSet))
+ *     xs  -> let xs` = deleteMax xs in
+ *       check notMember (maxList (toList xs)) xs` /\
+ *       size xs` =.= size xs - 1 /\
+ *       integrity xs`
  */
 deleteMax :: !.(Set a) -> Set a
 
 /**
  * deleteFindMin set = (findMin set, deleteMin set)
  * @complexity O(log n)
- * @property deleteFindMin_correct: A.xs :: [a]:
- *   not (isEmpty xs) ==>
- *     let (m,xs`) = deleteFindMin (fromList xs) in
+ * @property deleteFindMin_correct: A.xs :: Set a:
+ *   not (null xs) ==>
+ *     let (m,xs`) = deleteFindMin xs in
  *     m =.= min /\ notMember min xs`
- *   where min = minList xs
+ *   where min = minList (toList xs)
  */
 deleteFindMin :: !.(Set a) -> (!a, !Set a)
 
 /**
  * deleteFindMax set = (findMax set, deleteMax set)
  * @complexity O(log n)
- * @property deleteFindMax_correct: A.xs :: [a]:
- *   not (isEmpty xs) ==>
- *     let (m,xs`) = deleteFindMax (fromList xs) in
+ * @property deleteFindMax_correct: A.xs :: Set a:
+ *   not (null xs) ==>
+ *     let (m,xs`) = deleteFindMax xs in
  *     m =.= max /\ notMember max xs`
- *   where max = maxList xs
+ *   where max = maxList (toList xs)
  */
 deleteFindMax :: !.(Set a) -> (!a, !Set a)
 
@@ -279,11 +278,10 @@ deleteFindMax :: !.(Set a) -> (!a, !Set a)
  * Retrieves the minimal key of the set, and the set stripped of that element,
  * or 'Nothing' if passed an empty set.
  * @complexity O(log n)
- * @property minView_correct: A.xs :: [a]:
- *   case xs of
- *     [] -> Nothing =.= minView xs`
- *     xs -> Just (deleteFindMin xs`) =.= minView xs`
- *   where xs` = fromList xs
+ * @property minView_correct: A.xs :: Set a:
+ *   if (null xs)
+ *     (Nothing =.= minView xs)
+ *     (Just (deleteFindMin xs) =.= minView xs)
  */
 minView :: !.(Set a) -> .(Maybe (!a, !Set a))
 
@@ -291,11 +289,10 @@ minView :: !.(Set a) -> .(Maybe (!a, !Set a))
  * Retrieves the maximal key of the set, and the set stripped of that element,
  * or 'Nothing' if passed an empty set.
  * @complexity O(log n)
- * @property maxView_correct: A.xs :: [a]:
- *   case xs of
- *     [] -> Nothing =.= maxView xs`
- *     xs -> Just (deleteFindMax xs`) =.= maxView xs`
- *   where xs` = fromList xs
+ * @property maxView_correct: A.xs :: Set a:
+ *   if (null xs)
+ *     (Nothing =.= maxView xs)
+ *     (Just (deleteFindMax xs) =.= maxView xs)
  */
 maxView :: !.(Set a) -> .(Maybe (!a, !Set a))
 
@@ -303,11 +300,13 @@ maxView :: !.(Set a) -> .(Maybe (!a, !Set a))
  * The union of two sets, preferring the first set when equal elements are
  * encountered.
  * @complexity O(n+m)
- * @property union_correct: A.xs :: [a]; ys :: [a]:
- *   check contains u (xs ++ ys)    // No missing elements
- *     /\ check all_in u (xs ++ ys) // No junk
- *     /\ integrity u               // Data structure integrity
- *   where u = union (fromList xs) (fromList ys)
+ * @property union_correct: A.xs :: Set a; ys :: Set a:
+ *   check contains u elems    // No missing elements
+ *     /\ check all_in u elems // No junk
+ *     /\ integrity u          // Data structure integrity
+ *   where
+ *     u = union xs ys
+ *     elems = toList xs ++ toList ys
  */
 union :: !u:(Set a) !u:(Set a) -> Set a | < a & == a
 
@@ -320,11 +319,13 @@ unions ts :== foldl union newSet ts
 /**
  * Difference of two sets.
  * @complexity O(n+m)
- * @property difference_correct: A.xs :: [a]; ys :: [a]:
- *   check does_not_contain d ys                                // No remaining elements
- *     /\ check contains d [x \\ x <- xs | not (isMember x ys)] // All good elements
- *     /\ integrity d                                           // Data structure integrity
- *   where d = difference (fromList xs) (fromList ys)
+ * @property difference_correct: A.xs :: Set a; ys :: Set a:
+ *   check does_not_contain d ys`                                 // No remaining elements
+ *     /\ check contains d [x \\ x <- xs` | not (isMember x ys`)] // All good elements
+ *     /\ integrity d                                             // Data structure integrity
+ *   where
+ *     d = difference xs ys
+ *     (xs`,ys`) = (toList xs, toList ys)
  */
 difference :: !(Set a) !(Set a) -> Set a | < a & == a
 
@@ -332,12 +333,14 @@ difference :: !(Set a) !(Set a) -> Set a | < a & == a
  * The intersection of two sets.
  * Elements of the result come from the first set.
  * @complexity O(n+m)
- * @property intersection_correct: A.xs :: [a]; ys :: [a]:
- *   check does_not_contain i [x \\ x <- xs | not (isMember x ys)]      // No junk
- *     /\ check does_not_contain i [y \\ y <- ys | not (isMember y xs)] // No junk
- *     /\ check contains i [x \\ x <- xs | isMember x ys]               // All good elements
+ * @property intersection_correct: A.xs :: Set a; ys :: Set a:
+ *   check does_not_contain i [x \\ x <- xs` | not (isMember x ys`)]      // No junk
+ *     /\ check does_not_contain i [y \\ y <- ys` | not (isMember y xs`)] // No junk
+ *     /\ check contains i [x \\ x <- xs` | isMember x ys`]               // All good elements
  *     /\ integrity i                                                   // Data structure integrity
- *   where i = intersection (fromList xs) (fromList ys)
+ *   where
+ *     i = intersection xs ys
+ *     (xs`,ys`) = (toList xs, toList ys)
  */
 intersection :: !(Set a) !(Set a) -> Set a | < a & == a
 
@@ -350,9 +353,9 @@ intersections :: ![Set a] -> Set a | < a & == a
 /**
  * Filter all elements that satisfy the predicate.
  * @complexity O(n)
- * @property filter_correct: A.p :: Predicate a; xs :: [a]:
- *   sort (toList (filter (pred p) (fromList xs)))
- *     =.= sort (removeDup ('StdList'.filter (pred p) xs))
+ * @property filter_correct: A.p :: Predicate a; xs :: Set a:
+ *   sort (toList (filter (pred p) xs))
+ *     =.= sort (removeDup ('StdList'.filter (pred p) (toList xs)))
  */
 filter :: !(a -> Bool) !(Set a) -> Set a | < a
 
@@ -362,16 +365,16 @@ filter :: !(a -> Bool) !(Set a) -> Set a | < a
  * See also {{`split`}}.
  *
  * @complexity O(n)
- * @property partition_correct: A.p :: Predicate a; xs :: [a]:
- *   all p` true`                       // Right split
+ * @property partition_correct: A.p :: Predicate a; xs :: Set a:
+ *   all p` true`                                // Right split
  *     /\ all (\x -> not (p` x)) false`
- *     /\ all (\x -> isMember x xs) xs` // No junk
- *     /\ all (\x -> isMember x xs`) xs // All members used
- *     /\ integrity true                // Data structure integrity
+ *     /\ all (\x -> isMember x (toList xs)) xs` // No junk
+ *     /\ all (\x -> isMember x xs`) (toList xs) // All members used
+ *     /\ integrity true                         // Data structure integrity
  *     /\ integrity false
  * where
  *   p` = pred p
- *   (true,false) = partition p` (fromList xs)
+ *   (true,false) = partition p` xs
  *   (true`,false`) = (toList true, toList false)
  *   xs` = true` ++ false`
  */
@@ -385,7 +388,7 @@ partition :: !(a -> Bool) !(Set a) -> (!Set a, !Set a) | < a
  * @result A tuple of two sets containing small and large values.
  * @complexity O(log n)
  *
- * @property split_correct: A.p :: a; xs :: [a]:
+ * @property split_correct: A.p :: a; xs :: Set a:
  *   all ((>) p) lt`                        // Right split
  *     /\ all ((<) p) gt`
  *     /\ all (\x -> isMember x xsminp) xs` // No junk
@@ -393,8 +396,8 @@ partition :: !(a -> Bool) !(Set a) -> (!Set a, !Set a) | < a
  *     /\ integrity lt                      // Data structure integrity
  *     /\ integrity gt
  *   where
- *     xsminp = 'StdList'.filter ((<>) p) xs
- *     (lt,gt) = split p (fromList xs)
+ *     xsminp = 'StdList'.filter ((<>) p) (toList xs)
+ *     (lt,gt) = split p xs
  *     (lt`,gt`) = (toList lt, toList gt)
  *     xs` = lt` ++ gt`
  */
@@ -405,17 +408,17 @@ split :: !a !(Set a) -> (!Set a, !Set a) | < a
  * the original set.
  *
  * @complexity O(log n)
- * @property splitMember_correct: A.p :: a; xs :: [a]:
+ * @property splitMember_correct: A.p :: a; xs :: Set a:
  *   all ((>) p) lt`                        // Right split
  *     /\ all ((<) p) gt`
  *     /\ all (\x -> isMember x xsminp) xs` // No junk
  *     /\ all (\x -> isMember x xs`) xsminp // All members used
- *     /\ bool =.= isMember p xs            // Boolean is correct
+ *     /\ bool =.= isMember p (toList xs)   // Boolean is correct
  *     /\ integrity lt                      // Data structure integrity
  *     /\ integrity gt
  *   where
- *     xsminp = 'StdList'.filter ((<>) p) xs
- *     (lt,bool,gt) = splitMember p (fromList xs)
+ *     xsminp = 'StdList'.filter ((<>) p) (toList xs)
+ *     (lt,bool,gt) = splitMember p xs
  *     (lt`,gt`) = (toList lt, toList gt)
  *     xs` = lt` ++ gt`
  */
@@ -431,8 +434,8 @@ fold :: !(a -> .b -> .b) !.b !.(Set a) -> .b
  * Convert the set to an ascending list of elements.
  * @type (Set a) -> [a]
  * @complexity O(n)
- * @property fromList_toList: A.xs :: [a]:
- *   xs` =.= fromList (toList xs`) where xs` = fromList xs
+ * @property fromList_toList: A.xs :: Set a:
+ *   xs =.= fromList (toList xs)
  */
 toList s :== toAscList s
 
