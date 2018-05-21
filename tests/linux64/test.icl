@@ -83,6 +83,7 @@ import qualified Data.MapCollection
 import qualified Data.Matrix
 import qualified Data.Maybe
 import qualified Data.Monoid
+import qualified Data.NGramIndex
 import qualified Data.OrdList
 import qualified Data.Queue
 import qualified Data.Set
@@ -93,6 +94,8 @@ import qualified Data.Tuple
 import qualified Data.Word8
 import qualified Data._Array
 import qualified Data.Generics
+import qualified Database.Native
+import qualified Database.Native.JSON
 import qualified Database.SQL
 import qualified Database.SQL.MySQL
 import qualified Database.SQL.RelationalMapping

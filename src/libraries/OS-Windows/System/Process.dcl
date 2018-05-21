@@ -3,6 +3,7 @@ definition module System.Process
 import Data.Maybe, Data.Either
 import System.OSError
 import System.FilePath
+from Text.GenJSON import generic JSONEncode, generic JSONDecode, :: JSONNode
 
 /*
 Not yet implemented:
@@ -22,6 +23,8 @@ Not yet implemented:
 
 :: WritePipe
 :: ReadPipe
+derive JSONEncode WritePipe, ReadPipe
+derive JSONDecode WritePipe, ReadPipe
 
 /**
 * runs a new process
