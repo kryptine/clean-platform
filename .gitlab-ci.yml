@@ -8,4 +8,4 @@ test:
   image: "camilstaps/clean:nightly"
   script:
     - make -C tests/linux64 run
-    - stdbuf -o0 -e0 /opt/clean-test/makecleantest -IL Dynamics -d src/libraries/OS-Independent -P Quiet -r
+    - stdbuf -o0 -e0 /opt/clean-test/makecleantest -IL Dynamics -d src/libraries/OS-Independent -P Quiet -r -T 'Tests 100000' -C -h -C 100m
