@@ -11,32 +11,25 @@ CLMLIBS:=\
 	-I ../../src/libraries/OS-Linux\
 	-I ../../src/libraries/OS-Linux-64\
 	-I ../../src/libraries/Platform-x86\
-	-IL StdEnv\
 	-IL Dynamics\
-	-IL TCPIP\
-	-IL Gast
+	-IL TCPIP
 
 BINARIES:=test gentest
+RUN_BINARIES:=$(addprefix run_,$(BINARIES))
 
-# Recursive wildcard; https://stackoverflow.com/a/12959694/1544337
-rwildcard=$(wildcard $1$2) $(foreach d,$(wildcard $1*),$(call rwildcard,$d/,$2))
-
-ALL_TESTS_ICLS:=$(call rwildcard,_Tests/,*.icl)
-ALL_TESTS:=$(subst /,.,$(patsubst %.icl,%,$(ALL_TESTS_ICLS)))
-
-all: $(BINARIES) $(ALL_TESTS)
+all: $(BINARIES)
 
 $(BINARIES): .FORCE
 	$(CLM) $(CLMLIBS) $(CLMFLAGS) $@ -o $@
 
-$(ALL_TESTS): .FORCE
-	$(CLM) -nr -nt -nortsopts -h 100m $(CLMFLAGS) $(CLMLIBS) $@ -o $@
+$(RUN_BINARIES): run_%: %
+	./$<
 
 run: all
-	@FAILED=0; for t in $(BINARIES) $(ALL_TESTS); do echo "$$t"; ./$$t || FAILED=1; done; if [ $$FAILED -gt 0 ]; then exit 1; fi
+	@FAILED=0; for t in $(BINARIES); do echo "$$t"; ./$$t || FAILED=1; done; if [ $$FAILED -gt 0 ]; then exit 1; fi
 
 clean:
-	$(RM) -r $(BINARIES) $(ALL_TESTS) Clean\ System\ Files
+	$(RM) -r $(BINARIES) Clean\ System\ Files
 
 .FORCE:
 .PHONY: all run clean .FORCE
