@@ -25,7 +25,7 @@ import Graphics.Scalable.Internal.Types
 
 import StdDebug
 
-derive gEq ImgTransform, Span, LookupSpan, BasicImg, FontDef, BasicImgAttr, SVGColor, Angle, ImageTag
+derive gEq ImgTransform, Span, LookupSpan, BasicImg, BasicImgAttr, Angle, ImageTag
 instance == ImgTransform where == a b = a === b
 
 equivImg :: !Img !Img -> Bool
@@ -79,7 +79,7 @@ getImgAtNodePath img []     = Just img
 getImgAtNodePath img [ViaChild i:p]
 #! imgs = imgChildNodes img
 | i < 0 || i >= length imgs = Nothing
-| otherwise                 = trace_n ("getImgAtNodePath [ViaChild " +++ toString i +++ ":p] legal index")  // TO LASZLO: if you remove the trace_n, then the client displays the runtime error 'uncaught exception: ABORT: Subscript error in !!,index too large'
+| otherwise                 = //trace_n ("getImgAtNodePath [ViaChild " +++ toString i +++ ":p] legal index")  // TO LASZLO: if you remove the trace_n, then the client displays the runtime error 'uncaught exception: ABORT: Subscript error in !!,index too large'
                               (getImgAtNodePath (imgs !! i) p)
 getImgAtNodePath img [ViaHost:p]
 	= case imgHostNode img of
@@ -243,18 +243,15 @@ empty` xspan yspan font_spans text_spans imgTables=:{ImgTables | imgNewTexts = t
 
 text` :: !FontDef !String !FontSpans !TextSpans !(ImgTables m) -> (!Img,!ImgTables m)
 text` font str font_spans text_spans imgTables=:{ImgTables | imgNewFonts = curFonts, imgNewTexts = txts, imgSpans = curSpans, imgUniqIds = no}
-  #! (w,txts) = spanImgTexts text_spans (LookupSpan (TextXSpan font` str)) txts
-  #! curFonts = if ('DM'.member font` font_spans) curFonts ('DS'.insert font` curFonts)
-  = ( mkBasicHostImg no (TextImg font` str) 'DS'.newSet
+  #! (w,txts) = spanImgTexts text_spans (LookupSpan (TextXSpan font str)) txts
+  #! curFonts = if ('DM'.member font font_spans) curFonts ('DS'.insert font curFonts)
+  = ( mkBasicHostImg no (TextImg font str) 'DS'.newSet
     , {ImgTables | imgTables & imgNewFonts = curFonts
                              , imgNewTexts = txts
-                             , imgSpans    = 'DM'.put no (w,PxSpan h`) curSpans
+                             , imgSpans    = 'DM'.put no (w,PxSpan (getfontysize font)) curSpans
                              , imgUniqIds  = no-1
       }
     )
-where
-	h`      = max zero font.FontDef.fontysize
-	font`   = {FontDef | font & fontysize = h`}
 
 circle` :: !Span !FontSpans !TextSpans !(ImgTables m) -> (!Img,!ImgTables m)
 circle` diameter font_spans text_spans imgTables=:{ImgTables | imgNewTexts = txts, imgSpans = curSpans, imgUniqIds = no}

@@ -1,5 +1,6 @@
 definition module Graphics.Scalable.Types
 
+import Data.Generics.GenEq
 from Data.Maybe import :: Maybe (..)
 from Data.Set   import :: Set
 from Text.HTML  import :: SVGColor
@@ -11,22 +12,43 @@ from Graphics.Scalable.Internal.Types import
                                                                               instance /. Span, instance /. Real, instance /. Int, 
   px, textxspan, imagexspan, imageyspan, columnspan, rowspan, minSpan, maxSpan,
   :: ImageTag, instance == ImageTag, instance < ImageTag
+from iTasks.UI.JS.Encoding import generic JSEncode, generic JSDecode
+from Text.JSON import :: JSONNode (..)
+import Text.JSON
 
 :: ImageSpan   :== (!Span, !Span)
 :: ImageOffset :== (!Span, !Span)
 
-:: FontDef
+:: FontDef/*
   = { fontfamily  :: !String
     , fontysize   :: !Real
     , fontstretch :: !String
     , fontstyle   :: !String
     , fontvariant :: !String
     , fontweight  :: !String
-    }
-normalFontDef     :: !String !Real -> FontDef  // (normalFontDef family size) sets all other fields to "normal"
+    }*/
+normalFontDef     :: !String !Real    -> FontDef  // (normalFontDef family size) sets all other fields to "normal"
+setfontfamily     :: !String !FontDef -> FontDef
+setfontysize      :: !Real   !FontDef -> FontDef
+setfontstretch    :: !String !FontDef -> FontDef
+setfontstyle      :: !String !FontDef -> FontDef
+setfontvariant    :: !String !FontDef -> FontDef
+setfontweight     :: !String !FontDef -> FontDef
+getfontfamily     ::         !FontDef -> String
+getfontysize      ::         !FontDef -> Real
+getfontstretch    ::         !FontDef -> String
+getfontstyle      ::         !FontDef -> String
+getfontvariant    ::         !FontDef -> String
+getfontweight     ::         !FontDef -> String
+
 instance ==       FontDef
 instance <        FontDef
 instance toString FontDef
+derive   gEq      FontDef
+derive   JSEncode FontDef
+derive   JSDecode FontDef
+derive   JSONEncode FontDef
+derive   JSONDecode FontDef
 
 :: LineMarkerPos
   = LineMarkerEnd
