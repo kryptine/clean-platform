@@ -56,12 +56,12 @@ runProcessPty fp args mdir opts world :== runProcessIO fp args mdir world
 
 //This is only here for API compatibility with linux and mac
 :: ProcessPtyOptions =
-	{ setsid   :: Bool
-	, ioctl    :: Maybe Int
-	, termiosT :: (Termios -> Termios)
+	{ childInNewSession :: !Bool
+	, childControlsTty  :: !Bool
+	, useRawIO          :: !Bool
 	}
+defaultPtyOptions :: ProcessPtyOptions
 
-:: Termios = {c_iflag :: Int, c_oflag :: Int, c_cflag :: Int, c_lflag :: Int}
 cfmakerawT x :== x
 
 /**

@@ -29,6 +29,14 @@ import Text.GenJSON
 derive JSONEncode WritePipe, ReadPipe
 derive JSONDecode WritePipe, ReadPipe
 
+defaultPtyOptions :: ProcessPtyOptions
+defaultPtyOptions =
+	{ProcessPtyOptions
+	|childInNewSession = True
+	,childControlsTty  = True
+	,useRawIO          = False
+	}
+
 runProcess :: !FilePath ![String] !(Maybe String) !*World -> (MaybeOSError ProcessHandle, *World)
 runProcess path args mCurrentDirectory world
 	# startupInfo = { createArray STARTUPINFO_size_int 0
