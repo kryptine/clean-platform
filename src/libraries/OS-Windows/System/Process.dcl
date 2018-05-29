@@ -54,7 +54,6 @@ runProcessIO :: !FilePath ![String] !(Maybe String) !*World -> (MaybeOSError (Pr
 */
 runProcessPty fp args mdir opts world :== runProcessIO fp args mdir world
 
-
 //This is only here for API compatibility with linux and mac
 :: ProcessPtyOptions =
 	{ childInNewSession :: !Bool
