@@ -21,8 +21,13 @@ import System.OSError
 import System._Pointer
 import System._Posix
 
+import Text.GenJSON
+
 :: WritePipe = WritePipe !Int
 :: ReadPipe  = ReadPipe  !Int
+
+derive JSONEncode WritePipe, ReadPipe
+derive JSONDecode WritePipe, ReadPipe
 
 runProcess :: !FilePath ![String] !(Maybe String) !*World -> (MaybeOSError ProcessHandle, *World)
 runProcess path args mCurrentDirectory world = runProcessFork
@@ -91,8 +96,8 @@ where
 defaultPtyOptions :: ProcessPtyOptions
 defaultPtyOptions =
 	{ProcessPtyOptions
-	|childInNewSession = False
-	,childControlsTty  = False
+	|childInNewSession = True
+	,childControlsTty  = True
 	,useRawIO          = False
 	}
 
@@ -115,8 +120,8 @@ where
 	childProcess :: !Int !Int !Int !Int !*World -> (!MaybeOSError (!ProcessHandle, !ProcessIO), !*World)
 	childProcess slavePty masterPty pipeExecErrorOut pipeExecErrorIn world
 		//Disable echo
-		//sizeof(struct termios) on linux gives 60, lets play safe
-		# termios      = malloc 64
+		//sizeof(struct termios) on linux gives 60, on mac 72, lets play safe
+		# termios      = malloc 128
 		| termios == 0 = abort "malloc failed"
 		# (res, world) = tcgetattr slavePty termios world
 		| res == -1    = getLastOSError world

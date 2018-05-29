@@ -7,7 +7,7 @@ from StdOrdList import minList, maxList
 from StdTuple   import fst, snd
 import StdEnum, StdString
 import Data.List
-import Data.Generics.GenEq
+import Data.GenEq
 import Data.MapCollection
 import qualified Data.Set as DS
 import qualified Data.Map as DM

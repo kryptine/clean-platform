@@ -3,6 +3,7 @@ definition module System.Process
 import Data.Maybe, Data.Either
 import System.OSError
 import System.FilePath
+from Text.GenJSON import generic JSONEncode, generic JSONDecode, :: JSONNode
 
 /*
 Not yet implemented:
@@ -22,6 +23,8 @@ Not yet implemented:
 
 :: WritePipe
 :: ReadPipe
+derive JSONEncode WritePipe, ReadPipe
+derive JSONDecode WritePipe, ReadPipe
 
 /**
 * runs a new process
@@ -53,13 +56,11 @@ runProcessPty fp args mdir opts world :== runProcessIO fp args mdir world
 
 //This is only here for API compatibility with linux and mac
 :: ProcessPtyOptions =
-	{ setsid   :: Bool
-	, ioctl    :: Maybe Int
-	, termiosT :: (Termios -> Termios)
+	{ childInNewSession :: !Bool
+	, childControlsTty  :: !Bool
+	, useRawIO          :: !Bool
 	}
-
-:: Termios = {c_iflag :: Int, c_oflag :: Int, c_cflag :: Int, c_lflag :: Int}
-cfmakerawT x :== x
+defaultPtyOptions :: ProcessPtyOptions
 
 /**
 * Check if a process is still running

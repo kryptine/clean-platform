@@ -2,9 +2,10 @@ implementation module Graphics.Scalable.Types
 
 import Data.Maybe
 import Data.List
-import Data.Generics.GenEq
+import Data.GenEq
 from Text.HTML import :: SVGColor (..)
 from Data.Set import :: Set, instance == (Set a), instance < (Set a)
+import Text.GenPrint
 import StdBool, StdInt, StdReal, StdString
 import Graphics.Scalable.Internal.Types
 
@@ -77,8 +78,7 @@ derive JSEncode   FontDef
 derive JSDecode   FontDef
 derive JSONEncode FontDef
 derive JSONDecode FontDef
-import Data.Generics.GenPrint
-derive gPrint FontDef
+derive gPrint     FontDef
 instance toString FontDef where toString font = printToString font
 
 derive gEq LineMarkerPos

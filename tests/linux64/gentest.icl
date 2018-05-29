@@ -1,7 +1,22 @@
 module gentest
 
-import StdEnv, Data.Generics, System.CommandLine, StdDebug
+import StdEnv
+
 from Data.Maybe import :: Maybe(..)
+import System.CommandLine
+
+import Control.GenBimap
+import Control.GenMap
+import Control.GenMapSt
+import Control.GenMonad
+import Control.GenFMap
+import Control.GenReduce
+import Data.GenCompress
+import Data.GenFDomain
+import Data.GenLexOrd
+import Data.GenZip
+import Text.GenParse
+import Text.GenPrint
 
 :: Tree a b = Tip a | Bin b (Tree a b) (Tree a b)
 :: Rose a = Rose a .[Rose a]

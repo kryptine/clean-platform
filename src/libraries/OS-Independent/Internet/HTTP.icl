@@ -42,14 +42,13 @@ doHTTPRequest req timeout w
 = (resp,w)
 where
 	receiveRest resp chan w
-	# cl = lookup "Content-Length" resp.HTTPResponse.rsp_headers
-	| isNothing cl
-		= (Ok resp, chan, w)
-	| size resp.rsp_data >= toInt (fromJust cl)
-		= (Ok resp, chan, w)
+	# (end,chan,w) = eom chan w
+	| end = (Ok resp, chan, w)
 	# (rpt,newresp,chan,w) = receive_MT (Just timeout) chan w
 	| rpt <> TR_Success
-		= (Error $ req.server_name + " hung up during transmission.", chan, w)
+		# (end,chan,w) = eom chan w
+		| end = (Ok resp, chan, w)
+		| otherwise = (Error $ req.server_name + " hung up during transmission", chan, w)
 	= receiveRest {resp & rsp_data=resp.rsp_data + toString (fromJust newresp)} chan w
 
 doHTTPRequestFollowRedirects :: !HTTPRequest Int !Int !*World -> *(!MaybeErrorString HTTPResponse, !*World)

@@ -5,7 +5,7 @@ definition module Data.Graphviz
 
 from StdOverloaded import class toString, class ==
 from Data.Maybe import :: Maybe
-from Data.Generics.GenEq import generic gEq
+from Data.GenEq import generic gEq
 
 // A digraph contains a title and a list of node definitions
 :: Digraph
@@ -371,12 +371,19 @@ derive gEq EdgeStyle // PK++
   | HSV   Real Real Real
   | Color String          // X11 1.2 color names; see rgb.txt
 
+/** @type Color */
 CBlack   :== Color "black"
+/** @type Color */
 CWhite   :== Color "white"
+/** @type Color */
 CGray    :== Color "gray"
+/** @type Color */
 CRed     :== Color "red"
+/** @type Color */
 CGreen   :== Color "green"
+/** @type Color */
 CBlue    :== Color "blue"
+/** @type Color */
 CYellow  :== Color "yellow"
 
 instance toString Color

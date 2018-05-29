@@ -1,6 +1,6 @@
 definition module Graphics.Scalable.Types
 
-import Data.Generics.GenEq
+import Data.GenEq
 from Data.Maybe import :: Maybe (..)
 from Data.Set   import :: Set
 from Text.HTML  import :: SVGColor
@@ -13,8 +13,8 @@ from Graphics.Scalable.Internal.Types import
   px, textxspan, imagexspan, imageyspan, columnspan, rowspan, minSpan, maxSpan,
   :: ImageTag, instance == ImageTag, instance < ImageTag
 from iTasks.UI.JS.Encoding import generic JSEncode, generic JSDecode
-from Text.JSON import :: JSONNode (..)
-import Text.JSON
+from Text.GenJSON import :: JSONNode (..)
+import Text.GenJSON
 
 :: ImageSpan   :== (!Span, !Span)
 :: ImageOffset :== (!Span, !Span)
