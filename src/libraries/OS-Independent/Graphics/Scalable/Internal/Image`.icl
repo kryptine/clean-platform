@@ -25,8 +25,18 @@ import Graphics.Scalable.Internal.Types
 
 import StdDebug
 
-derive gEq ImgTransform, Span, LookupSpan, BasicImg, BasicImgAttr, Angle, ImageTag
+derive gEq ImgTransform, Span, LookupSpan, BasicImg, BasicImgAttr, Angle, ImageTag, SVGColor
 instance == ImgTransform where == a b = a === b
+
+toFontDef` :: !FontDef -> FontDef`
+toFontDef` fd
+	= {FontDef` | fontfamily`  = getfontfamily  fd
+                , fontysize`   = getfontysize   fd
+                , fontstretch` = getfontstretch fd
+                , fontstyle`   = getfontstyle   fd
+                , fontvariant` = getfontvariant fd
+                , fontweight`  = getfontweight  fd
+      }
 
 equivImg :: !Img !Img -> Bool
 equivImg {Img | transform = tfs,  offsets = offs,  host = h,  overlays = overs }

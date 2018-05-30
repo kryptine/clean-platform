@@ -9,14 +9,7 @@ import Text.GenPrint
 import StdBool, StdInt, StdReal, StdString
 import Graphics.Scalable.Internal.Types
 
-:: FontDef
-  = { fontfamily`  :: !String
-    , fontysize`   :: !Real
-    , fontstretch` :: !String
-    , fontstyle`   :: !String
-    , fontvariant` :: !String
-    , fontweight`  :: !String
-    }
+:: FontDef :== FontDef`
 
 normalFontDef :: !String !Real -> FontDef // (normalFontDef family size) sets all other fields to "normal"
 normalFontDef family size
@@ -29,42 +22,40 @@ normalFontDef family size
     }
 
 setfontfamily :: !String !FontDef -> FontDef
-setfontfamily family fontdef = {FontDef | fontdef & fontfamily` = family}
+setfontfamily family fontdef = setfontfamily` family fontdef
 
 setfontysize :: !Real !FontDef -> FontDef
-setfontysize ysize fontdef = {FontDef | fontdef & fontysize` = to2dec ysize}
+setfontysize ysize fontdef = setfontysize` ysize fontdef
 
 setfontstretch :: !String !FontDef -> FontDef
-setfontstretch stretch fontdef = {FontDef | fontdef & fontstretch` = stretch}
+setfontstretch stretch fontdef = setfontstretch` stretch fontdef
 
 setfontstyle :: !String !FontDef -> FontDef
-setfontstyle style fontdef = {FontDef | fontdef & fontstyle` = style}
+setfontstyle style fontdef = setfontstyle` style fontdef
 
 setfontvariant :: !String !FontDef -> FontDef
-setfontvariant variant fontdef = {FontDef | fontdef & fontvariant` = variant}
+setfontvariant variant fontdef = setfontvariant` variant fontdef
 
 setfontweight :: !String !FontDef -> FontDef
-setfontweight weight fontdef = {FontDef | fontdef & fontweight` = weight}
+setfontweight weight fontdef = setfontweight` weight fontdef
 
 getfontfamily :: !FontDef -> String
-getfontfamily {FontDef | fontfamily`} = fontfamily`
+getfontfamily fontdef = getfontfamily` fontdef
 
 getfontysize :: !FontDef -> Real
-getfontysize {FontDef | fontysize`} = fontysize`
+getfontysize fontdef = getfontysize` fontdef
 
 getfontstretch :: !FontDef -> String
-getfontstretch {FontDef | fontstretch`} = fontstretch`
+getfontstretch fontdef = getfontstretch` fontdef
 
 getfontstyle :: !FontDef -> String
-getfontstyle {FontDef | fontstyle`} = fontstyle`
+getfontstyle fontdef = getfontstyle` fontdef
 
 getfontvariant :: !FontDef -> String
-getfontvariant {FontDef | fontvariant`} = fontvariant`
-getfontweight :: !FontDef -> String
-getfontweight {FontDef | fontweight`} = fontweight`
+getfontvariant fontdef = getfontvariant` fontdef
 
-to2dec :: !Real -> Real
-to2dec r = toReal (toInt (r * 100.0)) / 100.0
+getfontweight :: !FontDef -> String
+getfontweight fontdef = getfontweight` fontdef
 
 instance == FontDef    where  == fd1 fd2 = fd1 === fd2
 instance <  FontDef    where  <  fd1 fd2 =  fd1.fontfamily`  < fd2.fontfamily`
@@ -73,12 +64,6 @@ instance <  FontDef    where  <  fd1 fd2 =  fd1.fontfamily`  < fd2.fontfamily`
                                          || fd1.fontstyle`   < fd2.fontstyle`
                                          || fd1.fontvariant` < fd2.fontvariant`
                                          || fd1.fontweight`  < fd2.fontweight`
-derive gEq        FontDef
-derive JSEncode   FontDef
-derive JSDecode   FontDef
-derive JSONEncode FontDef
-derive JSONDecode FontDef
-derive gPrint     FontDef
 instance toString FontDef where toString font = printToString font
 
 derive gEq LineMarkerPos

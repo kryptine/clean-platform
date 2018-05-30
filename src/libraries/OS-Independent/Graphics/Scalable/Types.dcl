@@ -11,22 +11,13 @@ from Graphics.Scalable.Internal.Types import
                                          instance abs  Span, instance ~ Span, instance *. Span, instance *. Real, instance *. Int,
                                                                               instance /. Span, instance /. Real, instance /. Int, 
   px, textxspan, imagexspan, imageyspan, columnspan, rowspan, minSpan, maxSpan,
-  :: ImageTag, instance == ImageTag, instance < ImageTag
-from iTasks.UI.JS.Encoding import generic JSEncode, generic JSDecode
-from Text.GenJSON import :: JSONNode (..)
-import Text.GenJSON
+  :: ImageTag, instance == ImageTag, instance < ImageTag,
+  :: FontDef`
 
 :: ImageSpan   :== (!Span, !Span)
 :: ImageOffset :== (!Span, !Span)
 
-:: FontDef/*
-  = { fontfamily  :: !String
-    , fontysize   :: !Real
-    , fontstretch :: !String
-    , fontstyle   :: !String
-    , fontvariant :: !String
-    , fontweight  :: !String
-    }*/
+:: FontDef     :== FontDef`
 normalFontDef     :: !String !Real    -> FontDef  // (normalFontDef family size) sets all other fields to "normal"
 setfontfamily     :: !String !FontDef -> FontDef
 setfontysize      :: !Real   !FontDef -> FontDef
@@ -44,11 +35,6 @@ getfontweight     ::         !FontDef -> String
 instance ==       FontDef
 instance <        FontDef
 instance toString FontDef
-derive   gEq      FontDef
-derive   JSEncode FontDef
-derive   JSDecode FontDef
-derive   JSONEncode FontDef
-derive   JSONDecode FontDef
 
 :: LineMarkerPos
   = LineMarkerEnd
