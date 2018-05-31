@@ -20,5 +20,5 @@ world_to_true w = True
 
 unsafeCoerce :: !.a -> .b
 unsafeCoerce a = code {
-	pop_a 0
+	no_op
 }
