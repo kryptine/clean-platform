@@ -54,14 +54,13 @@ runProcessIO :: !FilePath ![String] !(Maybe String) !*World -> (MaybeOSError (Pr
 */
 runProcessPty fp args mdir opts world :== runProcessIO fp args mdir world
 
-defaultPtyOptions :: ProcessPtyOptions
-
 //This is only here for API compatibility with linux and mac
 :: ProcessPtyOptions =
-	{ setsid   :: Bool
-	, ioctl    :: Maybe Int
-	, termiosT :: (Termios -> Termios)
+	{ childInNewSession :: !Bool
+	, childControlsTty  :: !Bool
+	, useRawIO          :: !Bool
 	}
+defaultPtyOptions :: ProcessPtyOptions
 
 /**
 * Check if a process is still running
