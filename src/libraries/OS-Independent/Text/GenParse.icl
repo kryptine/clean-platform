@@ -501,7 +501,7 @@ where
 						#! (expr, s) = parse_expr PERecord s
 						-> parse_record Nothing [ExprField name expr] s
 					TokenIdent "|"
-						-> parse_record (Just ("_" +++ name)) [] (lexUngetToken TokenComma s)
+						-> parse_record (Just name) [] (lexUngetToken TokenComma s)
 					_
 						#! (expr, s) = parse_expr PERecord 
 							(lexUngetToken (TokenIdent name) (lexUngetToken token s))
