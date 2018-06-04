@@ -1,6 +1,6 @@
 implementation module Text.GenParse
 
-import StdGeneric, StdEnv
+import StdGeneric, StdEnv, _SystemStrictLists, StdOverloadedList
 from Data.Maybe import :: Maybe(..), mapMaybe
 
 //---------------------------------------------------------------------------
@@ -76,7 +76,7 @@ instance toString Token where
 	| ExprTuple {Expr}
 	| ExprField String Expr
 	| ExprRecord (Maybe String) {Expr}
-	| ExprList [Expr]
+	| ExprList Bool Bool [Expr]
 	| ExprArray [Expr]
 	| ExprEnd Token
 	| ExprError String
@@ -468,8 +468,8 @@ where
 		#! (token, s) = lexGetToken s
 		= case token of
 			TokenCloseList 
-				-> (ExprList [], s)
-			_  
+				-> (ExprList False False[], s)
+			_
 				#! (expr, s) = parse_expr PEList (lexUngetToken token s)
 				-> case expr of
 					ExprError err -> (ExprError (err +++ " ; parse list"), s)
@@ -484,9 +484,9 @@ where
 						ExprError err -> (ExprError err, s)
 						_	-> parse_rest [expr:exprs] s
 				TokenCloseList 
-					-> (ExprList (reverse exprs), s)
+					-> (ExprList False False (reverse exprs), s)
 				_ 	
-					-> (ExprError "parse list: , or ] expected", s) 		
+					-> (ExprError "parse list: , !] or ] expected", s) 		
 
 		
 	parse_record_or_array s 
@@ -607,9 +607,6 @@ where
 		| otherwise
 			= Nothing
 	
-	is_ident wanted_name (ExprIdent name) = name == wanted_name
-	is_ident _ _ = False		
-
 	parse_tuple (ExprTuple exprs) 
 		= mapMaybe CONS (parse_arg (mkprod [e\\e<-:exprs]))
 	parse_tuple expr = Nothing
@@ -680,14 +677,17 @@ where
 		&& isDigit name.[6]
 		&& (size_name == 7 || isDigit name.[7])
 
-gParse{|RECORD of d|} parse_arg (ExprRecord rec_name exprs)
-	| check_name rec_name d.grd_name
+is_ident wanted_name (ExprIdent name) = name == wanted_name
+is_ident _ _ = False		
+
+gParse{|RECORD of {grd_name}|} parse_arg (ExprRecord rec_name exprs)
+	| check_name rec_name grd_name
 		= mapMaybe RECORD (parse_arg (mkprod [e\\e<-:exprs]))
 		= Nothing
 	where
 		check_name Nothing cons_name = True
 		check_name (Just rec_name) cons_name = rec_name == cons_name
-gParse{|RECORD of d|} parse_arg expr
+gParse{|RECORD of {grd_name}|} parse_arg expr
 	= Nothing
 
 mkprod [] 		= abort "mkprod\n"
@@ -696,15 +696,21 @@ mkprod exprs
 	# (xs, ys) = splitAt (length exprs / 2) exprs
 	= ExprPair (mkprod xs) (mkprod ys)
 	
-gParse{|FIELD of d|} parse_arg (ExprField name value) 
-	| d.gfd_name == name
+gParse{|FIELD of {gfd_name}|} parse_arg (ExprField name value) 
+	| gfd_name == name
 		= mapMaybe FIELD (parse_arg value)
 		= Nothing
-gParse{|OBJECT|} parse_arg expr
+gParse{|OBJECT of {gtd_num_conses,gtd_conses}|} parse_arg expr
+	| gtd_num_conses == 0 = case expr of
+		ExprApp ap
+			| size ap == 2 && is_ident (hd gtd_conses).gcd_name ap.[0]
+				= mapMaybe OBJECT (parse_arg ap.[1])
+			= Nothing
+		_ = Nothing
 	= mapMaybe OBJECT (parse_arg expr)
 
-gParse{|[]|} parse_arg (ExprList exprs) 
-	= maybeAll (map parse_arg exprs)
+gParse{|[]|} parse_arg (ExprList False False exprs) 
+	= maybeAll [parse_arg e \\e<-exprs]
 gParse{|[]|} parse_arg _ = Nothing
 
 gParse{|{}|} parse_arg (ExprArray exprs)
@@ -715,12 +721,12 @@ gParse{|{!}|} parse_arg (ExprArray exprs)
 	= mapMaybe (\xs -> {x\\x<-xs}) (maybeAll (map parse_arg exprs))
 gParse{|{!}|} parse_arg _ = Nothing
 
-maybeAll [] 			= Just []
-maybeAll [Nothing:_] 	= Nothing
-maybeAll [Just x: mxs] 
+maybeAll [|] 			= Just [|]
+maybeAll [|Nothing:_] 	= Nothing
+maybeAll [|Just x: mxs] 
 	= case maybeAll mxs of
 		Nothing -> Nothing
-		Just xs -> Just [x:xs]  
+		Just xs -> Just [|x:xs]  
 
 //----------------------------------------------------------------------------------		
 

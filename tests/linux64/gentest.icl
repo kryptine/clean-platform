@@ -31,10 +31,11 @@ import Text.GenPrint
 	| I Int 
 :: Rec a b c = { rec_fst :: a, rec_snd :: b, rec_thd :: c }	
 :: Color = Red | Green | Blue
+:: NewType =: NT Int
 
 derive bimap Tree, Rose, Fork, Sequ
 
-derive gEq 				Tree, Rose, Fork, Sequ, Color, InfCons, Rec, Maybe
+derive gEq 				Tree, Rose, Fork, Sequ, Color, InfCons, Rec, Maybe, NewType, [!], [ !], [!!]
 derive gLexOrd 			Tree, Rose, Fork, Sequ
 derive gMap 			Tree, Rose, Fork, Sequ
 derive gMapLSt 			Tree, Rose, Fork, Sequ
@@ -46,8 +47,8 @@ derive gReduceRSt 		Tree, Rose, Fork, Sequ
 derive gReduce 			Tree, Rose, Fork, Sequ
 derive gZip				Tree, Rose, Fork, Sequ
 derive gMaybeZip 		Tree, Rose, Fork, Sequ
-derive gPrint			Tree, Rose, Fork, Sequ, Color, InfCons, Rec
-derive gParse			Tree, Rose, Fork, Sequ, Color, InfCons, Rec
+derive gPrint			Tree, Rose, Fork, Sequ, Color, InfCons, Rec, NewType
+derive gParse			Tree, Rose, Fork, Sequ, Color, InfCons, Rec, NewType
 derive gCompress		Tree, Rose, Fork, Sequ, Color
 derive gCompressedSize	Tree, Rose, Fork, Sequ, Color
 derive gUncompress		Tree, Rose, Fork, Sequ, Color
@@ -66,7 +67,9 @@ testEq =
 	, tree === tree
 	, rose === rose
 	, sequ === sequ
- 	]
+	, NT 4 =!= NT 5
+	, NT 42 === NT 42
+	]
 
 testLexOrd = 
 	[ ([1,2,3] =?= [1,2,3]) === EQ 
@@ -164,6 +167,9 @@ testParsePrint =
 
 	, test [I 1 :+: I 2 :+: I 3, I 4 :->: I 5 :->: I 6]
 	, test (arr [I 1 :+: I 2 :+: I 3, I 4 :->: I 5 :->: I 6])
+
+	, test (NT 5)
+	, test (NT 42)
 	//, test
 	//	{	rec_fst = I 1 :+: I 2 :+: I 3
 	//	, 	rec_snd = I 4 :->: I 5 :->: I 6
