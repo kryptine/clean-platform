@@ -217,9 +217,9 @@ gPrint{|CONS of d|} print_arg (CONS x) st=:{ps_context}
 	#! ctx = mkContextCons d
 	#! st = { st & ps_context = ctx }
 	| needParenthesis ctx ps_context
-		= 	{ printChar '(' 
-			$ print print_arg ctx 
-			$ printChar ')' 
+		= 	{ printChar '('
+			$ print print_arg ctx
+			$ printChar ')'
 			@ st 
 			& ps_context = ps_context 
 			}
@@ -255,7 +255,12 @@ gPrint{|FIELD of d|} f (FIELD x) st
 	$ printString " = " 
 	$ f x 
 	@ st
-gPrint{|OBJECT|} f (OBJECT x) st
+gPrint{|OBJECT of d|} f (OBJECT x) st=:{ps_context}
+	| d.gtd_num_conses == 1 && (hd d.gtd_conses).gcd_index == -2
+		# cnsstr = (hd d.gtd_conses).gcd_name +++ " "
+		| needParenthesis CtxTuple ps_context
+			= printChar '(' $ printString cnsstr $ f x $ printChar ')' @ st 
+			= printString cnsstr $ f x @ st
 	= f x st	
 	
 gPrint{|[]|} f xs st
