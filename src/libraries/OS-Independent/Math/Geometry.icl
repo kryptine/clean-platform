@@ -52,3 +52,6 @@ instance sign Angle where
   sign (Deg r) = sign r
   sign (Rad r) = sign r
 
+instance abs Angle where
+  abs :: !Angle -> Angle
+  abs angle = normalize angle

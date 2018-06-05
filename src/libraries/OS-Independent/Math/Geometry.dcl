@@ -4,14 +4,17 @@ definition module Math.Geometry
  * This module provides geometry related functions.
  *
  * @property-bootstrap
- *	import Math.Geometry, StdString
+ *	import Math.Geometry, StdString, StdBool, StdReal
  *	derive ggen Angle
  *	derive JSONEncode Angle
  *	derive genShow Angle
  *	derive bimap []
+ *
+ *	(~~) infix 4
+ *	(~~) x y :== approxEqual (Deg 1.0E-100) x y
  */
 
-from StdEnv import class ==, class <, class +, class -, class sign
+from StdEnv import class ==, class <, class +, class -, class sign, class abs
 
 //* The constant pi.
 pi :== 3.14159265359
@@ -53,8 +56,14 @@ toRad     :: !Angle -> Real
  *
  * @param the angle to normalize
  * @result the normalized angle
+ * @property range_deg: A.angle :: Angle:
+ *	let deg = toDeg (normalize angle)
+ *	in 0.0 <= deg && deg <= 360.0
+ * @property range_rad: A.angle :: Angle:
+ *	let rad = toRad (normalize angle)
+ *	in 0.0 <= rad && rad <= 2.0 * pi
  * @property idempotence: A.angle :: Angle:
- *   normalize angle =.= normalize (normalize angle)
+ *   normalize angle ~~ normalize (normalize angle)
  */
 normalize :: !Angle -> Angle
 
@@ -63,3 +72,4 @@ instance < Angle
 instance + Angle
 instance - Angle
 instance sign Angle
+instance abs Angle
