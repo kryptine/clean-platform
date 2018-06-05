@@ -76,7 +76,7 @@ instance toString Token where
 	| ExprTuple {Expr}
 	| ExprField String Expr
 	| ExprRecord (Maybe String) {Expr}
-	| ExprList Bool Bool [Expr]
+	| ExprList [Expr]
 	| ExprArray [Expr]
 	| ExprEnd Token
 	| ExprError String
@@ -468,7 +468,7 @@ where
 		#! (token, s) = lexGetToken s
 		= case token of
 			TokenCloseList 
-				-> (ExprList False False[], s)
+				-> (ExprList [], s)
 			_
 				#! (expr, s) = parse_expr PEList (lexUngetToken token s)
 				-> case expr of
@@ -484,9 +484,9 @@ where
 						ExprError err -> (ExprError err, s)
 						_	-> parse_rest [expr:exprs] s
 				TokenCloseList 
-					-> (ExprList False False (reverse exprs), s)
+					-> (ExprList (reverse exprs), s)
 				_ 	
-					-> (ExprError "parse list: , !] or ] expected", s) 		
+					-> (ExprError "parse list: , or ] expected", s) 		
 
 		
 	parse_record_or_array s 
@@ -709,7 +709,7 @@ gParse{|OBJECT of {gtd_num_conses,gtd_conses}|} parse_arg expr
 		_ = Nothing
 	= mapMaybe OBJECT (parse_arg expr)
 
-gParse{|[]|} parse_arg (ExprList False False exprs) 
+gParse{|[]|} parse_arg (ExprList exprs) 
 	= maybeAll [parse_arg e \\e<-exprs]
 gParse{|[]|} parse_arg _ = Nothing
 
