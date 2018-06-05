@@ -269,21 +269,6 @@ gPrint{|[]|} f xs st
 	$ printList f xs 
 	$ printChar ']'
 	@ st
-gPrint{|[!]|} f xs st
-	= printString "[!"
-	$ printList f xs 
-	$ printChar ']'
-	@ st
-gPrint{|[ !]|} f xs st
-	= printString "[ "
-	$ printList f xs 
-	$ printString "!]"
-	@ st
-gPrint{|[!!]|} f xs st
-	= printString "[!"
-	$ printList f xs 
-	$ printString "!]"
-	@ st
 gPrint{|{}|} f xs st
 	= printChar '{'
 	$ printList f [ x \\ x <-: xs] 
