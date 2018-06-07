@@ -75,7 +75,10 @@ toImg (Tag`        t img)                            p font_spans text_spans tab
 
 toImgs :: ![Image` m] !ImgNodePath !FontSpans !TextSpans !(ImgTables m) -> (![Img],!ImgTables m)
 toImgs images p font_spans text_spans imgTables
-	= strictTRMapSt (\(i,img) tables -> toImg img [ViaChild i:p] font_spans text_spans tables) (zip2 [0..] images) imgTables
+	= strictTRMapSt withChild (zip2 [0..] images) imgTables
+where
+	withChild :: !(!Int,!Image` m) !(ImgTables m) -> (!Img,!ImgTables m)
+	withChild (i,img) tables = toImg img [ViaChild i:p] font_spans text_spans tables
 
 getImgEventhandler :: !(Image` m) !ImgNodePath -> Maybe (ImgEventhandler m)
 getImgEventhandler img p
