@@ -6,22 +6,17 @@ definition module Data.Map
  * such that lookup, insert and delete operations can be performed in O(log n).
  *
  * @property-bootstrap
- *   import StdBool, StdChar, StdInt, StdString, StdTuple
+ *   import StdBool, StdChar, StdInt, StdTuple
  *   from StdList import all, isMember, removeDup, reverse, instance length []
  *   from Data.Func import on, `on`
  *   import Data.GenDefault
  *   from Data.List import nubBy
- *   import Data.Map
  *
  *   :: Predicate a = ConstTrue | IsMember [a]
  *
  *   pred :: (Predicate a) a -> Bool | Eq a
  *   pred ConstTrue     _ = True
  *   pred (IsMember cs) c = isMember c cs
- *
- *   derive ggen Predicate
- *   derive genShow Predicate
- *   derive JSONEncode Predicate
  *
  *   :: GMap k v =
  *     { gma  :: !v
@@ -40,10 +35,8 @@ definition module Data.Map
  *   where keya = 'a'; keyb = 'b'; keyc = 'c'; keyd = 'd'; keye = 'e'; keyf = 'f'
  *   gDefault{|Char|} = '.'
  *
- *   derive ggen GMap
- *   derive genShow GMap, Map, Maybe
- *   derive JSONEncode GMap
- *   derive bimap []
+ *   derive class Gast GMap, Predicate
+ *   derive genShow Map, Maybe
  *
  *   kvs :: (GMap k v) -> [(k,v)] | Key k
  *   kvs gm =
@@ -123,9 +116,10 @@ instance <  (Map k v) | Ord k & Ord v
 /**
  * Check if a Map is empty.
  * @type (Map k a) -> Bool
- * @property null_correct: A.m :: Map k v:
- *   (mapSize m == 0 <==> null m) /\
- *     (m == newMap <==> null m)
+ * @property equivalence with size 0: A.m :: Map k v:
+ *   mapSize m == 0 <==> null m
+ * @property equivalence with newMap: A.m :: Map k v:
+ *   m == newMap <==> null m
  */
 null mp :== case mp of
               Tip -> True
@@ -134,7 +128,7 @@ null mp :== case mp of
 /**
  * Create an empty Map.
  * @result An empty map
- * @property newMap_null:
+ * @property is null:
  *   null newMap
  */
 newMap      :: w:(Map k u:v), [ w <= u]
@@ -146,7 +140,7 @@ singleton   :: !k !v -> Map k v
 
 /**
  * The number of elements in a Map.
- * @property mapSize_correct: A.m :: Map k v:
+ * @property correctness: A.m :: Map k v:
  *   mapSize m =.= length (removeDup (keys m))
  */
 mapSize     :: !(Map k v) -> Int
@@ -158,7 +152,7 @@ mapSize     :: !(Map k v) -> Int
  * @param The value to add/update at the key position
  * @param The original mapping
  * @result The modified mapping with the added value
- * @property put_correct: A.m :: Map k v; k :: k; v :: v:
+ * @property correctness: A.m :: Map k v; k :: k; v :: v:
  *   get k m` =.= Just v /\                                           // Correctly put
  *     check all_present [kv \\ kv=:(k`,_) <- toList m | k <> k`] m` /\ // Other elements untouched
  *     log_size m` /\                                                   // Data structure integrity
@@ -197,7 +191,7 @@ getU :: !k !w:(Map k v) -> x:(!Maybe v, !y:(Map k v)) | == k & < k, [ x <= y, w 
  * @param The key to remove
  * @param The original mapping
  * @result The modified mapping with the value/key removed
- * @property del_correct: A.m :: Map k v; k :: k:
+ * @property correctness: A.m :: Map k v; k :: k:
  *   get k m` =.= Nothing /\                                            // Correctly deleted
  *     check all_present [kv \\ kv=:(k`,_) <- toList m | k <> k`] m` /\ // Other elements untouched
  *     log_size m` /\                                                   // Data structure integrity
@@ -270,7 +264,7 @@ toAscList m :== foldrWithKey (\k x xs -> [(k,x):xs]) [] m
  *
  * @param A list of key/value tuples
  * @result A mapping containing all the tuples in the list
- * @property fromList_correct: A.elems :: [(k,v)]:
+ * @property correctness: A.elems :: [(k,v)]:
  *   check all_present elems m /\ // All elements put
  *     check all_from m elems /\  // No other elements
  *     log_size m                 // Data structure integrity
@@ -286,7 +280,7 @@ derive gLexOrd Map
 
 /**
  * Check if a key exists in a Map.
- * @property member_correct: A.k :: k; m :: Map k v:
+ * @property correctness: A.k :: k; m :: Map k v:
  *   member k m <==> isMember k (keys m)
  */
 member :: !k !(Map k a) -> Bool | < k
@@ -294,7 +288,7 @@ member :: !k !(Map k a) -> Bool | < k
 /**
  * Checks if a key is not a member of a Map.
  * @type k (Map k v) -> Bool | < k
- * @property notMember_correct: A.k :: k; m :: Map k v:
+ * @property correctness: A.k :: k; m :: Map k v:
  *   notMember k m <==> not (isMember k (keys m))
  */
 notMember k m :== not (member k m)
@@ -302,7 +296,7 @@ notMember k m :== not (member k m)
 /**
  * Find an element in a Map.
  * Aborts when the element is not found.
- * @property find_correct: A.k :: k; v :: v; m :: Map k v:
+ * @property correctness: A.k :: k; v :: v; m :: Map k v:
  *   find k (put k v m) =.= v
  */
 find :: !k !(Map k a) -> a | < k
@@ -313,7 +307,7 @@ find :: !k !(Map k a) -> a | < k
  *
  * @param The default.
  * @param The key to look up.
- * @property findWithDefault_correct: A.k :: k; v :: v; m :: Map k v:
+ * @property correctness: A.k :: k; v :: v; m :: Map k v:
  *   findWithDefault default k (put k v m) =.= v /\
  *     findWithDefault default k (del k m) =.= default
  *   where default = gDefault{|*|}
@@ -326,7 +320,7 @@ findWithDefault :: !a !k !(Map k a) -> a | < k
  * When the element does not exist, return Nothing.
  *
  * @param The element you're looking for.
- * @property findKey_correct: A.v :: v; m :: Map k v:
+ * @property correctness: A.v :: v; m :: Map k v:
  *   case [k \\ (k,v`) <- toList m | v == v`] of
  *     []    -> findKey v m =.= Nothing
  *     [k:_] -> findKey v m =.= Just k
@@ -338,7 +332,7 @@ findKey :: !a !(Map k a) -> Maybe k | == a
  * When the element does not exist, return Nothing.
  *
  * @param The search function for checking values in the Map.
- * @property findKeyWith_correct: A.p :: Predicate v; m :: Map k v:
+ * @property correctness: A.p :: Predicate v; m :: Map k v:
  *   case [k \\ (k,v) <- toList m | pred p v] of
  *     []    -> findKeyWith (pred p) m =.= Nothing
  *     [k:_] -> findKeyWith (pred p) m =.= Just k
@@ -351,7 +345,7 @@ findKeyWith :: !(a -> Bool) !(Map k a) -> Maybe k
  *
  * @param The result if the second parameter does not occur as a value in the Map.
  * @param The element you're looking for.
- * @property findKeyWithDefault_correct: A.v :: v; m :: Map k v:
+ * @property correctness: A.v :: v; m :: Map k v:
  *   case findKey v m of
  *     Nothing -> findKeyWithDefault default v m =.= default
  *     Just k  -> findKeyWithDefault default v m =.= k
@@ -365,7 +359,7 @@ findKeyWithDefault :: !k !a !(Map k a) -> k | == a
  *
  * @param The search function for checking values in the Map.
  * @param The result when all values in the Map check as False.
- * @property findKeyWithDefaultWith_correct: A.p :: Predicate v; m :: Map k v:
+ * @property correctness: A.p :: Predicate v; m :: Map k v:
  *   case findKeyWith (pred p) m of
  *     Nothing -> findKeyWithDefaultWith (pred p) default m =.= default
  *     Just k  -> findKeyWithDefaultWith (pred p) default m =.= k
