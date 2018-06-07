@@ -4,10 +4,8 @@ definition module Math.Geometry
  * This module provides geometry related functions.
  *
  * @property-bootstrap
- *	import Math.Geometry, StdString, StdBool, StdReal
- *	derive ggen Angle
- *	derive JSONEncode Angle
- *	derive genShow Angle
+ *	import StdBool, StdReal
+ *	derive class Gast Angle
  *	derive bimap []
  *
  *	(~~) infix 4
