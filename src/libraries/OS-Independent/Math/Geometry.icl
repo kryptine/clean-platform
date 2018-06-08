@@ -10,10 +10,10 @@ deg d = Deg d
 
 toDeg :: !Angle -> Real
 toDeg (Deg r) = r
-toDeg (Rad r) = r / (pi / 180.0)
+toDeg (Rad r) = r / pi * 180.0
 
 toRad :: !Angle -> Real
-toRad (Deg r) = (pi / 180.0) * r
+toRad (Deg r) = r / 180.0 * pi
 toRad (Rad r) = r
 
 normalize :: !Angle -> Angle
