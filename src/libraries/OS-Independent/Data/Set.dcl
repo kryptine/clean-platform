@@ -211,7 +211,8 @@ delete :: !a !.(Set a) -> Set a | < a
  * The minimal element of a set.
  * @complexity O(log n)
  * @property correctness: A.xs :: Set a:
- *   not (null xs) ==> minList (toList xs) == findMin xs
+ *   minList (toList xs) == findMin xs
+ * @precondition not (null xs)
  */
 findMin :: !(Set a) -> a
 
@@ -219,7 +220,8 @@ findMin :: !(Set a) -> a
  * The maximal element of a set.
  * @complexity O(log n)
  * @property correctness: A.xs :: Set a:
- *   not (null xs) ==> maxList (toList xs) == findMax xs
+ *   maxList (toList xs) == findMax xs
+ * @precondition not (null xs)
  */
 findMax :: !(Set a) -> a
 
@@ -253,10 +255,10 @@ deleteMax :: !.(Set a) -> Set a
  * deleteFindMin set = (findMin set, deleteMin set)
  * @complexity O(log n)
  * @property correctness: A.xs :: Set a:
- *   not (null xs) ==>
- *     let (m,xs`) = deleteFindMin xs in
+ *   let (m,xs`) = deleteFindMin xs in
  *     m =.= min /\ notMember min xs`
  *   where min = minList (toList xs)
+ * @precondition not (null xs)
  */
 deleteFindMin :: !.(Set a) -> (!a, !Set a)
 
@@ -264,10 +266,10 @@ deleteFindMin :: !.(Set a) -> (!a, !Set a)
  * deleteFindMax set = (findMax set, deleteMax set)
  * @complexity O(log n)
  * @property correctness: A.xs :: Set a:
- *   not (null xs) ==>
- *     let (m,xs`) = deleteFindMax xs in
+ *   let (m,xs`) = deleteFindMax xs in
  *     m =.= max /\ notMember max xs`
  *   where max = maxList (toList xs)
+ * @precondition not (null xs)
  */
 deleteFindMax :: !.(Set a) -> (!a, !Set a)
 
