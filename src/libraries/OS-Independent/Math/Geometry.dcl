@@ -4,9 +4,8 @@ definition module Math.Geometry
  * This module provides geometry related functions.
  *
  * @property-bootstrap
- *	import StdBool, StdReal
+ *	import StdReal, StdInt
  *	derive class Gast Angle
- *	derive bimap []
  *
  *	(~~) infix 4
  *	(~~) x y :== approxEqual (Deg 1.0E-100) x y
@@ -54,14 +53,20 @@ toRad     :: !Angle -> Real
  *
  * @param the angle to normalize
  * @result the normalized angle
- * @property range_deg: A.angle :: Angle:
- *	let deg = toDeg (normalize angle)
- *	in 0.0 <= deg && deg <= 360.0
- * @property range_rad: A.angle :: Angle:
- *	let rad = toRad (normalize angle)
- *	in 0.0 <= rad && rad <= 2.0 * pi
+ * @property normalized degree range: A.angle :: Angle:
+ *	(abs deg <= toReal (maxint/365)) ==> (0.0 <=. degNorm /\ degNorm <=. 360.0)
+ *	with
+ *		deg     = toDeg angle
+ *		degNorm = toDeg (normalize angle)
+ * @property normalized radian range: A.angle :: Angle:
+ *	(abs deg <= toReal (maxint/365)) ==> (0.0 <=. radNorm /\ radNorm <=. 2.0 * pi)
+ *	with
+ *		deg     = toDeg angle
+ *		radNorm = toRad (normalize angle)
  * @property idempotence: A.angle :: Angle:
- *   normalize angle ~~ normalize (normalize angle)
+ *	(abs deg <= toReal (maxint/365)) ==> normalize angle =.= normalize (normalize angle)
+ *	with
+ *		deg = toDeg angle
  */
 normalize :: !Angle -> Angle
 

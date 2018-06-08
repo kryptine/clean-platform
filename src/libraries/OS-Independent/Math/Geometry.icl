@@ -1,6 +1,6 @@
 implementation module Math.Geometry
 
-import StdOverloaded, StdClass, StdReal
+import StdOverloaded, StdClass, StdReal, StdBool
 
 rad :: !Real -> Angle
 rad r = Rad r
@@ -20,9 +20,9 @@ normalize :: !Angle -> Angle
 normalize a
   #! a`    = toDeg a
   #! absa` = abs a`
-  | absa` <= 360.0 = Deg a`
-  | a`    >  0.0   = Deg (a` - d absa`)
-  | otherwise      = Deg (a` + d absa`)
+  | 0.0 <= a` && a` <= 360.0 = a
+  | a` >= 0.0 = Deg (a` - d absa`)
+  | otherwise = Deg (a` + d absa` + 360.0)
   where
   d :: !Real -> Real
   d absa` = toReal (entier (absa` / 360.0)) * 360.0
