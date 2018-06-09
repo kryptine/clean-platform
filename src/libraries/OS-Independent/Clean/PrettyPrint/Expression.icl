@@ -13,7 +13,7 @@ import Clean.PrettyPrint.Definition
 // General expressions
 instance print ParsedExpr
 where
-	print st (PE_List [(PE_Ident {id_name}),a,b])
+	print st (PE_List [PE_Ident id=:{id_name},x,xs])
 		| id_name == "_Cons"
 			= "[" +++ rest
 		| id_name == "_cons"
@@ -21,7 +21,18 @@ where
 		| id_name.[0] == '_' && id_name % (2,6) == "Cons"
 			= "[" +++ {id_name.[1]} +++ rest
 	where
-		rest = print st a +++ ":" +++ print st b +++ "]"
+		rest = print st x +++ print_in_list st xs
+
+		isConsIdent {id_name} = isMember id_name ["_Cons","_cons","_!Cons","_!Cons!","_Cons!","_#Cons"]
+		isNilIdent  {id_name} = isMember id_name ["_Nil","_nil","_|Nil","_#Nil"]
+
+		print_in_list :: !CPPState !ParsedExpr -> String
+		print_in_list st (PE_List [PE_Ident id,x,xs]) | isConsIdent id
+			= "," +++ print st x +++ print_in_list st xs
+		print_in_list st (PE_Ident id) | isNilIdent id
+			= "]"
+		print_in_list st e
+			= ":" +++ print st e +++ "]"
 	print st (PE_List pes)
 		= printp st (print {st & cpp_parens=True} pes)
 	print st (PE_Ident id)
