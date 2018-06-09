@@ -4,6 +4,7 @@ import StdEnv
 
 import Data.List
 
+import predef
 import syntax
 
 import Clean.PrettyPrint.Util
@@ -23,16 +24,21 @@ where
 	where
 		rest = print st x +++ print_in_list st xs
 
-		isConsIdent {id_name} = isMember id_name ["_Cons","_cons","_!Cons","_!Cons!","_Cons!","_#Cons"]
-		isNilIdent  {id_name} = isMember id_name ["_Nil","_nil","_|Nil","_#Nil"]
+		end_of_list = case id_name of
+			"_!Cons!" -> "!]"
+			"_#Cons!" -> "!]"
+			_         -> "]"
+
+		isConsIdent {id_name} = isMember id_name ["_Cons","_cons","_|Cons","_!Cons","_!Cons!","_Cons!","_#Cons","_#Cons!"]
+		isNilIdent  {id_name} = isMember id_name ["_Nil", "_nil", "_|Nil", "_!Nil", "_!Nil!", "_Nil!", "_#Nil", "_#Nil!"]
 
 		print_in_list :: !CPPState !ParsedExpr -> String
 		print_in_list st (PE_List [PE_Ident id,x,xs]) | isConsIdent id
 			= "," +++ print st x +++ print_in_list st xs
 		print_in_list st (PE_Ident id) | isNilIdent id
-			= "]"
+			= end_of_list
 		print_in_list st e
-			= ":" +++ print st e +++ "]"
+			= ":" +++ print st e +++ end_of_list
 	print st (PE_List pes)
 		= printp st (print {st & cpp_parens=True} pes)
 	print st (PE_Ident id)
@@ -56,7 +62,19 @@ where
 			(RecordNameIdent id) = print st id +++ " | "
 			(RecordNameQualifiedIdent mod s) = print st ("'" :+: mod :+: "'." :+: s) +++ " | "
 	print st (PE_ListCompr cons nil pe qs)
-		= print st ("[" :+: pe :+: " \\\\ " :+: join st ", " qs :+: "]")
+		= print st ("[" :+: list_type :+: pe :+: " \\\\ " :+: join st ", " qs :+: tail_strict :+: "]")
+	where
+		list_type = case cons of
+			PD_StrictConsSymbol           -> "!"
+			PD_StrictTailStrictConsSymbol -> "!"
+			PD_UnboxedConsSymbol          -> "#"
+			PD_OverloadedConsSymbol       -> "|"
+			PD_cons                       -> "|"
+			_                             -> ""
+		tail_strict = case cons of
+			PD_TailStrictConsSymbol       -> "!"
+			PD_StrictTailStrictConsSymbol -> "!"
+			_                             -> ""
 	print st (PE_If _ c i e)
 		= printp st ("if " +++ join { st & cpp_parens=True } " " [c,i,e])
 	print st (PE_Case _ pe alts)
