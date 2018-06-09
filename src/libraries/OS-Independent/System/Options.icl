@@ -49,11 +49,12 @@ where
 		{ operands_state = NoOperandsSeenYet
 		}
 
-	parse (OptParser p) []   st opts = Ok opts
-	parse (OptParser p) args st opts = case p args st opts of
+	parse _ [] st opts = Ok opts
+	parse p ["--":args] st opts = parse p args {st & operands_state=OperandsIncludingHyphens} opts
+	parse optp=:(OptParser p) args st opts = case p args st opts of
 		Nothing                  -> Error ["Unknown option '" +++ hd args +++ "'"]
 		Just (Error es)          -> Error es
-		Just (Ok (opts,st,rest)) -> parse (OptParser p) rest st opts
+		Just (Ok (opts,st,rest)) -> parse optp rest st opts
 
 instance OptionDescription Option
 where
