@@ -73,7 +73,7 @@ where
 		_ -> Nothing
 	optParser (Operand acceptsHyphens upd _ _) = OptParser \args st opts = case args of
 		[arg:args]
-			| arg.[0] == '-' && not acceptsHyphens -> Nothing
+			| arg.[0] == '-' && not acceptsHyphens && not (st.operands_state=:OperandsIncludingHyphens) -> Nothing
 			| otherwise -> case upd arg opts of
 				Nothing        -> Nothing
 				Just (Error e) -> Just (Error e)
