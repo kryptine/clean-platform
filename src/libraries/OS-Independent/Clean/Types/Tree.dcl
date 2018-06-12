@@ -2,11 +2,10 @@ definition module Clean.Types.Tree
 
 from StdOverloaded import class zero
 
+from Clean.Types import :: Type, :: Unifier
 from Data.Graphviz import :: Digraph
 from Data.Maybe import :: Maybe
 from Text.GenJSON import generic JSONEncode, generic JSONDecode, :: JSONNode
-
-from Clean.Types import :: Type, :: Unifier
 
 :: TypeTree v
 

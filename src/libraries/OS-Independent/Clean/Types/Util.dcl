@@ -7,12 +7,11 @@ definition module Clean.Types.Util
 from StdFunc import flip
 from StdOverloaded import class toString (toString)
 
+import Clean.Types
 from Control.Monad import class Applicative, class Monad, foldM
 from Data.Functor import class Functor
 from Data.Map import :: Map
 from Data.Maybe import :: Maybe
-
-import Clean.Types
 
 /**
  * Pretty printer.

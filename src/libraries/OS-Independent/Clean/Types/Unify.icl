@@ -8,6 +8,8 @@ import StdOrdList
 import StdTuple
 import StdString
 
+import Clean.Types
+import Clean.Types.Util
 import Control.Applicative
 import Control.Monad
 import Control.Monad.State
@@ -17,9 +19,6 @@ import Data.GenEq
 import Data.List
 from Data.Map import :: Map, newMap
 import Data.Maybe
-
-import Clean.Types
-import Clean.Types.Util
 
 derive gEq Maybe, Type, TypeRestriction, Kind
 

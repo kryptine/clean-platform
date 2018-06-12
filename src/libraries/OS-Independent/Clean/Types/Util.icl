@@ -7,6 +7,7 @@ import StdOrdList
 import StdString
 import StdTuple
 
+import Clean.Types
 import Control.Applicative
 import Control.Monad
 from Data.Func import $
@@ -17,8 +18,6 @@ import qualified Data.Map as M
 import Data.Maybe
 import Data.Tuple
 from Text import class Text (concat), instance Text String
-
-import Clean.Types
 
 (--) infixr 1 :: !a !b -> [String] | print a & print b
 (--) a b = print False a ++ print False b

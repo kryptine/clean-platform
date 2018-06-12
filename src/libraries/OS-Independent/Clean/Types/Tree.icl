@@ -7,6 +7,9 @@ import StdOverloaded
 import StdString
 import StdTuple
 
+import Clean.Types
+import Clean.Types.Unify
+import Clean.Types.Util
 from Data.Func import $
 import Data.GenLexOrd
 import Data.Graphviz
@@ -14,10 +17,6 @@ import Data.List
 import Data.Tuple
 from Text import class Text(concat), instance Text String, <+
 import Text.GenJSON
-
-import Clean.Types
-import Clean.Types.Unify
-import Clean.Types.Util
 
 :: TypeTree v = Node Type [v] [TypeTree v]
 

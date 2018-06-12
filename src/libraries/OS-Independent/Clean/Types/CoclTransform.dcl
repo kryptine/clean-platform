@@ -7,12 +7,11 @@ definition module Clean.Types.CoclTransform
  * - derive types for very simple expressions from the compiler AST.
  */
 
-from Data.Maybe import :: Maybe
-
 from Clean.Types import class toType, class toTypeVar, class toTypeDef,
 	class toTypeDefRhs, class toConstructor, class toRecordField,
 	class toTypeContext, class toMaybePriority
 import qualified Clean.Types as T
+from Data.Maybe import :: Maybe
 
 // Clean compiler frontend
 import qualified syntax
