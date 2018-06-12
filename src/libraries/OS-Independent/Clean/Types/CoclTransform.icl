@@ -18,7 +18,7 @@ import qualified Clean.Types as T
 import syntax
 import qualified syntax
 
-instance 'T'.toTypeContext [TypeContext]
+instance 'T'.toTypeContext ['syntax'.TypeContext]
 where
 	toTypeContext context
 		= ['T'.Instance gds.glob_object.ds_ident.id_name (map 'T'.toType tc_types)
@@ -26,21 +26,21 @@ where
 		  ['T'.Derivation gtc_generic.glob_object.ds_ident.id_name ('T'.toType t)
 		     \\ {tc_class=(TCGeneric {gtc_generic}),tc_types=[t]} <- context]
 
-instance 'T'.toTypeContext TypeContext where toTypeContext tc = 'T'.toTypeContext [tc]
+instance 'T'.toTypeContext 'syntax'.TypeContext where toTypeContext tc = 'T'.toTypeContext [tc]
 
-instance toType ATypeVar
+instance toType 'syntax'.ATypeVar
 where
 	toType {atv_attribute=TA_Unique,atv_variable}
 		= 'T'.Uniq ('T'.Var ('T'.toTypeVar atv_variable))
 	toType {atv_variable} = 'T'.Var ('T'.toTypeVar atv_variable)
 
-instance toType AType
+instance toType 'syntax'.AType
 where
 	toType {at_type,at_attribute}
 		| at_attribute == TA_Unique = 'T'.Uniq ('T'.toType at_type)
 		| otherwise = 'T'.toType at_type
 
-instance toType Type
+instance toType 'syntax'.Type
 where
 	toType (TA tsi ats) = case tsi.type_ident.id_name of
 		"_String" = 'T'.Type "String" []
@@ -57,12 +57,12 @@ where
 	toType (TQualifiedIdent _ s ts) = 'T'.Type s (map 'T'.toType ts)
 	toType _ = abort "CoclUtils: unimplemented Type\n"
 
-instance toType SymbolType
+instance toType 'syntax'.SymbolType
 where
 	toType {st_args,st_result,st_context}
 		= 'T'.Func (map 'T'.toType st_args) ('T'.toType st_result) ('T'.toTypeContext st_context)
 
-instance toTypeVar TypeVar where toTypeVar {tv_ident} = tv_ident.id_name
+instance toTypeVar 'syntax'.TypeVar where toTypeVar {tv_ident} = tv_ident.id_name
 
 instance toTypeDef 'syntax'.ParsedTypeDef
 where
@@ -72,7 +72,7 @@ where
 			(map 'T'.toType td_args)
 			('T'.toTypeDefRhs td_rhs)
 
-instance toTypeDefRhs RhsDefsOfType
+instance toTypeDefRhs 'syntax'.RhsDefsOfType
 where
 	toTypeDefRhs (ConsList pcs)
 		= 'T'.TDRCons False (map 'T'.toConstructor pcs)
@@ -93,7 +93,7 @@ where
 	toTypeDefRhs (MoreConses id pcs)
 		= 'T'.TDRMoreConses (map 'T'.toConstructor pcs)
 
-instance toConstructor ParsedConstructor
+instance toConstructor 'syntax'.ParsedConstructor
 where
 	toConstructor {pc_cons_ident,pc_arg_types,pc_exi_vars,pc_context,pc_cons_prio}
 		= 'T'.constructor pc_cons_ident.id_name
@@ -102,14 +102,14 @@ where
 			('T'.toTypeContext pc_context)
 			('T'.toMaybePriority pc_cons_prio)
 
-instance 'T'.toMaybePriority Priority
+instance 'T'.toMaybePriority 'syntax'.Priority
 where
 	toMaybePriority NoPrio              = Nothing
 	toMaybePriority (Prio LeftAssoc i)  = Just ('T'.LeftAssoc i)
 	toMaybePriority (Prio RightAssoc i) = Just ('T'.RightAssoc i)
 	toMaybePriority (Prio NoAssoc i)    = Just ('T'.NoAssoc i)
 
-instance toRecordField ParsedSelector
+instance toRecordField 'syntax'.ParsedSelector
 where
 	toRecordField {ps_selector_ident,ps_field_type}
 		= 'T'.recordfield ps_selector_ident.id_name ('T'.toType ps_field_type)
@@ -141,7 +141,7 @@ pdType pd = evalStateT (coclType pd)
 	, tds_map               = 'M'.newMap
 	}
 
-instance coclType ParsedDefinition
+instance coclType 'syntax'.ParsedDefinition
 where
 	coclType (PD_Function _ {id_name=id} _ args {rhs_alts=UnGuardedExpr {ewl_expr}} _)
 		= allowNewIdents True >>|
@@ -152,7 +152,7 @@ where
 	coclType _
 		= fail
 
-instance coclType ParsedExpr
+instance coclType 'syntax'.ParsedExpr
 where
 	coclType (PE_Basic b) = coclType b
 	coclType (PE_Ident id) = gets tds_map >>= \m -> case 'M'.get id.id_name m of
@@ -168,7 +168,7 @@ where
 
 	coclType _ = fail
 
-instance coclType BasicValue
+instance coclType 'syntax'.BasicValue
 where
 	coclType (BVI _)   = pure ('T'.Type "Int" [])
 	coclType (BVInt _) = pure ('T'.Type "Int" [])

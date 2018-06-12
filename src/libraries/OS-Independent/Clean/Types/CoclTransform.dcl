@@ -14,23 +14,21 @@ from Clean.Types import class toType, class toTypeVar, class toTypeDef,
 	class toTypeContext, class toMaybePriority
 import qualified Clean.Types as T
 
-// Cocl frontend
-from syntax import ::SymbolType, ::Type, ::TypeVar, ::ParsedSelector,
-	::ParsedConstructor, ::RhsDefsOfType, ::TypeContext, ::Priority
+// Clean compiler frontend
 import qualified syntax
 
-instance toType SymbolType
-instance toType Type
+instance toType 'syntax'.SymbolType
+instance toType 'syntax'.Type
 
-instance toTypeVar TypeVar
+instance toTypeVar 'syntax'.TypeVar
 
-instance toTypeContext [TypeContext]
-instance toTypeContext TypeContext
+instance toTypeContext ['syntax'.TypeContext]
+instance toTypeContext 'syntax'.TypeContext
 
 instance toTypeDef 'syntax'.ParsedTypeDef
-instance toTypeDefRhs RhsDefsOfType
-instance toConstructor ParsedConstructor
-instance toRecordField ParsedSelector
-instance toMaybePriority Priority
+instance toTypeDefRhs 'syntax'.RhsDefsOfType
+instance toConstructor 'syntax'.ParsedConstructor
+instance toRecordField 'syntax'.ParsedSelector
+instance toMaybePriority 'syntax'.Priority
 
 pdType :: !'syntax'.ParsedDefinition -> Maybe 'T'.Type
