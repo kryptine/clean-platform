@@ -47,11 +47,11 @@ where
 				NoValue
 				{TaskEvalInfo|lastEvent=ts,removedTasks=[],refreshSensitive=True}
 				rep
-				(TCBasic taskId ts (JSONString "") False)
+				(TCBasic taskId ts (DeferredJSONNode $ JSONString "") False)
 			  , iworld)
 		_ = (exc "This tty was already open", iworld)
 
-	eval _ _ _ tree=:(TCBasic taskId ts (JSONString acc) _) iworld
+	eval _ _ _ tree=:(TCBasic taskId ts (DeferredJSONNode (JSONString acc)) _) iworld
 	# (mtty, iworld) = getResource iworld
 	= case mtty of
 		[] = (exc"TTY resource lost", iworld)
@@ -85,7 +85,7 @@ where
 								NoValue
 								{TaskEvalInfo|lastEvent=ts,removedTasks=[],refreshSensitive=True}
 								rep
-								(TCBasic taskId ts (JSONString newacc) False)
+								(TCBasic taskId ts (DeferredJSONNode $ JSONString newacc) False)
 							  , iworld)
 
 	eval _ event evalOpts tree=:(TCDestroy _) iworld=:{IWorld|resources,world}
