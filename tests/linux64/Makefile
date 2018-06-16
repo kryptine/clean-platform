@@ -20,7 +20,7 @@ ifeq "$(GCCVERSIONGTEQ6)" "1"
 	override CLMFLAGS+=-l -no-pie
 endif
 
-BINARIES:=test gentest
+BINARIES:=test gentest tartest
 
 all: $(BINARIES)
 
@@ -28,5 +28,19 @@ all: $(BINARIES)
 	$(CLM) $(CLMLIBS) $(CLMFLAGS) $(basename $<) -o $@
 	./$@
 
+tartest: .FORCE
+	$(RM) -r _test-old _test _$@.tar
+	$(CLM) $(CLMLIBS) $(CLMFLAGS) -nr -nt $@ -o $@
+	mkdir -p _$@/subdir/subdir2
+	echo hello > _$@/subdir/hello
+	echo test > _$@/test
+	tar cf _$@.tar _$@
+	mv _$@ _$@-old
+	./$@
+	diff -r _$@-old _$@
+	$(RM) -r _$@-old _$@ _$@.tar
+
 clean:
 	$(RM) -r $(BINARIES) Clean\ System\ Files
+
+.FORCE:
