@@ -3,29 +3,34 @@ CLM:=clm
 override CLMFLAGS+=-dynamics
 CLMLIBS:=\
 	-I ../../src/libraries/OS-Independent\
-	-I ../../src/libraries/OS-Independent/Deprecated/Generics\
 	-I ../../src/libraries/OS-Independent/Deprecated/ArgEnv\
+	-I ../../src/libraries/OS-Independent/Deprecated/Generics\
 	-I ../../src/libraries/OS-Independent/Deprecated/MersenneTwister\
 	-I ../../src/libraries/OS-Independent/Deprecated/StdLib\
 	-I ../../src/libraries/OS-Posix\
 	-I ../../src/libraries/OS-Linux\
 	-I ../../src/libraries/OS-Linux-64\
 	-I ../../src/libraries/Platform-x86\
-	-I $(CLEAN_HOME)/lib/StdEnv\
-	-I $(CLEAN_HOME)/lib/Dynamics\
-	-I $(CLEAN_HOME)/lib/TCPIP\
+	-IL StdEnv\
+	-IL Dynamics\
+	-IL GraphCopy\
+	-IL TCPIP
 
 GCCVERSIONGTEQ6:=$(shell expr `gcc -dumpversion | cut -f1 -d.` \>= 6)
 ifeq "$(GCCVERSIONGTEQ6)" "1"
 	override CLMFLAGS+=-l -no-pie
 endif
 
-BINARIES:=test gentest tartest
+BINARIES:=test gentest snappytest tartest
 
 all: $(BINARIES)
 
-%: %.icl $(wildcard *.[id]cl)
-	$(CLM) $(CLMLIBS) $(CLMFLAGS) $(basename $<) -o $@
+%: %.icl .FORCE
+	$(CLM) $(CLMLIBS) $(CLMFLAGS) $@ -o $@
+	./$@
+
+snappytest: %: %.icl .FORCE
+	$(CLM) $(CLMLIBS) -l -lsnappy $(CLMFLAGS) -nr $@ -o $@
 	./$@
 
 tartest: .FORCE
