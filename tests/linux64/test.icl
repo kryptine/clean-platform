@@ -12,6 +12,8 @@ import qualified StdMaybe
 import qualified StdLibMisc
 
 // Main libraries
+import qualified Codec.Compression.Snappy
+import qualified Codec.Compression.Snappy.Graph
 import qualified Control.Applicative
 import qualified Control.Arrow
 import qualified Control.Category
