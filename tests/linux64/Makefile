@@ -21,7 +21,7 @@ ifeq "$(GCCVERSIONGTEQ6)" "1"
 	override CLMFLAGS+=-l -no-pie
 endif
 
-BINARIES:=test gentest snappytest
+BINARIES:=test gentest snappytest tartest
 
 all: $(BINARIES)
 
@@ -32,6 +32,18 @@ all: $(BINARIES)
 snappytest: %: %.icl .FORCE
 	$(CLM) $(CLMLIBS) -l -lsnappy $(CLMFLAGS) -nr $@ -o $@
 	./$@
+
+tartest: .FORCE
+	$(RM) -r _test-old _test _$@.tar
+	$(CLM) $(CLMLIBS) $(CLMFLAGS) -nr -nt $@ -o $@
+	mkdir -p _$@/subdir/subdir2
+	echo hello > _$@/subdir/hello
+	echo test > _$@/test
+	tar cf _$@.tar _$@
+	mv _$@ _$@-old
+	./$@
+	diff -r _$@-old _$@
+	$(RM) -r _$@-old _$@ _$@.tar
 
 clean:
 	$(RM) -r $(BINARIES) Clean\ System\ Files
