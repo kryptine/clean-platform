@@ -11,7 +11,7 @@ import StdMisc
 import StdFunc
 
 //Data
-import Data.Maybe
+import Data.Maybe, Data.Func
 from Data.List import maximum
 
 //System
@@ -303,9 +303,8 @@ checkProcess {pid} world
 	# (ret,world)	= waitpid pid status WNOHANG world //Non-blocking wait :)
 	| ret == 0
 		= (Ok Nothing, world)	
-	| ret == pid	
-		# exitCode = (status.[0] >> 8) bitand 0xFF
-		= (Ok (Just exitCode), world)
+	| ret == pid
+		= (Ok $ Just $ waitpidStatusExitcode status.[0], world)
 	| otherwise
 		= getLastOSError world
 
@@ -314,11 +313,19 @@ waitForProcess {pid} world
 	# status		= createArray 1 0
 	# (ret,world)	= waitpid pid status 0 world //Blocking wait
 	| ret == pid
-		# exitCode = (status.[0] >> 8) bitand 0xFF
-		= (Ok exitCode, world)
+		= (Ok $ waitpidStatusExitcode status.[0], world)
 	| otherwise
 		= getLastOSError world
 
+/**
+ * Converts the value returned by `waitpid` to the exit code.
+ * Considers normal termination and termination by signal.
+ *
+ * @param The status returned by `waitpid`
+ * @return The exit code
+ */
+waitpidStatusExitcode :: !Int -> Int
+waitpidStatusExitcode status = ((status bitand 0xFF00) >> 8) bitor (128 + (status bitand 0x7F))
 	
 callProcess :: !FilePath ![String] !(Maybe String) !*World -> (MaybeOSError Int, *World)
 callProcess path args mCurrentDirectory world
