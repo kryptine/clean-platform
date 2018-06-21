@@ -325,7 +325,10 @@ waitForProcess {pid} world
  * @return The exit code
  */
 waitpidStatusExitcode :: !Int -> Int
-waitpidStatusExitcode status = ((status bitand 0xFF00) >> 8) bitor (128 + (status bitand 0x7F))
+waitpidStatusExitcode status | signal <> 0 = 128 + signal
+                             | otherwise   = (status bitand 0xFF00) >> 8
+where
+	signal = status bitand 0x7F
 	
 callProcess :: !FilePath ![String] !(Maybe String) !*World -> (MaybeOSError Int, *World)
 callProcess path args mCurrentDirectory world
