@@ -12,6 +12,12 @@ import qualified StdMaybe
 import qualified StdLibMisc
 
 // Main libraries
+import qualified Clean.Types
+//import qualified Clean.Types.CoclTransform // requires Clean compiler
+import qualified Clean.Types.Parse
+import qualified Clean.Types.Tree
+import qualified Clean.Types.Unify
+import qualified Clean.Types.Util
 import qualified Codec.Compression.Snappy
 import qualified Codec.Compression.Snappy.Graph
 import qualified Control.Applicative
