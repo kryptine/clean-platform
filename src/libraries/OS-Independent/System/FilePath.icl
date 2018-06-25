@@ -40,6 +40,9 @@ addExtension path "" = path
 addExtension path ext | path.[size path - 1] == extSeparator = path +++ ext
 addExtension path ext = path +++ {extSeparator} +++ ext
 
+(<.>) infixr 6 :: !FilePath !String -> FilePath
+(<.>) path ext = addExtension path ext
+
 replaceExtension :: !FilePath !String -> FilePath
 replaceExtension path ext = addExtension (dropExtension path) ext
 

@@ -49,6 +49,11 @@ dropExtension :: !FilePath -> String
 addExtension :: !FilePath !String -> FilePath
 
 /**
+* Infix version of addExtension
+*/
+(<.>) infixr 6 :: !FilePath !String -> FilePath
+
+/**
 * Replace the extension of a FilePath
 */
 replaceExtension :: !FilePath !String -> FilePath
