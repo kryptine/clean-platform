@@ -94,6 +94,19 @@ where
 	# (r,es) = collect (i-1) es
 	= (if e.included [(e.value,e.annotations):r] r, es)
 
+getEntriesWithIndices :: !*(NativeDB v ak a) -> *(![(Index, v, Map ak a)], !*NativeDB v ak a)
+getEntriesWithIndices (DB db)
+# (s,db) = usize db
+# (es,db) = collect (s-1) db
+= (es,DB db)
+where
+	collect :: !Int !*{!Entry v ak a} -> *(![(Index, v, Map ak a)], !*{!Entry v ak a})
+	collect -1 es = ([], es)
+	collect i  es
+	# (e,es) = es![i]
+	# (r,es) = collect (i-1) es
+	= (if e.included [(Index i,e.value,e.annotations):r] r, es)
+
 mapInPlace :: !(Int v -> v) !*(NativeDB v ak a) -> *(NativeDB v ak a)
 mapInPlace f (DB db)
 # (s,db) = usize db
