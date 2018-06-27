@@ -137,6 +137,19 @@ where
 		, annotations=foldr (uncurry put) e.annotations annotations
 		}}
 
+searchIndex :: !Index ![(!ak, !a)] !*(NativeDB v ak a) -> *NativeDB v ak a | ==, < ak
+searchIndex (Index i) annots (DB db)
+# (e,db) = db![i]
+# db & [i] =
+	{ e
+	& included = True
+	, annotations = foldr (uncurry put) e.annotations annots
+	}
+= DB db
+
+unsearchIndex :: !Index !*(NativeDB v ak a) -> *NativeDB v ak a
+unsearchIndex (Index i) (DB db) = DB {db & [i].included=False}
+
 searchIndices :: !SearchMode ![(!Index, ![(!ak, !a)])] !*(NativeDB v ak a) -> *NativeDB v ak a | ==, < ak
 searchIndices mode idxs (DB db)
 # (s,db) = usize db

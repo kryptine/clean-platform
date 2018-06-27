@@ -86,6 +86,17 @@ mapInPlace :: !(Int v -> v) !*(NativeDB v ak a) -> *(NativeDB v ak a)
 search :: !SearchMode !(v -> (Bool, [(ak, a)])) !*(NativeDB v ak a) -> *NativeDB v ak a | ==, < ak
 
 /**
+ * Like {{`search`}}, but search for one particular index. The {{`SearchMode`}}
+ * is assumed to be {{`AddExcluded`}}.
+ */
+searchIndex :: !Index ![(!ak, !a)] !*(NativeDB v ak a) -> *NativeDB v ak a | ==, < ak
+
+/**
+ * Exclude an index from the result set.
+ */
+unsearchIndex :: !Index !*(NativeDB v ak a) -> *NativeDB v ak a
+
+/**
  * Like {{`search`}}, but search for specific indices.
  */
 searchIndices :: !SearchMode ![(!Index, ![(!ak, !a)])] !*(NativeDB v ak a) -> *NativeDB v ak a | ==, < ak
