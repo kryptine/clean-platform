@@ -17,4 +17,4 @@ derive class iTask TTYSettings
  * @result Task that stops when the stop flag is set
  * @throws TTYException
  */
-syncSerialChannel :: TTYSettings (b -> String) (String -> (Either String [a], String)) (Shared ([a],[b],Bool)) -> Task () | iTask a & iTask b
+syncSerialChannel :: Timespec TTYSettings (b -> String) (String -> (Either String [a], String)) (Shared ([a],[b],Bool)) -> Task () | iTask a & iTask b
