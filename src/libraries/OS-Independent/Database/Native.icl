@@ -155,7 +155,7 @@ where
 		# e & included = case mode of
 			Intersect   -> e.included && match
 			AddExcluded -> e.included || match
-		# e & annotations = if e.included (foldr (uncurry put) e.annotations annots) e.annotations
+		# e & annotations = if match (foldr (uncurry put) e.annotations annots) e.annotations
 		= upd (i+1) s (if match idxs allidxs) {es & [i]=e}
 	where
 		match = i == idx
