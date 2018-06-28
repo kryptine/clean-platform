@@ -30,10 +30,10 @@ import iTasks.Internal.TaskEval
 
 derive class iTask TTYSettings, Parity, BaudRate, ByteSize
 
-syncSerialChannel :: TTYSettings (b -> String) (String -> (Either String [a], String)) (Shared ([a],[b],Bool)) -> Task () | iTask a & iTask b
-syncSerialChannel opts enc dec rw = withShared "" \sh->Task $ eval sh
+syncSerialChannel :: Timespec TTYSettings (b -> String) (String -> (Either String [a], String)) (Shared ([a],[b],Bool)) -> Task () | iTask a & iTask b
+syncSerialChannel poll opts enc dec rw = Task eval
 where
-	eval sh event evalOpts tree=:(TCInit taskId ts) iworld
+	eval event evalOpts tree=:(TCInit taskId ts) iworld
 	# (mtty, iworld=:{world,resources}) = getResource iworld
 	= case mtty of
 		[] = case TTYopen opts iworld.world of
@@ -51,7 +51,7 @@ where
 			  , iworld)
 		_ = (exc "This tty was already open", iworld)
 
-	eval _ _ _ tree=:(TCBasic taskId ts (DeferredJSONNode (JSONString acc)) _) iworld
+	eval _ _ tree=:(TCBasic taskId ts (DeferredJSONNode (JSONString acc)) _) iworld
 	# (mtty, iworld) = getResource iworld
 	= case mtty of
 		[] = (exc"TTY resource lost", iworld)
@@ -88,7 +88,7 @@ where
 								(TCBasic taskId ts (DeferredJSONNode $ JSONString newacc) False)
 							  , iworld)
 
-	eval _ event evalOpts tree=:(TCDestroy _) iworld=:{IWorld|resources,world}
+	eval event evalOpts tree=:(TCDestroy _) iworld=:{IWorld|resources,world}
 	# (mtty, iworld) = getResource iworld
 	= case mtty of
 		[] = (exc "This tty was already closed", iworld)
@@ -100,7 +100,7 @@ where
 		= (DestroyedResult, iworld)
 
 	rep = ReplaceUI $ stringDisplay $ "Serial client " <+++ opts.devicePath
-	ticker = sdsFocus {start=zero,interval=zero} iworldTimespec
+	ticker = sdsFocus {start=zero,interval=poll} iworldTimespec
 	getResource = iworldResource (\t=:(TTYd p _)->(p == opts.devicePath, t))
 	exc = ExceptionResult o exception
 
