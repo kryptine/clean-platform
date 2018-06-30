@@ -64,29 +64,6 @@ instance toString Token where
 	toString TokenEnd = "<end>"
 	toString (TokenError err) = "<error: " +++ err +++ ">"
 
-// preparsed expressions
-:: Expr 
-	= ExprInt Int
-	| ExprChar Char
-	| ExprReal Real 
-	| ExprBool Bool
-	| ExprString String
-	| ExprIdent String
-	| ExprApp {Expr} 
-	| ExprTuple {Expr}
-	| ExprField String Expr
-	| ExprRecord (Maybe String) {Expr}
-	| ExprList [Expr]
-	| ExprArray [Expr]
-	| ExprEnd Token
-	| ExprError String
-
-	// aux
-	| ExprUnit
-	| ExprAppInInfix {Expr} GenConsAssoc Int GenConsAssoc
-	| ExprPair Expr Expr
-
-
 instance toString Expr where
 	toString (ExprInt x) = toString x
 	toString (ExprChar x) = toString x
