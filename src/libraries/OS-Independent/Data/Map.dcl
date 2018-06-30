@@ -37,6 +37,7 @@ definition module Data.Map
  *
  *   derive class Gast GMap, Predicate
  *   derive genShow Map, Maybe
+ *   derive gPrint Map, Maybe
  *
  *   kvs :: (GMap k v) -> [(k,v)] | Key k
  *   kvs gm =
