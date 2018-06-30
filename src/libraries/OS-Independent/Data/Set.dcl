@@ -41,7 +41,7 @@ definition module Data.Set
  *   pred (IsMember cs) c = isMember c cs
  *
  *   derive class Gast Predicate
- *   derive JSONEncode Set
+ *   derive gPrint Maybe, Set
  *
  *   // Check that all elements from a list are in a set.
  *   contains :: (Set a) [a] -> Bool | < a
@@ -56,14 +56,14 @@ definition module Data.Set
  *   all_in s xs = all (\e -> isMember e xs) (toList s)
  *
  *   // Check that the data structure is still correct.
- *   integrity :: (Set a) -> Property | Eq, genShow{|*|}, JSONEncode{|*|} a
+ *   integrity :: (Set a) -> Property | Eq, genShow{|*|}, gPrint{|*|} a
  *   integrity s =
  *     name "no_duplicates" (no_duplicates s) /\
  *     name "log_size"      (log_size s) /\
  *     name "sizes_correct" (sizes_correct s)
  *
  *   // Check that a set contains no duplicates.
- *   no_duplicates :: (Set a) -> Property | Eq, genShow{|*|}, JSONEncode{|*|} a
+ *   no_duplicates :: (Set a) -> Property | Eq, genShow{|*|}, gPrint{|*|} a
  *   no_duplicates s = xs =.= removeDup xs where xs = toList s
  *
  *   // Check that a set is log(n) in depth.
