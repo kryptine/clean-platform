@@ -69,15 +69,15 @@ where
 	arr = case fa of
 		ExpectedRelation x r y ->
 			[ JSONString "expected"
-			, x
+			, JSONString x
 			, hd (JSONEncode{|*|} False r)
-			, y
+			, JSONString y
 			]
 
 JSONDecode{|FailedAssertion|} _ [JSONArray arr:rest] = (mbFA, rest)
 where
 	mbFA = case arr of
-		[JSONString "expected":x:r:y:[]] -> case JSONDecode{|*|} False [r] of
+		[JSONString "expected":JSONString x:r:JSONString y:[]] -> case JSONDecode{|*|} False [r] of
 			(Just r, []) -> Just (ExpectedRelation x r y)
 			_ -> Nothing
 		_ -> Nothing
