@@ -1,6 +1,7 @@
 definition module Text.GenParse
 
 import StdGeneric
+from StdOverloaded import class toString
 from Data.Maybe import :: Maybe
 
 class ParseInput s where
@@ -30,6 +31,8 @@ instance ParseInput File
 	| ExprUnit
 	| ExprAppInInfix {Expr} GenConsAssoc Int GenConsAssoc
 	| ExprPair Expr Expr
+
+instance toString Expr
 
 generic gParse a :: Expr -> Maybe a
 
