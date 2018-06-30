@@ -12,6 +12,8 @@ import qualified StdMaybe
 import qualified StdLibMisc
 
 // Main libraries
+import qualified Codec.Compression.Snappy
+import qualified Codec.Compression.Snappy.Graph
 import qualified Control.Applicative
 import qualified Control.Arrow
 import qualified Control.Category
@@ -46,6 +48,7 @@ import qualified Data.Func
 import qualified Data.Functor
 import qualified Data.Functor.Identity
 import qualified Data.GenCompress
+import qualified Data.GenCons
 import qualified Data.GenDefault
 import qualified Data.GenDiff
 import qualified Data.GenEq

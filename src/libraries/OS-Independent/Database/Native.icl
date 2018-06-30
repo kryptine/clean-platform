@@ -94,6 +94,19 @@ where
 	# (r,es) = collect (i-1) es
 	= (if e.included [(e.value,e.annotations):r] r, es)
 
+getEntriesWithIndices :: !*(NativeDB v ak a) -> *(![(Index, v, Map ak a)], !*NativeDB v ak a)
+getEntriesWithIndices (DB db)
+# (s,db) = usize db
+# (es,db) = collect (s-1) db
+= (es,DB db)
+where
+	collect :: !Int !*{!Entry v ak a} -> *(![(Index, v, Map ak a)], !*{!Entry v ak a})
+	collect -1 es = ([], es)
+	collect i  es
+	# (e,es) = es![i]
+	# (r,es) = collect (i-1) es
+	= (if e.included [(Index i,e.value,e.annotations):r] r, es)
+
 mapInPlace :: !(Int v -> v) !*(NativeDB v ak a) -> *(NativeDB v ak a)
 mapInPlace f (DB db)
 # (s,db) = usize db
@@ -137,28 +150,54 @@ where
 		, annotations=foldr (uncurry put) e.annotations annotations
 		}}
 
+searchIndex :: !Index ![(!ak, !a)] !*(NativeDB v ak a) -> *NativeDB v ak a | ==, < ak
+searchIndex (Index i) annots (DB db)
+# (e,db) = db![i]
+# db & [i] =
+	{ e
+	& included = True
+	, annotations = foldr (uncurry put) e.annotations annots
+	}
+= DB db
+
+unsearchIndex :: !Index !*(NativeDB v ak a) -> *NativeDB v ak a
+unsearchIndex (Index i) (DB db) = DB {db & [i].included=False}
+
 searchIndices :: !SearchMode ![(!Index, ![(!ak, !a)])] !*(NativeDB v ak a) -> *NativeDB v ak a | ==, < ak
 searchIndices mode idxs (DB db)
-# (s,db) = usize db
-# db = upd 0 (s-1) idxs db
+# db = case mode of
+	Intersect
+		# (s,db) = usize db
+		-> upd_intersect 0 (s-1) idxs db
+	AddExcluded
+		-> foldr upd_addexcluded db idxs
 = (DB db)
 where
-	upd :: !Int !Int ![(!Index, ![(!ak, !a)])] !*{!Entry v ak a} -> *{!Entry v ak a} | ==, < ak
-	upd i s _  es
+	upd_addexcluded :: !(!Index, ![(!ak, !a)]) !*{!Entry v ak a} -> *{!Entry v ak a} | ==, < ak
+	upd_addexcluded (Index i,annots) es
+	# (e,es) = es![i]
+	# e =
+		{ e
+		& included = True
+		, annotations = foldr (uncurry put) e.annotations annots
+		}
+	= {es & [i]=e}
+
+	upd_intersect :: !Int !Int ![(!Index, ![(!ak, !a)])] !*{!Entry v ak a} -> *{!Entry v ak a} | ==, < ak
+	upd_intersect i s _  es
 		| i > s = es
-	upd i s [] es
-		| mode=:AddExcluded = es
+	upd_intersect i s [] es
 		# (e,es) = es![i]
-		= upd (i+1) s [] {es & [i]={e & included=False}}
-	upd i s allidxs=:[match=:(Index idx,annots):idxs] es
+		= upd_intersect (i+1) s [] {es & [i]={e & included=False}}
+	upd_intersect i s allidxs=:[(Index idx,annots):idxs] es
 		# (e,es) = es![i]
-		# e & included = case mode of
-			Intersect   -> e.included && match
-			AddExcluded -> e.included || match
-		# e & annotations = if e.included (foldr (uncurry put) e.annotations annots) e.annotations
-		= upd (i+1) s (if match idxs allidxs) {es & [i]=e}
-	where
-		match = i == idx
+		# e =
+			{ e
+			& included = e.included && match
+			, annotations = if match (foldr (uncurry put) e.annotations annots) e.annotations
+			}
+		= upd_intersect (i+1) s (if match idxs allidxs) {es & [i]=e}
+	where match = i == idx
 
 unsearchIndices :: ![Index] !*(NativeDB v ak a) -> *NativeDB v ak a
 unsearchIndices idxs (DB db)
