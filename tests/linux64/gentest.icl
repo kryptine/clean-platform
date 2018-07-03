@@ -35,7 +35,7 @@ import Text.GenPrint
 
 derive bimap Tree, Rose, Fork, Sequ
 
-derive gEq 				Tree, Rose, Fork, Sequ, Color, InfCons, Rec, Maybe, NewType, [!], [ !], [!!]
+derive gEq 				Tree, Rose, Fork, Sequ, Color, InfCons, Rec, NewType, [!], [ !], [!!]
 derive gLexOrd 			Tree, Rose, Fork, Sequ
 derive gMap 			Tree, Rose, Fork, Sequ
 derive gMapLSt 			Tree, Rose, Fork, Sequ
