@@ -1,7 +1,6 @@
 implementation module Text.GenParse
 
-import StdGeneric, StdEnv, _SystemStrictLists, StdOverloadedList
-from Data.Maybe import :: Maybe(..), mapMaybe
+import StdGeneric, StdEnv, _SystemStrictLists, StdOverloadedList, Data.GenEq, Data.Maybe
 
 //---------------------------------------------------------------------------
 
@@ -88,7 +87,10 @@ instance toString Expr where
 		tostr [x:xs] = toString x +++ ", " +++ tostr xs
 	toString (ExprField name expr) = name +++ "=" +++ toString expr
 
-		
+instance == Expr where
+    == x y = x === y
+derive gEq Expr, GenConsAssoc
+
 :: ParseState s =
 	{ ps_input 	:: !s			// lex input
 	, ps_char 	:: !Maybe Char	// unget char

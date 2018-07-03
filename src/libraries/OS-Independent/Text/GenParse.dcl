@@ -1,7 +1,7 @@
 definition module Text.GenParse
 
 import StdGeneric
-from StdOverloaded import class toString
+from StdOverloaded import class toString, class ==
 from Data.Maybe import :: Maybe
 
 class ParseInput s where
@@ -33,6 +33,7 @@ instance ParseInput File
 	| ExprPair Expr Expr
 
 instance toString Expr
+instance == Expr
 
 generic gParse a :: Expr -> Maybe a
 
