@@ -20,7 +20,7 @@ import Data.List
 from Data.Map import :: Map, newMap
 import Data.Maybe
 
-derive gEq Maybe, Type, TypeRestriction, Kind
+derive gEq Type, TypeRestriction, Kind
 
 isGeneralisingUnifier :: ![TVAssignment] -> Bool
 isGeneralisingUnifier tvas = all isOk $ groupVars tvas []
