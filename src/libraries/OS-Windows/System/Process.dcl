@@ -7,9 +7,7 @@ from Text.GenJSON import generic JSONEncode, generic JSONDecode, :: JSONNode
 
 /*
 Not yet implemented:
-- Pass startup directory
 - Passsing environment, i.e. [(!String,!String)], to created process
-- Ability to redirect standard input, standard output, standard error
 */
 
 :: ProcessHandle = { processHandle :: !Int
@@ -93,7 +91,14 @@ callProcess :: !FilePath ![String] !(Maybe String) !*World -> (MaybeOSError Int,
 */
 readPipeNonBlocking   :: !ReadPipe   !*World -> (!MaybeOSError String,   !*World)
 
-//readPipeBlocking      :: !ReadPipe   !*World -> (!MaybeOSError String,   !*World)
+/**
+* read the currently available string from the pipe
+* and blocks until some data is available
+* @param the pipe to read from
+* @return the data read from the pipe (at least one character)
+*/
+readPipeBlocking      :: !ReadPipe   !*World -> (!MaybeOSError String,   !*World)
+
 //readPipeBlockingMulti :: ![ReadPipe] !*World -> (!MaybeOSError [String], !*World)
 
 /**
