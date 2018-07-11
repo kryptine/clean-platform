@@ -17,6 +17,9 @@ import qualified StdLibMisc
 //import qualified Clean.PrettyPrint.Definition // requires Clean compiler
 //import qualified Clean.PrettyPrint.Expression // requires Clean compiler
 //import qualified Clean.PrettyPrint.Util // requires Clean compiler
+import qualified Clean.Doc
+//import qualified Clean.Parse // requires Clean compiler
+//import qualified Clean.Parse.Comments // requires Clean compiler
 import qualified Clean.Types
 //import qualified Clean.Types.CoclTransform // requires Clean compiler
 import qualified Clean.Types.Parse
