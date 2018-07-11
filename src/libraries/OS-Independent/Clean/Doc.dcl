@@ -257,6 +257,21 @@ derive docBlockToDoc ModuleDoc, FunctionDoc, ClassMemberDoc, ClassDoc,
 	ConstructorDoc, TypeDoc
 
 /**
+ * Print a documentation block as a string. The magic happens in
+ * {{`docToDocBlock`}}.
+ */
+printDoc :: !d -> String | docToDocBlock{|*|} d
+
+/**
+ * The magic for {{`printDoc`}}.
+ * @param If true, return a `Left`. If false, return a `Right`.
+ */
+generic docToDocBlock d :: Bool d -> Either [String] DocBlock
+
+derive docToDocBlock ModuleDoc, FunctionDoc, ClassMemberDoc, ClassDoc,
+	ConstructorDoc, TypeDoc
+
+/**
  * Trace a list of ParseWarnings like StdDebug might do it
  */
 traceParseWarnings :: ![ParseWarning] !a -> a

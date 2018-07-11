@@ -21,13 +21,15 @@ import Data.GenDefault
 import Data.List
 import Data.Maybe
 import Data.Tuple
-from Text import class Text(join,split,trim,rtrim),
+from Text import <+,
+	class Text(join,split,trim,rtrim,replaceSubString,endsWith),
 	instance Text String, instance Text [Char]
 import Text.Language
 import Text.Parsers.Simple.ParserCombinators
 
 from Clean.Types import :: Type, :: TypeRestriction
 import qualified Clean.Types.Parse as T
+from Clean.Types.Util import instance toString Type
 
 gDefault{|Maybe|} _ = Nothing
 
@@ -212,6 +214,59 @@ where
 
 derive docBlockToDoc ModuleDoc, FunctionDoc, ClassMemberDoc, ConstructorDoc,
 	ClassDoc, TypeDoc
+
+printDoc :: !d -> String | docToDocBlock{|*|} d
+printDoc d = join "\n * "
+	[ "/**"
+	: (case desc of
+		Nothing -> []
+		Just d  -> [replaceSubString "\n" "\n * " d] ++ (if (isEmpty fields) [] [""])) ++
+	  ["@" +++ f +++ " " +++ replaceSubString "\n" "\n *   " v \\ (f,v) <- fields]
+	] +++
+	"\n */"
+where
+	(Right fields`) = docToDocBlock{|*|} False d
+	fields = filter ((<>) "description" o fst) fields`
+	desc = lookup "description" fields`
+
+generic docToDocBlock a :: Bool a -> Either [String] DocBlock
+docToDocBlock{|String|} True s = Left [s]
+docToDocBlock{|[]|} fx True xs = Left [x \\ Left xs` <- map (fx True) xs, x <- xs`]
+docToDocBlock{|Maybe|} fx True mb = case mb of
+	Nothing -> Left []
+	Just x  -> fx True x
+
+docToDocBlock{|PAIR|} fx fy False (PAIR x y) = Right (xs ++ ys)
+where
+	(Right xs) = fx False x
+	(Right ys) = fy False y
+docToDocBlock{|FIELD of d|} fx False (FIELD x) = Right [(name,x) \\ x <- xs]
+where
+	(Left xs) = fx True x
+
+	name = {if (c=='_') '-' c \\ c <-: name`}
+	name`
+	| endsWith "ies" d.gfd_name = d.gfd_name % (0,size d.gfd_name-4) +++ "y"
+	| endsWith "s" d.gfd_name   = d.gfd_name % (0,size d.gfd_name-2)
+	| otherwise                 = d.gfd_name
+docToDocBlock{|RECORD|} fx False (RECORD x) = fx False x
+
+docToDocBlock{|ParamDoc|} True pd = case pd.ParamDoc.name of
+	Nothing -> case pd.ParamDoc.description of
+		Nothing -> Left []
+		Just d -> Left [d]
+	Just n -> case pd.ParamDoc.description of
+		Nothing -> Left [n]
+		Just d -> Left [n +++ ": " +++ d]
+docToDocBlock{|MultiLineString|} True (MultiLine s) = Left [s]
+docToDocBlock{|Type|} True t = Left [toString t]
+docToDocBlock{|Property|} True (ForAll name args impl) = Left
+	[name +++ ": A." +++ join "; " [a +++ " :: " <+ t \\ (a,t) <- args] +++ ":\n" +++ impl]
+docToDocBlock{|PropertyVarInstantiation|} True (PropertyVarInstantiation (a,t)) = Left [a +++ " = " <+ t]
+docToDocBlock{|PropertyTestGenerator|} True (PropertyTestGenerator t impl) = Left [t <+ "\n" +++ impl]
+
+derive docToDocBlock ModuleDoc, FunctionDoc, ClassMemberDoc, ClassDoc,
+	ConstructorDoc, TypeDoc
 
 trimMultiLine :: ![String] -> String
 trimMultiLine ss = join "\n" [s % (trimn, size s - 1) \\ s <- ss]
