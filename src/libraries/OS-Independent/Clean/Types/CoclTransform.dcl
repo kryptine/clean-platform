@@ -3,7 +3,7 @@ definition module Clean.Types.CoclTransform
 /**
  * Functions to
  *
- * - transform types in the Clean compiler into types in TypeDef;
+ * - transform types in the Clean compiler into types in {{`Clean.Types`}};
  * - derive types for very simple expressions from the compiler AST.
  */
 
