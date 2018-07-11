@@ -12,6 +12,11 @@ import qualified StdMaybe
 import qualified StdLibMisc
 
 // Main libraries
+//import qualified Clean.PrettyPrint // requires Clean compiler
+//import qualified Clean.PrettyPrint.Common // requires Clean compiler
+//import qualified Clean.PrettyPrint.Definition // requires Clean compiler
+//import qualified Clean.PrettyPrint.Expression // requires Clean compiler
+//import qualified Clean.PrettyPrint.Util // requires Clean compiler
 import qualified Clean.Doc
 //import qualified Clean.Parse // requires Clean compiler
 //import qualified Clean.Parse.Comments // requires Clean compiler
