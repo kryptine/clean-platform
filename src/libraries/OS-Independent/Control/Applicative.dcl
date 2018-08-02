@@ -71,3 +71,17 @@ liftA2 :: (a b -> c) (f a) (f b) -> f c | Applicative f
 liftA3 :: (a b c -> d) (f a) (f b) (f c) -> f d | Applicative f
 
 optional :: (f a) -> f (Maybe a) | Alternative f
+
+/**
+ * Conditional execution of Applicative expressions. For example,
+ *
+ *     when debug (putStrLn "Debugging")
+ *
+ * will output the string Debugging if the Boolean value debug is True, and otherwise do nothing.
+ */
+when p s :== if p s (pure ())
+
+/**
+ * The reverse of `when`
+ */
+unless p s :== if p (pure ()) s
