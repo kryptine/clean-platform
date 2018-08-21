@@ -3,7 +3,7 @@
 implementation module Data.Map
 
 from StdBool import &&, ||
-from StdFunc import id, flip, o, const
+from StdFunc import id, flip, o, const, seq
 from StdTuple import snd
 from StdMisc import abort, undef
 import StdString, StdTuple
