@@ -12,7 +12,8 @@ from Data.Maybe import :: Maybe
 from System.File import :: FileError
 from System.FilePath import :: FilePath
 
-from syntax import :: Ident, :: Module, :: ParsedDefinition, :: ParsedModule
+from syntax import :: Ident, :: Module, :: ParsedConstructor,
+	:: ParsedDefinition, :: ParsedModule, :: ParsedSelector, :: Position
 
 /**
  * A comment in a Clean program.
@@ -43,12 +44,17 @@ scanCommentsFile :: !*File -> *(!MaybeError FileError [CleanComment], !*File)
  */
 :: CollectedComments
 
+:: CommentIndex
+
 emptyCollectedComments :: CollectedComments
 
 /**
  * Get the comment content for an identifier.
  */
-getComment :: !Ident !CollectedComments -> Maybe String
+getComment :: !a !CollectedComments -> Maybe String | commentIndex a
+
+class commentIndex a :: !a -> Maybe CommentIndex
+instance commentIndex (Module a), ParsedDefinition, ParsedSelector, ParsedConstructor
 
 /**
  * Match a list of comments (see {{`scanComments`}}) to a {{`ParsedModule`}}
