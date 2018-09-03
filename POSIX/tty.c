@@ -149,12 +149,11 @@ void ttyopen(CleanString fn, int baudrate, int bytesize, int parity,
 		//Set
 		tio.c_oflag = 0;
 		tio.c_lflag &= ~(ECHO | ECHONL | ICANON | IEXTEN | ISIG);
-//		tio.c_lflag |= ICANON;
 
 		#ifdef __APPLE__
 		tio.c_cflag |= CLOCAL;
 		#endif
-		tio.c_cc[VMIN]=5;
+		tio.c_cc[VMIN]=1;
 		tio.c_cc[VTIME]=0;
 		tcsetattr(*fd, TCSANOW, &tio);
 
@@ -215,7 +214,7 @@ int ttywrite(CleanString s, int fd)
 	int i;
 	for(i = 0; i< CleanStringLength(s); i++){
 		unsigned char c = ((unsigned char*)CleanStringCharacters(s))[i];
-		printf("%02x(%u) ", c, c);
+		// printf("%02x(%u) ", c, c);
 	}
 	write(fd, (void *)CleanStringCharacters(s), CleanStringLength(s));
 	tcdrain(fd);
