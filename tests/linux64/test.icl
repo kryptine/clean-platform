@@ -143,6 +143,7 @@ import qualified System.Platform
 import qualified System.Process
 import qualified System.TTS
 import qualified System.Time
+import qualified System._Directory
 import qualified System._FilePath
 import qualified System._Platform
 import qualified System._Pointer
