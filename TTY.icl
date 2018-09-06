@@ -90,9 +90,9 @@ TTYwrite _ _ = code {
 		ccall ttywrite "SI:I"
 	}
 
-TTYavailable :: !*TTY -> (!Bool, !*TTY)
+TTYavailable :: !*TTY -> (!Bool, !Bool, !*TTY)
 TTYavailable _ = code {
-		ccall ttyavailable "I:VII"
+		ccall ttyavailable "I:VIII"
 	}
 
 TTYerror :: !*env -> (!String, !*env)
