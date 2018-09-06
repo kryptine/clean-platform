@@ -1,6 +1,7 @@
 implementation module Data.Array
 
-import StdArray, StdInt, StdOverloaded, StdClass
+import StdArray, StdInt, StdOverloaded, StdClass, StdFunc
+import Data.Functor, Control.Applicative, Control.Monad
 
 mapArrSt :: !(.a -> .(*st -> *(!.a, !*st))) !*(arr .a) !*st -> *(!*(arr .a), !*st) | Array arr a
 mapArrSt f arr st
@@ -113,3 +114,19 @@ appendArr l r
 
 instance +++ (arr a) | Array arr a where
   (+++) l r = appendArr l r
+
+instance Functor {} where fmap f arr = {f a\\a<-:arr}
+instance Functor {!} where fmap f arr = {f a\\a<-:arr}
+
+instance Applicative {}
+where
+	pure x = {x}
+	(<*>) fs xs = {f x\\f<-:fs, x<-:xs}
+
+instance Applicative {!}
+where
+	pure x = {x}
+	(<*>) fs xs = {f x\\f<-:fs, x<-:xs}
+
+instance Monad {} where bind m k = foldrArr ((+++) o k) {} m
+instance Monad {!} where bind m k = foldrArr ((+++) o k) {} m
