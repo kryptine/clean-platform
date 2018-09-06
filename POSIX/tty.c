@@ -190,18 +190,29 @@ void ttyread(int fd, int *ch, int *fdo)
 	debug("ttyread done");
 }
 
-void ttyavailable(int fd, int *r, int *fdo)
+void ttyavailable(int fd, int *r, int *e, int *fdo)
 {
 //	debug("ttyavailable");
-	fd_set fds;
+	fd_set rfds, efds;
 	struct timeval tv;
 	tv.tv_sec = 0;
 	tv.tv_usec = 0;
 
-	FD_ZERO(&fds);
-	FD_SET(fd, &fds);
+	FD_ZERO(&rfds);
+	FD_SET(fd, &rfds);
 
-	*r = select(fd+1, &fds, NULL, NULL, &tv);
+	FD_ZERO(&efds);
+	FD_SET(fd, &efds);
+
+	*e = 0;
+	*r = select(fd+1, &rfds, NULL, &efds, &tv);
+
+	if (FD_ISSET(fd, &efds)){
+		*e = 1;
+		*fdo = fd;
+		return;
+	}
+
 	if(*r == -1)
 		die("select");
 	*fdo = fd;

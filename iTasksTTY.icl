@@ -72,9 +72,10 @@ where
 					, {iworld & resources=[TTYd dp tty:resources]})
 				(r,s,ss)
 					# tty = foldr TTYwrite tty $ reverse $ map enc s
-					# (newdata, tty) = readWhileAvailable tty
+					# (merr, tty) = readWhileAvailable tty
+					| isError merr = (exc (fromError merr), iworld)
 					# iworld = {iworld & resources=[TTYd dp tty:iworld.resources]}
-					= case dec (acc +++ toString newdata) of
+					= case dec (acc +++ toString (fromOk merr)) of
 						(Left err, newacc) = (exc "Error while parsing", iworld)
 						(Right msgs, newacc)
 							# (merr, iworld) = if (msgs =: [] && s =: [])
@@ -104,10 +105,12 @@ where
 	getResource = iworldResource (\t=:(TTYd p _)->(p == opts.devicePath, t))
 	exc = ExceptionResult o exception
 
-readWhileAvailable :: !*TTY -> ([Char], !*TTY)
+readWhileAvailable :: !*TTY -> (MaybeError String [Char], !*TTY)
 readWhileAvailable tty
-# (available, tty) = TTYavailable tty
-| not available = ([], tty)
+# (available, error, tty) = TTYavailable tty
+| error = (Error "TTY device disconnected", tty)
+| not available = (Ok [], tty)
 # (c, tty) = TTYread tty
-# (cs, tty) = readWhileAvailable tty
-= ([toChar c:cs], tty)
+# (merr, tty) = readWhileAvailable tty
+| isError merr = (merr, tty)
+= (Ok [toChar c:fromOk merr], tty)

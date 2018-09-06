@@ -29,5 +29,12 @@ TTYerror :: !*env -> (!String, !*env)
 TTYopen :: !TTYSettings !*env -> (!Bool,!*TTY,!*env)
 TTYread :: !*TTY -> (!Int, !*TTY)
 TTYreadline :: !*TTY -> (!String, !*TTY)
-TTYavailable :: !*TTY -> (!Bool, !*TTY)
+/**
+* Checks if the TTY device is available for reading
+*
+* @param The TTY Device
+* @return A 3-tuple containing whether there is data available,
+*         whether there was an error and the TTY device
+*/
+TTYavailable :: !*TTY -> (!Bool, !Bool, !*TTY)
 TTYwrite :: !String !*TTY -> *TTY
