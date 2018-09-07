@@ -1,12 +1,16 @@
 implementation module System.Directory
 
 import StdBool
-import StdClass
 import StdString
 
 import Data.Error
-from Data.Func import $
-import System._Directory
+import Data.Func
+import Data.Functor
+import Data.List
+import Data.Tree
+import Data.Tuple
+import Control.Monad
+import qualified System._Directory
 import System.File
 import System.FilePath
 
@@ -30,3 +34,32 @@ where
 	seqSt3 f [x:xs] s1 s2 s3
 	# (s1,s2,s3) = f x s1 s2 s3
 	= seqSt3 f xs s1 s2 s3
+
+createDirectoryTree :: !FilePath !*World -> *(RTree (FilePath, MaybeOSError FileInfo), !*World)
+createDirectoryTree fp w = scan fp "" w
+where
+	scan acc fp w
+	# fp = acc </> fp
+	# (mfi, w) = getFileInfo fp w
+	| isError mfi = (RNode (fp, liftError mfi) [], w)
+	# (Ok fi) = mfi
+	| not fi.directory = (RNode (fp, mfi) [], w)
+	# (mcs, w) = readDirectory fp w
+	| isError mfi = (RNode (fp, liftError mcs) [], w)
+	# (cs, w) = mapSt (scan fp) (filter (\c->not (elem c [".", ".."])) (fromOk mcs)) w
+	= (RNode (fp, Ok fi) cs, w)
+
+createDirectory :: !FilePath !*w -> (!MaybeOSError (), !*w)
+createDirectory f w = 'System._Directory'.createDirectory f w
+
+removeDirectory :: !FilePath !*w -> (!MaybeOSError (), !*w)
+removeDirectory f w = 'System._Directory'.removeDirectory f w
+
+readDirectory :: !FilePath !*w -> (!MaybeOSError [FilePath], !*w)
+readDirectory f w = 'System._Directory'.readDirectory f w
+
+getCurrentDirectory :: !*w -> (!MaybeOSError FilePath, !*w)
+getCurrentDirectory w = 'System._Directory'.getCurrentDirectory w
+
+setCurrentDirectory :: !FilePath !*w -> (!MaybeOSError (), !*w)
+setCurrentDirectory f w = 'System._Directory'.setCurrentDirectory f w
