@@ -55,13 +55,6 @@ definition module Data.Set
  *   all_in :: (Set a) [a] -> Bool | Eq a
  *   all_in s xs = all (\e -> isMember e xs) (toList s)
  *
- *   // Check that the data structure is still correct.
- *   integrity :: (Set a) -> Property | Eq, genShow{|*|}, gPrint{|*|} a
- *   integrity s =
- *     name "no_duplicates" (no_duplicates s) /\
- *     name "log_size"      (log_size s) /\
- *     name "sizes_correct" (sizes_correct s)
- *
  *   // Check that a set contains no duplicates.
  *   no_duplicates :: (Set a) -> Property | Eq, genShow{|*|}, gPrint{|*|} a
  *   no_duplicates s = xs =.= removeDup xs where xs = toList s
@@ -99,6 +92,15 @@ from Data.GenEq import generic gEq
 from Data.GenLexOrd import generic gLexOrd, :: LexOrd
 from Data.Foldable import class Foldable
 
+/**
+ * A `Set a` is an unordered, uncounted collection of values of type `a`.
+ *
+ * @invariant integrity: A.s :: Set a | Eq, genShow{|*|}, gPrint{|*|} a:
+ *   // Check that the data structure is still correct.
+ *   name "no_duplicates" (no_duplicates s) /\
+ *   name "log_size"      (log_size s) /\
+ *   name "sizes_correct" (sizes_correct s)
+ */
 :: Set a = Tip
          | Bin !Int !a !(Set a) !(Set a)
 

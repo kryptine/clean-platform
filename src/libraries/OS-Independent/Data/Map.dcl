@@ -102,6 +102,10 @@ import StdClass
  *
  * @var The key type on which the data structure is indexed.
  * @var The type of the values stored in the mapping.
+ *
+ * @invariant integrity: A.m :: Map k v:
+ *   log_size m /\
+ *   sizes_correct m
  */
 :: Map k v
   = Bin !Int !k !v !(Map k v) !(Map k v)
@@ -156,8 +160,7 @@ mapSize     :: !(Map k v) -> Int
  * @property correctness: A.m :: Map k v; k :: k; v :: v:
  *   get k m` =.= Just v /\                                           // Correctly put
  *     check all_present [kv \\ kv=:(k`,_) <- toList m | k <> k`] m` /\ // Other elements untouched
- *     log_size m` /\                                                   // Data structure integrity
- *     sizes_correct m`
+ *     integrity m`
  *   where
  *     m` = put k v m
  */
@@ -195,8 +198,7 @@ getU :: !k !w:(Map k v) -> x:(!Maybe v, !y:(Map k v)) | == k & < k, [ x <= y, w 
  * @property correctness: A.m :: Map k v; k :: k:
  *   get k m` =.= Nothing /\                                            // Correctly deleted
  *     check all_present [kv \\ kv=:(k`,_) <- toList m | k <> k`] m` /\ // Other elements untouched
- *     log_size m` /\                                                   // Data structure integrity
- *     sizes_correct m`
+ *     integrity m`
  *   where
  *     m` = del k m
  */
@@ -268,7 +270,7 @@ toAscList m :== foldrWithKey (\k x xs -> [(k,x):xs]) [] m
  * @property correctness: A.elems :: [(k,v)]:
  *   check all_present elems m /\ // All elements put
  *     check all_from m elems /\  // No other elements
- *     log_size m                 // Data structure integrity
+ *     integrity m
  *   where
  *     m = fromList elems
  */
