@@ -158,9 +158,9 @@ scan ss=:{idx}
 		}
 	# (before,after) = span (\c -> isJust c.level && fromJust c.level < level) cmnts
 	= (before ++ [cmnt:after],ss)
-| c1 == '['
+| c1 == '[' && ss.comment_level == 0
 	= scan (skip_list_literal (advance ss))
-| c1 == '"'
+| c1 == '"' && ss.comment_level == 0
 	= scan (skip_string_literal '"' (advance ss))
 | otherwise
 	= scan (advance ss)
