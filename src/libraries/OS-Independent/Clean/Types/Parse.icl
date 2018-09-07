@@ -93,7 +93,7 @@ type = liftM3 Func (some argtype) (pToken TArrow >>| type) optContext
 	<|> liftM2 Cons cons (some argtype)
 	<|> liftM2 Type ident (many argtype)
 	<|> liftM3 Forall
-		(pToken TUniversalQuantifier >>| some (Var <$> var) |<< pToken TColon)
+		(pToken TUniversalQuantifier >>| some (Var <$> var <|> Uniq <$> uniq (Var <$> var)) |<< pToken TColon)
 		type
 		optContext
 	<|> argtype
@@ -102,7 +102,7 @@ where
 	argtype = (pList [pToken TParenOpen, pToken TParenClose] $> Type "_Unit" [])
 		<|> parenthised type
 		<|> liftM (\t -> Type t []) ident
-		<|> liftM Uniq uniq
+		<|> liftM Uniq (uniq argtype)
 		<|> liftM (\t -> Type "_#Array" [t]) (braced  (pToken TUnboxed >>| type))
 		<|> liftM (\t -> Type "_!Array" [t]) (braced  (pToken TStrict  >>| type))
 		<|> liftM (\t -> Type "_Array"  [t]) (braced  type)
@@ -127,8 +127,8 @@ where
 	cons = var
 	unqvar = var
 
-	uniq :: Parser Token Type
-	uniq = pToken TStar >>| argtype
+	uniq :: (Parser Token Type) -> Parser Token Type
+	uniq parser = pToken TStar >>| parser
 
 	optContext :: Parser Token TypeContext
 	optContext = liftM2 (++) (context <|> pure []) (uniquenessEqualities <|> pure [])
