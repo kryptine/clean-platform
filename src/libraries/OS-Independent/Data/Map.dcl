@@ -59,22 +59,6 @@ definition module Data.Map
  *   all_from Tip _ = True
  *   all_from (Bin _ k v l r) kvs = isMember (k,v) kvs && all_from l kvs && all_from r kvs
  *
- *   log_size :: (Map k v) -> Property
- *   log_size m = check (<) nelem (2 ^ depth m)
- *   where
- *     nelem = mapSize m
- *
- *     depth :: (Map a b) -> Int
- *     depth Tip = 0
- *     depth (Bin _ _ _ l r) = 1 + (max `on` depth) l r
- *
- *   sizes_correct :: (Map k v) -> Property
- *   sizes_correct Tip = prop True
- *   sizes_correct b=:(Bin _ _ _ l r) =
- *   	mapSize b =.= 1 + mapSize l + mapSize r /\
- *   	sizes_correct l /\
- *   	sizes_correct r
- *
  * @property-test-with k = Char
  * @property-test-with v = Char
  *
@@ -106,6 +90,23 @@ import StdClass
  * @invariant integrity: A.m :: Map k v:
  *   log_size m /\
  *   sizes_correct m
+ *
+ * @invariant log_size: A.m :: Map k v:
+ *   check (<) nelem (2 ^ depth m)
+ *   where
+ *     nelem = mapSize m
+ *
+ *     depth :: (Map a b) -> Int
+ *     depth Tip = 0
+ *     depth (Bin _ _ _ l r) = 1 + (max `on` depth) l r
+ *
+ * @invariant sizes_correct: A.m :: Map k v:
+ *   case m of
+ *     Tip                -> prop True
+ *     b=:(Bin _ _ _ l r) ->
+ *       mapSize b =.= 1 + mapSize l + mapSize r /\
+ *       sizes_correct l /\
+ *       sizes_correct r
  */
 :: Map k v
   = Bin !Int !k !v !(Map k v) !(Map k v)

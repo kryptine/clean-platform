@@ -55,28 +55,6 @@ definition module Data.Set
  *   all_in :: (Set a) [a] -> Bool | Eq a
  *   all_in s xs = all (\e -> isMember e xs) (toList s)
  *
- *   // Check that a set contains no duplicates.
- *   no_duplicates :: (Set a) -> Property | Eq, genShow{|*|}, gPrint{|*|} a
- *   no_duplicates s = xs =.= removeDup xs where xs = toList s
- *
- *   // Check that a set is log(n) in depth.
- *   log_size :: (Set a) -> Property
- *   log_size s = check (<) nelem (2 ^ depth s)
- *   where
- *     nelem = size s
- *
- *     depth :: (Set a) -> Int
- *     depth Tip = 0
- *     depth (Bin _ _ l r) = 1 + (max `on` depth) l r
- *
- *   // Check that the sizes in a set are correct.
- *   sizes_correct :: (Set a) -> Property
- *   sizes_correct Tip = prop True
- *   sizes_correct b=:(Bin _ _ l r) =
- *     size b =.= 1 + size l + size r /\
- *     sizes_correct l /\
- *     sizes_correct r
- *
  * @property-test-with a = Char
  *
  * @property-test-generator [a] -> Set a | < a
@@ -100,6 +78,26 @@ from Data.Foldable import class Foldable
  *   name "no_duplicates" (no_duplicates s) /\
  *   name "log_size"      (log_size s) /\
  *   name "sizes_correct" (sizes_correct s)
+ *
+ * @invariant no_duplicates: A.s :: Set a | Eq, genShow{|*|}, gPrint{|*|} a:
+ *   xs =.= removeDup xs where xs = toList s
+ *
+ * @invariant log_size: A.s :: Set a:
+ *   check (<) nelem (2 ^ depth s)
+ *   where
+ *     nelem = size s
+ *
+ *     depth :: (Set a) -> Int
+ *     depth Tip = 0
+ *     depth (Bin _ _ l r) = 1 + (max `on` depth) l r
+ *
+ * @invariant sizes_correct: A.s :: Set a:
+ *   case s of
+ *     Tip              -> prop True
+ *     b=:(Bin _ _ l r) ->
+ *       size b =.= 1 + size l + size r /\
+ *       sizes_correct l /\
+ *       sizes_correct r
  */
 :: Set a = Tip
          | Bin !Int !a !(Set a) !(Set a)
