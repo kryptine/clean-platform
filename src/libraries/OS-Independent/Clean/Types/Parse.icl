@@ -89,14 +89,15 @@ where
 	isFunny c = isMember c ['~@#$%^?!+-*<>\\/|&=:']
 
 type :: Parser Token Type
-type = liftM3 Func (some argtype) (pToken TArrow >>| type) optContext
-	<|> liftM2 Cons cons (some argtype)
-	<|> liftM2 Type ident (many argtype)
+type =
+	liftM3 Func (some argtype) (pToken TArrow >>| type) optContext
+	<|> addContextAsConstFunction (liftM2 Cons cons  $ some argtype)
+	<|> addContextAsConstFunction (liftM2 Type ident $ many argtype)
 	<|> liftM3 Forall
 		(pToken TUniversalQuantifier >>| some (Var <$> var <|> Uniq <$> uniq (Var <$> var)) |<< pToken TColon)
 		type
 		optContext
-	<|> argtype
+	<|> addContextAsConstFunction argtype
 where
 	argtype :: Parser Token Type
 	argtype = (pList [pToken TParenOpen, pToken TParenClose] $> Type "_Unit" [])
@@ -132,6 +133,13 @@ where
 
 	optContext :: Parser Token TypeContext
 	optContext = liftM2 (++) (context <|> pure []) (uniquenessEqualities <|> pure [])
+
+	addContextAsConstFunction :: (Parser Token Type) -> Parser Token Type
+	addContextAsConstFunction parser =
+		parser >>= \t ->
+		(pure [] <|> optContext) >>= \c -> case c of
+			[] -> pure t
+			c  -> pure $ Func [] t c
 
 	context :: Parser Token TypeContext
 	context = pToken TPipe >>| flatten <$> pSepBy context` (pToken TAmpersand)
