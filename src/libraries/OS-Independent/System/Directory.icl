@@ -2,11 +2,13 @@ implementation module System.Directory
 
 import StdBool
 import StdString
+import StdFunctions
 
 import Data.Error
 import Data.Func
 import Data.Functor
 import Data.List
+import Data.Maybe
 import Data.Tree
 import Data.Tuple
 import Control.Monad
@@ -35,8 +37,8 @@ where
 	# (s1,s2,s3) = f x s1 s2 s3
 	= seqSt3 f xs s1 s2 s3
 
-createDirectoryTree :: !FilePath !Int !*World -> *(RTree (FilePath, MaybeOSError FileInfo), !*World)
-createDirectoryTree fp md w = scan md fp "" w
+createDirectoryTree :: !FilePath !(Maybe Int) !*World -> *(RTree (FilePath, MaybeOSError FileInfo), !*World)
+createDirectoryTree fp md w = scan (maybe -1 id md) fp "" w
 where
 	scan md acc fp w
 	# fp = acc </> fp
