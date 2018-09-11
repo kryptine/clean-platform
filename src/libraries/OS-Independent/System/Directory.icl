@@ -2,11 +2,13 @@ implementation module System.Directory
 
 import StdBool
 import StdString
+import StdFunctions
 
 import Data.Error
 import Data.Func
 import Data.Functor
 import Data.List
+import Data.Maybe
 import Data.Tree
 import Data.Tuple
 import Control.Monad
@@ -35,18 +37,19 @@ where
 	# (s1,s2,s3) = f x s1 s2 s3
 	= seqSt3 f xs s1 s2 s3
 
-createDirectoryTree :: !FilePath !*World -> *(RTree (FilePath, MaybeOSError FileInfo), !*World)
-createDirectoryTree fp w = scan fp "" w
+createDirectoryTree :: !FilePath !(Maybe Int) !*World -> *(RTree (FilePath, MaybeOSError FileInfo), !*World)
+createDirectoryTree fp md w = scan (maybe -1 id md) fp "" w
 where
-	scan acc fp w
+	scan md acc fp w
 	# fp = acc </> fp
 	# (mfi, w) = getFileInfo fp w
 	| isError mfi = (RNode (fp, liftError mfi) [], w)
+	| md == 0 = (RNode (fp, mfi) [], w)
 	# (Ok fi) = mfi
 	| not fi.directory = (RNode (fp, mfi) [], w)
 	# (mcs, w) = readDirectory fp w
 	| isError mfi = (RNode (fp, liftError mcs) [], w)
-	# (cs, w) = mapSt (scan fp) (filter (\c->not (elem c [".", ".."])) (fromOk mcs)) w
+	# (cs, w) = mapSt (scan (dec md) fp) (filter (\c->not (elem c [".", ".."])) (fromOk mcs)) w
 	= (RNode (fp, Ok fi) cs, w)
 
 createDirectory :: !FilePath !*w -> (!MaybeOSError (), !*w)

@@ -2,6 +2,7 @@ definition module System.Directory
 
 from Data.Tree import :: RTree
 from Data.Error import :: MaybeError
+from Data.Maybe import :: Maybe
 from System.File import :: FileInfo
 from System.FilePath import :: FilePath
 from System.OSError import :: MaybeOSError, :: OSError, :: OSErrorCode, :: OSErrorMessage
@@ -29,11 +30,12 @@ scanDirectory :: !(FilePath FileInfo .st *World -> *(.st, *World)) !.st !FilePat
  * The filepaths are complete to make it easy to retrieve a path.
  *
  * @param Root directory to start in.
+ * @param Maximum depth -1 for unbounded
  * @param The world.
  * @result A tree of filepaths with either an error or fileinfo
  * @result The new world.
  */
-createDirectoryTree :: !FilePath !*World -> *(RTree (FilePath, MaybeOSError FileInfo), !*World)
+createDirectoryTree :: !FilePath !(Maybe Int) !*World -> *(RTree (FilePath, MaybeOSError FileInfo), !*World)
 
 /**
  * Create a directory
