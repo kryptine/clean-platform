@@ -38,3 +38,25 @@ finalize :: a !Pointer !Int -> Finalized a
  * @result The operation's result
  */
 withFinalizedValue :: !(a -> b) !(Finalized a) -> (!b, !Finalized a)
+
+/**
+ * In the special case that one wants to finalize an integer, this function and
+ * the corresponding {{`withFinalizedInt`}} use less memory than {{`finalize`}}
+ * and {{`withFinalizedValue`}}.
+ * The C function will be called with the integer itself as its argument.
+ *
+ * @param The integer
+ * @param A pointer to the finalizer C function
+ * @result The finalized integer
+ */
+finalizeInt :: !Int !Pointer -> Finalizer
+
+/**
+ * Specialised case of {{`withFinalizedValue`}} for use with finalized integers
+ * (see {{`finalizeInt`}}).
+ *
+ * @param The operation to perform
+ * @param The finalized integer
+ * @result The operation's result
+ */
+withFinalizedInt :: !(Int -> a) !Finalizer -> (!a, !Finalizer)
