@@ -145,6 +145,7 @@ import qualified System.TTS
 import qualified System.Time
 import qualified System._Directory
 import qualified System._FilePath
+import qualified System._Finalized
 import qualified System._Platform
 import qualified System._Pointer
 import qualified System._Posix
