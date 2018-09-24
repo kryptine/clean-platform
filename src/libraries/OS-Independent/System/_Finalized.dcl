@@ -8,6 +8,29 @@ definition module System._Finalized
  * collection runs periodically, this may not be directly after all references
  * to the value are lost (and may not happen at all, depending on the heap
  * usage of the application).
+ *
+ * An example of C functions defining a finalizer is given below:
+ *
+ * void finalizer(int arg) {
+ *    ...
+ * }
+ *
+ * void (*finalizerPtr())(int) {
+ *    return &finalizer;
+ * }
+ *
+ * `finalizer` is the finalizer itself, while `finalizerPtr` provides the
+ * pointer to the finalizer. In Clean you only need the latter function:
+ *
+ * finalizerPtr :: Pointer
+ * finalizerPtr = code {
+ *     ccall finalizerPtr ":p"
+ * }
+ *
+ * The Clean expression `finalize someVal finalizerPtr someInt` provides access
+ * to the value `someVal` and calls the C function `finalizer` with argument
+ * `someInt` if no reference to the finalizer is left.
+ *
  */
 
 from System._Pointer import :: Pointer
