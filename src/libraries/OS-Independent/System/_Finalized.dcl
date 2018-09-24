@@ -11,6 +11,7 @@ definition module System._Finalized
  *
  * An example of C functions defining a finalizer is given below:
  *
+ * ```c
  * void finalizer(int arg) {
  *    ...
  * }
@@ -18,14 +19,17 @@ definition module System._Finalized
  * void (*finalizerPtr())(int) {
  *    return &finalizer;
  * }
+ * ```
  *
  * `finalizer` is the finalizer itself, while `finalizerPtr` provides the
  * pointer to the finalizer. In Clean you only need the latter function:
  *
+ * ```clean
  * finalizerPtr :: Pointer
  * finalizerPtr = code {
  *     ccall finalizerPtr ":p"
  * }
+ * ```
  *
  * The Clean expression `finalize someVal finalizerPtr someInt` provides access
  * to the value `someVal` and calls the C function `finalizer` with argument
