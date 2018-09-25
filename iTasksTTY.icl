@@ -30,10 +30,10 @@ import iTasks.Internal.TaskEval
 
 derive class iTask TTYSettings, Parity, BaudRate, ByteSize
 
-syncSerialChannel :: TTYSettings (b -> String) (String -> (Either String [a], String)) (Shared ([a],[b],Bool)) -> Task () | iTask a & iTask b
-syncSerialChannel opts enc dec rw = withShared "" \sh->Task $ eval sh
+syncSerialChannel :: Timespec TTYSettings (b -> String) (String -> (Either String [a], String)) (Shared ([a],[b],Bool)) -> Task () | iTask a & iTask b
+syncSerialChannel poll opts enc dec rw = Task eval
 where
-	eval sh event evalOpts tree=:(TCInit taskId ts) iworld
+	eval event evalOpts tree=:(TCInit taskId ts) iworld
 	# (mtty, iworld=:{world,resources}) = getResource iworld
 	= case mtty of
 		[] = case TTYopen opts iworld.world of
@@ -47,11 +47,11 @@ where
 				NoValue
 				{TaskEvalInfo|lastEvent=ts,removedTasks=[],refreshSensitive=True}
 				rep
-				(TCBasic taskId ts (JSONString "") False)
+				(TCBasic taskId ts (DeferredJSONNode $ JSONString "") False)
 			  , iworld)
 		_ = (exc "This tty was already open", iworld)
 
-	eval _ _ _ tree=:(TCBasic taskId ts (JSONString acc) _) iworld
+	eval _ _ tree=:(TCBasic taskId ts (DeferredJSONNode (JSONString acc)) _) iworld
 	# (mtty, iworld) = getResource iworld
 	= case mtty of
 		[] = (exc"TTY resource lost", iworld)
@@ -72,9 +72,10 @@ where
 					, {iworld & resources=[TTYd dp tty:resources]})
 				(r,s,ss)
 					# tty = foldr TTYwrite tty $ reverse $ map enc s
-					# (newdata, tty) = readWhileAvailable tty
+					# (merr, tty) = readWhileAvailable tty
+					| isError merr = (exc (fromError merr), iworld)
 					# iworld = {iworld & resources=[TTYd dp tty:iworld.resources]}
-					= case dec (acc +++ toString newdata) of
+					= case dec (acc +++ toString (fromOk merr)) of
 						(Left err, newacc) = (exc "Error while parsing", iworld)
 						(Right msgs, newacc)
 							# (merr, iworld) = if (msgs =: [] && s =: [])
@@ -85,10 +86,10 @@ where
 								NoValue
 								{TaskEvalInfo|lastEvent=ts,removedTasks=[],refreshSensitive=True}
 								rep
-								(TCBasic taskId ts (JSONString newacc) False)
+								(TCBasic taskId ts (DeferredJSONNode $ JSONString newacc) False)
 							  , iworld)
 
-	eval _ event evalOpts tree=:(TCDestroy _) iworld=:{IWorld|resources,world}
+	eval event evalOpts tree=:(TCDestroy _) iworld=:{IWorld|resources,world}
 	# (mtty, iworld) = getResource iworld
 	= case mtty of
 		[] = (exc "This tty was already closed", iworld)
@@ -100,14 +101,18 @@ where
 		= (DestroyedResult, iworld)
 
 	rep = ReplaceUI $ stringDisplay $ "Serial client " <+++ opts.devicePath
-	ticker = sdsFocus {start=zero,interval=zero} iworldTimespec
+	ticker = sdsFocus {start=zero,interval=poll} iworldTimespec
 	getResource = iworldResource (\t=:(TTYd p _)->(p == opts.devicePath, t))
 	exc = ExceptionResult o exception
 
-readWhileAvailable :: !*TTY -> ([Char], !*TTY)
+import StdMisc, StdDebug
+readWhileAvailable :: !*TTY -> (MaybeError String [Char], !*TTY)
 readWhileAvailable tty
-# (available, tty) = TTYavailable tty
-| not available = ([], tty)
+# (available, error, tty) = TTYavailable tty
+| error = (Error "TTY device disconnected", tty)
+| not available = (Ok [], tty)
 # (c, tty) = TTYread tty
-# (cs, tty) = readWhileAvailable tty
-= ([toChar c:cs], tty)
+| not (trace_tn ("Read: " +++ toString c)) = undef
+# (merr, tty) = readWhileAvailable tty
+| isError merr = (merr, tty)
+= (Ok [toChar c:fromOk merr], tty)

@@ -21,7 +21,8 @@ instance zero TTYSettings where
 		bytesize = BytesizeEight,
 		parity = ParityNone,
 		stop2bits = False,
-		xonxoff = False}
+		xonxoff = False,
+		sleepTime = 0}
 
 instance toInt BaudRate where
 	toInt b = case b of
@@ -49,9 +50,9 @@ getTTYDevices w
 where
 	isTTY s = not (isEmpty (filter (flip startsWith s) ["tty", "rfcomm"]))
 
-makeTTYSettings :: String BaudRate ByteSize Parity Bool Bool -> TTYSettings
-makeTTYSettings dp br bs pr sb xx = {TTYSettings | devicePath=dp, baudrate=br,
-	bytesize=bs, parity=pr, stop2bits=sb, xonxoff=xx}
+makeTTYSettings :: String BaudRate ByteSize Parity Bool Bool Int -> TTYSettings
+makeTTYSettings dp br bs pr sb xx st = {TTYSettings | devicePath=dp, baudrate=br,
+	bytesize=bs, parity=pr, stop2bits=sb, xonxoff=xx, sleepTime=st}
 
 TTYopen :: !TTYSettings !*env -> (!Bool, !*TTY, !*env)
 TTYopen ts w = TTYopen2
@@ -61,11 +62,12 @@ TTYopen ts w = TTYopen2
 	(toInt ts.parity)
 	ts.stop2bits
 	ts.xonxoff
+	ts.sleepTime
 	w
 	where
-		TTYopen2 :: !String !Int !Int !Int !Bool !Bool !*env -> (!Bool, !*TTY, !*env)
-		TTYopen2 _ _ _ _ _ _ _ = code {
-				ccall ttyopen "SIIIII:VII:A"
+		TTYopen2 :: !String !Int !Int !Int !Bool !Bool !Int !*env -> (!Bool, !*TTY, !*env)
+		TTYopen2 _ _ _ _ _ _ _ _ = code {
+				ccall ttyopen "SIIIIII:VII:A"
 			}
 
 TTYclose :: !*TTY !*env -> (!Bool, !*env)
@@ -90,9 +92,9 @@ TTYwrite _ _ = code {
 		ccall ttywrite "SI:I"
 	}
 
-TTYavailable :: !*TTY -> (!Bool, !*TTY)
+TTYavailable :: !*TTY -> (!Bool, !Bool, !*TTY)
 TTYavailable _ = code {
-		ccall ttyavailable "I:VII"
+		ccall ttyavailable "I:VIII"
 	}
 
 TTYerror :: !*env -> (!String, !*env)

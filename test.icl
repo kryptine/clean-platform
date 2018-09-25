@@ -17,7 +17,7 @@ Start w
 # (ok, tty, w) = TTYopen {zero & devicePath="/dev/ttyUSB0"} w
 | not ok = TTYerrorclose io w
 #! tty = TTYwrite "echo123\n" tty
-#! (av, tty) = TTYavailable tty
+#! (av, e, tty) = TTYavailable tty
 # io = io <<< ("Bytes available: " +++ toString av +++ "\n")
 #! (l, tty) = TTYreadline tty
 # io = io <<< ("Line read: " +++ l)

@@ -102,7 +102,7 @@ static void addTermios(int fd, struct termios *t)
 }
 
 void ttyopen(CleanString fn, int baudrate, int bytesize, int parity,
-	int stopbits, int xonoff, int *status, int *fd)
+	int stopbits, int xonoff, int sleepTime, int *status, int *fd)
 {
 	debug("ttyopen");
 	struct termios tio;
@@ -149,18 +149,23 @@ void ttyopen(CleanString fn, int baudrate, int bytesize, int parity,
 		//Set
 		tio.c_oflag = 0;
 		tio.c_lflag &= ~(ECHO | ECHONL | ICANON | IEXTEN | ISIG);
-//		tio.c_lflag |= ICANON;
 
 		#ifdef __APPLE__
 		tio.c_cflag |= CLOCAL;
 		#endif
-		tio.c_cc[VMIN]=5;
+		tio.c_cc[VMIN]=1;
 		tio.c_cc[VTIME]=0;
 		tcsetattr(*fd, TCSANOW, &tio);
 
 		*status = 1;
 		error = strerror(errno);
 	}
+
+	if(sleepTime > 0){
+		sleep(sleepTime);
+		tcflush(*fd, TCIOFLUSH);
+	}
+
 	free(cs_fn);
 	debug("ttyopen-done");
 }
@@ -191,18 +196,29 @@ void ttyread(int fd, int *ch, int *fdo)
 	debug("ttyread done");
 }
 
-void ttyavailable(int fd, int *r, int *fdo)
+void ttyavailable(int fd, int *r, int *e, int *fdo)
 {
 //	debug("ttyavailable");
-	fd_set fds;
+	fd_set rfds, efds;
 	struct timeval tv;
 	tv.tv_sec = 0;
 	tv.tv_usec = 0;
 
-	FD_ZERO(&fds);
-	FD_SET(fd, &fds);
+	FD_ZERO(&rfds);
+	FD_SET(fd, &rfds);
 
-	*r = select(fd+1, &fds, NULL, NULL, &tv);
+	FD_ZERO(&efds);
+	FD_SET(fd, &efds);
+
+	*e = 0;
+	*r = select(fd+1, &rfds, NULL, &efds, &tv);
+
+	if (FD_ISSET(fd, &efds)){
+		*e = 1;
+		*fdo = fd;
+		return;
+	}
+
 	if(*r == -1)
 		die("select");
 	*fdo = fd;
@@ -215,7 +231,7 @@ int ttywrite(CleanString s, int fd)
 	int i;
 	for(i = 0; i< CleanStringLength(s); i++){
 		unsigned char c = ((unsigned char*)CleanStringCharacters(s))[i];
-		printf("%02x(%u) ", c, c);
+		// printf("%02x(%u) ", c, c);
 	}
 	write(fd, (void *)CleanStringCharacters(s), CleanStringLength(s));
 	tcdrain(fd);

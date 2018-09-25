@@ -16,18 +16,99 @@ from StdClass import class zero
 		bytesize :: ByteSize,
 		parity :: Parity,
 		stop2bits :: Bool,
-		xonxoff :: Bool
+		xonxoff :: Bool,
+		//Set this to 2 if you want to connect to a borked arduino
+		sleepTime :: Int
 	}
 
 instance zero TTYSettings
 
+/**
+ * Returns a list of tty devices. This list is not conclusive but just checks familiar names.
+ *
+ * @param The world
+ * @result The list of detected devices
+ * @result The updated world
+ */
 getTTYDevices :: !*World -> *(![String], !*World)
-makeTTYSettings :: String BaudRate ByteSize Parity Bool Bool -> TTYSettings
 
+/**
+ * Smart constructor for {{`TTYSettings`}}
+ *
+ * @param devicePath
+ * @param baudrate
+ * @param parity
+ * @param stop2bits
+ * @param xonxoff
+ * @param sleepTime
+ */
+makeTTYSettings :: String BaudRate ByteSize Parity Bool Bool Int -> TTYSettings
+
+/**
+ * Closes a TTY
+ *
+ * @param tty handle
+ * @param world
+ * @result Ok flag
+ * @result new world
+ */
 TTYclose :: !*TTY !*env -> (!Bool, !*env)
+
+/**
+ * Reads the error from the tty library
+ *
+ * @param world
+ * @result Error
+ * @result new world
+ */
 TTYerror :: !*env -> (!String, !*env)
+
+/**
+ * Open a tty
+ *
+ * @param tty settings
+ * @param world
+ * @result Ok flag
+ * @result TTY handle
+ * @result new world
+ */
 TTYopen :: !TTYSettings !*env -> (!Bool,!*TTY,!*env)
+
+/**
+ * Read a byte from a tty
+ *
+ * @param tty handle
+ * @param world
+ * @result byte
+ * @result new tty handle
+ */
 TTYread :: !*TTY -> (!Int, !*TTY)
+
+/**
+ * Read a line from the tty (up until '\n' or EOF)
+ *
+ * @param tty handle
+ * @param world
+ * @result line
+ * @result new tty handle
+ */
 TTYreadline :: !*TTY -> (!String, !*TTY)
-TTYavailable :: !*TTY -> (!Bool, !*TTY)
+
+/**
+* Checks if the TTY device is available for reading
+*
+* @param tty handle
+* @result Data available
+* @result Ok flag
+* @result new tty handle
+*/
+TTYavailable :: !*TTY -> (!Bool, !Bool, !*TTY)
+
+/**
+* Write bytes to a TTY
+*
+* @param The bytes to write
+* @param The tty handle
+* @result new tty handle
+*/
 TTYwrite :: !String !*TTY -> *TTY

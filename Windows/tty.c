@@ -102,7 +102,7 @@ static char *error = "";
 //}
 //
 void ttyopen(CleanString fn, int baudrate, int bytesize, int parity,
-	int stopbits, int xonoff, int *status, int *fd)
+	int stopbits, int xonoff, int sleepTime, int *status, int *fd)
 {
 
 }
