@@ -66,20 +66,21 @@ prepare_unification isleft alwaysUnique db t
 # (syns, t) = resolve_synonyms db t
 # t = propagate_uniqueness alwaysUnique t
 # t = reduceArities t
-# t = renameVars t
+# t = renameAndRemoveStrictness t
 = (syns, t)
 where
 	prep = if isleft "l" "r"
-	renameVars :: !Type -> Type
-	renameVars (Var v) = Var (prep +++ v)
-	renameVars (Cons c ts) = Cons (prep +++ c) $ map renameVars ts
-	renameVars (Type t ts) = Type t $ map renameVars ts
-	renameVars (Func is r tc) = Func (map renameVars is) (renameVars r) tc
-	renameVars (Uniq t) = Uniq $ renameVars t
-	renameVars (Arrow t) = Arrow (renameVars <$> t)
-	renameVars (Forall vs t tc) = fromJust $
+	renameAndRemoveStrictness :: !Type -> Type
+	renameAndRemoveStrictness (Var v) = Var (prep +++ v)
+	renameAndRemoveStrictness (Cons c ts) = Cons (prep +++ c) $ map renameAndRemoveStrictness ts
+	renameAndRemoveStrictness (Type t ts) = Type t $ map renameAndRemoveStrictness ts
+	renameAndRemoveStrictness (Func is r tc) = Func (map renameAndRemoveStrictness is) (renameAndRemoveStrictness r) tc
+	renameAndRemoveStrictness (Uniq t) = Uniq $ renameAndRemoveStrictness t
+	renameAndRemoveStrictness (Arrow t) = Arrow (renameAndRemoveStrictness <$> t)
+	renameAndRemoveStrictness (Forall vs t tc) = fromJust $
 		assignAll [(prep+++v,Var ("_"+++prep+++v)) \\ v <- map fromVarLenient vs] $
-		renameVars t
+		renameAndRemoveStrictness t
+	renameAndRemoveStrictness (Strict t) = renameAndRemoveStrictness t
 
 finish_unification :: ![TypeDef] ![TVAssignment] -> Unifier
 finish_unification syns tvs

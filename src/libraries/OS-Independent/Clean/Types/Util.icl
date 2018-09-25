@@ -80,6 +80,7 @@ where
 	print _ (Forall tvs t tc) = "(A." -- printersperse True " " tvs -- ": " -- t -- " | " -- tc -- ")"
 	print _ (Arrow Nothing)  = ["(->)"]
 	print _ (Arrow (Just t)) = "((->) " -+ t +- ")"
+	print ia (Strict t) = "!" -- print ia t
 
 instance toString Type where toString t = concat $ print False t
 
@@ -181,6 +182,8 @@ propagate_uniqueness p (Cons v ts)
 	= if (any isUniq ts) Uniq id (Cons v ts)
 propagate_uniqueness p (Forall vs t tc)
 	= Forall vs (propagate_uniqueness p t) tc
+propagate_uniqueness p (Strict t)
+	= Strict $ propagate_uniqueness p t
 propagate_uniqueness p t
 	= t
 
@@ -220,6 +223,8 @@ resolve_synonyms tds (Arrow Nothing)
 	= ([], Arrow Nothing)
 resolve_synonyms tds (Uniq t)
 	= Uniq <$> resolve_synonyms tds t
+resolve_synonyms tds (Strict t)
+	= Strict <$> resolve_synonyms tds t
 
 // Apply a TVAssignment to a Type
 assign :: !TVAssignment !Type -> Maybe Type
@@ -247,6 +252,7 @@ assign va=:(v,_) (Forall tvs t tc)
 	| otherwise = flip (Forall tvs) tc <$> assign va t
 assign va (Arrow (Just t)) = Arrow o Just <$> assign va t
 assign va (Arrow Nothing) = Just $ Arrow Nothing
+assign va (Strict t) = Strict <$> assign va t
 
 reduceArities :: !Type -> Type
 reduceArities (Func [] r []) = r
@@ -260,6 +266,7 @@ reduceArities (Var v) = Var v
 reduceArities (Forall [] t []) = reduceArities t
 reduceArities (Forall tvs t tc) = Forall tvs (reduceArities t) tc
 reduceArities (Arrow mt) = Arrow (reduceArities <$> mt)
+reduceArities (Strict t) = Strict $ reduceArities t
 
 normalise_type :: (String -> Bool) !('M'.Map String [TypeDef]) !Type -> (!Type, ![TypeDef], ![TypeVar])
 normalise_type alwaysUnique tds t
@@ -284,6 +291,7 @@ where
 		renameVars (Uniq t)         = Uniq $ renameVars t
 		renameVars (Forall vs t tc) = Forall (map renameVars vs) (renameVars t) $ map renameVarsInTC tc
 		renameVars (Arrow t)        = Arrow $ renameVars <$> t
+		renameVars (Strict t)       = Strict $ renameVars t
 
 		renameVarsInTC :: !TypeRestriction -> TypeRestriction
 		renameVarsInTC (Instance c ts)  = Instance c $ map renameVars ts
@@ -298,6 +306,7 @@ where
 		allVars (Forall vs t _)  = allVars` vs ++ allVars t
 		allVars (Arrow (Just t)) = allVars t
 		allVars (Arrow Nothing)  = []
+		allVars (Strict t)       = allVars t
 
 		allVars` :: ([Type] -> [TypeVar])
 		allVars` = concatMap allVars
@@ -311,6 +320,7 @@ where
 	optConses (Uniq t)         = Uniq $ optConses t
 	optConses (Forall vs t tc) = Forall (map optConses vs) (optConses t) $ map optConsesInTR tc
 	optConses (Arrow t)        = Arrow $ optConses <$> t
+	optConses (Strict t)       = Strict $ optConses t
 
 	optConsesInTR :: !TypeRestriction -> TypeRestriction
 	optConsesInTR (Instance c ts)  = Instance c $ map optConses ts

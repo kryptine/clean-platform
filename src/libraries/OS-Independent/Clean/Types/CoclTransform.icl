@@ -44,7 +44,8 @@ where
 	toType (TA tsi ats) = case tsi.type_ident.id_name of
 		"_String" = 'T'.Type "String" []
 		type_name = 'T'.Type tsi.type_ident.id_name (map 'T'.toType ats)
-	toType (TAS tsi ats _) = 'T'.Type tsi.type_ident.id_name (map 'T'.toType ats)
+	toType (TAS tsi ats ss) = 'T'.Type tsi.type_ident.id_name
+		[if s 'T'.Strict id ('T'.toType t) \\ t <- ats & s <- strictnessListToBools ss]
 	toType (TB bt) = 'T'.Type (toString bt) []
 	toType (TV tv) = 'T'.Var tv.tv_ident.id_name
 	toType (GTV tv) = 'T'.Var tv.tv_ident.id_name
@@ -58,8 +59,9 @@ where
 
 instance toType 'syntax'.SymbolType
 where
-	toType {st_args,st_result,st_context}
-		= 'T'.Func (map 'T'.toType st_args) ('T'.toType st_result) ('T'.toTypeContext st_context)
+	toType {st_args,st_result,st_context,st_args_strictness}
+		= 'T'.Func [if s 'T'.Strict id ('T'.toType t) \\ t <- st_args & s <- strictnessListToBools st_args_strictness]
+			('T'.toType st_result) ('T'.toTypeContext st_context)
 
 instance toTypeVar 'syntax'.TypeVar where toTypeVar {tv_ident} = tv_ident.id_name
 
@@ -94,9 +96,9 @@ where
 
 instance toConstructor 'syntax'.ParsedConstructor
 where
-	toConstructor {pc_cons_ident,pc_arg_types,pc_exi_vars,pc_context,pc_cons_prio}
+	toConstructor {pc_cons_ident,pc_arg_types,pc_args_strictness,pc_exi_vars,pc_context,pc_cons_prio}
 		= 'T'.constructor pc_cons_ident.id_name
-			(map 'T'.toType pc_arg_types)
+			[if s 'T'.Strict id ('T'.toType t) \\ t <- pc_arg_types & s <- strictnessListToBools pc_args_strictness]
 			(map (\t -> 'T'.toTypeVar t.atv_variable) pc_exi_vars)
 			('T'.toTypeContext pc_context)
 			('T'.toMaybePriority pc_cons_prio)
@@ -110,8 +112,13 @@ where
 
 instance toRecordField 'syntax'.ParsedSelector
 where
-	toRecordField {ps_selector_ident,ps_field_type}
-		= 'T'.recordfield ps_selector_ident.id_name ('T'.toType ps_field_type)
+	toRecordField {ps_selector_ident,ps_field_type,ps_field_annotation}
+		= 'T'.recordfield ps_selector_ident.id_name (if ps_field_annotation=:AN_Strict 'T'.Strict id ('T'.toType ps_field_type))
+
+strictnessListToBools :: !StrictnessList -> [Bool]
+strictnessListToBools NotStrict        = repeat False
+strictnessListToBools (Strict i)       = [i bitand (1 << e) <> 0 \\ e <- [0..31]]
+strictnessListToBools (StrictList i l) = strictnessListToBools (Strict i) ++ strictnessListToBools l
 
 :: TypeDerivState =
 	{ tds_var_index         :: Int

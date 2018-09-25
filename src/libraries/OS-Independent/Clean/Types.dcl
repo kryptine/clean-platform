@@ -18,6 +18,7 @@ from Data.Maybe import :: Maybe
 	| Uniq Type                      //* A unique type
 	| Forall [Type] Type TypeContext //* Universally quantified variables
 	| Arrow (Maybe Type)             //* `(->)` and `((->) t)`
+	| Strict Type                    //* A type annotated for strictness
 
 /**
  * A type variable.
