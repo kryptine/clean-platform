@@ -247,7 +247,6 @@ collect :: ![CleanComment] !(Maybe CleanComment) ![a] !CollectedComments -> (![C
 collect cc prev [] coll = (cc, prev, coll)
 collect [] (Just prev) [pd:pds] coll = ([], Nothing, putCC pd prev coll)
 collect [] Nothing _ coll = ([], Nothing, coll)
-collect [{column,multiline=True}:cs] prev pds coll | column > 0 = collect cs prev pds coll
 collect [{content}:cs] prev pds coll | not (startsWith "*" content) = collect cs prev pds coll
 collect allcmnts=:[c:cs] prev allpds=:[pd:pds] coll = case c canBelongTo pd of
 	Nothing -> collect allcmnts prev pds coll
