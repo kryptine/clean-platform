@@ -93,6 +93,7 @@ TTYread :: !*TTY -> (!Int, !*TTY)
  * @result new tty handle
  */
 TTYreadline :: !*TTY -> (!String, !*TTY)
+<<<<<<< HEAD
 
 /**
 * Checks if the TTY device is available for reading

@@ -105,14 +105,12 @@ where
 	getResource = iworldResource (\t=:(TTYd p _)->(p == opts.devicePath, t))
 	exc = ExceptionResult o exception
 
-import StdMisc, StdDebug
 readWhileAvailable :: !*TTY -> (MaybeError String [Char], !*TTY)
 readWhileAvailable tty
 # (available, error, tty) = TTYavailable tty
 | error = (Error "TTY device disconnected", tty)
 | not available = (Ok [], tty)
 # (c, tty) = TTYread tty
-| not (trace_tn ("Read: " +++ toString c)) = undef
 # (merr, tty) = readWhileAvailable tty
 | isError merr = (merr, tty)
 = (Ok [toChar c:fromOk merr], tty)
