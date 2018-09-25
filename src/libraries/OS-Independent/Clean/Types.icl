@@ -27,6 +27,7 @@ subtypes t=:(Uniq t`) = removeDup [t : subtypes t`]
 subtypes t=:(Forall vs t` tc) = removeDup [t : flatten (map subtypes [t`:vs])]
 subtypes t=:(Var _) = [t]
 subtypes t=:(Arrow mt) = [t:flatten (map subtypes (maybeToList mt))]
+subtypes t=:(Strict t`) = [t:subtypes t`]
 
 allRestrictions :: !Type -> [TypeRestriction]
 allRestrictions (Type _ ts) = concatMap allRestrictions ts
@@ -36,6 +37,7 @@ allRestrictions (Uniq t) = allRestrictions t
 allRestrictions (Forall _ t tc) = tc ++ allRestrictions t
 allRestrictions (Var _) = []
 allRestrictions (Arrow t) = fromMaybe [] (allRestrictions <$> t)
+allRestrictions (Strict t) = allRestrictions t
 
 allVars :: (Type -> [TypeVar])
 allVars = removeDup o map name o filter (\t -> isCons t || isVar t) o subtypes
@@ -53,6 +55,7 @@ allUniversalVars (Uniq t) = allUniversalVars t
 allUniversalVars (Var _) = []
 allUniversalVars (Arrow (Just t)) = allUniversalVars t
 allUniversalVars (Arrow Nothing)  = []
+allUniversalVars (Strict t) = allUniversalVars t
 
 isVar :: !Type -> Bool
 isVar (Var _) = True; isVar _ = False
@@ -106,6 +109,7 @@ arity (Type _ ts) = length ts
 arity (Func is _ _) = length is
 arity (Var _) = 0
 arity (Cons _ ts) = length ts
+arity (Strict t) = arity t
 //TODO arity of Uniq / Forall / Arrow?
 
 removeTypeContexts :: !Type -> Type
@@ -116,6 +120,7 @@ removeTypeContexts (Cons v ts) = Cons v $ map removeTypeContexts ts
 removeTypeContexts (Uniq t) = Uniq $ removeTypeContexts t
 removeTypeContexts (Forall ts t _) = Forall (map removeTypeContexts ts) (removeTypeContexts t) []
 removeTypeContexts (Arrow t) = Arrow (removeTypeContexts <$> t)
+removeTypeContexts (Strict t) = Strict (removeTypeContexts t)
 
 constructorsToFunctions :: !TypeDef -> [(String,Type,Maybe Priority)]
 constructorsToFunctions {td_name,td_uniq,td_args,td_rhs} = case td_rhs of
