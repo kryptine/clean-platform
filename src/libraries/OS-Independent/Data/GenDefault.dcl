@@ -10,7 +10,7 @@ from Data.Maybe import :: Maybe(Just)
  * @result A default value
  */
 generic gDefault a :: a
-derive gDefault Bool, Char, Int, Real, String, (->), Dynamic, UNIT, PAIR, EITHER, CONS, FIELD, OBJECT, RECORD
+derive gDefault Bool, Char, Int, Real, String, (->), UNIT, PAIR, EITHER, CONS, FIELD, OBJECT, RECORD
 derive gDefault [], [!], [ !], [!!], {}, {!}
 derive gDefault (), (,), (,,),  (,,,), (,,,,), (,,,,,), (,,,,,,), (,,,,,,,)
 
@@ -31,6 +31,6 @@ finiteDefaultValue :== hd [d \\ Just d <- gFiniteDefault{|*|}]
  * @result The list of optional values with the properties given above
  **/
 generic gFiniteDefault a :: [Maybe a]
-derive gFiniteDefault Bool, Char, Int, Real, String, (->), Dynamic, UNIT, PAIR, EITHER, CONS, FIELD, OBJECT, RECORD
+derive gFiniteDefault Bool, Char, Int, Real, String, (->), UNIT, PAIR, EITHER, CONS, FIELD, OBJECT, RECORD
 derive gFiniteDefault [], [!], [ !], [!!], {}, {!}
 derive gFiniteDefault (), (,), (,,),  (,,,), (,,,,), (,,,,,), (,,,,,,), (,,,,,,,)
