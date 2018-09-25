@@ -53,6 +53,7 @@ import qualified Data.Bifunctor
 import qualified Data.CircularStack
 import qualified Data.Complex
 import qualified Data.Data
+import qualified Data.Dynamic
 import qualified Data.Either
 import qualified Data.Encoding.RunLength
 import qualified Data.Eq
