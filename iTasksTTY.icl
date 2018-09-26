@@ -1,30 +1,17 @@
 implementation module iTasksTTY
 
-import System.OS
-import TTY
+import StdEnv
 
-import StdList
-from StdFunc import o, flip
-import StdMisc
-import StdString
-import Data.List
-import qualified Data.Map as DM
+import Data.Func
+import Text
 
-import System.Directory
 import iTasks
-import Data.Tuple
-import Control.Applicative
-from Data.Func import $
-from Text import class Text(startsWith), instance Text String
-
-import iTasks.UI.Definition
-
 import iTasks.Internal.IWorld
-import iTasks.Internal.TaskState
-import iTasks.Internal.Task
 import iTasks.Internal.SDS
-import iTasks.Internal.TaskServer
 import iTasks.Internal.TaskEval
+import iTasks.Internal.TaskState
+
+import TTY
 
 :: *Resource | TTYd String *TTY
 
@@ -76,7 +63,7 @@ where
 					| isError merr = (exc (fromError merr), iworld)
 					# iworld = {iworld & resources=[TTYd dp tty:iworld.resources]}
 					= case dec (acc +++ toString (fromOk merr)) of
-						(Left err, newacc) = (exc "Error while parsing", iworld)
+						(Left err, newacc) = (exc ("Error while parsing: " +++ join " " [toString (toInt c)\\c<-:acc+toString (fromOk merr)]), iworld)
 						(Right msgs, newacc)
 							# (merr, iworld) = if (msgs =: [] && s =: [])
 								(Ok (), iworld)

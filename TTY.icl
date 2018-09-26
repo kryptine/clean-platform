@@ -1,13 +1,10 @@
 implementation module TTY
 
-import StdFunc, StdBool
-import StdList
+import StdEnv
+
 import System.OS
 import Text
-import StdArray
-import StdClass
-import StdString
-import StdChar
+
 import Platform
 
 import code from "ctty."

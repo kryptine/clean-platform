@@ -2,22 +2,44 @@ definition module TTY
 
 from StdClass import class zero
 
+/**
+ * TTY handle
+ */
 :: *TTY (:== Int)
 
+/**
+ * Possible byte sizes
+ */
 :: ByteSize = BytesizeFive | BytesizeSix | BytesizeSeven | BytesizeEight
+
+/**
+ * Possible parity settings
+ */
 :: Parity = ParityNone | ParityOdd | ParityEven | ParitySpace | ParityMark
+
+/**
+ * Possible baudrates
+ */
 :: BaudRate = B0 | B50 | B75 | B110 | B134 | B150 | B200 | B300 | B600 |
 	B1200 | B1800 | B2400 | B4800 | B9600 | B19200 | B38400 | B57600 |
 	B115200 | B230400
 
+/**
+ * Serial device settings
+ */
 :: TTYSettings = {
 		devicePath :: String,
+		//* Path of the device, e.g. /dev/ttyACM0
 		baudrate :: BaudRate,
+		//* Baudrate
 		bytesize :: ByteSize,
+		//* Parity
 		parity :: Parity,
+		//* stop2bits
 		stop2bits :: Bool,
+		//* xonxoff flow control
 		xonxoff :: Bool,
-		//Set this to 2 if you want to connect to a borked arduino
+		//* Time in seconds to wait after opening the devices. Set this to 2 if you want to connect to a borked arduino
 		sleepTime :: Int
 	}
 
@@ -26,9 +48,9 @@ instance zero TTYSettings
 /**
  * Returns a list of tty devices. This list is not conclusive but just checks familiar names.
  *
- * @param The world
- * @result The list of detected devices
- * @result The updated world
+ * @param world
+ * @result list of detected devices
+ * @result new world
  */
 getTTYDevices :: !*World -> *(![String], !*World)
 
