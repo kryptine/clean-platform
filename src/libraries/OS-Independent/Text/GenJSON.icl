@@ -42,10 +42,13 @@ where
 			#! c = s.[i]
 			| c == '"' || c == '/' || c == '\b' || c == '\f' || c == '\n' || c == '\r' || c == '\t' || c == '\\'
 				= count (i + 1) s (n + 1) //We'll add a '\' to escape
-			| isControl c
+			| needsUniEscape c
 				= count (i + 1) s (n + 5) //We'll replace the character by '\uXXXX'
 			= count(i + 1) s n
 		= n
+
+needsUniEscape :: Char -> Bool
+needsUniEscape c = c < ' ' || c >= '\x7f'
 
 //Copy structure to a string
 copyNode :: !Int !JSONNode !*{#Char} -> *(!Int, !*{#Char})
@@ -120,7 +123,7 @@ copyAndEscapeChars soffset doffset num src dst
 			#! dst & [doffset] = '\\'
 			#! dst & [doffset + 1] = charOf c
 			= copyAndEscapeChars (soffset + 1) (doffset + 2) (num - 1) src dst	
-		| isControl c
+		| needsUniEscape c
             #! cint = toInt c
 			#! dst & [doffset] = '\\'
 			#! dst & [doffset + 1] = 'u'
