@@ -122,6 +122,8 @@ succeed :: UnifyM ()
 succeed = pure ()
 
 applyAssignment :: !TypeVar !Type -> UnifyM ()
+applyAssignment v (Var w) | v.[0] <> '_' && w.[0] == '_' =
+	applyAssignment w (Var v) // the below assumes a universal variable is always the TypeVar
 applyAssignment v t =
 	checkUniversalisedVariables v t >>= \t ->
 	checkCircularAssignment v t >>|
@@ -176,7 +178,7 @@ where
 
 uni :: !Type !Type -> UnifyM ()
 uni (Var v) t = if (t == Var v) succeed (applyAssignment v t)
-uni t (Var v) = if (t == Var v) succeed (applyAssignment v t)
+uni t (Var v) = applyAssignment v t
 uni (Type t tas) (Type u uas) = if (t==u) (addGoals tas uas) fail
 uni (Cons c cas) (Type t tas)
 | lc <= lt = addGoals cas end >>| applyAssignment c (Type t begin)
