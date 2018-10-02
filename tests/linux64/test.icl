@@ -122,6 +122,7 @@ import qualified Database.SQL.SQLite
 import qualified Database.SQL._MySQL
 import qualified Database.SQL._SQLite
 import qualified Debug.Performance
+import qualified Debug.Trace
 import qualified Graphics.Layout
 import qualified Graphics.Scalable.Image
 import qualified Graphics.Scalable.Internal.Image`
