@@ -8,6 +8,11 @@ from System.FilePath import :: FilePath
 from System.OSError import :: MaybeOSError, :: OSError, :: OSErrorCode, :: OSErrorMessage
 
 /**
+ * Ensure a directory exists by creating all non-existant parent directories.
+ */
+ensureDirectoryExists :: !FilePath !*World -> (!MaybeOSError (), !*World)
+
+/**
  * Recursively scan a directory and collect information about all files and
  * directories it contains.
  *

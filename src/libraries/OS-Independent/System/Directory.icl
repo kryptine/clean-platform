@@ -16,6 +16,17 @@ import qualified System._Directory
 import System.File
 import System.FilePath
 
+ensureDirectoryExists :: !FilePath !*World -> (!MaybeOSError (), !*World)
+ensureDirectoryExists fp w
+# (err,w) = case takeDirectory fp of
+	""     -> (Ok (), w)
+	parent -> ensureDirectoryExists parent w
+| isError err = (err,w)
+# (exi,w) = fileExists fp w
+| exi
+	= (Ok (), w)
+	= createDirectory fp w
+
 scanDirectory :: !(FilePath FileInfo .st *World -> *(.st, *World)) !.st !FilePath !*World -> *(![OSError], !.st, !*World)
 scanDirectory upd st dir w = scan dir [] st w
 where
