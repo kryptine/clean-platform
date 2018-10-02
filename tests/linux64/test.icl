@@ -26,6 +26,7 @@ import qualified Clean.Types.Parse
 import qualified Clean.Types.Tree
 import qualified Clean.Types.Unify
 import qualified Clean.Types.Util
+import qualified Clean.ModuleFinder
 import qualified Codec.Compression.Snappy
 import qualified Codec.Compression.Snappy.Graph
 import qualified Control.Applicative
