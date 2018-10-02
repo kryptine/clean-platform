@@ -37,8 +37,8 @@ where
 	# (s1,s2,s3) = f x s1 s2 s3
 	= seqSt3 f xs s1 s2 s3
 
-createDirectoryTree :: !FilePath !(Maybe Int) !*World -> *(RTree (FilePath, MaybeOSError FileInfo), !*World)
-createDirectoryTree fp md w = scan (maybe -1 id md) fp "" w
+readDirectoryTree :: !FilePath !(Maybe Int) !*World -> *(RTree (FilePath, MaybeOSError FileInfo), !*World)
+readDirectoryTree fp md w = scan (maybe -1 id md) fp "" w
 where
 	scan md acc fp w
 	# fp = acc </> fp

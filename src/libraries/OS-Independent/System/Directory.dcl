@@ -35,7 +35,7 @@ scanDirectory :: !(FilePath FileInfo .st *World -> *(.st, *World)) !.st !FilePat
  * @result A tree of filepaths with either an error or fileinfo
  * @result The new world.
  */
-createDirectoryTree :: !FilePath !(Maybe Int) !*World -> *(RTree (FilePath, MaybeOSError FileInfo), !*World)
+readDirectoryTree :: !FilePath !(Maybe Int) !*World -> *(RTree (FilePath, MaybeOSError FileInfo), !*World)
 
 /**
  * Create a directory
