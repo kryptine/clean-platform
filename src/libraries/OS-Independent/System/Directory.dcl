@@ -13,6 +13,11 @@ from System.OSError import :: MaybeOSError, :: OSError, :: OSErrorCode, :: OSErr
 ensureDirectoryExists :: !FilePath !*World -> (!MaybeOSError (), !*World)
 
 /**
+ * Delete a file/directory and, if it is a directory, all its contents.
+ */
+recursiveDelete :: !FilePath !*World -> *(!MaybeOSError (), !*World)
+
+/**
  * Recursively scan a directory and collect information about all files and
  * directories it contains.
  *

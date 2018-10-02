@@ -27,6 +27,20 @@ ensureDirectoryExists fp w
 	= (Ok (), w)
 	= createDirectory fp w
 
+recursiveDelete :: !FilePath !*World -> *(!MaybeOSError (), !*World)
+recursiveDelete fp w
+	# (mfi, w) = getFileInfo fp w
+	| isError mfi = (liftError mfi, w)
+	| (fromOk mfi).directory
+		# (mdir, w) = readDirectory fp w
+		| isError mdir = (liftError mdir, w)
+		# (merr, w) = mapSt (\c->recursiveDelete (fp </> c))
+			(filter (\r->r <> "." && r <> "..") (fromOk mdir)) w
+		# merr = sequence merr
+		| isError merr = (liftError merr, w)
+		= removeDirectory fp w
+	= deleteFile fp w
+
 scanDirectory :: !(FilePath FileInfo .st *World -> *(.st, *World)) !.st !FilePath !*World -> *(![OSError], !.st, !*World)
 scanDirectory upd st dir w = scan dir [] st w
 where
