@@ -54,10 +54,12 @@ where
 		= print st (":: " :+: td_attribute :+: td_ident :+: join_start st " " td_args :+: equals :+: td_rhs)
 	where
 		equals = case td_rhs of
-			TypeSpec _     -> " :== "
-			EmptyRhs _     -> ""
-			NewTypeCons _  -> " =: "
-			_              -> " = "
+			TypeSpec _         -> " :== "
+			EmptyRhs _         -> ""
+			NewTypeCons _      -> " =: "
+			ConsList _         -> "\n\t= "
+			ExtensibleConses _ -> "\n\t= "
+			_                  -> " = "
 	print st (PD_GenericCase {gc_type,gc_gcf=GCF id {gcf_body=GCB_ParsedBody [desc:args] rhs}} _)
 		= print st (id :+: "{|" :+: gc_type :+: desc` :+: "|} " :+: args :+: " = " :+: rhs)
 	where
@@ -230,11 +232,11 @@ where
 instance print RhsDefsOfType
 where
 	print st (ConsList conses)
-		= join st " | " conses
+		= join st "\n\t| " conses
 	print st (ExtensibleConses conses)
-		= join st " | " conses +++ " | .."
+		= join st "\n\t| " conses +++ "\n\t| .."
 	print st (SelectorList _ exivars _ fields)
-		= print st (exivars` :+: "{" :+: join st ", " fields :+: "}")
+		= print st (exivars` :+: "\n\t{ " :+: join st "\n\t, " fields :+: "\n\t}")
 	where
 		exivars` = if (isEmpty exivars) PrintNil ("E." :+: join st " " exivars :+: ": ")
 	print st (TypeSpec type)
@@ -250,12 +252,19 @@ where
 
 instance print ParsedSelector
 where
-	print st ps = print st (ps.ps_selector_ident :+: " :: " :+: ps.ps_field_type)
+	print st ps = print st (ps.ps_selector_ident :+: " :: " :+: ps.ps_field_annotation :+: ps.ps_field_type)
 
 instance print ParsedConstructor
 where
 	print st cons=:{pc_arg_types=[]} = print st cons.pc_cons_ident
-	print st cons = print st (cons.pc_cons_ident :+: " " :+: cons.pc_arg_types)
+	print st cons = print st
+		(cons.pc_cons_ident :+: " " :+:
+			[if s "!" "" :+: t \\ t <- cons.pc_arg_types & s <- strictnessListToBools cons.pc_args_strictness])
+
+instance print Annotation
+where
+	print st AN_Strict = "!"
+	print st AN_None   = ""
 
 // Classes
 instance print TCClass
