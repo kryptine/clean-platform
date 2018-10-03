@@ -54,9 +54,10 @@ where
 		= print st (":: " :+: td_attribute :+: td_ident :+: join_start st " " td_args :+: equals :+: td_rhs)
 	where
 		equals = case td_rhs of
-			(TypeSpec _) = " :== "
-			(EmptyRhs _) = ""
-			_            = " = "
+			TypeSpec _     -> " :== "
+			EmptyRhs _     -> ""
+			NewTypeCons _  -> " =: "
+			_              -> " = "
 	print st (PD_GenericCase {gc_type,gc_gcf=GCF id {gcf_body=GCB_ParsedBody [desc:args] rhs}} _)
 		= print st (id :+: "{|" :+: gc_type :+: desc` :+: "|} " :+: args :+: " = " :+: rhs)
 	where
@@ -230,6 +231,8 @@ instance print RhsDefsOfType
 where
 	print st (ConsList conses)
 		= join st " | " conses
+	print st (ExtensibleConses conses)
+		= join st " | " conses +++ " | .."
 	print st (SelectorList _ exivars _ fields)
 		= print st (exivars` :+: "{" :+: join st ", " fields :+: "}")
 	where
@@ -238,6 +241,10 @@ where
 		= print st type
 	print st (EmptyRhs _)
 		= ""
+	print st (AbstractTypeSpec _ at)
+		= print st at
+	print st (NewTypeCons pc)
+		= print st pc
 	print _ _
 		= abort "UNKNOWN_RHSDEFSOFTYPE"
 
@@ -247,6 +254,7 @@ where
 
 instance print ParsedConstructor
 where
+	print st cons=:{pc_arg_types=[]} = print st cons.pc_cons_ident
 	print st cons = print st (cons.pc_cons_ident :+: " " :+: cons.pc_arg_types)
 
 // Classes
