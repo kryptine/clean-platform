@@ -236,9 +236,15 @@ where
 	print st (ExtensibleConses conses)
 		= join st "\n\t| " conses +++ "\n\t| .."
 	print st (SelectorList _ exivars _ fields)
-		= print st (exivars` :+: "\n\t{ " :+: join st "\n\t, " fields :+: "\n\t}")
+		= print st (exivars` :+: "\n\t{ " :+: join st "\n\t, " (map print_ps fields) :+: "\n\t}")
 	where
 		exivars` = if (isEmpty exivars) PrintNil ("E." :+: join st " " exivars :+: ": ")
+
+		print_ps ps = print st
+			(ps.ps_selector_ident :+:
+			{#c \\ c <- repeatn (maxfieldlen - size ps.ps_selector_ident.id_name) ' '} :+:
+			" :: " :+: ps.ps_field_annotation :+: ps.ps_field_type)
+		maxfieldlen = maxList [size ps.ps_selector_ident.id_name \\ ps <- fields]
 	print st (TypeSpec type)
 		= print st type
 	print st (EmptyRhs _)
