@@ -12,8 +12,10 @@ instance print ParsedDefinition
 where
 	print st (PD_Import ips)
 		= join st "\n" ips
+	print st (PD_Class cd [pd=:PD_TypeSpec _ mem _ _ _]) | cd.class_ident.id_name == mem.id_name
+		= print st ("class " :+: pd)
 	print st (PD_Class cd mems)
-		= print st ("class " :+: cd.class_ident :+: args :+: context :+: if (isEmpty mems) "" " where" :+: join_start st` ("\n" :+: st`) mems)
+		= print st ("class " :+: cd.class_ident :+: args :+: context :+: if (isEmpty mems) "" "\nwhere" :+: join_start st` ("\n" :+: st`) mems)
 	where
 		st` = { st & cpp_indent = st.cpp_indent + 1 }
 		context = if (isEmpty cd.class_context) "" (" | " +++ join st " & " cd.class_context)
