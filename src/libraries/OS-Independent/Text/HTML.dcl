@@ -205,6 +205,7 @@ import StdString, Data.Maybe
 			| OnselectAttr		!String
 			| OnsubmitAttr		!String
 			| OnunloadAttr		!String
+			| PlaceholderAttr	!String
 			| ProfileAttr		!String
 			| PromptAttr		!String
 			| ReadonlyAttr
