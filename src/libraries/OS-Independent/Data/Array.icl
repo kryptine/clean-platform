@@ -1,6 +1,6 @@
 implementation module Data.Array
 
-import StdArray, StdInt, StdOverloaded, StdClass, StdFunc
+import StdArray, StdInt, StdOverloaded, StdClass, StdFunctions
 import Data.Functor, Control.Applicative, Control.Monad
 
 mapArrSt :: !(.a -> .(*st -> *(!.a, !*st))) !*(arr .a) !*st -> *(!*(arr .a), !*st) | Array arr a

@@ -2,7 +2,7 @@ implementation module Data.Maybe
 
 import StdMaybe
 import StdBool
-import StdFunc
+import StdFunctions
 import StdMisc
 import Data.Functor
 import Data.Monoid

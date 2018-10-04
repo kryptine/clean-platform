@@ -1,6 +1,6 @@
 definition module Control.Monad
 
-from Control.Applicative  import class Applicative
+from Control.Applicative  import class Applicative(pure)
 from Data.Functor         import class Functor
 
 class Monad m | Applicative m
@@ -18,6 +18,9 @@ where
 
     (=<<) infixr 1 :: (a -> m b) (m a) -> m b | Monad m
     (=<<) f x :== x >>= f
+
+	return :: a -> m a | Monad a
+	return x :== pure x
 
 class MonadPlus m | Monad m
 where
