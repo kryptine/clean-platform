@@ -2,7 +2,7 @@ implementation module Data.List
 
 import StdBool
 import StdEnum
-import StdFunc
+import StdFunctions
 import StdList
 import StdOrdList
 import StdTuple
