@@ -19,7 +19,7 @@ where
     (=<<) infixr 1 :: (a -> m b) (m a) -> m b | Monad m
     (=<<) f x :== x >>= f
 
-	return :: a -> m a | Monad m
+	return :: a -> m a | Applicative m
 	return x :== pure x
 
 class MonadPlus m | Monad m
