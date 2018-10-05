@@ -6,11 +6,12 @@ import StdFunctions
 import StdMisc
 import Data.Functor
 import Data.Monoid
+import Data.Func
 from Data.Foldable import class Foldable(..)
 from Data.Traversable import class Traversable(traverse)
 import qualified Data.Traversable as T
 import Control.Applicative
-import Control.Monad
+import Control.Monad, Control.Monad.Trans
 import Data.GenEq
 
 instance Functor Maybe where fmap f m = mapMaybe f m
@@ -105,3 +106,43 @@ maybeSt st f (Just x) = f x st
 fromMaybe :: .a !(Maybe .a) -> .a
 fromMaybe x mb = maybe x id mb
 
+runMaybeT :: !(MaybeT m a) -> m (Maybe a)
+runMaybeT (MaybeT f) = f
+
+mapMaybeT :: !((m (Maybe a)) -> n (Maybe b)) !(MaybeT m a) -> MaybeT n b
+mapMaybeT f m = MaybeT $ f $ runMaybeT m
+
+instance Functor (MaybeT m) | Functor m where
+	fmap f m = mapMaybeT (fmap $ fmap f) m
+
+instance Applicative (MaybeT m) | Monad m where
+	pure x = MaybeT $ pure $ Just x
+
+	<*> mf mx = MaybeT $
+		runMaybeT mf >>= \mb_f ->
+		case mb_f of
+			Nothing = pure Nothing
+			Just f  =
+				runMaybeT mx >>= \mb_x ->
+				case mb_x of
+					Nothing = pure Nothing
+					Just x  = pure $ Just $ f x
+
+instance Alternative (MaybeT m) | Monad m where
+	empty = MaybeT $ return Nothing
+
+	<|> x y = MaybeT $
+		runMaybeT x >>= \v ->
+		case v of
+			Nothing -> runMaybeT y
+			Just _  -> return v
+
+instance Monad (MaybeT m) | Monad m where
+	bind x f = MaybeT $
+		runMaybeT x >>= \v ->
+		case v of
+			Nothing -> return Nothing
+			Just y  -> runMaybeT $ f y
+
+instance MonadTrans MaybeT where
+	liftT m = MaybeT $ liftM Just m

@@ -9,6 +9,7 @@ from StdOverloaded import class ==(..)
 from Data.Functor import class Functor
 from Control.Applicative import class Applicative, class *>, class <*, class Alternative
 from Control.Monad import class Monad, class MonadPlus
+from Control.Monad.Trans import class MonadTrans
 from Data.Monoid import class Semigroup, class Monoid
 from Data.Foldable import class Foldable
 from Data.Traversable import class Traversable
@@ -46,3 +47,28 @@ maybeSt :: *st (.a *st -> *st) !(Maybe .a) -> *st
  * Directly return a Just value or return a default value if the argument is a Nothing value.
  */
 fromMaybe :: .a !(Maybe .a) -> .a
+
+/**
+ * The Maybe monad transformer.
+ */
+:: MaybeT m a = MaybeT !(m (Maybe a))
+
+/**
+ * Runs a MaybeT as the monad wrapped inside the transformer.
+ */
+runMaybeT :: !(MaybeT m a) -> m (Maybe a)
+
+/**
+ * Transforms the computation inside a transformer.
+ *
+ * @param The computation transformation.
+ * @param The transformer to be transformed.
+ * @result The transformed transformer.
+ */
+mapMaybeT :: !((m (Maybe a)) -> n (Maybe b)) !(MaybeT m a) -> MaybeT n b
+
+instance Functor (MaybeT m) | Functor m
+instance Applicative (MaybeT m) | Monad m
+instance Alternative (MaybeT m) | Monad m
+instance Monad (MaybeT m) | Monad m
+instance MonadTrans MaybeT
