@@ -7,23 +7,11 @@ definition module Clean.Parse
 
 from Data.Error import :: MaybeError
 from Data.Maybe import :: Maybe
-from System.File import :: FileError
 from System.FilePath import :: FilePath
 
 from hashtable import :: HashTable
 from Heap import :: Heap
 from syntax import :: Module, :: ParsedDefinition, :: ParsedModule
-
-/**
- * Guess the module name of a Clean file.
- *
- * @param The path to the Clean file
- * @result
- *   `Error`, if the file could not be read;
- *   `Ok Nothing`, if the module name could not be guessed;
- *   `Ok (Just name)` in case of success.
- */
-guessModuleName :: !FilePath !*World -> *(!MaybeError FileError (Maybe String), !*World)
 
 /**
  * Parse a Clean module.

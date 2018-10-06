@@ -4,7 +4,7 @@ import StdArray
 import StdList
 import StdString
 
-import Clean.Parse
+import Clean.Parse.ModuleName
 import Data.Error
 from Data.Func import $, mapSt
 import System.Directory

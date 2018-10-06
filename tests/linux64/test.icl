@@ -20,6 +20,7 @@ import qualified StdLibMisc
 import qualified Clean.Doc
 //import qualified Clean.Parse // requires Clean compiler
 //import qualified Clean.Parse.Comments // requires Clean compiler
+import qualified Clean.Parse.ModuleName
 import qualified Clean.Types
 //import qualified Clean.Types.CoclTransform // requires Clean compiler
 import qualified Clean.Types.Parse
