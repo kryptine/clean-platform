@@ -17,12 +17,18 @@ from hashtable import :: BoxedIdent{boxed_ident}, :: HashTable,
 from parse import wantModule
 import syntax
 
+guessModuleName :: !FilePath !*World -> *(!MaybeError FileError (Maybe String), !*World)
+guessModuleName filename w
+# (s,w) = readFile filename w
+| isError s = (Error (fromError s), w)
+# modname = getModuleName (fromString (fromOk s))
+= (Ok modname, w)
+
 readModule :: !FilePath !*World -> *(!MaybeError String (ParsedModule, HashTable), !*World)
 readModule filename w
-# (s,w) = readFile filename w
-| isError s = (Error (toString (fromError s)), w)
-# modname = getModuleName (fromString (fromOk s))
-# modname = fromMaybe (takeFileName (dropExtension filename)) modname
+# (modname,w) = guessModuleName filename w
+| isError modname = (Error (toString (fromError modname)), w)
+# modname = fromMaybe (takeFileName (dropExtension filename)) (fromOk modname)
 # ht = newHashTable newHeap
 # ht = set_hte_mark (if icl 1 0) ht
 # (ok,f,w) = fopen filename FReadText w

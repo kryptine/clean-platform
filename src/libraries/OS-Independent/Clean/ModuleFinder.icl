@@ -4,6 +4,7 @@ import StdArray
 import StdList
 import StdString
 
+import Clean.Parse
 import Data.Error
 from Data.Func import $, mapSt
 import System.Directory
@@ -66,12 +67,22 @@ where
 
 findAllModules :: !ModuleFindingOptions !*World -> *(![OSError], ![FilePath], !*World)
 findAllModules opts w
-# (errs,(paths,w)) = mapSt (scanDirectory` collect) (baseDirectories opts) ([], w)
+# (errs,(paths,w)) = mapSt (\d -> scanDirectory` (collect d) d) (baseDirectories opts) ([], w)
 = (flatten errs,paths,w)
 where
 	scanDirectory` f dir (st,w) = (err, (st`,w`)) where (err, st`, w`) = scanDirectory f st dir w
 
-	collect fp fi seen w
+	collect dir fp fi seen w
 	| endsWith (if opts.include_applications ".icl" ".dcl") fp
-		= ([fp:seen], w)
+		# (modname, w) = guessModuleName fp w
+		| isError modname = (seen, w)
+		# modname = fromOk modname
+		| isNothing modname = (seen, w)
+		# modname = fromJust modname
+		# expected = {if (c == pathSeparator) '.' c \\ c <-: fp % (size dir`, size fp - 5)}
+			with dir` = dir </> ""
+		| modname == expected
+			= ([fp:seen], w)
+			= (seen, w)
+	| otherwise
 		= (seen, w)
