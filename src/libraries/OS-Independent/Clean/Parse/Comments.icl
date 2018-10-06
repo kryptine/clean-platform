@@ -39,7 +39,7 @@ from syntax import
 	:: FunctName,
 	:: FunKind,
 	:: FunSpecials,
-	:: GenericDef{gen_pos},
+	:: GenericDef{gen_ident,gen_pos},
 	:: GenericCaseDef{gc_pos},
 	:: Global,
 	:: Ident{id_info,id_name},
@@ -326,6 +326,7 @@ where
 		PD_TypeSpec pos id prio type specials -> Just (CI "PD_TypeSpec" pos id.id_name)
 		PD_Class cd pds -> Just (CI "PD_Class" cd.class_pos cd.class_ident.id_name)
 		PD_Type ptd -> Just (CI "PD_Type" ptd.td_pos ptd.td_ident.id_name)
+		PD_Generic gd -> Just (CI "PD_Generic" gd.gen_pos gd.gen_ident.id_name)
 		_ -> Nothing
 
 instance commentIndex ParsedSelector
