@@ -267,7 +267,9 @@ where
 	print st cons=:{pc_arg_types=[]} = print st cons.pc_cons_ident
 	print st cons = print st
 		(cons.pc_cons_ident :+: " " :+:
-			[if s "!" "" :+: t \\ t <- cons.pc_arg_types & s <- strictnessListToBools cons.pc_args_strictness])
+			[if s "!" "" :+: print {st & cpp_parens=True} t
+				\\ t <- cons.pc_arg_types
+				 & s <- strictnessListToBools cons.pc_args_strictness])
 
 instance print Annotation
 where
