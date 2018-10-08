@@ -4,7 +4,7 @@ import StdArray
 import StdBool
 import StdChar
 import StdClass
-import StdFunc
+import StdFunctions
 import StdInt
 import StdList
 import StdString
