@@ -1225,7 +1225,7 @@ foldrWithKey` f z` (Bin _ kx x l r) = foldrWithKey` f (f kx x (foldrWithKey` f z
 //
 // > let f result k a = result ++ "(" ++ (show k) ++ ":" ++ a ++ ")"
 // > foldlWithKey f "Map: " (fromList [(5,"a"), (3,"b")]) == "Map: (3:b)(5:a)"
-foldlWithKey :: !(u:a k v -> u:a) !u:a !(Map k v) -> u:a
+foldlWithKey :: !(.a -> .(k -> .(v -> .a))) !.a !(Map k v) -> .a
 foldlWithKey f z` Tip              = z`
 foldlWithKey f z` (Bin _ kx x l r) = foldlWithKey f (f (foldlWithKey f z` l) kx x) r
 

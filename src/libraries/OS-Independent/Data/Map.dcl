@@ -109,7 +109,7 @@ del :: !k !(Map k a) -> Map k a | < k
 delU :: !a !.(Map a b) -> u:(!v:(Maybe b), !Map a b) | == a & < a, [u <= v] // !k !w:(Map k u:v) -> x:(Maybe u:v, !y:(Map k u:v)) | == k & < k, [ w y <= u, x <= y, w <= y]
 
 foldrWithKey :: !(k v u:a -> u:a) !u:a !(Map k v) -> u:a
-foldlWithKey :: !(u:a k v -> u:a) !u:a !(Map k v) -> u:a
+foldlWithKey :: !(.a -> .(k -> .(v -> .a))) !.a !(Map k v) -> .a
 
 /**
  * @type (v a -> a) a (Map k v) -> a
