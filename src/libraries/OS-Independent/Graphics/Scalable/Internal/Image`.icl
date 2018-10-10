@@ -143,7 +143,7 @@ import Graphics.Scalable.Internal.Types
   | FlipYImg
   | MaskImg   !ImgTagNo                                        // the id-img pair is stored in the ImgMasks table
 
-derive gEq ImgTransform, Span, LookupSpan, BasicImg, FontDef, BasicImgAttr, SVGColor, Angle, ImageTag
+derive gEq ImgTransform, Span, LookupSpan, BasicImg, FontDef, BasicImgAttr, Angle, ImageTag
 instance == ImgTransform where == a b = a === b
 
 equivImg :: !Img !Img -> Bool

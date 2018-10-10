@@ -1,7 +1,7 @@
 implementation module Text.GenJSON
 
 import StdGeneric, Data.Maybe, StdList, StdOrdList, StdString, _SystemArray, StdTuple, StdBool, StdFunc, StdOverloadedList, StdFile
-import Data.List, Text, Text.PPrint, Text.GenJSON
+import Data.List, Text, Text.PPrint, Text.GenJSON, Data.GenEq
 
 //Basic JSON serialization
 instance toString JSONNode
@@ -482,7 +482,7 @@ where
 	isNotNull _ = True
 JSONEncode{|FIELD|} fx _ (FIELD x) = fx True x
 JSONEncode{|[]|} fx _ x = [JSONArray (flatten (map (fx False) x))]
-//JSONEncode{|[]|} fx _ x = [JSONArray (flatten [fx False e \\ e <- x])]
+JSONEncode{|()|} _ () = [JSONNull]
 JSONEncode{|(,)|} fx fy _ (x,y) = [JSONArray (fx False x ++ fy False y)]
 JSONEncode{|(,,)|} fx fy fz _ (x,y,z) = [JSONArray (fx False x ++ fy False y ++ fz False z)]
 JSONEncode{|(,,,)|} fx fy fz fi _ (x,y,z,i) = [JSONArray (fx False x ++ fy False y ++ fz False z ++ fi False i)]
@@ -589,6 +589,10 @@ JSONDecode{|[]|} fx _ l =:[JSONArray items:xs]
 		(Just x)		= (Just x, xs)
 		_				= (Nothing, l)
 JSONDecode{|[]|} fx _ l = (Nothing, l)
+
+JSONDecode{|()|} _ [JSONNull:c]     = (Just (), c)
+JSONDecode{|()|} _ [JSONObject []:c]= (Just (), c)
+JSONDecode{|()|} _ c                = (Nothing, c)
 
 JSONDecode{|(,)|} fx fy _ l =:[JSONArray [xo,yo]:xs]
 	= case fx False [xo] of
@@ -768,6 +772,8 @@ instance == JSONNode where
   (==) (JSONRaw x)     (JSONRaw y)     = x == y
   (==) JSONError       JSONError       = True
   (==) _               _               = False
+
+gEq{|JSONNode|} x y = x == y
 
 jsonPrettyPrint :: !JSONNode -> String
 jsonPrettyPrint json = display (renderPretty 0.0 400 (pretty json))
