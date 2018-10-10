@@ -11,8 +11,8 @@ definition module Text.HTML
 *  http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd
 */
 
-import StdString, Data.Maybe
-
+from Data.Maybe import :: Maybe
+from Data.GenEq import generic gEq
 
 /**
 * This type provides an enumeration of all html tags.
@@ -410,6 +410,9 @@ instance toString SVGStrokeDashOffset
 instance toString SVGStrokeWidth
 instance toString SVGTransform
 instance toString SVGZoomAndPan
+
+derive gEq HtmlTag, HtmlAttr
+derive gEq SVGElt, SVGAttr, SVGAlign, SVGColor, SVGDefer, SVGFillOpacity, SVGFuncIRI, SVGLengthAdjust, SVGLengthUnit, SVGLineCap, SVGFillRule, SVGLineJoin, SVGMeetOrSlice, SVGStrokeMiterLimit, SVGPaint, SVGStrokeDashArray, SVGStrokeDashOffset, SVGStrokeWidth, SVGTransform, SVGZoomAndPan
 
 /*
 * This html class makes it possible to use either strings, or html as description/message/instruction

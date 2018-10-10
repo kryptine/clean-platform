@@ -1,7 +1,7 @@
 implementation module Text.HTML
 
-import StdString, StdArray, StdList, StdTuple, StdBool
-import Data.Maybe
+import StdEnv
+import Data.Maybe, Data.GenEq
 from StdFunc import o
 from StdMisc import abort
 from Data.List import intersperse
@@ -1313,3 +1313,6 @@ escapeStr str
   | otherwise
       #! (str, _) = copyChars str 0 True (createArray escdSz '\0') 0
       = str
+
+derive gEq HtmlTag, HtmlAttr
+derive gEq SVGElt, SVGAttr, SVGAlign, SVGColor, SVGDefer, SVGFillOpacity, SVGFuncIRI, SVGLengthAdjust, SVGLengthUnit, SVGLineCap, SVGFillRule, SVGLineJoin, SVGMeetOrSlice, SVGStrokeMiterLimit, SVGPaint, SVGStrokeDashArray, SVGStrokeDashOffset, SVGStrokeWidth, SVGTransform, SVGZoomAndPan

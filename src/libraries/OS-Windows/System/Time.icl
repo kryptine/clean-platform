@@ -5,6 +5,7 @@ import System._Pointer
 import System._WinBase
 import Data.Integer
 import Data.List
+import Data.GenEq
 from Data.Func import $
 import Text
 
@@ -12,6 +13,8 @@ import code from library "msvcrt.txt"
 
 //String buffer size
 MAXBUF :== 256
+
+derive gEq Timestamp
 
 instance == Timestamp
 where

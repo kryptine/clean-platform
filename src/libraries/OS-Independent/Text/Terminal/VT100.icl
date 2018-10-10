@@ -8,11 +8,12 @@ from Text import class Text(split,join,concat), instance Text String
 from Data.Map import :: Map
 import qualified Data.Map as DM
 
-import StdList, StdBool, StdOverloaded
+import StdList, StdBool, StdOverloaded, StdString
 import StdDebug
 
 import Data.List
 import Data.Tuple
+import Data.Maybe
 import Control.Applicative
 
 import Text.HTML
