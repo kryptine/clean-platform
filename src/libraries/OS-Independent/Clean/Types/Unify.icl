@@ -2,7 +2,7 @@ implementation module Clean.Types.Unify
 
 import StdArray
 import StdBool
-from StdFunc import o
+from StdFunctions import o, const
 import StdList
 import StdOrdList
 import StdTuple
