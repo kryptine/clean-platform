@@ -57,6 +57,7 @@ import qualified Data.Complex
 import qualified Data.Data
 import qualified Data.Dynamic
 import qualified Data.Either
+import qualified Data.Either.GenJSON
 import qualified Data.Encoding.RunLength
 import qualified Data.Eq
 import qualified Data.Error
@@ -107,6 +108,7 @@ import qualified Data.NGramIndex
 import qualified Data.OrdList
 import qualified Data.Queue
 import qualified Data.Set
+import qualified Data.Set.GenJSON
 import qualified Data.Stack
 import qualified Data.Traversable
 import qualified Data.Tree
@@ -147,6 +149,7 @@ import qualified System.Platform
 import qualified System.Process
 import qualified System.TTS
 import qualified System.Time
+import qualified System.Time.GenJSON
 import qualified System._Directory
 import qualified System._FilePath
 import qualified System._Finalized
@@ -166,6 +169,7 @@ import qualified Text.GenParse
 import qualified Text.GenPrint
 import qualified Text.GenXML
 import qualified Text.HTML
+import qualified Text.HTML.GenJSON
 import qualified Text.LaTeX
 import qualified Text.Language
 import qualified Text.PPrint
