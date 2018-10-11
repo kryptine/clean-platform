@@ -2,6 +2,6 @@ client:
     image: camilstaps/clean:nightly
     script:
         - apt-get update -qq
-        - apt-get install -yy build-essential gcc-mingw-w64
+        - apt-get install -yy build-essential gcc-mingw-w64 zip
         - install_clean.sh clean-base
         - sh mkpkgs.sh
