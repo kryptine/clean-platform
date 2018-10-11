@@ -12,7 +12,6 @@ from Data.Monoid import class Monoid, class Semigroup
 from Data.Foldable import class Foldable
 from Data.Traversable import class Traversable
 from Data.Bifunctor import class Bifunctor
-from Data.GenEq import generic gEq
 
 :: Either a b = Left a | Right b
 
@@ -33,8 +32,6 @@ instance Traversable (Either a)
 instance Bifunctor Either
 
 instance Alternative (Either m) | Monoid m
-
-derive gEq Either
 
 either    :: .(.a -> .c) .(.b -> .c) !(Either .a .b) -> .c
 lefts     :: .[Either .a .b] -> .[.a]

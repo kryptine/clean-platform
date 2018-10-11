@@ -1,5 +1,6 @@
 implementation module Control.Monad.State
 
+import StdFunctions
 import StdTuple
 import Control.Monad
 import Data.Functor
