@@ -3,6 +3,7 @@ definition module Clean.Parse.Comments
 /**
  * Functions to deal with (documentation) comments in Clean programs.
  * You will need the Clean compiler in your path.
+ * This module is up to date to revision 3056 of the itask compiler.
  */
 
 from StdFile import class FileSystem
