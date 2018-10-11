@@ -7,7 +7,7 @@ import Text
 
 import Platform
 
-import code from "ctty."
+import code from "ctty.o"
 
 :: *TTY :== Int
 
