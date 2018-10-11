@@ -16,7 +16,10 @@ where
 	mempty :: a
 
 	mconcat :: !.[a] -> a | Monoid a
-	mconcat xs :== 'StdList'.foldr mappend mempty xs
+	mconcat xs :== mconcat xs
+	where
+		mconcat []    = mempty
+		mconcat [a:x] = mconcat a (mconcat x)
 
 instance Semigroup ()
 instance Monoid ()
