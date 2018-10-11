@@ -3,6 +3,7 @@ CLEAN_HOME?=/opt/clean
 ifeq ($(OS), Windows_NT)
 DETECTED_OS?=Windows
 LIBFOLDER?=Libraries
+CC=gcc
 else
 DETECTED_OS?=POSIX
 LIBFOLDER?=lib
@@ -23,8 +24,8 @@ Monitor.prj:
 
 install: Clean\ System\ Files/ctty.o $(LIBFILE)
 	mkdir $(CLEAN_HOME)/$(LIBFOLDER)/CleanSerial
-	cp -R TTY.[id]cl iTasksTTY.[id]cl $(DETECTED_OS)/Platform.[id]cl "Clean System Files" $(CLEAN_HOME)/lib/CleanSerial
-	cp -f $(DETECTED_OS)/CleanSerial_library "$(CLEAN_HOME)/lib/CleanSerial"
+	cp -R TTY.[id]cl iTasksTTY.[id]cl $(DETECTED_OS)/Platform.[id]cl "Clean System Files" $(CLEAN_HOME)/$(LIBFOLDER)/CleanSerial
+	cp -f $(DETECTED_OS)/CleanSerial_library "$(CLEAN_HOME)/$(LIBFOLDER)/CleanSerial"
 
 clean:
 	$(RM) -r $(DETECTED_OS)/Clean\ System\ Files/* Clean\ System\ Files/* test
