@@ -9,3 +9,5 @@ test
 *-sapl
 *-www
 *.swp
+*.zip
+*.tar.gz
