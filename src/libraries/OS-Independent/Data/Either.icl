@@ -12,6 +12,7 @@ from Data.Foldable import class Foldable(foldMap,foldl,foldr)
 from Data.Traversable import class Traversable(traverse)
 import qualified Data.Traversable as T
 import Data.Bifunctor
+import Data.GenEq
 
 instance Functor (Either a) where
   fmap f (Left l)  = Left l
@@ -79,6 +80,8 @@ instance Alternative (Either m) | Monoid m
 where
 	empty = Left mempty
 	(<|>) fa fb = either (\e->either (Left o mappend e) Right fb) Right fa
+
+derive gEq Either
 
 either :: .(.a -> .c) .(.b -> .c) !(Either .a .b) -> .c
 either f _ (Left x)     =  f x
