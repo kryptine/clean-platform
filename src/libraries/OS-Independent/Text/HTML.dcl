@@ -11,6 +11,7 @@ definition module Text.HTML
 *  http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd
 */
 
+from StdOverloaded import class toString
 from Data.Maybe import :: Maybe
 from Data.GenEq import generic gEq
 
