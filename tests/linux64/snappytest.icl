@@ -1,6 +1,7 @@
 module snappytest
 
 import StdEnv
+import StdFunc
 import Codec.Compression.Snappy
 import Codec.Compression.Snappy.Graph
 import Data.Error

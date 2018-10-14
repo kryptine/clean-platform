@@ -23,7 +23,7 @@ gEq{|PAIR|} fx fy (PAIR x1 y1) (PAIR x2 y2) = fx x1 x2 'StdBool'. && fy y1 y2
 derive gEq Int, Char, Bool, Real, String, {}, {!} 
 
 // standard types
-derive gEq [], (,), (,,), (,,,), (,,,,), (,,,,,), (,,,,,,), (,,,,,,,)
+derive gEq [], (), (,), (,,), (,,,), (,,,,), (,,,,,), (,,,,,,), (,,,,,,,)
 
 
 /**

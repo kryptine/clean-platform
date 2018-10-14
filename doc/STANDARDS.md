@@ -101,7 +101,7 @@ The applicable instances for the _general_ classes should be exported in the mod
 This means that for example the `Functor` instance of `Maybe` should be defined in `Data.Maybe` and not in `Data.Functor`.
 
 For _specific_ classes the instances for types should be exported in submodules.
-For example, `JSONEncode` for `Map` should be exported in `Data.Map.JSONEncode` and not in `Data.Map` nor in `Text.JSON`.
+For example, `JSONEncode` for `Map` should be exported in `Data.Map.GenJSON` and not in `Data.Map` nor in `Text.GenJSON`.
 This rule also holds for types that have multiple valid instances such as the `Monoid` for `Int`.
 
 _general_ classes are:

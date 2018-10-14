@@ -182,6 +182,13 @@ readPipeNonBlocking (ReadPipe hPipe) world
 	# (_, world) = heapFree heap 0 buf world
 	= (Ok str, world)
 
+readPipeBlocking :: !ReadPipe !*World -> (!MaybeOSError String, !*World)
+readPipeBlocking pipe=:(ReadPipe hPipe) world
+	// wait for data by trying to read 0 bytes
+	# (ok, world) = readFile hPipe NULL 0 NULL NULL world
+	| not ok = getLastOSError world
+	= readPipeNonBlocking pipe world
+
 writePipe :: !String !WritePipe !*World -> (!MaybeOSError (), !*World)
 writePipe str (WritePipe hPipe) world
 	# (ok, world) = writeFile hPipe str (size str) NULL NULL world

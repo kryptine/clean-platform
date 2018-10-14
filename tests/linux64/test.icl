@@ -12,6 +12,22 @@ import qualified StdMaybe
 import qualified StdLibMisc
 
 // Main libraries
+//import qualified Clean.PrettyPrint // requires Clean compiler
+//import qualified Clean.PrettyPrint.Common // requires Clean compiler
+//import qualified Clean.PrettyPrint.Definition // requires Clean compiler
+//import qualified Clean.PrettyPrint.Expression // requires Clean compiler
+//import qualified Clean.PrettyPrint.Util // requires Clean compiler
+import qualified Clean.Doc
+//import qualified Clean.Parse // requires Clean compiler
+//import qualified Clean.Parse.Comments // requires Clean compiler
+import qualified Clean.Parse.ModuleName
+import qualified Clean.Types
+//import qualified Clean.Types.CoclTransform // requires Clean compiler
+import qualified Clean.Types.Parse
+import qualified Clean.Types.Tree
+import qualified Clean.Types.Unify
+import qualified Clean.Types.Util
+import qualified Clean.ModuleFinder
 import qualified Codec.Compression.Snappy
 import qualified Codec.Compression.Snappy.Graph
 import qualified Control.Applicative
@@ -39,7 +55,9 @@ import qualified Data.Bifunctor
 import qualified Data.CircularStack
 import qualified Data.Complex
 import qualified Data.Data
+import qualified Data.Dynamic
 import qualified Data.Either
+import qualified Data.Either.GenJSON
 import qualified Data.Encoding.RunLength
 import qualified Data.Eq
 import qualified Data.Error
@@ -90,6 +108,7 @@ import qualified Data.NGramIndex
 import qualified Data.OrdList
 import qualified Data.Queue
 import qualified Data.Set
+import qualified Data.Set.GenJSON
 import qualified Data.Stack
 import qualified Data.Traversable
 import qualified Data.Tree
@@ -106,6 +125,7 @@ import qualified Database.SQL.SQLite
 import qualified Database.SQL._MySQL
 import qualified Database.SQL._SQLite
 import qualified Debug.Performance
+import qualified Debug.Trace
 import qualified Graphics.Layout
 import qualified Graphics.Scalable.Image
 import qualified Graphics.Scalable.Internal.Image`
@@ -129,7 +149,10 @@ import qualified System.Platform
 import qualified System.Process
 import qualified System.TTS
 import qualified System.Time
+import qualified System.Time.GenJSON
+import qualified System._Directory
 import qualified System._FilePath
+import qualified System._Finalized
 import qualified System._Platform
 import qualified System._Pointer
 import qualified System._Posix
@@ -146,6 +169,7 @@ import qualified Text.GenParse
 import qualified Text.GenPrint
 import qualified Text.GenXML
 import qualified Text.HTML
+import qualified Text.HTML.GenJSON
 import qualified Text.LaTeX
 import qualified Text.Language
 import qualified Text.PPrint

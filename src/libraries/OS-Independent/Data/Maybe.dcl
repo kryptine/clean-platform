@@ -1,23 +1,19 @@
 definition module Data.Maybe
+/**
+* This module extends the basic functions on Maybe values from StdMaybe 
+*/
+
+import StdMaybe 
 
 from StdOverloaded import class ==(..)
 from Data.Functor import class Functor
 from Control.Applicative import class Applicative, class *>, class <*, class Alternative
 from Control.Monad import class Monad, class MonadPlus
+from Control.Monad.Trans import class MonadTrans
 from Data.Monoid import class Semigroup, class Monoid
 from Data.Foldable import class Foldable
 from Data.Traversable import class Traversable
-
-/**
- * The Maybe type represents an optional value by providing a constructor 
- * for no value (Nothing) and a constructor for just a value (Just).
- */
-:: Maybe a = Nothing | Just a
-
-/** 
- * Equality on Maybes:
- */
-instance == (Maybe x) | == x
+from Data.GenEq import generic gEq
 
 instance Functor Maybe
 instance Applicative Maybe
@@ -32,10 +28,7 @@ instance Monoid (Maybe a)
 instance Foldable Maybe
 instance Traversable Maybe
 
-/**
- * Like {{`fmap`}}, but with less restrictive uniqueness constraints.
- */
-mapMaybe :: .(.x -> .y) !(Maybe .x) -> Maybe .y
+derive gEq Maybe
 
 /**
  * Apply a function to the the contents of a Just value and directly return
@@ -56,39 +49,26 @@ maybeSt :: *st (.a *st -> *st) !(Maybe .a) -> *st
 fromMaybe :: .a !(Maybe .a) -> .a
 
 /**
- * Return True when the argument is a Nothing value and return False otherwise.
+ * The Maybe monad transformer.
  */
-isNothing :: !(Maybe .a) -> Bool
-/**
-* Variant of isNothing which returns its input parameter.
-*/
-isNothingU :: !u:(Maybe .a) -> (!Bool, !u:Maybe .a)
-
-/** 
- * Return True when the argument is a Just value and return False otherwise.
- */
-isJust :: !(Maybe .a) -> Bool
-/**
-* Variant of isJust which returns its input parameter.
-*/
-isJustU :: !u:(Maybe .a) -> (!Bool, !u:Maybe .a)
+:: MaybeT m a = MaybeT !(m (Maybe a))
 
 /**
- * Return the contents of a Just value and abort at run-time otherwise.
+ * Runs a MaybeT as the monad wrapped inside the transformer.
  */
-fromJust :: !(Maybe .a) -> .a
+runMaybeT :: !(MaybeT m a) -> m (Maybe a)
 
-/** 
- * Return an empty list for a Nothing value or a singleton list for a Just value.
+/**
+ * Transforms the computation inside a transformer.
+ *
+ * @param The computation transformation.
+ * @param The transformer to be transformed.
+ * @result The transformed transformer.
  */
-maybeToList :: !(Maybe .a) -> [.a]
+mapMaybeT :: !((m (Maybe a)) -> n (Maybe b)) !(MaybeT m a) -> MaybeT n b
 
-/** 
- * Return a Nothing value for an empty list or a Just value with the head of the list.
- */
-listToMaybe :: ![.a] -> Maybe .a
-
-/** 
- * Collect the contents of all the Just values and discard the Nothing values.
- */
-catMaybes :: ![Maybe .a] -> .[.a]
+instance Functor (MaybeT m) | Functor m
+instance Applicative (MaybeT m) | Monad m
+instance Alternative (MaybeT m) | Monad m
+instance Monad (MaybeT m) | Monad m
+instance MonadTrans MaybeT

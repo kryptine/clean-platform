@@ -1,7 +1,7 @@
 implementation module Text.GenParse
 
-import StdGeneric, StdEnv, _SystemStrictLists, StdOverloadedList
-from Data.Maybe import :: Maybe(..), mapMaybe
+import StdGeneric, StdEnv, _SystemStrictLists, StdOverloadedList, Data.GenEq, Data.Maybe
+import Text
 
 //---------------------------------------------------------------------------
 
@@ -67,28 +67,22 @@ instance toString Token where
 instance toString Expr where
 	toString (ExprInt x) = toString x
 	toString (ExprChar x) = toString x
-	toString (ExprBool x) = toString x
 	toString (ExprReal x) = toString x
+	toString (ExprBool x) = toString x
 	toString (ExprString x) = x
 	toString (ExprIdent x) = x
-	toString (ExprApp xs) = "(" +++ tostr [x\\x<-:xs] +++ ")"
-	where
-		tostr [] = ""
-		tostr [x] = toString x
-		tostr [x:xs] = toString x +++ " " +++ tostr xs
-	toString (ExprTuple xs) = "(" +++ tostr [x\\x<-:xs] +++ ")"
-	where
-		tostr [] = ""
-		tostr [x] = toString x
-		tostr [x:xs] = toString x +++ ", " +++ tostr xs
-	toString (ExprRecord name xs) = "{" +++ tostr [x\\x<-:xs] +++ "}"
-	where
-		tostr [] = ""
-		tostr [x] = toString x
-		tostr [x:xs] = toString x +++ ", " +++ tostr xs
+	toString (ExprApp xs) = "(" +++ join " " [toString x\\x<-:xs] +++ ")"
+	toString (ExprTuple xs) = "(" +++ join ", " [toString x\\x<-:xs] +++ ")"
 	toString (ExprField name expr) = name +++ "=" +++ toString expr
+	toString (ExprRecord name xs) = "{" +++ maybe "" (\n -> n +++ "|") name +++ join ", " [toString x\\x<-:xs] +++ "}"
+	toString (ExprList xs) = "[" +++ join ", " (map toString xs) +++ "]"
+	toString (ExprArray xs) = "{" +++ join ", " (map toString xs) +++ "}"
+	toString (ExprError err) = "<error: " +++ err +++ ">"
 
-		
+instance == Expr where
+    == x y = x === y
+derive gEq Expr, GenConsAssoc
+
 :: ParseState s =
 	{ ps_input 	:: !s			// lex input
 	, ps_char 	:: !Maybe Char	// unget char

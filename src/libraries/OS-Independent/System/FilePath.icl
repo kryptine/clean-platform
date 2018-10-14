@@ -5,7 +5,7 @@ import StdList
 import StdTuple
 import StdString
 
-import Data.Error
+import Data.Error, Data.Func
 import Text
 import System.OS
 import System.OSError
@@ -60,11 +60,12 @@ takeDirectory :: !FilePath -> FilePath
 takeDirectory path = fst (splitFileName path) 
 
 dropDirectory :: !FilePath -> String
-dropDirectory path =
-	case lastIndexOf {pathSeparator} path of
-		-1	-> path
-		i	-> (subString (i+1) (size path - i - 1) path)
-
+dropDirectory path = case lastIndexOf {pathSeparator} path of
+	-1                    = path
+	i | i == sizePath - 1 = dropDirectory $ subString 0 (sizePath - 1) path // drop file separator at end of path
+	  | otherwise         = subString (i+1) (sizePath - i - 1) path
+where
+    sizePath = size path
 
 takeFileName :: !FilePath -> FilePath
 takeFileName path = snd (splitFileName path) 

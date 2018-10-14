@@ -66,7 +66,7 @@ where
 	upd -1 es = es
 	upd i  es
 	# (e,es) = es![i]
-	= upd (i-1) {es & [i]={e & included=True}}
+	= upd (i-1) {es & [i]={e & included=True, annotations=newMap}}
 
 allEntries :: !*(NativeDB v ak a) -> *(![v], !*NativeDB v ak a)
 allEntries (DB db)
