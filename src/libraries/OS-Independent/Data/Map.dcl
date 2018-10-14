@@ -33,7 +33,6 @@ definition module Data.Map
  *
  *   instance Key Char
  *   where keya = 'a'; keyb = 'b'; keyc = 'c'; keyd = 'd'; keye = 'e'; keyf = 'f'
- *   gDefault{|Char|} = '.'
  *
  *   derive class Gast GMap, Predicate
  *   derive genShow Map, Maybe
