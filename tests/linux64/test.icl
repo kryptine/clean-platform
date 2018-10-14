@@ -10,6 +10,23 @@ import qualified StdArrayExtensions
 import qualified StdListExtensions
 import qualified StdMaybe
 import qualified StdLibMisc
+// Deprecated libraries: Generics
+import qualified GenBimap
+import qualified GenCompress
+import qualified GenDefault
+import qualified GenEq
+import qualified GenFMap
+import qualified GenHylo
+import qualified GenLexOrd
+import qualified GenLib
+import qualified GenMap
+import qualified GenMapSt
+import qualified GenMonad
+import qualified GenParse
+import qualified GenPrint
+import qualified GenReduce
+import qualified GenZip
+import qualified _Array
 
 // Main libraries
 //import qualified Clean.PrettyPrint // requires Clean compiler
@@ -28,6 +45,7 @@ import qualified Clean.Types.Tree
 import qualified Clean.Types.Unify
 import qualified Clean.Types.Util
 import qualified Clean.ModuleFinder
+import qualified Codec.Archive.Tar
 import qualified Codec.Compression.Snappy
 import qualified Codec.Compression.Snappy.Graph
 import qualified Control.Applicative
@@ -61,6 +79,7 @@ import qualified Data.Either.GenJSON
 import qualified Data.Encoding.RunLength
 import qualified Data.Eq
 import qualified Data.Error
+import qualified Data.Error.GenJSON
 import qualified Data.Foldable
 import qualified Data.Func
 import qualified Data.Functor
@@ -143,6 +162,7 @@ import qualified System.File
 import qualified System.FilePath
 import qualified System.GetOpt
 import qualified System.IO
+import qualified System.Options
 import qualified System.OS
 import qualified System.OSError
 import qualified System.Platform
