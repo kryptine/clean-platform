@@ -15,24 +15,21 @@ import Data.Bifunctor
 import Data.GenEq
 
 instance Functor (Either a) where
-  fmap f (Left l)  = Left l
-  fmap f (Right r) = Right (f r)
+	fmap f (Left l)  = Left l
+	fmap f (Right r) = Right (f r)
 
 instance Applicative (Either e) where
-  pure x        = Right x
-  (<*>) (Left  e) _ = Left e
-  (<*>) (Right f) r = fmap f r
+	pure x        = Right x
 
-instance *> (Either e)
-where
-	*> (Right _) e = e
-	*> (Left l)  _ = Left l
+	(<*>) (Left  e) _ = Left e
+	(<*>) (Right f) r = fmap f r
 
-instance <* (Either e)
-where
-	<* (Left l)  _         = Left l
-	<* _         (Left l)  = Left l
-	<* x         _         = x
+	(*>) (Right _) e = e
+	(*>) (Left l)  _ = Left l
+
+	(<*) (Left l)  _         = Left l
+	(<*) _         (Left l)  = Left l
+	(<*) x         _         = x
 
 instance Monad (Either e)
 where
