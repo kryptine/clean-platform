@@ -59,6 +59,9 @@ pSatisfy pred = Parser pSatisfy`
     | pred token = ([(token, input)], [])
   pSatisfy` _ = ([], [])
 
+pPeek :: Parser t [t]
+pPeek = Parser \input -> ([(input, input)], [])
+
 pMap :: (a -> b) (Parser t a) -> Parser t b
 pMap f p = pure f <*> p
 
