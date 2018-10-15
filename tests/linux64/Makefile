@@ -21,13 +21,16 @@ ifeq "$(GCCVERSIONGTEQ6)" "1"
 	override CLMFLAGS+=-l -no-pie
 endif
 
-BINARIES:=test gentest snappytest tartest
+BINARIES:=checktest test gentest snappytest tartest
 
 all: $(BINARIES)
 
 %: %.icl .FORCE
 	$(CLM) $(CLMLIBS) $(CLMFLAGS) $@ -o $@
 	./$@
+
+checktest: .FORCE
+	./checktest.sh
 
 snappytest: %: %.icl .FORCE
 	$(CLM) $(CLMLIBS) -l -lsnappy $(CLMFLAGS) -nr $@ -o $@
