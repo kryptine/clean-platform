@@ -19,7 +19,7 @@ instance zero TTYSettings where
 		parity = ParityNone,
 		stop2bits = False,
 		xonxoff = False,
-		sleepTime = 0}
+		sleepTime = 2}
 
 instance toInt BaudRate where
 	toInt b = case b of

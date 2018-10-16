@@ -1,17 +1,23 @@
 module Monitor
 
-import iTasks
-import iTasksTTY
-import TTY
+import StdEnv
+
 import Data.Either
-import StdTuple
-from Data.Func import $
+import Data.Func
+import System.Time
+
+import iTasks
+
+import TTY, iTasksTTY
+
 
 Start w = startEngine manage w
 
 manage = parallel
 	[(Embedded, \stl->tune (Title "New device") $ forever $
-		enterInformation "TTY Settings" []
+		accWorld getTTYDevices
+		>>= \ds->enterChoice "Choose path" [] ["Other":ds]
+		>>= \path->updateInformation "TTY Settings" [] {zero & devicePath=path}
 		>>! \ts->appendTask Embedded (\_->tune (Title ts.devicePath) $ monitor ts @! ()) stl @! ())
 	]
 	[]
@@ -20,7 +26,7 @@ manage = parallel
 
 monitor ts = catchAll (
 		withShared ([], [], False) \channels->
-			syncSerialChannel ts id (\s->(Right [s], "")) channels
+			syncSerialChannel {tv_sec=0,tv_nsec=100*1000000} ts id (\s->(Right [s], "")) channels
 		||- viewSharedInformation "Incoming messages" [ViewAs (take 20 o fst3)] channels
 		||- forever (
 			enterInformation "Send line of text" []
