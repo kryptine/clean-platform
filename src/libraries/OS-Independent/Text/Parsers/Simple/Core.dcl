@@ -25,6 +25,7 @@ pFail    :: Parser t a
 pYield   :: a -> Parser t a
 pSatisfy :: (t -> Bool) -> Parser t t
 pError   :: Error -> Parser t a
+pPeek :: Parser t [t]
 
 // Convenience parsers
 (@!) infixr 4 :: (Parser t a) Error -> Parser t a
