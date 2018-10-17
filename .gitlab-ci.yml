@@ -4,7 +4,7 @@ builds:
         - apt-get update -qq
         - apt-get install -yy build-essential gcc-mingw-w64 zip
         - install_clean.sh clean-base
-        - sh mkpkgs.sh
+        - bash mkpkgs.sh
     artifacts:
         paths:
             - "*.tar.gz"
