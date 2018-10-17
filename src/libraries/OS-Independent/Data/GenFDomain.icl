@@ -9,7 +9,7 @@ generic gFDomain a :: [a]
 gFDomain{|Bool|}         = [False,True]
 gFDomain{|Char|}         = map toChar [0..255]
 gFDomain{|UNIT|}         = [UNIT]
-gFDomain{|PAIR|}   dx dy = zipWith PAIR dx dy
+gFDomain{|PAIR|}   dx dy = [PAIR x y\\x <- dx, y <- dy]
 gFDomain{|EITHER|} dx dy = map LEFT dx ++ map RIGHT dy
 gFDomain{|CONS|}   dx    = map CONS   dx
 gFDomain{|FIELD|}  dx    = map FIELD  dx
