@@ -1,6 +1,6 @@
 //Windows imports
 #ifdef _WIN32
-#include <Windows.h>
+#include <windows.h>
 
 typedef HANDLE ttyhandle;
 //Posix imports
