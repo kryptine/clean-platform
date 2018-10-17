@@ -2,6 +2,7 @@ implementation module Clean.Types.Parse
 
 from StdFunc import o
 import StdList
+import StdMisc
 import StdString
 import StdTuple
 
@@ -46,8 +47,12 @@ from Text.Parsers.Simple.Core import :: Parser, :: Error,
 
 instance == Token
 where
-	== (TIdent a)  (TIdent b) = a == b
-	== (TVar a)    (TVar b)   = a == b
+	== (TIdent a) b = case b of
+		TIdent b -> a == b
+		_        -> False
+	== (TVar a) b = case b of
+		TVar b   -> a == b
+		_        -> False
 	== TArrow      b          = b=:TArrow
 	== TComma      b          = b=:TComma
 	== TStar       b          = b=:TStar
@@ -140,10 +145,10 @@ where
 		<|> liftM Var var
 
 	ident :: Parser Token String
-	ident = (\(TIdent id)->id) <$> pSatisfy isTIdent
+	ident = (\tk -> case tk of TIdent id -> id; _ -> abort "error in type parser\n") <$> pSatisfy isTIdent
 
 	var :: Parser Token TypeVar
-	var = (\(TVar var)->var) <$> pSatisfy isTVar
+	var = (\tk -> case tk of TVar id -> id; _ -> abort "error in type parser\n") <$> pSatisfy isTVar
 	cons = var
 	unqvar = var
 

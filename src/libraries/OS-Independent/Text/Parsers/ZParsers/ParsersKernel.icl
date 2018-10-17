@@ -201,6 +201,7 @@ prefixSepInGram sep (Gram na ne)   = Gram (map (prefixSepInAlt sep) na) ne
 
 prefixSepInAlt :: (f a) (PAlt f b) -> PAlt f b | Monad, Applicative, Alternative, *> f
 prefixSepInAlt sep (Seq fb2a gb)   = Seq (sep *> fb2a) (prefixSepInGram sep gb)
+prefixSepInAlt _   _               = abort "prefixSepInAlt called on non-Seq\n"
 
 gmList :: !(Gram f a) -> Gram f [a] | Functor f
 gmList p = let pm = ((\x xs -> [x:xs]) <$> p <<||> pm) <|> pure [] in pm
@@ -461,6 +462,7 @@ where	addPath :: (Rose a) [a] -> Rose a | == a
 		addPath rose				 []	   			 = [RoseLeaf:rose]
 		addPath [RoseTwig b bs:rest] [a:as] | a == b = [RoseTwig b (addPath bs as):rest]
 		addPath [e	 		  :rest] as				 = [e:addPath rest as]
+		addPath _ _ = abort "error in toRose\n"
 
 //parse` for internal use only
 

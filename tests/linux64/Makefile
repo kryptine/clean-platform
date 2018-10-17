@@ -1,6 +1,6 @@
 CLEAN_HOME?=/opt/clean
 CLM:=clm
-override CLMFLAGS+=-dynamics -funcmayfail -aC,-h,500m
+override CLMFLAGS+=-dynamics -funcmayfail
 CLMLIBS:=\
 	-I ../../src/libraries/OS-Independent\
 	-I ../../src/libraries/OS-Independent/Deprecated/ArgEnv\
