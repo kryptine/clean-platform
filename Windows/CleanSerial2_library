@@ -1,0 +1,13 @@
+msvcrt.dll
+malloc
+exit
+perror
+free
+strlen
+memcpy
+memset
+_errno
+strerror
+_strdup
+puts
+printf
