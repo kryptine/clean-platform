@@ -26,7 +26,7 @@ import qualified Data.IntMap.Strict       as IM
 from Data.List import instance Functor [], instance Applicative [], instance Monad []
 import qualified Data.List as DL
 import StdList, StdTuple, StdMisc, StdOrdList
-import StdClass, StdFunc, StdOverloaded
+import StdClass, StdFunctions, StdOverloaded
 import Data.Maybe
 
 import Control.Arrow
