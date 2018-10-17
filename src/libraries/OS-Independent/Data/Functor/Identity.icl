@@ -1,8 +1,8 @@
 implementation module Data.Functor.Identity
 
-from Data.Functor import class Functor
-from Control.Applicative import class Applicative
-from Control.Monad import class Monad
+import Data.Functor
+import Control.Applicative
+import Control.Monad
 
 :: Identity a = Identity a
 

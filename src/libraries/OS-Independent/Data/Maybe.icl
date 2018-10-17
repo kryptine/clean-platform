@@ -21,17 +21,11 @@ where
 	pure x            = Just x
 	(<*>) Nothing  _  = Nothing
 	(<*>) (Just f) ma = fmap f ma
-
-instance *> Maybe
-where
-	*> (Just _) m = m
-	*> _        _ = Nothing
-
-instance <* Maybe
-where
-	<* Nothing _  = Nothing
-	<* m (Just _) = m
-	<* _ _        = Nothing
+	(*>) (Just _) m = m
+	(*>) _        _ = Nothing
+	(<*) Nothing _  = Nothing
+	(<*) m (Just _) = m
+	(<*) _ _        = Nothing
 
 instance Alternative Maybe
 where
@@ -119,7 +113,7 @@ instance Functor (MaybeT m) | Functor m where
 instance Applicative (MaybeT m) | Monad m where
 	pure x = MaybeT $ pure $ Just x
 
-	<*> mf mx = MaybeT $
+	(<*>) mf mx = MaybeT $
 		runMaybeT mf >>= \mb_f ->
 		case mb_f of
 			Nothing = pure Nothing

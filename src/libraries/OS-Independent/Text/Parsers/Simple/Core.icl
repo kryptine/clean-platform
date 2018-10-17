@@ -1,12 +1,13 @@
 implementation module Text.Parsers.Simple.Core
 
+import StdEnv
+
 import Control.Applicative
 import Control.Monad
 import Data.Either
 import Data.Func
 import Data.Functor
 import Data.List
-from StdFunc import o, const
 
 :: PCont t a :== [t] -> ([(a, [t])], [Error])
 :: Parser t a = Parser (PCont t a)
