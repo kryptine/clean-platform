@@ -1,6 +1,7 @@
 implementation module Platform
 
 import code from library "CleanSerial_library"
+import code from library "CleanSerial2_library"
 
 import System._Pointer
 import System._WinBase
