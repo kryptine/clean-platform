@@ -7,7 +7,7 @@ from Data.Func import on
 from Data.Functor import class Functor (..)
 from Data.List import instance Functor [], instance Applicative [],
 	instance Semigroup [a], instance Monoid [a], instance Foldable [], instance Traversable []
-import qualified Data.Traversable as Traversable
+import qualified Data.Traversable
 from Data.Traversable import class Traversable (..)
 from Data.Foldable import class Foldable (..)
 from StdFunc import o, id, flip
@@ -489,12 +489,12 @@ intersectWith f a=:(Heap _ leq _) b = go leq f ('Data.Foldable'.toList a) ('Data
 
 // /O(n log n)/. Traverse the elements of the heap in sorted order and produce a new heap using 'Applicative' side-effects.
 //traverse :: (a -> t b) (Heap a) -> t (Heap b) | Applicative t & Ord b
-traverseHeap f h :== fmap fromList ('Traversable'.traverse f ('Data.Foldable'.toList h))
+traverseHeap f h :== fmap fromList ('Data.Traversable'.traverse f ('Data.Foldable'.toList h))
 
 // /O(n log n)/. Traverse the elements of the heap in sorted order and produce a new heap using 'Monad'ic side-effects.
 //mapM :: (a -> m b) (Heap a) -> m (Heap b) | Monad m & Ord b
 //mapM f h = liftM fromList ('Traversable'.mapM f (toList h))
-mapMHeap f h :== liftM fromList ('Traversable'.mapM f ('Data.Foldable'.toList h))
+mapMHeap f h :== liftM fromList ('Data.Traversable'.mapM f ('Data.Foldable'.toList h))
 
 //both :: (a -> b) (a, a) -> (b, b)
 both f (a, b) :== (f a, f b)
