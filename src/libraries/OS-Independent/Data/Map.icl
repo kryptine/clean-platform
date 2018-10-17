@@ -1,5 +1,3 @@
-
-
 implementation module Data.Map
 
 from StdBool import &&, ||
@@ -8,17 +6,15 @@ from StdTuple import snd
 from StdMisc import abort, undef
 import StdString, StdTuple
 from Data.GenEq import generic gEq
-import qualified StdList as SL
 import Data.Maybe, Text.GenJSON, Data.GenLexOrd
 from Data.Set import :: Set
-import qualified Data.Set as DS
 import Data.Monoid, Data.Functor, Control.Applicative
 import Data.List, Data.Either
 from Data.Foldable import class Foldable
 from Data.Traversable import class Traversable
-import qualified Data.Foldable as DF
-import qualified Data.Traversable as DT
 import Control.Monad
+
+import qualified Data.Set
 
 // Ported from Haskell`s Data.Map by Jurriën Stutterheim, 10-09-2014
 
@@ -1281,8 +1277,8 @@ assocs m = toAscList m
 // > keysSet newMap == Data.Set.newMap
 
 keysSet :: !(Map k a) -> Set k
-keysSet Tip = 'DS'.Tip
-keysSet (Bin sz kx _ l r) = 'DS'.Bin sz kx (keysSet l) (keysSet r)
+keysSet Tip = 'Data.Set'.Tip
+keysSet (Bin sz kx _ l r) = 'Data.Set'.Bin sz kx (keysSet l) (keysSet r)
 
 // | /O(n)/. Build a map from a set of keys and a function which for each key
 // computes its value.
@@ -1291,8 +1287,8 @@ keysSet (Bin sz kx _ l r) = 'DS'.Bin sz kx (keysSet l) (keysSet r)
 // > fromSet undefined Data.Set.newMap == newMap
 
 fromSet :: !(k -> a) !(Set k) -> Map k a
-fromSet _ 'DS'.Tip            = Tip
-fromSet f ('DS'.Bin sz x l r) = Bin sz x (f x) (fromSet f l) (fromSet f r)
+fromSet _ 'Data.Set'.Tip            = Tip
+fromSet f ('Data.Set'.Bin sz x l r) = Bin sz x (f x) (fromSet f l) (fromSet f r)
 
 //////////////////////////////////////////////////////////////////////
 //  Lists

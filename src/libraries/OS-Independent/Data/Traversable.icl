@@ -9,7 +9,6 @@ import Data.Foldable
 import Data.Functor
 from Data.List import instance Functor []
 from Control.Monad import class Monad
-import qualified Control.Monad as CM
 from Data.Monoid import class Monoid
 import Data.Tuple
 from StdFunc import o, id, flip

@@ -13,7 +13,7 @@ from Text.GenJSON      import generic JSONEncode, generic JSONDecode, :: JSONNod
 from Data.GenEq import generic gEq
 from Data.GenLexOrd import generic gLexOrd, :: LexOrd
 from Data.Monoid    import class Monoid, class Semigroup
-import qualified StdList as SL
+import qualified StdList
 from Data.List import foldr
 from Data.Functor import class Functor (..)
 from StdOverloaded import class < (..)
@@ -294,7 +294,7 @@ foldlStrict :: !(a b -> a) !a ![b] -> a
  * @param The original mapping
  * @return The modified mapping with the values/keys removed
  */
-delList xs m :== 'SL'.foldr (\k m -> del k m) m xs
+delList xs m :== 'StdList'.foldr (\k m -> del k m) m xs
 
 /**
  * Adds or replaces a list of key/value pairs.

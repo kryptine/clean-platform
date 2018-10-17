@@ -12,8 +12,7 @@ import Data.GenEq
 import Data.Maybe
 import Data.Monoid
 from Data.Foldable import class Foldable(foldMap)
-from Data.Traversable import class Traversable
-import qualified Data.Traversable as T
+from Data.Traversable import class Traversable(traverse)
 import Control.Applicative
 import Control.Monad
 
@@ -63,8 +62,8 @@ where
 	traverse f x = foldr cons_f (pure []) x
 	where cons_f x ys = (\x xs -> [x:xs]) <$> f x <*> ys
 	mapM f x = mapM f x
-	sequenceA f = 'T'.traverse id f
-	sequence x = 'T'.mapM id x
+	sequenceA f = traverse id f
+	sequence x = mapM id x
 
 (!?) infixl 9   :: ![.a] !Int -> Maybe .a
 (!?) [x:_]  0 = Just x

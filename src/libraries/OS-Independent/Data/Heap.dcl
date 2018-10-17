@@ -4,7 +4,7 @@ from StdOverloaded import class < (..)
 import StdClass
 from Data.Maybe import :: Maybe
 from StdFunc import o
-import qualified Data.List as L
+import qualified Data.List
 from Data.Monoid import class Monoid, class Semigroup
 
 /**
@@ -87,37 +87,37 @@ split :: a (Heap a) -> (Heap a, Heap a, Heap a)
 /**
  * @type Int (Heap a) -> Heap a
  */
-take :== withList o 'L'.take
+take :== withList o 'Data.List'.take
 
 /**
  * @type Int (Heap a) -> Heap a
  */
-drop :== withList o 'L'.drop
+drop :== withList o 'Data.List'.drop
 
 /**
  * @type Int (Heap a) -> (Heap a, Heap a)
  */
-splitAt :== splitWithList o 'L'.splitAt
+splitAt :== splitWithList o 'Data.List'.splitAt
 
 /**
  * @type (a -> Bool) (Heap a) -> (Heap a, Heap a)
  */
-break :== splitWithList o 'L'.break
+break :== splitWithList o 'Data.List'.break
 
 /**
  * @type (a -> Bool) (Heap a) -> (Heap a, Heap a)
  */
-span :== splitWithList o 'L'.span
+span :== splitWithList o 'Data.List'.span
 
 /**
  * @type (a -> Bool) (Heap a) -> Heap a
  */
-takeWhile :== withList o 'L'.takeWhile
+takeWhile :== withList o 'Data.List'.takeWhile
 
 /**
  * @type (a -> Bool) (Heap a) -> Heap a
  */
-dropWhile :== withList o 'L'.dropWhile
+dropWhile :== withList o 'Data.List'.dropWhile
 
 nub :: (Heap a) -> Heap a
 

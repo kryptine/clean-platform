@@ -19,7 +19,7 @@ import System.OSError
 import System._Pointer
 
 import System._Windows
-import qualified System._WinBase as WinBase
+import qualified System._WinBase
 
 import Text
 import Text.GenJSON
@@ -197,7 +197,7 @@ writePipe str (WritePipe hPipe) world
 
 terminateProcess :: !ProcessHandle !*World -> (!MaybeOSError (), !*World)
 terminateProcess hProc=:{processHandle} world
-	# (ok, world) = 'WinBase'.terminateProcess processHandle 0 world
+	# (ok, world) = 'System._WinBase'.terminateProcess processHandle 0 world
 	= closeProcessHandle hProc world
 
 closeProcessIO :: !ProcessIO !*World -> (!MaybeOSError (), !*World)

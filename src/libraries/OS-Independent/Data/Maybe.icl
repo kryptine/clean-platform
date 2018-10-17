@@ -9,7 +9,7 @@ import Data.Monoid
 import Data.Func
 from Data.Foldable import class Foldable(..)
 from Data.Traversable import class Traversable(traverse)
-import qualified Data.Traversable as T
+import qualified Data.Traversable
 import Control.Applicative
 import Control.Monad, Control.Monad.Trans
 import Data.GenEq
@@ -87,7 +87,7 @@ where
 	traverse f (Just x) = Just <$> f x
 	sequenceA f = traverse id f
 	mapM f x = unwrapMonad (traverse (WrapMonad o f) x)
-	sequence x = 'T'.mapM id x
+	sequence x = 'Data.Traversable'.mapM id x
 
 derive gEq Maybe
 
