@@ -9,10 +9,10 @@ from StdFunc import o
 import Data.Maybe
 //import           Data.Graph.Inductive.Graph
 from Data.Graph.Inductive.Graph import class Graph, class DynGraph, :: LNode, :: Node, :: LEdge, :: Edge
-import qualified Data.Graph.Inductive.Graph as DG
+import qualified Data.Graph.Inductive.Graph
 from             Data.Map import :: Map, instance == (Map k v)
-import qualified Data.Map as DM
-import qualified Data.List as DL
+import qualified Data.Map
+import qualified Data.List
 
 :: NodeMap a =
   { map :: Map a Node
@@ -24,26 +24,26 @@ instance == (NodeMap a) | Eq a where
 
 // | Create a new, empty mapping.
 new :: NodeMap a
-new = { map = 'DM'.newMap, key = 0 }
+new = { map = 'Data.Map'.newMap, key = 0 }
 
 // LNode = (Node, a)
 
 // | Generate a mapping containing the nodes in the given graph.
 fromGraph :: (g a b) -> NodeMap a | Ord a & Graph g
 fromGraph g =
-    let ns = 'DG'.labNodes g
-        aux (n, a) (m`, k`) = ('DM'.put a n m`, max n k`)
-        (m, k) = 'DL'.foldr aux ('DM'.newMap, 0) ns
+    let ns = 'Data.Graph.Inductive.Graph'.labNodes g
+        aux (n, a) (m`, k`) = ('Data.Map'.put a n m`, max n k`)
+        (m, k) = 'Data.List'.foldr aux ('Data.Map'.newMap, 0) ns
     in {NodeMap | map = m, key = k+1 }
 
 // | Generate a labelled node from the given label.  Will return the same node
 // for the same label.
 mkNode :: (NodeMap a) a -> (LNode a, NodeMap a) | Ord a
 mkNode m=:{NodeMap | map = mp, key = k} a =
-    case 'DM'.get a mp of
+    case 'Data.Map'.get a mp of
         Just i        -> ((i, a), m)
         Nothing        ->
-            let m` = { NodeMap | map = 'DM'.put a k mp, key = k+1 }
+            let m` = { NodeMap | map = 'Data.Map'.put a k mp, key = k+1 }
             in ((k, a), m`)
 
 // | Generate a labelled node and throw away the modified `NodeMap`.
@@ -52,7 +52,7 @@ mkNode_ m a = fst (mkNode m a)
 
 // | Generate a `LEdge` from the node labels.
 mkEdge :: (NodeMap a) (a, a, b) -> Maybe (LEdge b) | Ord a
-mkEdge {NodeMap | map = m} (a1, a2, b) = 'DM'.get a1 m >>= \n1 -> 'DM'.get a2 m >>= \n2 -> pure (n1, n2, b)
+mkEdge {NodeMap | map = m} (a1, a2, b) = 'Data.Map'.get a1 m >>= \n1 -> 'Data.Map'.get a2 m >>= \n2 -> pure (n1, n2, b)
 
 // | Generates a list of `LEdge`s.
 mkEdges :: (NodeMap a) [(a, a, b)] -> Maybe [LEdge b] | Ord a
@@ -76,7 +76,7 @@ mkNodes_ m as = fst (mkNodes m as)
 insMapNode :: (NodeMap a) a (g a b) -> (g a b, NodeMap a, LNode a) | Ord a & DynGraph g
 insMapNode m a g =
     let (n, m`) = mkNode m a
-    in ('DG'.insNode n g, m`, n)
+    in ('Data.Graph.Inductive.Graph'.insNode n g, m`, n)
 
 insMapNode_ :: (NodeMap a) a (g a b) -> g a b | Ord a & DynGraph g
 insMapNode_ m a g =
@@ -86,22 +86,22 @@ insMapNode_ m a g =
 insMapEdge :: (NodeMap a) (a, a, b) (g a b) -> g a b | Ord a & DynGraph g
 insMapEdge m e g =
     let (Just e`) = mkEdge m e
-    in 'DG'.insEdge e` g
+    in 'Data.Graph.Inductive.Graph'.insEdge e` g
 
 delMapNode :: (NodeMap a) a (g a b) -> g a b | Ord a & DynGraph g
 delMapNode m a g =
     let (n, _) = mkNode_ m a
-    in 'DG'.delNode n g
+    in 'Data.Graph.Inductive.Graph'.delNode n g
 
 delMapEdge :: (NodeMap a) (a, a) (g a b) -> g a b | Ord a & DynGraph g
 delMapEdge m (n1, n2) g =
     let (Just (n1`, n2`, _)) = mkEdge m (n1, n2, ())
-    in 'DG'.delEdge (n1`, n2`) g
+    in 'Data.Graph.Inductive.Graph'.delEdge (n1`, n2`) g
 
 insMapNodes :: (NodeMap a) [a] (g a b) -> (g a b, NodeMap a, [LNode a]) | Ord a & DynGraph g
 insMapNodes m as g =
     let (ns, m`) = mkNodes m as
-    in ('DG'.insNodes ns g, m`, ns)
+    in ('Data.Graph.Inductive.Graph'.insNodes ns g, m`, ns)
 
 insMapNodes_ :: (NodeMap a) [a] (g a b) -> g a b | Ord a & DynGraph g
 insMapNodes_ m as g =
@@ -111,24 +111,24 @@ insMapNodes_ m as g =
 insMapEdges :: (NodeMap a) [(a, a, b)] (g a b) -> g a b | Ord a & DynGraph g
 insMapEdges m es g =
     let (Just es`) = mkEdges m es
-    in 'DG'.insEdges es` g
+    in 'Data.Graph.Inductive.Graph'.insEdges es` g
 
 delMapNodes :: (NodeMap a) [a] (g a b) -> g a b | Ord a & DynGraph g
 delMapNodes m as g =
-    let ns = 'DL'.map fst (mkNodes_ m as)
-    in 'DG'.delNodes ns g
+    let ns = 'Data.List'.map fst (mkNodes_ m as)
+    in 'Data.Graph.Inductive.Graph'.delNodes ns g
 
 delMapEdges :: (NodeMap a) [(a, a)] (g a b) -> g a b | Ord a & DynGraph g
 delMapEdges m ns g =
-    let (Just ns`) =  mkEdges m ('DL'.map (\(a, b) -> (a, b, ())) ns)
-        ns`` = 'DL'.map (\(a, b, _) -> (a, b)) ns`
-    in 'DG'.delEdges ns`` g
+    let (Just ns`) =  mkEdges m ('Data.List'.map (\(a, b) -> (a, b, ())) ns)
+        ns`` = 'Data.List'.map (\(a, b, _) -> (a, b)) ns`
+    in 'Data.Graph.Inductive.Graph'.delEdges ns`` g
 
 mkMapGraph :: [a] [(a, a, b)] -> (g a b, NodeMap a) | Ord a & DynGraph g
 mkMapGraph ns es =
     let (ns`, m`) = mkNodes new ns
         (Just es`) = mkEdges m` es
-    in ('DG'.mkGraph ns` es`, m`)
+    in ('Data.Graph.Inductive.Graph'.mkGraph ns` es`, m`)
 
 // | Graph construction monad; handles passing both the `NodeMap` and the
 // `Graph`.
