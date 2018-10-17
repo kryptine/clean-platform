@@ -13,7 +13,7 @@ import StdTuple
 import Control.Monad
 import Data.Error
 import Data.Functor
-from Data.Map import :: Map, newMap
+from Data.Map import :: Map(..), newMap, put, get
 import Data.Maybe
 import System.File
 import System.FilePath
