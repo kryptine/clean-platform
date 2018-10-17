@@ -1,30 +1,19 @@
-#!/bin/sh
+#!/bin/bash
+set -e
+trap "rm -rf CleanSerial" EXIT
+
+mkpkg() {
+	rm -rf CleanSerial
+	mkdir -p CleanSerial
+	make $1 -C src clean all
+	cp -Rv src/"Clean System Files" CleanSerial
+	cp -v src/{TTY,iTasksTTY}.[id]cl src/$2/Platform.[id]cl CleanSerial
+	$3 CleanSerial-$4 CleanSerial
+}
 
 #linux
-mkdir CleanSerial
-rm -rf "./Clean System Files/*"
-make -B 'Clean System Files/ctty.o'
-mv 'Clean System Files' CleanSerial
-cp TTY.[id]cl iTasksTTY.[id]cl POSIX/Platform.[id]cl CleanSerial
-tar -czvf CleanSerial-linux64.tar.gz CleanSerial
-rm -r CleanSerial
-
+mkpkg "" POSIX "tar -czvf" linux64.tar.gz
 #windows64
-mkdir CleanSerial
-rm -rf "./Clean System Files/*"
-DETECTED_OS=Windows CC=x86_64-w64-mingw32-gcc make -B 'Clean System Files/ctty.o'
-mv 'Clean System Files' CleanSerial
-cp TTY.[id]cl iTasksTTY.[id]cl Windows/Platform.[id]cl CleanSerial
-cp Windows/*_library CleanSerial/Clean\ System\ Files
-zip -rv CleanSerial-win64.zip CleanSerial
-rm -r CleanSerial
-
+mkpkg "DETECTED_OS=Windows CC=x86_64-w64-mingw32-gcc" Windows "zip -rv" win64.zip
 #windows32
-mkdir CleanSerial
-rm -rf "./Clean System Files/*"
-DETECTED_OS=Windows CC=x86_64-w64-mingw32-gcc-win32 make -B 'Clean System Files/ctty.o'
-mv 'Clean System Files' CleanSerial
-cp TTY.[id]cl iTasksTTY.[id]cl Windows/Platform.[id]cl CleanSerial
-cp Windows/*_library CleanSerial/Clean\ System\ Files
-zip -rv CleanSerial-win32.zip CleanSerial
-rm -r CleanSerial
+mkpkg "DETECTED_OS=Windows CC=x86_64-w64-mingw32-gcc-win32" Windows "zip -rv" win32.zip

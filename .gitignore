@@ -1,8 +1,9 @@
 Clean System Files
 TTY
 Monitor
-sapl
 test
+
+*.o
 *.exe
 *.prj
 *.prp
