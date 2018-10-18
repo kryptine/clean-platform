@@ -23,16 +23,11 @@ all: $(RUN_BINARIES)
 $(filter-out checktest tartest snappytest,$(BINARIES)): .FORCE
 	$(CLM) $(CLMLIBS) $(CLMFLAGS) $@ -o $@
 
-$(filter-out run_checktest run_tartest,$(RUN_BINARIES)): run_%: %
+$(filter-out run_tartest,$(RUN_BINARIES)): run_%: %
 	./$<
 
 run: all
 	@FAILED=0; for t in $(BINARIES); do echo "$$t"; ./$$t || FAILED=1; done; if [ $$FAILED -gt 0 ]; then exit 1; fi
-
-checktest: ;
-
-run_checktest: .FORCE
-	./checktest.sh
 
 snappytest: %: %.icl .FORCE
 	$(CLM) $(CLMLIBS) -l -lsnappy $(CLMFLAGS) -nr $@ -o $@
