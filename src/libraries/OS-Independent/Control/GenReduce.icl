@@ -1,6 +1,6 @@
 implementation module Control.GenReduce
 
-import StdGeneric, Data._Array
+import StdGeneric
 
 // or crush
 generic gReduce t :: (a a -> a) a  t -> a

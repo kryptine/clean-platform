@@ -1,6 +1,6 @@
 implementation module Control.GenMapSt
 
-import StdGeneric, Data._Array
+import StdGeneric, StdEnv, Data.Array
 
 derive bimap (,)
 
@@ -31,11 +31,10 @@ gMapRSt{|EITHER|} fx fy x st 	= mapStEITHER fx fy x st
 gMapRSt{|CONS|} f x st 			= mapStCONS f x st
 gMapRSt{|FIELD|} f x st 		= mapStFIELD f x st
 gMapRSt{|OBJECT|} f x st 		= mapStOBJECT f x st
-gMapRSt{|{}|} f x st			= mapArrayRSt f x st
-gMapRSt{|{!}|} f x st			= mapArrayRSt f x st
+gMapRSt{|{}|} f x st			= mapArrSt f x st
+gMapRSt{|{!}|} f x st			= mapArrSt f x st
 
 derive gMapRSt [], (,), (,,),  (,,,), (,,,,), (,,,,,), (,,,,,,), (,,,,,,,)
-
 
 mapStEITHER fl fr (LEFT x) st
 	# (x, st) = fl x st 

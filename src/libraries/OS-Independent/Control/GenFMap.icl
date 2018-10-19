@@ -1,6 +1,6 @@
 implementation module Control.GenFMap 
 
-import StdGeneric, StdEnv, Data._Array, Control.GenMonad
+import StdGeneric, StdEnv, Control.GenMonad
 from Data.Maybe import :: Maybe(..)
 
 derive bimap (,), [] 
@@ -32,7 +32,6 @@ updateAssocList key value default_val [(k,v):xs]
 		= (old_val, [(k, v) : xs]) 
 	
 derive bimap FMap, Maybe
-bimap{|{}|} bma = {map_to = mapArray bma.map_to, map_from = mapArray bma.map_from}
 
 generic gLookupFMap key :: key (FMap value) -> FMap value
 gLookupFMap{|Char|} key (FMChar xs) = lookupAssocList key FMEmpty xs
