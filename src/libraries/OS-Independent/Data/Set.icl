@@ -60,11 +60,13 @@ instance Foldable Set where
     foldr1 f (Bin _ x Tip r)   = foldr f x r
     foldr1 f (Bin _ x l Tip)   = foldr f x l
     foldr1 f (Bin _ x l r)     = foldr f (f x (foldr1 f r)) l
+	foldr1 _ Tip               = abort "foldr1 called with Tip\n"
 
 	foldl1 f (Bin _ x Tip Tip) = x
     foldl1 f (Bin _ x Tip r)   = foldl f x r
     foldl1 f (Bin _ x l Tip)   = foldl f x l
     foldl1 f (Bin _ x l r)     = foldl f (f (foldr1 f l) x) r
+	foldl1 _ Tip               = abort "foldl1 called with Tip\n"
 
 /*--------------------------------------------------------------------
  * Query
@@ -156,6 +158,7 @@ isSubsetOfX _ Tip = False
 isSubsetOfX (Bin _ x l r) t
   #! (lt, found, gt) = splitMember x t
   = found && isSubsetOfX l lt && isSubsetOfX r gt
+isSubsetOfX _ _ = abort "error in isSubsetOfX\n"
 
 /*--------------------------------------------------------------------
  * Minimal, Maximal
@@ -236,6 +239,7 @@ difference t1 (Bin _ x l2 r2) = case split  x t1 of
 intersections :: ![Set a] -> Set a | < a & == a
 intersections [t] = t
 intersections [t:ts] = 'StdList'.foldl intersection t ts
+intersections [] = abort "intersections called with []\n"
 
 // | /O(n+m)/. The intersection of two sets.
 // Elements of the result come from the first set, so for example
@@ -449,6 +453,7 @@ link x l=:(Bin sizeL y ly ry) r=:(Bin sizeR z lz rz)
   | delta*sizeL < sizeR  = balanceL z (link x l lz) rz
   | delta*sizeR < sizeL  = balanceR y ly (link x ry r)
   | otherwise            = bin x l r
+link _ _ _ = abort "error in link\n"
 
 // insertMin and insertMax don't perform potentially expensive comparisons.
 insertMax :: !a !(Set a) -> Set a
@@ -469,6 +474,7 @@ merge l=:(Bin sizeL x lx rx) r=:(Bin sizeR y ly ry)
   | delta*sizeL < sizeR = balanceL y (merge l ly) ry
   | delta*sizeR < sizeL = balanceR x lx (merge rx r)
   | otherwise           = glue l r
+merge _ _ = abort "error in merge\n"
 
 /*--------------------------------------------------------------------
  * [glue l r]: glues two trees together.

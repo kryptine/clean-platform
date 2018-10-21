@@ -3,6 +3,7 @@ implementation module Clean.Types
 from StdOverloaded import class ==(..), class length(..)
 from StdClass import class Eq
 import StdList
+import StdMisc
 import StdTuple
 from StdString import instance == {#Char}
 import StdBool
@@ -45,6 +46,7 @@ where
 	name :: !Type -> TypeVar
 	name (Cons v _) = v
 	name (Var v) = v
+	name _ = abort "error in allVars\n"
 
 allUniversalVars :: !Type -> [TypeVar]
 allUniversalVars (Forall vs t tc) = removeDup (flatten (map allVars vs) ++ allUniversalVars t)
@@ -58,47 +60,60 @@ allUniversalVars (Arrow Nothing)  = []
 allUniversalVars (Strict t) = allUniversalVars t
 
 isVar :: !Type -> Bool
-isVar (Var _) = True; isVar _ = False
+isVar t = t=:(Var _)
 
 fromVar :: !Type -> TypeVar
-fromVar (Var v) = v
+fromVar t = case t of
+	Var v -> v
+	_     -> abort "error in fromVar\n"
 
 fromVarLenient :: !Type -> TypeVar
-fromVarLenient (Var v) = v
-fromVarLenient (Cons v _) = v
-fromVarLenient (Uniq t) = fromVarLenient t
+fromVarLenient t = case t of
+	Var v    -> v
+	Cons v _ -> v
+	Uniq t   -> fromVarLenient t
+	Strict t -> fromVarLenient t
+	_        -> abort "missing case in fromVarLenient\n"
+
 
 isCons :: !Type -> Bool
-isCons (Cons _ _) = True; isCons _ = False
+isCons t = t=:(Cons _ _)
 
 isCons` :: TypeVar !Type -> Bool
-isCons` v (Cons v` _) = v == v`; isCons` _ _ = False
+isCons` v t = case t of
+	Cons v` _ -> v == v`
+	_         -> False
 
 isVarOrCons` :: TypeVar !Type -> Bool
-isVarOrCons` v (Var v`)    = v == v`
-isVarOrCons` v (Cons v` _) = v == v`
-isVarOrCons` _ _           = False
+isVarOrCons` v t = case t of
+	Var v`    -> v == v`
+	Cons v` _ -> v == v`
+	_         -> False
 
 isType :: !Type -> Bool
-isType (Type _ _) = True; isType _ = False
+isType t = t=:(Type _ _)
 
 isFunc :: !Type -> Bool
-isFunc (Func _ _ _) = True; isFunc _ = False
+isFunc t = t=:(Func _ _ _)
 
 isUniq :: !Type -> Bool
-isUniq (Uniq _) = True; isUniq _ = False
+isUniq t = t=:(Uniq _)
 
 isForall :: !Type -> Bool
-isForall (Forall _ _ _) = True; isForall _ = False
+isForall t = t=:(Forall _ _ _)
 
 fromForall :: !Type -> Type
-fromForall (Forall _ t _) = t
+fromForall t = case t of
+	Forall _ t _ -> t
+	_            -> abort "fromForall called on non-Forall\n"
 
 isArrow :: !Type -> Bool
-isArrow (Arrow _) = True; isArrow _ = False
+isArrow t = t=:(Arrow _)
 
 fromArrow :: !Type -> Maybe Type
-fromArrow (Arrow t) = t
+fromArrow t = case t of
+	Arrow t -> t
+	_       -> abort "fromArrow called on non-Arrow\n"
 
 fromUnifyingAssignment :: !UnifyingAssignment -> TVAssignment
 fromUnifyingAssignment (LeftToRight x) = x
@@ -110,7 +125,9 @@ arity (Func is _ _) = length is
 arity (Var _) = 0
 arity (Cons _ ts) = length ts
 arity (Strict t) = arity t
-//TODO arity of Uniq / Forall / Arrow?
+arity (Uniq _) = abort "what is the arity of Uniq?\n" // TODO
+arity (Forall _ _ _) = abort "what is the arity of Forall?\n" // TODO
+arity (Arrow _) = abort "what is the arity of Arrow?\n" // TODO
 
 removeTypeContexts :: !Type -> Type
 removeTypeContexts (Type s ts) = Type s $ map removeTypeContexts ts

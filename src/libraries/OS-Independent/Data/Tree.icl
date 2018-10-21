@@ -8,6 +8,7 @@ from Data.Monoid import class Monoid (..), class Semigroup
 from StdList import map, ++
 from StdOverloaded import class +++ (..)
 from StdFunc import o
+import StdMisc
 from Data.List import zipWith, iterate, foldr, repeat, concatMap, takeWhile, isEmpty
 from StdBool import not
 import StdString
@@ -40,6 +41,7 @@ mergeForestsByChoice _ _ xs [] = xs
 mergeForestsByChoice pred choose [xn=:(RNode x xs) : xss] [yn=:(RNode y ys) : yss]
   | pred x y  = [RNode (choose x y) (mergeForestsByChoice pred choose xs ys) : mergeForestsByChoice pred choose xss yss]
   | otherwise = [xn : yn : mergeForestsByChoice pred choose xss yss]
+mergeForestsByChoice _ _ _ _ = abort "error in mergeForestsByChoice\n"
 
 mergeForestsBy :: (a a -> Bool) (RForest a) (RForest a) -> RForest a
 mergeForestsBy f xs ys = mergeForestsByChoice f (\x _ -> x) xs ys

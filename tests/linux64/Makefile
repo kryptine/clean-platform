@@ -1,6 +1,6 @@
 CLEAN_HOME?=/opt/clean
 CLM:=clm
-override CLMFLAGS+=-dynamics
+override CLMFLAGS+=-dynamics -funcmayfail
 CLMLIBS:=\
 	-I ../../src/libraries/OS-Independent\
 	-I ../../src/libraries/OS-Independent/Deprecated/ArgEnv\
@@ -26,6 +26,10 @@ BINARIES:=checktest test gentest snappytest tartest
 all: $(BINARIES)
 
 %: %.icl .FORCE
+	$(CLM) $(CLMLIBS) -PABC StdEnv
+	$(CLM) $(CLMLIBS) -PABC StdMaybe
+	$(CLM) $(CLMLIBS) -PABC -dynamics _SystemDynamic
+	$(CLM) $(CLMLIBS) -PABC TCPIP
 	$(CLM) $(CLMLIBS) $(CLMFLAGS) $@ -o $@
 	./$@
 

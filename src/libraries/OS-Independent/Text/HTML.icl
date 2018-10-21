@@ -1266,6 +1266,7 @@ browserFriendlyHTMLAttrToString (OnresetAttr a)    = writeBrowserFriendlyAttr "o
 browserFriendlyHTMLAttrToString (OnselectAttr a)    = writeBrowserFriendlyAttr "onselect" a
 browserFriendlyHTMLAttrToString (OnsubmitAttr a)    = writeBrowserFriendlyAttr "onsubmit" a
 browserFriendlyHTMLAttrToString (OnunloadAttr a)    = writeBrowserFriendlyAttr "onunload" a
+browserFriendlyHTMLAttrToString (PlaceholderAttr a) = writeBrowserFriendlyAttr "placeholder" a
 browserFriendlyHTMLAttrToString (ProfileAttr a)    = writeBrowserFriendlyAttr "profile" a
 browserFriendlyHTMLAttrToString (PromptAttr a)    = writeBrowserFriendlyAttr "prompt" a
 browserFriendlyHTMLAttrToString (ReadonlyAttr)    = writeBrowserFriendlyAttr "readonly" "readonly"

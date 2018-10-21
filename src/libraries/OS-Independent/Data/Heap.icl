@@ -37,7 +37,7 @@ import qualified StdList as SL
 instance == (Heap a) where
   (==) Empty Empty = True
   (==) Empty _ = False
-  (==) _ Empty = False
+  (==) (Heap _ _ _) Empty = False
   (==) a=:(Heap s1 leq _) b=:(Heap s2 _ _) = s1 == s2 && go leq ('DF'.toList a) ('DF'.toList b)
     where
     go f [x:xs] [y:ys] = f x y && f y x && go f xs ys
@@ -47,7 +47,7 @@ instance == (Heap a) where
 instance < (Heap a) where
   < Empty Empty = False
   < Empty _     = True
-  < _     Empty = False
+  < (Heap _ _ _) Empty = False
   < a=:(Heap _ leq _) b = go leq ('DF'.toList a) ('DF'.toList b)
     where
     go f [x:xs] [y:ys] =
@@ -138,6 +138,7 @@ union q Empty = q
 union (Heap s1 leq t1=:(Node _ x1 f1)) (Heap s2 _ t2=:(Node _ x2 f2))
   | leq x1 x2 = Heap (s1 + s2) leq (Node 0 x1 (skewInsert leq t2 f1))
   | otherwise = Heap (s1 + s2) leq (Node 0 x2 (skewInsert leq t1 f2))
+union _ _ = abort "error in union\n"
 
 // /O(log n)/. Create a heap consisting of multiple copies of the same value.
 //
@@ -469,6 +470,8 @@ intersect a=:(Heap _ leq _) b = go leq ('DF'.toList a) ('DF'.toList b)
         (go leq` xxs ys)
   go _ [] _ = empty
   go _ _ [] = empty
+  go _ _ _  = abort "error in go\n"
+intersect _ _ = abort "error in intersect\n"
 
 /// /O(n log n + m log m)/. Intersect the values in two heaps using a function to generate the elements in the right heap.
 intersectWith :: (a a -> b) (Heap a) (Heap a) -> Heap b | Ord b
@@ -485,6 +488,8 @@ intersectWith f a=:(Heap _ leq _) b = go leq f ('DF'.toList a) ('DF'.toList b)
       | otherwise = go leq` f` xxs ys
   go _ _ [] _ = empty
   go _ _ _ [] = empty
+  go _ _ _ _  = abort "error in go\n"
+intersectWith _ _ _ = abort "error in intersectWith\n"
 
 // /O(n log n)/. Traverse the elements of the heap in sorted order and produce a new heap using 'Applicative' side-effects.
 //traverse :: (a -> t b) (Heap a) -> t (Heap b) | Applicative t & Ord b
@@ -590,6 +595,7 @@ unionUniq f tts1=:(Cons t1 ts1) tts2=:(Cons t2 ts2)
   where
   r1 = rank t1
   r2 = rank t2
+unionUniq _ _ _ = abort "error in unionUniq\n"
 
 skewInsert :: (a a -> Bool) (Tree a) (Forest a) -> Forest a
 skewInsert f t ts=:(Cons t1 (Cons t2 rest))

@@ -4,6 +4,7 @@ import StdBool
 import StdEnum
 import StdFunctions
 import StdList
+import StdMisc
 import StdOrdList
 import StdTuple
 
@@ -148,14 +149,16 @@ permutations xs0        =  [xs0 : perms xs0 []]
                                      in  ([y:us], [f [t:y:us] : zs])
 
 foldl1 :: (.a -> .(.a -> .a)) ![.a] -> .a
-foldl1 f [x:xs]         =  foldl f x xs
+foldl1 f [x:xs] = foldl f x xs
+foldl1 _ _      = abort "foldl1 called with empty list\n"
 
 concatMap :: (.a -> [.b]) ![.a] -> [.b]
 concatMap f ls = flatten (map f ls)
 
 maximum :: !.[a] -> a | < a
-maximum [x]     = x
-maximum [x:xs]  = max x (maximum xs)
+maximum [x:xs] = max x (maximum xs)
+maximum [x]    = x
+maximum []     = abort "maximum of empty list\n"
 
 minimum :: !.[a] -> a | Ord a
 minimum xs =  foldl1 min xs
@@ -173,8 +176,9 @@ scanl1 f [x:xs]         =  scanl f x xs
 scanl1 _ []             =  []
 
 foldr1 :: (.a -> .(.a -> .a)) ![.a] -> .a
-foldr1 _ [x]            =  x
-foldr1 f [x:xs]         =  f x (foldr1 f xs)
+foldr1 _ [x]    =  x
+foldr1 f [x:xs] =  f x (foldr1 f xs)
+foldr1 _ _      = abort "foldr1 called with empty list\n"
 
 replicate :: !.Int a -> .[a]
 replicate n x           =  take n (repeat x)
@@ -220,9 +224,10 @@ tails xs                =  [xs : case xs of
                                   [_ : xs`] -> tails xs`]
 
 isPrefixOf :: !.[a] .[a] -> .Bool | == a
-isPrefixOf [] _          =  True
-isPrefixOf _  []         =  False
-isPrefixOf [x:xs] [y:ys] =  x == y && isPrefixOf xs ys
+isPrefixOf [] _          = True
+isPrefixOf _  []         = False
+isPrefixOf [x:xs] [y:ys] = x == y && isPrefixOf xs ys
+isPrefixOf _      _      = abort "error in isPrefixOf\n"
 
 isSuffixOf :: !.[a] .[a] -> .Bool | == a
 isSuffixOf x y          =  isPrefixOf (reverse x) (reverse y)
@@ -235,6 +240,7 @@ levenshtein :: !.[a] !.[a] -> Int | == a
 levenshtein xs ys = last (foldl transform [0..length xs] ys)
 where
 	transform ns=:[n:ns`] c = scan (calc c) (n+1) (zip3 xs ns ns`)
+	transform _           _ = abort "error in levenshtein\n"
 	calc c z (c`, x, y) = minList [y+1, z+1, if (c`<>c) 1 0 + x]
 
 elem :: a !.[a] -> .Bool | == a

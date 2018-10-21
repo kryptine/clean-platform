@@ -498,18 +498,20 @@ skewy` a image font_spans text_spans imgTables=:{ImgTables | imgNewTexts = curTe
 margin` :: !Margins` !(Image` m) !FontSpans !TextSpans !(ImgTables m) -> (!Img,!ImgTables m)
 margin` {Margins` | n,e,s,w} image font_spans text_spans imgTables=:{ImgTables | imgNewTexts = txts, imgUniqIds = no}
   #! (nesw,txts)      = strictTRMapSt (spanImgTexts text_spans) [n,e,s,w] txts
-  #! [n,e,s,w : _]    = nesw
-  #! (img,imgTables=:{ImgTables | imgSpans = curSpans}) = toImg image font_spans text_spans {ImgTables | imgTables & imgNewTexts = txts,imgUniqIds = no-1}
-  #! (img_w,img_h)    = 'DM'.find img.Img.uniqId curSpans
-  #! span_host        = (w + img_w + e, n + img_h + s)
-  = ({Img | uniqId    = no
-          , host      = BasicHostImg EmptyImg 'DS'.newSet
-          , transform = Nothing
-          , overlays  = [img]
-          , offsets   = [(w,n)]
-     }
-    ,{ImgTables | imgTables & imgSpans = 'DM'.put no span_host curSpans}
-    )
+  = case nesw of
+    [n,e,s,w:_]
+      #! (img,imgTables=:{ImgTables | imgSpans = curSpans}) = toImg image font_spans text_spans {ImgTables | imgTables & imgNewTexts = txts,imgUniqIds = no-1}
+      #! (img_w,img_h)    = 'DM'.find img.Img.uniqId curSpans
+      #! span_host        = (w + img_w + e, n + img_h + s)
+      = ({Img | uniqId    = no
+              , host      = BasicHostImg EmptyImg 'DS'.newSet
+              , transform = Nothing
+              , overlays  = [img]
+              , offsets   = [(w,n)]
+         }
+        ,{ImgTables | imgTables & imgSpans = 'DM'.put no span_host curSpans}
+        )
+    _ = abort "error in margin`\n"
 
 overlay` :: ![XYAlign] ![ImageOffset] ![Image` m] !(Host` m) !FontSpans !TextSpans !(ImgTables m) -> (!Img,!ImgTables m)
 overlay` aligns offsets images host font_spans text_spans imgTables
@@ -1044,15 +1046,27 @@ where
 
 
 	resolve_span` visited user_tags font_spans text_spans (AddSpan a b) spans
-	  = resolve_span_exprs [a,b] combine visited user_tags font_spans text_spans spans where combine [a,b] = Ok (a+b)
+	  = resolve_span_exprs [a,b] combine visited user_tags font_spans text_spans spans
+	where
+	  combine [a,b] = Ok (a+b)
+	  combine _     = abort "error in resolve_span\n"
 	resolve_span` visited user_tags font_spans text_spans (SubSpan a b) spans
-	  = resolve_span_exprs [a,b] combine visited user_tags font_spans text_spans spans where combine [a,b] = Ok (a-b)
+	  = resolve_span_exprs [a,b] combine visited user_tags font_spans text_spans spans
+	where
+	  combine [a,b] = Ok (a-b)
+	  combine _     = abort "error in resolve_span\n"
 	resolve_span` visited user_tags font_spans text_spans (MulSpan a b) spans
-	  = resolve_span_exprs [a,b] combine visited user_tags font_spans text_spans spans where combine [a,b] = Ok (a*b)
+	  = resolve_span_exprs [a,b] combine visited user_tags font_spans text_spans spans
+	where
+	  combine [a,b] = Ok (a*b)
+	  combine _     = abort "error in resolve_span\n"
 	resolve_span` visited user_tags font_spans text_spans (DivSpan a b) spans
-	  = resolve_span_exprs [a,b] combine visited user_tags font_spans text_spans spans where combine [a,b]
-	                                                                                         | b == 0.0  = user_error "(/.)" "division by zero"
-	                                                                                         | otherwise = Ok (a/b)
+	  = resolve_span_exprs [a,b] combine visited user_tags font_spans text_spans spans
+	where
+	  combine [a,b]
+	  | b == 0.0  = user_error "(/.)" "division by zero"
+	  | otherwise = Ok (a/b)
+	  combine _   = abort "error in resolve_span\n"
 	resolve_span` visited user_tags font_spans text_spans (MinSpan as) spans
 	  = resolve_span_exprs as combine visited user_tags font_spans text_spans spans    where combine rs = Ok (minList rs)
 	resolve_span` visited user_tags font_spans text_spans (MaxSpan as) spans

@@ -49,6 +49,7 @@ where
 	mappend Nothing   m         = m
 	mappend m         Nothing   = m
 	mappend (Just m1) (Just m2) = Just (mappend m1 m2)
+	mappend _         _         = abort "impossible case in mappend_Maybe\n"
 
 instance Monoid (Maybe a)
 where
