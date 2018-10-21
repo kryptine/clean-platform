@@ -3,7 +3,8 @@ Cloogle indexes documentation of the syntax elements it stores, through
 functions in `Clean.Doc`. Docblocks are comments that start with `/**` and have
 a leading asterisk on every line (leading whitespace is ignored). The first
 part of the docblock is taken as a general description. Below the description,
-documentation fields can be added with `@`.
+documentation fields can be added with `@`. Currently, documentation fields
+should have only one line.
 
 An example is below:
 
@@ -38,9 +39,12 @@ fields. For example:
 
 ## Markup in documentation
 
-Some simple markup is allowed in documentation:
+Some simple Markdown-inspired markup is allowed in documentation:
 
 - `` `foo` `` renders `foo` in monospaced font.
+- Code blocks can be surrounded by `` ``` `` on separate lines. The start of a
+  code block can indicate the language (for highlighting purposes), as in
+  `` ```clean ``.
 - `{{bar}}` marks `bar` as a defined entity (that can be searched for).
 - Double newlines distinguish paragraphs; single newlines are ignored unless
   followed by a hyphen.
@@ -50,6 +54,11 @@ Some simple markup is allowed in documentation:
 The tables below describe which fields and documentation types can be used for
 different syntax elements, and what they should document. An extension, to
 document test properties, is discussed below.
+
+What fields are accepted for what syntax elements is defined by the records in
+`Clean.Doc`; how they are parsed in the instances of the generic function
+`docBlockToDoc`. The below is merely a convenient representation of the same
+information.
 
 |              | Description | `@param` | `@result` | `@type` | `@var` | `@representation` | `@throws` | `@complexity`
 |--------------|-------------|----------|-----------|---------|--------|-------------------|-----------|--------------
@@ -86,23 +95,6 @@ given.</sup>
 With [clean-test-properties][]' `testproperties` tool, [Gast][] test programs
 can be generated with properties from docblocks. For this, several additional
 fields can be used, which are further documented by [clean-test-properties][].
-
-Briefly, `@property` on functions describes the actual property. When this uses
-type variables, `@property-test-with` can be used to show how to instantiate
-them. On the module, `@property-bootstrap` can be used to add bootstrap code,
-like imports, to the top of the program. For example:
-
-```clean
-/**
- * @property plus_commutative: A. x :: a; y :: a:
- *   x + y == y + x
- * @property-test-with a = Int
- * @property-test-with a = Real
- */
-```
-
-This will test the property `\x y -> x + y == y + x` where `x` and `y` are of
-type `Int` or `Real`.
 
 [clean-test-properties]: https://gitlab.science.ru.nl/clean-and-itasks/clean-test-properties
 [Gast]: https://gitlab.science.ru.nl/clean-and-itasks/gast
