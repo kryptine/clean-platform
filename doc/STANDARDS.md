@@ -70,11 +70,11 @@ id x = x
 ```
 
 Several JavaDoc like parameters are supported such as `@param`, `@result`,
-`@type`, `@var` and `@representation`. More info about this can be found
-[here](https://gitlab.science.ru.nl/cloogle/Cloogle#clean-documentation).
-We use `@complexity` for the complexity order. Some other special fields are
-used, like `@gin-icon`, but one should be reluctant with inventing new field
-names. If there is a general use case, adding it can be discussed.
+`@type`, `@var` and `@representation`. More info about this can be found in
+[DOCUMENTATION.md](DOCUMENTATION.md). We use `@complexity` for the complexity
+order. Some other special fields are used, like `@gin-icon`, but one should be
+reluctant with inventing new field names. If there is a general use case,
+adding it can be discussed.
 
 ## Layout 
 
