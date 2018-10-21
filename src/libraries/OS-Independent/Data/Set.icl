@@ -6,9 +6,6 @@ from Data.Foldable import class Foldable (..)
 import qualified StdList
 from StdList import instance == [a]
 
-//mapSet :: !(a -> b) !(Set a) -> Set b | < a & == a & < b & == b
-//mapSet f s = fromList (map f (toList s))
-
 mapSetMonotonic :: !(a -> b) !(Set a) -> Set b
 mapSetMonotonic _ Tip = Tip
 mapSetMonotonic f (Bin n x l r) = Bin n (f x) (mapSetMonotonic f l) (mapSetMonotonic f r)
@@ -71,22 +68,7 @@ instance Foldable Set where
 /*--------------------------------------------------------------------
  * Query
  *--------------------------------------------------------------------*/
-  
-// | /O(1)/. Is this the empty set?
-//null :: !(Set a) -> Bool
-//null Tip = True
-//null (Bin _ _ _ _) = False
 
-// | /O(1)/. The number of elements in the set.
-//size s :== case s of
-             //Tip -> 0
-             //(Bin sz _ _ _) -> sz
-// TODO Remove
-//size :: !(Set a) -> Int
-//size Tip = 0
-//size (Bin sz _ _ _) = sz
-
-// | /O(log n)/. Is the element in the set?
 member :: !a !(Set a) -> Bool | < a
 member x Tip = False
 member x (Bin _ y l r)
@@ -94,19 +76,13 @@ member x (Bin _ y l r)
   | x > y     = member x r
   | otherwise = True
 
-// | /O(log n)/. Is the element not in the set?
-//notMember :: !a !(Set a) -> Bool | < a & == a
-//notMember x t = not (member x t)
-
 /*--------------------------------------------------------------------
  * Construction
  *--------------------------------------------------------------------*/
  
-// | /O(1)/. The empty set.
 newSet :: Set a
 newSet = Tip
 
-// | /O(1)/. Create a singleton set.
 singleton :: !u:a -> w:(Set u:a), [w <= u]
 singleton x = Bin 1 x Tip Tip
 
@@ -114,9 +90,6 @@ singleton x = Bin 1 x Tip Tip
  * Insertion, Deletion
  *--------------------------------------------------------------------*/
 
-// | /O(log n)/. Insert an element in a set.
-// If the set already contains an element equal to the given value,
-// it is replaced with the new value.
 insert :: !a !.(Set a) -> Set a | < a
 insert x Tip = singleton x
 insert x (Bin sz y l r)
@@ -131,7 +104,6 @@ insertR x t=:(Bin _ y l r)
   | x > y     = balanceR y l (insertR x r)
   | otherwise = t
 
-// | /O(log n)/. Delete an element from a set.
 delete :: !a !.(Set a) -> Set a | < a
 delete x Tip = Tip
 delete x (Bin _ y l r)
@@ -142,15 +114,6 @@ delete x (Bin _ y l r)
 /*--------------------------------------------------------------------
  * Subset
  *--------------------------------------------------------------------*/
-
-// | /O(n+m)/. Is this a proper subset? (ie. a subset but not equal).
-//isProperSubsetOf :: !(Set a) !(Set a) -> Bool | < a & == a
-//isProperSubsetOf s1 s2 = (size s1 < size s2) && (isSubsetOf s1 s2)
-
-// | /O(n+m)/. Is this a subset?
-// @(s1 `isSubsetOf` s2)@ tells whether @s1@ is a subset of @s2@.
-//isSubsetOf :: !(Set a) !(Set a) -> Bool | < a & == a
-//isSubsetOf t1 t2 = (size t1 <= size t2) && (isSubsetOfX t1 t2)
 
 isSubsetOfX :: !(Set a) !(Set a) -> Bool | < a
 isSubsetOfX Tip _ = True
@@ -164,25 +127,21 @@ isSubsetOfX _ _ = abort "error in isSubsetOfX\n"
  * Minimal, Maximal
  *--------------------------------------------------------------------*/
  
-// | /O(log n)/. The minimal element of a set.
 findMin :: !(Set a) -> a
 findMin (Bin _ x Tip _) = x
 findMin (Bin _ _ l _)   = findMin l
 findMin Tip             = abort "Set.findMin: empty set has no minimal element"
 
-// | /O(log n)/. The maximal element of a set.
 findMax :: !(Set a) -> a
 findMax (Bin _ x _ Tip)  = x
 findMax (Bin _ _ _ r)    = findMax r
 findMax Tip              = abort "Set.findMax: empty set has no maximal element"
 
-// | /O(log n)/. Delete the minimal element.
 deleteMin :: !.(Set a) -> Set a
 deleteMin (Bin _ _ Tip r) = r
 deleteMin (Bin _ x l r)   = balanceR x (deleteMin l) r
 deleteMin Tip             = Tip
 
-// | /O(log n)/. Delete the maximal element.
 deleteMax :: !.(Set a) -> Set a
 deleteMax (Bin _ _ l Tip) = l
 deleteMax (Bin _ x l r)   = balanceL x l (deleteMax r)
@@ -191,13 +150,7 @@ deleteMax Tip             = Tip
 /*--------------------------------------------------------------------
  * Union. 
  *--------------------------------------------------------------------*/
- 
-// | The union of a list of sets: (@'unions' == 'foldl' 'union' 'empty'@).
-//unions :: !u:[v:(Set a)] -> Set a | < a & == a, [u <= v]
-//unions ts = foldl union newSet ts
 
-// | /O(n+m)/. The union of two sets, preferring the first set when
-// equal elements are encountered.
 union :: !u:(Set a) !u:(Set a) -> Set a | < a & == a
 union t1 Tip = t1
 union t1 (Bin _ x Tip Tip) = insertR x t1
@@ -220,7 +173,6 @@ splitS x (Bin _ y l r)
  * Difference
  *--------------------------------------------------------------------*/
  
-// | /O(n+m)/. Difference of two sets. 
 difference :: !(Set a) !(Set a) -> Set a | < a & == a
 difference Tip _   = Tip
 difference t1 Tip  = t1
@@ -240,18 +192,6 @@ intersections :: ![Set a] -> Set a | < a & == a
 intersections [t] = t
 intersections [t:ts] = 'StdList'.foldl intersection t ts
 intersections [] = abort "intersections called with []\n"
-
-// | /O(n+m)/. The intersection of two sets.
-// Elements of the result come from the first set, so for example
-//
-// > import qualified Data.Set as S
-// > data AB = A | B deriving Show
-// > instance Ord AB where compare _ _ = EQ
-// > instance Eq AB where _ == _ = True
-// > main = print (S.singleton A `S.intersection` S.singleton B,
-// >               S.singleton B `S.intersection` S.singleton A)
-//
-// prints @(fromList [A],fromList [B])@.
 
 intersection :: !(Set a) !(Set a) -> Set a | < a & == a
 intersection Tip _ = Tip
@@ -273,16 +213,12 @@ hedgeInt blo bhi (Bin _ x l r) t2
  * Filter and partition
  *--------------------------------------------------------------------*/
 
-// | /O(n)/. Filter all elements that satisfy the predicate.
 filter :: !(a -> Bool) !(Set a) -> Set a | < a
 filter _ Tip = Tip
 filter p (Bin _ x l r)
   | p x       = link x (filter p l) (filter p r)
   | otherwise = merge (filter p l) (filter p r)
 
-// | /O(n)/. Partition the set into two sets, one with all elements that satisfy
-// the predicate and one with all elements that don't satisfy the predicate.
-// See also 'split'.
 partition :: !(a -> Bool) !(Set a) -> (!Set a, !Set a) | < a
 partition _ Tip = (Tip,Tip)
 partition p (Bin _ x l r)
@@ -295,7 +231,6 @@ partition p (Bin _ x l r)
  * Fold
  *--------------------------------------------------------------------*/
 
-// | /O(n)/. Post-order fold.
 fold :: !(a -> .b -> .b) !.b !.(Set a) -> .b
 fold _ z Tip           = z
 fold f z (Bin _ x l r) = fold f (f x (fold f z r)) l
@@ -304,15 +239,6 @@ fold f z (Bin _ x l r) = fold f (f x (fold f z r)) l
  * Lists 
  *--------------------------------------------------------------------*/
 
-// | /O(n)/. Convert the set to a list of elements.
-//toList :: !(Set a) -> [a]
-//toList s = toAscList s
-
-// | /O(n)/. Convert the set to an ascending list of elements.
-//toAscList :: !(Set a) -> [a]
-//toAscList t = fold (\a as -> [a:as]) [] t
-
-// | /O(n*log n)/. Create a set from a list of elements.
 fromList :: ![a] -> Set a | < a
 fromList xs = 'StdList'.foldl ins newSet xs
   where
@@ -387,9 +313,6 @@ filterLt (JustS b) t = filter` b t
  * Split
  *--------------------------------------------------------------------*/
 
-// | /O(log n)/. The expression (@'split' x set@) is a pair @(set1,set2)@
-// where @set1@ comprises the elements of @set@ less than @x@ and @set2@
-// comprises the elements of @set@ greater than @x@.
 split :: !a !(Set a) -> (!Set a, !Set a) | < a
 split _ Tip = (Tip,Tip)
 split x (Bin _ y l r)
@@ -401,8 +324,6 @@ split x (Bin _ y l r)
     = (link y l lt,gt)
   | otherwise = (l, r)
 
-// | /O(log n)/. Performs a 'split' but also returns whether the pivot
-// element was found in the original set.
 splitMember :: !a !(Set a) -> (!Set a, !Bool, !Set a) | < a
 splitMember _ Tip = (Tip, False, Tip)
 splitMember x (Bin _ y l r)
@@ -491,9 +412,6 @@ glue l r
       #! (m, r`) = deleteFindMin r
       = balanceL m l r`
 
-// | /O(log n)/. Delete and find the minimal element.
-// 
-// > deleteFindMin set = (findMin set, deleteMin set)
 deleteFindMin :: !.(Set a) -> (!a, !Set a)
 deleteFindMin (Bin _ x Tip r) = (x, r)
 deleteFindMin (Bin _ x l r)
@@ -501,9 +419,6 @@ deleteFindMin (Bin _ x l r)
   = (xm, balanceR x l` r)
 deleteFindMin Tip = (abort "Set.deleteFindMin: can not return the minimal element of an empty set", Tip)
 
-// | /O(log n)/. Delete and find the maximal element.
-//
-// > deleteFindMax set = (findMax set, deleteMax set)
 deleteFindMax :: !.(Set a) -> (!a, !Set a)
 deleteFindMax (Bin _ x l Tip ) = (x, l)
 deleteFindMax (Bin _ x l r)
@@ -511,14 +426,10 @@ deleteFindMax (Bin _ x l r)
   = (xm, balanceL x l r`)
 deleteFindMax Tip = (abort "Set.deleteFindMax: can not return the maximal element of an empty set", Tip)
 
-// | /O(log n)/. Retrieves the minimal key of the set, and the set
-// stripped of that element, or 'Nothing' if passed an empty set.
 minView :: !.(Set a) -> .(Maybe (!a, !Set a))
 minView Tip = Nothing
 minView x = Just (deleteFindMin x)
 
-// | /O(log n)/. Retrieves the maximal key of the set, and the set
-// stripped of that element, or 'Nothing' if passed an empty set.
 maxView :: !.(Set a) -> .(Maybe (!a, !Set a))
 maxView Tip = Nothing
 maxView x = Just (deleteFindMax x)

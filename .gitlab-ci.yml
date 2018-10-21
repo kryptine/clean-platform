@@ -2,7 +2,10 @@ test:
   before_script:
     - install_clean.sh bundle-complete
     - apt-get update -qq
-    - apt-get install -y -qq build-essential libsnappy-dev
+    - apt-get install -y -qq build-essential git coreutils libsnappy-dev
+    - git clone --recursive https://gitlab.science.ru.nl/clean-and-itasks/clean-test-properties /opt/clean-test-properties
+    - make -C /opt/clean-test-properties/src -f Makefile.linux64
   image: "camilstaps/clean:nightly"
   script:
-    - make -C tests/linux64
+    - make -C tests/linux64 run
+    - stdbuf -o0 -e0 /opt/clean-test-properties/src/testproperties -IL Dynamics -d src/libraries/OS-Independent -P Quiet -r -T 'Tests 100000' -C -h -C 100m
