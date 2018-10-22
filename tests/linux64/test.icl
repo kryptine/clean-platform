@@ -92,6 +92,7 @@ import qualified Data.GenEq
 import qualified Data.GenFDomain
 import qualified Data.GenLexOrd
 import qualified Data.GenZip
+import qualified Data.Generics
 import qualified Data.Graph
 import qualified Data.Graph.Inductive
 import qualified Data.Graph.Inductive.Basic
@@ -133,7 +134,7 @@ import qualified Data.Traversable
 import qualified Data.Tree
 import qualified Data.Tuple
 import qualified Data.Word8
-import qualified Data.Generics
+import qualified Data._Array
 import qualified Database.Native
 import qualified Database.Native.JSON
 import qualified Database.SQL

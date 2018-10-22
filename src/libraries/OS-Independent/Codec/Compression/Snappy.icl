@@ -2,7 +2,7 @@ implementation module Codec.Compression.Snappy
 
 import StdEnv
 
-import System._Pointer
+import System._Pointer, Data._Array
 import Text
 
 snappy_max_compressed_length :: !Int -> Int
@@ -24,7 +24,7 @@ where
 snappy_compress :: !.String -> .String
 snappy_compress s
 #! n = snappy_max_compressed_length (size s)
-#! c = createArray (n+1) '\0'
+#! c = unsafeCreateArray (n+1)
 #! (r,len) = compress s (size s) c
 | r <> 0 = abort ("Invalid return status of snappy_compress: " <+ r <+ "\n")
 = {c \\ c <-: c & i <- [0..len-1]}

@@ -2,6 +2,7 @@ implementation module Data.GenCompress
 
 import StdGeneric, StdEnv
 from Data.Maybe import :: Maybe(..)
+import Data._Array
 
 //--------------------------------------------------
 // uncompressor monad
@@ -129,7 +130,7 @@ foldSt f [x:xs] = foldSt f xs o f x
 
 uncompressArray :: (u:CompressSt -> ((Maybe v:a),w:CompressSt)) -> .(x:CompressSt -> ((Maybe y:(b v:a)),z:CompressSt)) | Array b a, [x w <= u,y <= v,x w <= z]
 uncompressArray f
-	=	uncompressInt >>= \s -> uncompress_array 0 s {undef\\_<-[0..s]}
+	=	uncompressInt >>= \s -> uncompress_array 0 s (unsafeCreateArray s)
 where
 	uncompress_array i s arr
 		| i == s
