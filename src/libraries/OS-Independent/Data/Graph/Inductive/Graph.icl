@@ -37,10 +37,10 @@ instance < (LPath a) | gLexOrd{|*|} a where
 // and the remaining 'Graph'.
 defMatchAny  :: (gr a b) -> GDecomp gr a b | Graph gr
 defMatchAny g = case labNodes g of
-                  _        -> abort "Match Exception, Empty Graph"
-                  [(v,_):_] -> (c,g`)
-                    where
-                      (Just c,g`) = match v g
+	[] = abort "Match Exception, Empty Graph"
+	[(v,_):_] = case match v g of
+		(Just c,g`) = (c, g`)
+		_ = abort "Shouldn't happen"
 
 // | The number of 'Node's in a 'Graph'.
 defNoNodes   :: (gr a b) -> Int | Graph gr
