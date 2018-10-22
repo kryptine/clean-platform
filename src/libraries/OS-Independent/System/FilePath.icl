@@ -9,7 +9,7 @@ import Data.Error, Data.Func
 import Text
 import System.OS
 import System.OSError
-import qualified System._FilePath as _FilePath
+import qualified System._FilePath
 
 pathSeparator :: Char
 pathSeparator = OS_PATH_SEPARATOR
@@ -77,5 +77,4 @@ dropFileName :: !FilePath -> FilePath
 dropFileName path = takeDirectory path
 
 getFullPathName :: !FilePath !*World -> (!MaybeOSError FilePath, !*World)
-getFullPathName p w = '_FilePath'.getFullPathName p w
-
+getFullPathName p w = 'System._FilePath'.getFullPathName p w

@@ -3,14 +3,13 @@ implementation module Data.Either
 from StdEnv import flip, id, o, const
 from StdMisc import abort
 import Control.Applicative
-import Control.Monad
+import Control.Monad => qualified mapM
 import Data.Monoid
 import Data.Functor
 import Data.Maybe
 import Data.Monoid
 from Data.Foldable import class Foldable(foldMap,foldl,foldr)
-from Data.Traversable import class Traversable(traverse)
-import qualified Data.Traversable as T
+from Data.Traversable import class Traversable(traverse,mapM)
 import Data.Bifunctor
 import Data.GenEq
 
@@ -64,7 +63,7 @@ where
 	traverse f (Right y) = Right <$> f y
 	sequenceA f = traverse id f
 	mapM f x = unwrapMonad (traverse (WrapMonad o f) x)
-	sequence x = 'T'.mapM id x
+	sequence x = mapM id x
 
 instance Bifunctor Either
 where

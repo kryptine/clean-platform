@@ -37,7 +37,9 @@ defMatchAnyM  :: (m (gr a b)) -> m (GDecomp gr a b) | GraphM m gr
 defMatchAnyM g = labNodesM g >>= \vs ->
                    case vs of
                      []        -> abort "Match Exception, Empty Graph"
-                     [(v,_):_] -> matchM v g >>= \(Just c,g`) -> pure (c,g`)
+                     [(v,_):_] -> matchM v g >>= \t->case t of
+                         (Just c,g`) -> pure (c,g`)
+                         _ -> abort "No Match"
 
 defNoNodesM   :: (m (gr a b)) -> m Int | GraphM m gr
 defNoNodesM m = (labNodesM >>. length) m

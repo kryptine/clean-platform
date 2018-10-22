@@ -12,7 +12,7 @@ import Data.Functor
 
 import Control.Applicative
 from Control.Monad import class Monad
-import qualified Control.Monad as CM
+import qualified Control.Monad 
 import TCPIP
 
 doHTTPRequest :: !HTTPRequest Int !*World -> *(!MaybeErrorString HTTPResponse, !*World)
@@ -33,7 +33,7 @@ doHTTPRequest req timeout w
 # (rpt,resp,rChannel,w) = receive_MT (Just timeout) rChannel w
 | rpt <> TR_Success
 	= (Error $ "Did not receive a reply from " + req.server_name + ".", w)
-# resp = 'CM'.join $ parseResponse <$> toString <$> resp
+# resp = 'Control.Monad'.join $ parseResponse <$> toString <$> resp
 | isNothing resp
 	# w = closeChannel sChannel (closeRChannel rChannel w)
 	= (Error $ "Server did not respond with HTTP.", w)

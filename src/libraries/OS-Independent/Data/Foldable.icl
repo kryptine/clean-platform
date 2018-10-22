@@ -7,7 +7,6 @@ from Control.Monad import class Monad(..), >>=
 from Data.List import instance Semigroup [a], instance Monoid [a], instance Foldable []
 import Data.Monoid
 import Data.Maybe
-import qualified StdList as SL
 import StdClass
 from StdOverloaded import class < (..)
 from StdBool import not

@@ -130,3 +130,13 @@ where
 
 instance Monad {} where bind m k = foldrArr ((+++) o k) {} m
 instance Monad {!} where bind m k = foldrArr ((+++) o k) {} m
+
+reduceArray :: ((.a -> u:(b -> b)) -> .(b -> .(c -> .a))) (.a -> u:(b -> b)) b .(d c) -> b | Array d c
+reduceArray f op e xs 
+	= reduce f 0 (size xs) op e xs
+where
+		reduce f i n op e xs
+		| i == n 
+			= e
+		| otherwise
+			= op (f op e xs.[i]) (reduce f (inc i) n op e xs)

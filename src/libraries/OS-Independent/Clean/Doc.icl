@@ -28,7 +28,7 @@ import Text.Language
 import Text.Parsers.Simple.ParserCombinators
 
 from Clean.Types import :: Type, :: TypeRestriction
-import qualified Clean.Types.Parse as T
+from Clean.Types.Parse import parseType
 from Clean.Types.Util import instance toString Type
 
 gDefault{|Maybe|} _ = Nothing
@@ -171,7 +171,7 @@ where
 docBlockToDoc{|ParamDoc|} _ = abort "error in docBlockToDoc{|ParamDoc|}\n"
 
 docBlockToDoc{|Type|} (Left []) = Left InternalNoDataError
-docBlockToDoc{|Type|} (Left ss) = case [v \\ Just v <- map ('T'.parseType o fromString) ss] of
+docBlockToDoc{|Type|} (Left ss) = case [v \\ Just v <- map (parseType o fromString) ss] of
 	[] -> Left (UnknownError "no parsable type")
 	vs -> Right (last vs, [])
 docBlockToDoc{|Type|} _ = abort "error in docBlockToDoc{|Type|}\n"
@@ -201,7 +201,7 @@ where
 
 		skipSpaces = pMany (pSatisfy isSpace) *> pYield undef
 		pTypeWithColonOrSemicolon = (pMany (pSatisfy \c -> c <> ':' && c <> ';') <* pOneOf [':;'])
-			>>= \t -> case 'T'.parseType t of
+			>>= \t -> case parseType t of
 				Nothing -> pError "type could not be parsed"
 				Just t  -> pure t
 
@@ -210,13 +210,13 @@ where
 docBlockToDoc{|Property|} _ = abort "error in docBlockToDoc{|Property|}\n"
 
 docBlockToDoc{|PropertyVarInstantiation|} (Left [s]) = case split "=" s of
-	[var:type:[]] -> case 'T'.parseType (fromString type) of
+	[var:type:[]] -> case parseType (fromString type) of
 		Just t -> Right (PropertyVarInstantiation (trim var, t), [])
 		Nothing -> Left (UnknownError "type could not be parsed")
 	_ -> Left (UnknownError "property var instantiation could not be parsed")
 docBlockToDoc{|PropertyVarInstantiation|} _ = abort "error in docBlockToDoc{|PropertyVarInstantiation|}\n"
 
-docBlockToDoc{|PropertyTestGenerator|} (Left [s]) = case 'T'.parseType (fromString sig) of
+docBlockToDoc{|PropertyTestGenerator|} (Left [s]) = case parseType (fromString sig) of
 	Just t -> Right (PropertyTestGenerator t (trimMultiLine imp), [])
 	Nothing -> Left (UnknownError "type could not be parsed")
 where

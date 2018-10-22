@@ -1,6 +1,5 @@
 implementation module Data.Heap
 
-import qualified Data.List as L
 from Control.Applicative import class Applicative (..), :: WrappedMonad (..), unwrapMonad, instance Applicative (WrappedMonad m), instance Functor (WrappedMonad m)
 from Control.Monad import liftM, class Monad
 import Data.Monoid
@@ -8,10 +7,9 @@ from Data.Func import on
 from Data.Functor import class Functor (..)
 from Data.List import instance Functor [], instance Applicative [],
 	instance Semigroup [a], instance Monoid [a], instance Foldable [], instance Traversable []
-import qualified Data.Traversable as Traversable
+import qualified Data.Traversable
 from Data.Traversable import class Traversable (..)
 from Data.Foldable import class Foldable (..)
-import qualified Data.Foldable as DF
 from StdFunc import o, id, flip
 from StdOverloaded import class < (..), class == (..), class + (..), class isEven
 from StdInt import instance isEven Int, instance + Int, instance == Int, instance < Int, instance - Int
@@ -22,7 +20,10 @@ from StdMisc import abort
 import Data.Maybe
 import Data.Tuple
 from StdList import repeatn
-import qualified StdList as SL
+
+import qualified Data.Foldable
+import qualified Data.List
+import qualified StdList
 
 // The implementation of 'Heap' must internally hold onto the dictionary entry for ('<='),
 // so that it can be made 'Foldable'. Confluence in the absence of incoherent instances
@@ -37,18 +38,19 @@ import qualified StdList as SL
 instance == (Heap a) where
   (==) Empty Empty = True
   (==) Empty _ = False
-  (==) (Heap _ _ _) Empty = False
-  (==) a=:(Heap s1 leq _) b=:(Heap s2 _ _) = s1 == s2 && go leq ('DF'.toList a) ('DF'.toList b)
+  (==) _ Empty = False
+  (==) a=:(Heap s1 leq _) b=:(Heap s2 _ _) = s1 == s2 && go leq ('Data.Foldable'.toList a) ('Data.Foldable'.toList b)
     where
     go f [x:xs] [y:ys] = f x y && f y x && go f xs ys
     go _ []     []     = True
     go _ _      _      = False
+  (==) _ _ = False
 
 instance < (Heap a) where
   < Empty Empty = False
   < Empty _     = True
-  < (Heap _ _ _) Empty = False
-  < a=:(Heap _ leq _) b = go leq ('DF'.toList a) ('DF'.toList b)
+  < _     Empty = False
+  < a=:(Heap _ leq _) b = go leq ('Data.Foldable'.toList a) ('Data.Foldable'.toList b)
     where
     go f [x:xs] [y:ys] =
         if (f x y)
@@ -59,6 +61,7 @@ instance < (Heap a) where
     go f []    []    = False
     go f []    [_:_] = True
     go f [_:_] []    = False
+  < _     _ = False
 
 
 // /O(1)/. Is the heap empty?
@@ -260,14 +263,14 @@ heapify leq n=:(Node r a as)
 // >>> size (fromList [1,5,3])
 // 3
 //fromList :: [a] -> Heap a | Ord a
-fromList xs :== 'SL'.foldr insert mempty xs
+fromList xs :== 'StdList'.foldr insert mempty xs
 
 //fromListWith :: (a a -> Bool) [a] -> Heap a
-fromListWith f xs :== 'SL'.foldr (insertWith f) mempty xs
+fromListWith f xs :== 'StdList'.foldr (insertWith f) mempty xs
 
 // /O(n log n)/. Perform a heap sort
 //sort :: [a] -> [a] | Ord a
-sort xs = 'DF'.toList (fromList xs)
+sort xs = 'Data.Foldable'.toList (fromList xs)
 
 instance Semigroup (Heap a) where
   mappend l r = union l r
@@ -374,15 +377,15 @@ split a (Heap s leq t) = foldMap f t
 // >>> take 3 (fromList [10,2,4,1,9,8,2])
 // fromList [1,2,2]
 //take :: Int (Heap a) -> Heap a
-take :== withList o 'L'.take
+take :== withList o 'Data.List'.take
 
 // /O(n log n)/. Return a heap consisting of all members of given heap except for the @n@ least elements.
 //drop :: Int (Heap a) -> Heap a
-drop :== withList o 'L'.drop
+drop :== withList o 'Data.List'.drop
 
 // /O(n log n)/. Split a heap into two heaps, the first containing the @n@ least elements, the latter consisting of all members of the heap except for those elements.
 //splitAt :: Int (Heap a) -> (Heap a, Heap a)
-splitAt :== splitWithList o 'L'.splitAt
+splitAt :== splitWithList o 'Data.List'.splitAt
 
 // /O(n log n)/. 'break' applied to a predicate @p@ and a heap @xs@ returns a tuple where the first element is a heap consisting of the
 // longest prefix the least elements of @xs@ that /do not satisfy/ p and the second element is the remainder of the elements in the heap.
@@ -392,7 +395,7 @@ splitAt :== splitWithList o 'L'.splitAt
 //
 // 'break' @p@ is equivalent to @'span' ('not' . p)@.
 //break :: (a -> Bool) (Heap a) -> (Heap a, Heap a)
-break :== splitWithList o 'L'.break
+break :== splitWithList o 'Data.List'.break
 
 // /O(n log n)/. 'span' applied to a predicate @p@ and a heap @xs@ returns a tuple where the first element is a heap consisting of the
 // longest prefix the least elements of xs that satisfy @p@ and the second element is the remainder of the elements in the heap.
@@ -402,7 +405,7 @@ break :== splitWithList o 'L'.break
 //
 // 'span' @p xs@ is equivalent to @('takeWhile' p xs, 'dropWhile p xs)@
 //span :: (a -> Bool) (Heap a) -> (Heap a, Heap a)
-span :== splitWithList o 'L'.span
+span :== splitWithList o 'Data.List'.span
 
 // /O(n log n)/. 'takeWhile' applied to a predicate @p@ and a heap @xs@ returns a heap consisting of the
 // longest prefix the least elements of @xs@ that satisfy @p@.
@@ -410,14 +413,14 @@ span :== splitWithList o 'L'.span
 // >>> takeWhile (\x -> x `mod` 4 == 0) (fromList [4,8,12,14,16])
 // fromList [4,8,12]
 //takeWhile :: (a -> Bool) (Heap a) -> Heap a
-takeWhile :== withList o 'L'.takeWhile
+takeWhile :== withList o 'Data.List'.takeWhile
 
 // /O(n log n)/. 'dropWhile' @p xs@ returns the suffix of the heap remaining after 'takeWhile' @p xs@.
 //
 // >>> dropWhile (\x -> x `mod` 4 == 0) (fromList [4,8,12,14,16])
 // fromList [14,16]
 //dropWhile :: (a -> Bool) (Heap a) -> Heap a
-dropWhile :== withList o 'L'.dropWhile
+dropWhile :== withList o 'Data.List'.dropWhile
 
 // /O(n log n)/. Remove duplicate entries from the heap.
 //
@@ -460,7 +463,7 @@ groupBy f h=:(Heap _ leq t) = insert (insertWith leq x ys) (groupBy f zs)
 intersect :: (Heap a) (Heap a) -> Heap a
 intersect Empty _ = Empty
 intersect _ Empty = Empty
-intersect a=:(Heap _ leq _) b = go leq ('DF'.toList a) ('DF'.toList b)
+intersect a=:(Heap _ leq _) b = go leq ('Data.Foldable'.toList a) ('Data.Foldable'.toList b)
   where
   go leq` xxs=:[x:xs] yys=:[y:ys] =
       if (leq` x y)
@@ -477,7 +480,7 @@ intersect _ _ = abort "error in intersect\n"
 intersectWith :: (a a -> b) (Heap a) (Heap a) -> Heap b | Ord b
 intersectWith _ Empty _ = Empty
 intersectWith _ _ Empty = Empty
-intersectWith f a=:(Heap _ leq _) b = go leq f ('DF'.toList a) ('DF'.toList b)
+intersectWith f a=:(Heap _ leq _) b = go leq f ('Data.Foldable'.toList a) ('Data.Foldable'.toList b)
   where
   go :: (a a -> Bool) (a a -> b) [a] [a] -> Heap b | Ord b
   go leq` f` xxs=:[x:xs] yys=:[y:ys]
@@ -493,12 +496,12 @@ intersectWith _ _ _ = abort "error in intersectWith\n"
 
 // /O(n log n)/. Traverse the elements of the heap in sorted order and produce a new heap using 'Applicative' side-effects.
 //traverse :: (a -> t b) (Heap a) -> t (Heap b) | Applicative t & Ord b
-traverseHeap f h :== fmap fromList ('Traversable'.traverse f ('DF'.toList h))
+traverseHeap f h :== fmap fromList ('Data.Traversable'.traverse f ('Data.Foldable'.toList h))
 
 // /O(n log n)/. Traverse the elements of the heap in sorted order and produce a new heap using 'Monad'ic side-effects.
 //mapM :: (a -> m b) (Heap a) -> m (Heap b) | Monad m & Ord b
 //mapM f h = liftM fromList ('Traversable'.mapM f (toList h))
-mapMHeap f h :== liftM fromList ('Traversable'.mapM f ('DF'.toList h))
+mapMHeap f h :== liftM fromList ('Data.Traversable'.mapM f ('Data.Foldable'.toList h))
 
 //both :: (a -> b) (a, a) -> (b, b)
 both f (a, b) :== (f a, f b)
@@ -634,11 +637,11 @@ splitForest _ _ _ _ = abort "Heap.splitForest: invalid arguments"
 
 withList :: ([a] -> [a]) (Heap a) -> Heap a
 withList _ Empty = Empty
-withList f hp=:(Heap _ leq _) = fromListWith leq (f ('DF'.toList hp))
+withList f hp=:(Heap _ leq _) = fromListWith leq (f ('Data.Foldable'.toList hp))
 
 splitWithList :: ([a] -> ([a], [a])) (Heap a) -> (Heap a, Heap a)
 splitWithList _ Empty = (Empty, Empty)
-splitWithList f hp=:(Heap _ leq _) = both (fromListWith leq) (f ('DF'.toList hp))
+splitWithList f hp=:(Heap _ leq _) = both (fromListWith leq) (f ('Data.Foldable'.toList hp))
 
 // explicit priority/payload tuples
 

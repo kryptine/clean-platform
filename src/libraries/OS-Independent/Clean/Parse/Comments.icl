@@ -13,8 +13,7 @@ import StdTuple
 import Control.Monad
 import Data.Error
 import Data.Functor
-from Data.Map import :: Map
-import qualified Data.Map as M
+from Data.Map import :: Map(..), newMap, put, get
 import Data.Maybe
 import System.File
 import System.FilePath
@@ -226,17 +225,17 @@ instance < CommentIndex where < (CI a b c) (CI d e f) = (a,b,c) < (d,e,f)
 
 putCC k v coll :== case commentIndex k of
 	Nothing -> coll
-	Just k  -> 'M'.put k v coll
+	Just k  -> put k v coll
 
 emptyCollectedComments :: CollectedComments
-emptyCollectedComments = 'M'.newMap
+emptyCollectedComments = newMap
 
 getComment :: !a !CollectedComments -> Maybe String | commentIndex a
-getComment elem coll = (\cc -> cc.content) <$> (flip 'M'.get coll =<< commentIndex elem)
+getComment elem coll = (\cc -> cc.content) <$> (flip get coll =<< commentIndex elem)
 
 collectComments :: ![CleanComment] !ParsedModule -> CollectedComments
 collectComments comments pm
-# coll = 'M'.newMap
+# coll = newMap
 # (comments,coll) = case comments of
 	[] -> ([], coll)
 	[c:cs]

@@ -2,8 +2,7 @@ implementation module Control.Applicative
 
 import Control.Monad
 import Data.Func, Data.Functor, System.IO, Data.List, Data.Maybe
-from Data.Monoid import class Monoid, class Semigroup
-import qualified Data.Monoid as DM
+import Data.Monoid
 from StdFunc import id, o, flip, const
 
 class Applicative f | Functor f
@@ -24,14 +23,14 @@ instance Functor (Const m) where
   fmap _ (Const v) = Const v
 
 instance Semigroup (Const a b) | Semigroup a where
-  mappend (Const a) (Const b) = Const ('DM'.mappend a b)
+  mappend (Const a) (Const b) = Const (mappend a b)
 
 instance Monoid (Const a b) | Monoid a where
-  mempty = Const 'DM'.mempty
+  mempty = Const mempty
 
 instance Applicative (Const m) | Monoid m where
-  pure _ = Const 'DM'.mempty
-  (<*>) (Const f) (Const v) = Const ('DM'.mappend f v)
+  pure _ = Const mempty
+  (<*>) (Const f) (Const v) = Const (mappend f v)
 
 unwrapMonad :: !(WrappedMonad m a) -> m a
 unwrapMonad (WrapMonad x) = x
