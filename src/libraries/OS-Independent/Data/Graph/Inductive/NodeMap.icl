@@ -5,7 +5,6 @@ implementation module Data.Graph.Inductive.NodeMap
 //import           Control.Monad.Trans.State // TODO Implement monadic interface
 import Control.Monad, Control.Applicative, Data.Functor
 import StdOverloaded, StdBool, StdClass, StdTuple, StdInt
-from StdFunc import o
 import Data.Maybe
 //import           Data.Graph.Inductive.Graph
 from Data.Graph.Inductive.Graph import class Graph, class DynGraph, :: LNode, :: Node, :: LEdge, :: Edge
@@ -13,6 +12,8 @@ import qualified Data.Graph.Inductive.Graph
 from             Data.Map import :: Map, instance == (Map k v)
 import qualified Data.Map
 import qualified Data.List
+import Data.Func
+import StdEnv
 
 :: NodeMap a =
   { map :: Map a Node
@@ -85,7 +86,7 @@ insMapNode_ m a g =
 
 insMapEdge :: (NodeMap a) (a, a, b) (g a b) -> g a b | Ord a & DynGraph g
 insMapEdge m e g =
-    let (Just e`) = mkEdge m e
+    let e` = maybe (abort "shouldn't happen") id $ mkEdge m e
     in 'Data.Graph.Inductive.Graph'.insEdge e` g
 
 delMapNode :: (NodeMap a) a (g a b) -> g a b | Ord a & DynGraph g
@@ -95,7 +96,7 @@ delMapNode m a g =
 
 delMapEdge :: (NodeMap a) (a, a) (g a b) -> g a b | Ord a & DynGraph g
 delMapEdge m (n1, n2) g =
-    let (Just (n1`, n2`, _)) = mkEdge m (n1, n2, ())
+    let (n1`, n2`, _) = maybe (abort "shouldn't happen") id $ mkEdge m (n1, n2, ())
     in 'Data.Graph.Inductive.Graph'.delEdge (n1`, n2`) g
 
 insMapNodes :: (NodeMap a) [a] (g a b) -> (g a b, NodeMap a, [LNode a]) | Ord a & DynGraph g
@@ -110,7 +111,7 @@ insMapNodes_ m as g =
 
 insMapEdges :: (NodeMap a) [(a, a, b)] (g a b) -> g a b | Ord a & DynGraph g
 insMapEdges m es g =
-    let (Just es`) = mkEdges m es
+    let es` = maybe (abort "Shouldn't happen") id $ mkEdges m es
     in 'Data.Graph.Inductive.Graph'.insEdges es` g
 
 delMapNodes :: (NodeMap a) [a] (g a b) -> g a b | Ord a & DynGraph g
@@ -120,14 +121,14 @@ delMapNodes m as g =
 
 delMapEdges :: (NodeMap a) [(a, a)] (g a b) -> g a b | Ord a & DynGraph g
 delMapEdges m ns g =
-    let (Just ns`) =  mkEdges m ('Data.List'.map (\(a, b) -> (a, b, ())) ns)
+    let ns` =  maybe (abort "shouldn't happen") id $ mkEdges m ('Data.List'.map (\(a, b) -> (a, b, ())) ns)
         ns`` = 'Data.List'.map (\(a, b, _) -> (a, b)) ns`
     in 'Data.Graph.Inductive.Graph'.delEdges ns`` g
 
 mkMapGraph :: [a] [(a, a, b)] -> (g a b, NodeMap a) | Ord a & DynGraph g
 mkMapGraph ns es =
     let (ns`, m`) = mkNodes new ns
-        (Just es`) = mkEdges m` es
+        es` = maybe (abort "shouldn't happen") id $ mkEdges m` es
     in ('Data.Graph.Inductive.Graph'.mkGraph ns` es`, m`)
 
 // | Graph construction monad; handles passing both the `NodeMap` and the

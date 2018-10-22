@@ -44,6 +44,7 @@ instance == (Heap a) where
     go f [x:xs] [y:ys] = f x y && f y x && go f xs ys
     go _ []     []     = True
     go _ _      _      = False
+  (==) _ _ = False
 
 instance < (Heap a) where
   < Empty Empty = False
@@ -60,6 +61,7 @@ instance < (Heap a) where
     go f []    []    = False
     go f []    [_:_] = True
     go f [_:_] []    = False
+  < _     _ = False
 
 
 // /O(1)/. Is the heap empty?
