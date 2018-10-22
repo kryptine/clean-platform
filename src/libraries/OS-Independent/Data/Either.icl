@@ -3,7 +3,6 @@ implementation module Data.Either
 from StdEnv import flip, id, o, const
 from StdMisc import abort
 import Control.Applicative
-import Control.Monad => qualified mapM
 import Data.Monoid
 import Data.Functor
 import Data.Maybe
