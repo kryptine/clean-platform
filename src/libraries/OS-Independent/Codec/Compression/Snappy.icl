@@ -37,7 +37,7 @@ where
 snappy_uncompress :: !.String -> .String
 snappy_uncompress s
 #! n = snappy_uncompressed_length s
-#! u = createArray (n+1) '\0'
+#! u = unsafeCreateArray (n+1)
 #! (r,len) = uncompress s (size s) u
 | r <> 0 = abort ("Invalid return status of snappy_uncompress: " <+ r <+ "\n")
 = {c \\ c <-: u & i <- [0..len-1]}
