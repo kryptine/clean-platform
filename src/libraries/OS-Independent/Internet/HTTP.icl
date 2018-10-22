@@ -178,14 +178,12 @@ where
 
 //Server utilities
 parseRequestLine	:: !String																							-> Maybe (!String, !String, !String, !String)
-parseRequestLine line
-	# parts						= split " " line
-	| length parts <> 3			= Nothing
-	# [method,path,version:_]	= parts
-	# qindex					= indexOf "?" path
-	| qindex <> -1				= Just (method, path % (0, qindex - 1), path % (qindex + 1, size path), version)
-								= Just (method, path, "", version)
-	
+parseRequestLine line = case split " " line of
+	[method,path,version] -> case indexOf "?" path of
+		-1 -> Just (method, path, "", version)
+		qi -> Just (method, path % (0, qi - 1), path % (qi + 1, size path), version)
+	_      -> Nothing
+
 parseHeader			:: !String																							-> Maybe (!String, !String)
 parseHeader header
 	# index					= indexOf ":" header

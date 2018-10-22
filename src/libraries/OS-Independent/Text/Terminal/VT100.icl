@@ -2,6 +2,7 @@ implementation module Text.Terminal.VT100
 
 import _SystemArray
 from StdFunc import o, flip
+import StdMisc
 from Data.Func import $
 from Text import class Text(split,join,concat), instance Text String
 
@@ -110,6 +111,7 @@ where
 		| isMember c m = (c, [], cs)
 		| isDigit c || c == ';' = appSnd3 (\cc->[c:cc]) $ uptom m cs
 		= ('-', [], cs)
+	uptom _ [] = abort "error in vt100render\n"
 
 	style :: (Int -> Map String String)
 	style = fromList o maybeToList o flip get s.cssmap

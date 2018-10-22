@@ -679,6 +679,7 @@ hedgeUnion blo bhi (Bin _ kx x l r) t2
   #! bmi = Just kx
   = link kx x (hedgeUnion blo bmi l (trim blo bmi t2))
               (hedgeUnion bmi bhi r (trim bmi bhi t2))
+hedgeUnion _ _ _ _ = abort "error in hedgeUnion\n"
 
 //////////////////////////////////////////////////////////////////////
 //  Union with a combining function
@@ -717,6 +718,7 @@ hedgeDiff blo bhi (Bin _ kx x l r) Tip = link kx x (filterGt blo l) (filterLt bh
 hedgeDiff blo bhi t (Bin _ kx _ l r)
   #! bmi = Just kx
   = merge (hedgeDiff blo bmi (trim blo bmi t) l) (hedgeDiff bmi bhi (trim bmi bhi t) r)
+hedgeDiff _ _ _ _ = abort "error in hedgeDiff\n"
 
 // | /O(n+m)/. Difference with a combining function.
 // When two equal keys are
@@ -856,6 +858,7 @@ hedgeMerge f g1 g2 blo bhi (Bin _ kx x l r) t2
       Just x2 -> case f kx x x2 of
                    Nothing -> merge l` r`
                    Just x` -> link kx x` l` r`
+hedgeMerge _ _ _ _ _ _ _ = abort "error in hedgeMerge\n"
 
 //////////////////////////////////////////////////////////////////////
 //  Submap
@@ -896,6 +899,7 @@ submap` f (Bin _ kx x l r) t
       Just y  -> f x y && submap` f l lt && submap` f r gt
   where
     (lt,found,gt) = splitLookup kx t
+submap` _ _ _ = abort "error in submap`\n"
 
 // | /O(n+m)/. Is this a proper submap? (ie. a submap but not equal).
 // Defined as (@'isProperSubmapOf' = 'isProperSubmapOfBy` (==)@).
@@ -1664,6 +1668,7 @@ link kx x l=:(Bin mapSizeL ky y ly ry) r=:(Bin mapSizeR kz z lz rz)
   | delta*mapSizeL < mapSizeR  = balanceL kz z (link kx x l lz) rz
   | delta*mapSizeR < mapSizeL  = balanceR ky y ly (link kx x ry r)
   | otherwise                  = bin kx x l r
+link _ _ _ _ = abort "error in link\n"
 
 
 // putMin and putMax don't perform potentially expensive comparisons.
@@ -1691,6 +1696,7 @@ merge l=:(Bin mapSizeL kx x lx rx) r=:(Bin mapSizeR ky y ly ry)
   | delta*mapSizeL < mapSizeR = balanceL ky y (merge l ly) ry
   | delta*mapSizeR < mapSizeL = balanceR kx x lx (merge rx r)
   | otherwise                 = glue l r
+merge _ _ = abort "error in merge\n"
 
 ////////////////////////////////////////////////////////////////////
 //  [glue l r]: glues two trees together.

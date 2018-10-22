@@ -146,6 +146,7 @@ where
 	charOf '\r' = 'r'
 	charOf '\t' = 't'
 	charOf '\\' = '\\'
+	charOf _   = abort "error in copyAndEscapeChars\n"
 	
 	toHexDigit c
 		| c < 10 = toChar (c + 48)
@@ -177,6 +178,7 @@ where
 		printNodes [(k,v)]    f = f <<< '"' <<< jsonEscape k <<< "\":" <<< v
 		printNodes [(k,v):ns] f = printNodes ns (f <<< '"' <<< jsonEscape k <<< "\":" <<< v <<< ",")
 	(<<<) f (JSONRaw s)         = f <<< s
+	(<<<) f JSONError           = abort "<<< called on JSONError\n"
 
 //Basic JSON deserialization (just structure)
 instance fromString JSONNode
@@ -427,6 +429,7 @@ where
 	charOf 'r' = '\r'
 	charOf 't' = '\t'
 	charOf '\\' = '\\'
+	charOf _   = abort "error in copyAndUnescapeChars\n"
 	
 	fromHexDigit :: Char -> Int
 	fromHexDigit c

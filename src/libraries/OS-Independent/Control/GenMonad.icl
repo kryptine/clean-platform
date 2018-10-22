@@ -37,6 +37,7 @@ instance Monad [] where
 	ret x = [x]
 	//(>>=) xs f = flatten (map f xs)	// uniqueness typing makes it a problem because f is shared
 	(>>=) [x:xs] f = f x
+	(>>=) []     _ = []
 
 //-----------------------
 // state monad 

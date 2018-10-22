@@ -3,6 +3,7 @@ implementation module Clean.Types.Util
 import StdArray
 import StdBool
 from StdFunc import flip, id, o
+import StdMisc
 import StdOrdList
 import StdString
 import StdTuple
@@ -95,15 +96,9 @@ where
 
 instance print TypeDefRhs
 where
-	print _ (TDRCons ext cs)         = "\n\t= " -- makeADT ext cs
-	where
-		makeADT :: !Bool ![Constructor] -> String
-		makeADT exten [] = if exten " .." ""
-		makeADT False [c1:cs]
-			= concat (c1 -- "\n" --
-				concat [concat ("\t| " -- c -- "\n") \\ c <- cs])
-		makeADT True cs = concat (makeADT False cs -- "\t| ..")
-	print _ (TDRNewType c) = " =: " -- c
+	print _ (TDRCons ext cs)         = "\n\t= " -- printADT ext cs
+	print _ (TDRMoreConses cs)       = "\n\t| " -- printADT False cs
+	print _ (TDRNewType c)           = " =: " -- c
 	print _ (TDRRecord _ exi fields) = " =" --
 		if (isEmpty exi) [] (" E." -- printersperse False " " exi -- ":") --
 		"\n\t" -- makeRecord exi fields
@@ -123,6 +118,15 @@ where
 	print _ (TDRAbstract Nothing)    = []
 	print _ (TDRAbstract (Just rhs)) = " /*" -- rhs -- " */"
 	print _ (TDRAbstractSynonym t)   = " (:== " -- t -- ")"
+
+printADT :: !Bool ![Constructor] -> String
+printADT True cs = case cs of
+	[] -> ".."
+	cs -> concat (printADT False cs -- "\t| ..")
+printADT False cs = case cs of
+	[]      -> ""
+	[c1:cs] -> concat (c1 -- "\n" --
+		concat [concat ("\t| " -- c -- "\n") \\ c <- cs])
 
 typeConstructorName :: !Bool !Bool !String ![Type] -> [String]
 typeConstructorName isInfix isArg t as
@@ -191,24 +195,28 @@ resolve_synonyms :: (Map String [TypeDef]) !Type -> ([TypeDef], Type)
 resolve_synonyms tds (Type t ts)
 	# (syns, ts) = appFst (removeDupTypedefs o flatten) $ unzip $ map (resolve_synonyms tds) ts
 	= case candidates of
-		[] = (syns, Type t ts)
+		[] -> (syns, Type t ts)
 		[syn=:{td_args, td_rhs=TDRSynonym synt}:_]
 			# newargs = map ((+++) "__" o fromVar) td_args
-			# (Just t)
-				= assignAll [(fromVar a, Var n) \\ a <- td_args & n <- newargs] synt
-				>>= assignAll [(a,r) \\ a <- newargs & r <- ts]
-			| length td_args <> length ts
-				# (Type r rs) = t
-				# t = Type r $ rs ++ drop (length td_args) ts
-				= appFst ((++) [syn:syns]) $ resolve_synonyms tds t
-			= appFst ((++) [syn:syns]) $ resolve_synonyms tds t
+			# t = case assignAll [(fromVar a, Var n) \\ a <- td_args & n <- newargs] synt
+					>>= assignAll [(a,r) \\ a <- newargs & r <- ts] of
+				Just t -> t
+				_      -> abort "error in resolve_synonyms_Type\n"
+			| length td_args <> length ts -> case t of
+				Type r rs
+					# t = Type r $ rs ++ drop (length td_args) ts
+					-> appFst ((++) [syn:syns]) $ resolve_synonyms tds t
+				_   -> abort "error in resolve_synonyms_Type\n"
+			-> appFst ((++) [syn:syns]) $ resolve_synonyms tds t
+		_ -> abort "error in resolve_synonyms_Type\n"
 where
 	candidates = [td \\ td=:{td_rhs=TDRSynonym syn} <- fromMaybe [] $ get t tds
 		| length td.td_args <= tslen && (isType syn || length td.td_args == tslen)]
 	where tslen = length ts
 resolve_synonyms tds (Func is r tc)
-	# (syns, [r:is]) = appFst (removeDupTypedefs o flatten) $ unzip $ map (resolve_synonyms tds) [r:is]
-	= (syns, Func is r tc)
+	= case appFst (removeDupTypedefs o flatten) $ unzip $ map (resolve_synonyms tds) [r:is] of
+		(syns, [r:is]) -> (syns, Func is r tc)
+		_              -> abort "error in resolve_synonyms_Func\n"
 resolve_synonyms _ (Var v)
 	= ([], Var v)
 resolve_synonyms tds (Cons v ts)

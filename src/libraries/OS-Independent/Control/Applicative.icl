@@ -5,6 +5,17 @@ import Data.Func, Data.Functor, System.IO, Data.List, Data.Maybe
 import Data.Monoid
 from StdFunc import id, o, flip, const
 
+class Applicative f | Functor f
+where
+	pure           :: a -> f a
+	(<*>) infixl 4 :: !(f (a -> b)) (f a) -> f b
+
+	(<*) infixl 4  :: !(f a) (f b) -> f a
+	(<*) fa fb = pure (\x _->x) <*> fa <*> fb
+
+	(*>) infixl 4  :: !(f a) (f b) -> f b
+	(*>) fa fb = pure (\_ x->x) <*> fa <*> fb
+
 getConst :: !(Const a b) -> a
 getConst (Const x) = x
 
@@ -47,10 +58,6 @@ many :: (f a) -> f [a] | Alternative f
 many v = many_v
   where  many_v  = some_v <|> lift []
          some_v  = (\x xs -> [x:xs]) <$> v <*> many_v
-
-instance *> f where *> fa fb = id <$ fa <*> fb
-
-instance <* f where <* fa fb = liftA2 const fa fb
 
 (<**>) infixl 4 :: (f a) (f (a -> b)) -> f b | Applicative f
 (<**>) fa fab = liftA2 (flip ($)) fa fab
