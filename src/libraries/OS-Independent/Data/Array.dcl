@@ -35,3 +35,5 @@ instance +++ (arr a) | Array arr a
 instance Functor {}, {!}
 instance Applicative {}, {!}
 instance Monad {}, {!}
+
+reduceArray :: ((.a -> u:(b -> b)) -> .(b -> .(c -> .a))) (.a -> u:(b -> b)) b .(d c) -> b | Array d c

@@ -15,7 +15,7 @@ from Data.Func import $
 import Data.Functor
 import Data.GenEq
 import Data.List
-import qualified Data.Map as M
+from Data.Map import :: Map(..), get
 import Data.Maybe
 import Data.Tuple
 from Text import class Text (concat), instance Text String
@@ -191,7 +191,7 @@ propagate_uniqueness p (Strict t)
 propagate_uniqueness p t
 	= t
 
-resolve_synonyms :: ('M'.Map String [TypeDef]) !Type -> ([TypeDef], Type)
+resolve_synonyms :: (Map String [TypeDef]) !Type -> ([TypeDef], Type)
 resolve_synonyms tds (Type t ts)
 	# (syns, ts) = appFst (removeDupTypedefs o flatten) $ unzip $ map (resolve_synonyms tds) ts
 	= case candidates of
@@ -210,7 +210,7 @@ resolve_synonyms tds (Type t ts)
 			-> appFst ((++) [syn:syns]) $ resolve_synonyms tds t
 		_ -> abort "error in resolve_synonyms_Type\n"
 where
-	candidates = [td \\ td=:{td_rhs=TDRSynonym syn} <- fromMaybe [] $ 'M'.get t tds
+	candidates = [td \\ td=:{td_rhs=TDRSynonym syn} <- fromMaybe [] $ get t tds
 		| length td.td_args <= tslen && (isType syn || length td.td_args == tslen)]
 	where tslen = length ts
 resolve_synonyms tds (Func is r tc)
@@ -276,7 +276,7 @@ reduceArities (Forall tvs t tc) = Forall tvs (reduceArities t) tc
 reduceArities (Arrow mt) = Arrow (reduceArities <$> mt)
 reduceArities (Strict t) = Strict $ reduceArities t
 
-normalise_type :: (String -> Bool) !('M'.Map String [TypeDef]) !Type -> (!Type, ![TypeDef], ![TypeVar])
+normalise_type :: (String -> Bool) !(Map String [TypeDef]) !Type -> (!Type, ![TypeDef], ![TypeVar])
 normalise_type alwaysUnique tds t
 # t        = reduceArities t
 # (syns,t) = resolve_synonyms tds t
