@@ -155,8 +155,8 @@ concatMap :: (.a -> [.b]) ![.a] -> [.b]
 concatMap f ls = flatten (map f ls)
 
 maximum :: !.[a] -> a | < a
-maximum [x:xs] = max x (maximum xs)
 maximum [x]    = x
+maximum [x:xs] = max x (maximum xs)
 maximum []     = abort "maximum of empty list\n"
 
 minimum :: !.[a] -> a | Ord a
