@@ -2,24 +2,21 @@
 
 Serial port library for [clean](http://clean.cs.ru.nl). Build with `make`.
 
-Linux and mac are fully supported. Windows support is only available at the
-moment as a stub.  The functions are not implemented so it will crash.
-
-## How to use
-TODO
-
-## Builds
-Builds are available for Windows and Linux [here]([cpm](https://gitlab.science.ru.nl/mlubbers/CleanSerial/builds/artifacts/master/browse?job=clients)).
-Just unzip it in `$CLEAN_HOME/lib` and add the path to your search paths in the
-IDE/`cpm` or `clm`.
+Linux x64, mac x64 and windows x86 and x64 supported.
+Autobuilds are available for [linux x64][linux64], windows [x86][windows86] and [x64][windows64].
+The autobuilds can be extracted in the lib folder on linux or the Libraries
+folder on windows
 
 ## Build it yourself
 ### Linux and mac
-Run `make install`.
+Run `make`.
 
 ### Windows
-Not sure, if I compile the object file with mingw it doesn't work. Cross
-compiling works...
+Run `make` in a mingw msys2 shell.
 
 ### Build the windows version on another OS
-Install `gcc-mingw-w64` and run `DETECTED_OS=Windows CC=x86_64-w64-mingw32-gcc make`
+See `.gitlab-ci.yml`
+
+[linux64]: https://gitlab.science.ru.nl/mlubbers/CleanSerial/builds/artifacts/master/file/CleanSerial-linux-x64.tar.gz?job=linux
+[windows64]: https://gitlab.science.ru.nl/mlubbers/CleanSerial/builds/artifacts/master/file/CleanSerial-windows-x64.tar.gz?job=windows-x64
+[windows86]: https://gitlab.science.ru.nl/mlubbers/CleanSerial/builds/artifacts/master/file/CleanSerial-windows-x86.tar.gz?job=windows-x86
