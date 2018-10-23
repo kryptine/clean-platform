@@ -1,38 +1,19 @@
-implementation module IRC
+implementation module Internet.IRC
 
 import StdEnv
 
 import Control.Applicative
-import Control.Monad => qualified join
+from Control.Monad import class Monad(..)
 import Data.Either
 import Data.Func
 import Data.Maybe
+import Data.Tuple
 import Text
 import Text.GenPrint
 import Text.Parsers.Simple.Chars
 import Text.Parsers.Simple.Core
 
-import GenIRC
-
 derive gPrint IRCErrors, IRCReplies, Maybe, Either, IRCUser, IRCNumReply
-
-Start = (map (fmap toString) msgs, msgs)
-where
-	msgs =
-		[ parseIRCMessage ":clooglebot!~cloogle@dhcp-077-249-221-037.chello.nl QUIT\r\n"
-		, parseIRCMessage ":clooglebot!~cloogle QUIT\r\n"
-		, parseIRCMessage ":frobnicator!~frobnicat@92.110.128.124 QUIT\r\n"
-		, parseIRCMessage ":frobnicator!~frobnicat@92.110.128.124 AWAY test\r\n"
-		, parseIRCMessage ":frobnicator!~frobnicat@92.110.128.124 AWAY :test with spaces\r\n"
-		, parseIRCMessage ":cherryh.freenode.net NOTICE * :*** Found your hostname\r\n"
-		, parseIRCMessage ":cherryh.freenode.net QUIT :hoi hoi\r\n"
-		, parseIRCMessage ":cherryh.freenode.net JOIN #cha,#ch-b #twilight\r\n"
-		, parseIRCMessage ":cherryh.freenode.net ISON a b c d e f :g h\r\n"
-		, parseIRCMessage ":wilhelm.freenode.net 001 clooglebot :Welcome to the freenode Internet Relay Chat Network clooglebot\r\n"
-		, parseIRCMessage "PING :orwell.freenode.net\r\n"
-		, parseIRCMessage ":ChanServ!ChanServ@services. MODE #cloogle +o frobnicator\r\n"
-		, parseIRCMessage ":qbot_v01!~qbot@ip-213-124-170-20.ip.prioritytelecom.net PRIVMSG ##chinees :[link] Cloogle - https://cloogle.org"
-		]
 
 parseIRCMessage :: String -> Either [Error] IRCMessage
 parseIRCMessage s = case runParser parsePrefix (fromString s) of
@@ -418,3 +399,55 @@ instance toInt IRCErrors where
 		ERR_UMODEUNKNOWNFLAG = 501
 		ERR_USERSDONTMATCH = 502
 		ERR_UNKNOWN = 999
+
+//Printing and parsing
+derive gIRCParse IRCCommand, (,)
+derive gIRCPrint IRCCommand, (,)
+
+pOne [] = (Left "Expected an argument", [])
+pOne [a:as] = (Right a, as)
+
+generic gIRCParse a :: [String] -> (Either Error a, [String])
+gIRCParse{|UNIT|} a = (Right UNIT, a)
+gIRCParse{|String|} as = pOne as
+gIRCParse{|Int|} as = appFst (fmap toInt) $ pOne as
+gIRCParse{|EITHER|} lp rp as = case lp as of
+	(Right a, rest) = (Right $ LEFT a, rest)
+	(Left e1, _) = case rp as of
+		(Right a, rest) = (Right $ RIGHT a, rest)
+		(Left e2, _) = (Left $ e2, [])
+gIRCParse{|OBJECT|} p as = appFst (fmap OBJECT) $ p as
+gIRCParse{|CONS of d|} p []
+	= (Left $ concat ["Expected a cmd constructor: ", d.gcd_name], [])
+gIRCParse{|CONS of d|} p [a:as]
+	| a <> d.gcd_name = (Left $ concat [
+		"Wrong constructor. expected: ", d.gcd_name, ", got: ", a], [])
+	= case p as of
+		(Right a, rest) = (Right $ CONS a, rest)
+		(Left e, _) = (Left e, [])
+gIRCParse{|PAIR|} pl pr as = case pl as of
+	(Right a1, rest) = case pr rest of
+		(Right a2, rest) = (Right $ PAIR a1 a2, rest)
+		(Left e, _) = (Left e, [])
+	(Left e, _) = (Left e, [])
+gIRCParse{|[]|} pl as = case pl as of
+		(Right e, rest) = case gIRCParse{|*->*|} pl rest of
+			(Right es, rest) = (Right [e:es], rest)
+			(Left e, _) = (Left e, [])
+		(Left e, _) = (Right [], as)
+gIRCParse{|Maybe|} pm as
+	= appFst (either (const $ Right Nothing) $ Right o Just) $ pm as
+gIRCParse{|CSepList|} as = appFst (fmap $ CSepList o split ",") $ pOne as
+
+generic gIRCPrint a :: a -> [String]
+gIRCPrint{|UNIT|} _ = []
+gIRCPrint{|String|} s = if (indexOf " " s == -1) [s] [":"+++s]
+gIRCPrint{|Int|} i = [toString i]
+gIRCPrint{|EITHER|} lp rp (LEFT i) = lp i
+gIRCPrint{|EITHER|} lp rp (RIGHT i) = rp i
+gIRCPrint{|OBJECT|} lp (OBJECT p) = lp p
+gIRCPrint{|PAIR|} lp rp (PAIR l r) = lp l ++ rp r
+gIRCPrint{|CONS of d|} pc (CONS c) = [d.gcd_name:pc c]
+gIRCPrint{|[]|} pl x = flatten $ map pl x
+gIRCPrint{|Maybe|} pl m = gIRCPrint{|*->*|} pl $ maybeToList m
+gIRCPrint{|CSepList|} (CSepList as) = [join "," as]

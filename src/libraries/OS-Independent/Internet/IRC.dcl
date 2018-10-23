@@ -1,4 +1,4 @@
-definition module IRC
+definition module Internet.IRC
 
 from StdOverloaded import class fromInt, class toInt, class toString, class fromString
 
@@ -28,6 +28,7 @@ instance toString IRCCommand, IRCReplies, IRCErrors, IRCMessage, IRCUser, IRCNum
 instance fromInt IRCReplies, IRCErrors
 instance toInt IRCReplies, IRCErrors
 
+//Generic specialization for a separated list
 :: CSepList = CSepList [String]
 :: IRCCommand
 	= ADMIN (Maybe String)
