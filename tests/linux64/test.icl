@@ -152,6 +152,7 @@ import qualified Graphics.Scalable.Internal.Types
 import qualified Graphics.Scalable.Types
 import qualified Internet.HTTP
 import qualified Internet.HTTP.CGI
+import qualified Internet.IRC
 import qualified Math.Geometry
 import qualified Math.Random
 import qualified Network.IP
