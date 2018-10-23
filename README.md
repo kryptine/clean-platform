@@ -17,6 +17,6 @@ Run `make` in a mingw msys2 shell.
 ### Build the windows version on another OS
 See `.gitlab-ci.yml`
 
-[linux64]: https://gitlab.science.ru.nl/mlubbers/CleanSerial/builds/artifacts/master/file/CleanSerial-linux-x64.tar.gz?job=linux
-[windows64]: https://gitlab.science.ru.nl/mlubbers/CleanSerial/builds/artifacts/master/file/CleanSerial-windows-x64.tar.gz?job=windows-x64
-[windows86]: https://gitlab.science.ru.nl/mlubbers/CleanSerial/builds/artifacts/master/file/CleanSerial-windows-x86.tar.gz?job=windows-x86
+[linux64]:   https://gitlab.science.ru.nl/mlubbers/CleanSerial/builds/artifacts/master/file/CleanSerial-linux-x64.tar.gz?job=linux
+[windows64]: https://gitlab.science.ru.nl/mlubbers/CleanSerial/builds/artifacts/master/file/CleanSerial-windows-x64.zip?job=windows-x64
+[windows86]: https://gitlab.science.ru.nl/mlubbers/CleanSerial/builds/artifacts/master/file/CleanSerial-windows-x86.zip?job=windows-x86
