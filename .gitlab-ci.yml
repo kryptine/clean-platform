@@ -1,11 +1,8 @@
-builds:
-    image: camilstaps/clean:nightly
+linux:
+    image: gcc:latest
     script:
-        - apt-get update -qq
-        - apt-get install -yy build-essential gcc-mingw-w64 zip
-        - install_clean.sh clean-base
-        - bash mkpkgs.sh
-    artifacts:
-        paths:
-            - "*.tar.gz"
-            - "*.zip"
+        - cd src
+        - make
+        - mkdir CleanSerial
+        - mv -v "Clean System Files" {TTY,iTasksTTY}.[id]cl POSIX/Platform.[id]cl CleanSerial
+        - tar -zc CleanSerial-linux64.tar.gz
