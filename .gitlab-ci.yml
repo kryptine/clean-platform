@@ -5,4 +5,4 @@ linux:
         - make
         - mkdir CleanSerial
         - mv -v "Clean System Files" {TTY,iTasksTTY}.[id]cl POSIX/Platform.[id]cl CleanSerial
-        - tar -zc CleanSerial-linux64.tar.gz
+        - tar -zfc CleanSerial-linux64.tar.gz CleanSerial
