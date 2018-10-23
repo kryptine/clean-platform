@@ -21,4 +21,4 @@ ctty.o: tty.c
 	$(COMPILE.c) $(OUTPUT_OPTION) $<
 
 clean:
-	$(RM) -rf Clean\ System\ Files
+	$(RM) -rf *.o Clean\ System\ Files
