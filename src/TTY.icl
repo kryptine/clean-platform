@@ -45,7 +45,7 @@ getTTYDevices w
 		(map ((+++) "/dev/") (filter isTTY ds))
 	  , w)
 where
-	isTTY s = not (isEmpty (filter (flip startsWith s) ["tty", "rfcomm"]))
+	isTTY s = not (isEmpty (filter (flip startsWith s) ["tty", "rfcomm", "cu"]))
 
 makeTTYSettings :: String BaudRate ByteSize Parity Bool Bool Int -> TTYSettings
 makeTTYSettings dp br bs pr sb xx st = {TTYSettings | devicePath=dp, baudrate=br,
