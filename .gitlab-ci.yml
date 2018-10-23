@@ -5,4 +5,24 @@ linux:
         - make
         - mkdir CleanSerial
         - mv -v "Clean System Files" {TTY,iTasksTTY}.[id]cl POSIX/Platform.[id]cl CleanSerial
-        - tar -cfz CleanSerial-linux64.tar.gz CleanSerial
+        - tar cfz CleanSerial-linux-x64.tar.gz CleanSerial
+windows-x86:
+    image: debian:latest
+    script:
+        - apt-get update -qq
+        - apt-get install -yy build-essential gcc-mingw-w64 zip
+        - cd src
+        - make DETECTED_OS=Windows CC=x86_64-w64-mingw32-gcc-win32 CFLAGS=-m32
+        - mkdir CleanSerial
+        - mv -v "Clean System Files" {TTY,iTasksTTY}.[id]cl Windows/Platform.[id]cl CleanSerial
+        - zip -rv CleanSerial-windows-x86.zip CleanSerial
+windows-x64:
+    image: debian:latest
+    script:
+        - apt-get update -qq
+        - apt-get install -yy build-essential gcc-mingw-w64 zip
+        - cd src
+        - make DETECTED_OS=Windows CC=x86_64-w64-mingw32-gcc CFLAGS=-m64
+        - mkdir CleanSerial
+        - mv -v "Clean System Files" {TTY,iTasksTTY}.[id]cl Windows/Platform.[id]cl CleanSerial
+        - zip -rv CleanSerial-windows-x64.zip CleanSerial
