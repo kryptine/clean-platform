@@ -5,7 +5,10 @@ linux:
         - make
         - mkdir CleanSerial
         - mv -v "Clean System Files" {TTY,iTasksTTY}.[id]cl POSIX/Platform.[id]cl CleanSerial
-        - tar cfz CleanSerial-linux-x64.tar.gz CleanSerial
+        - tar czf CleanSerial-linux-x64.tar.gz CleanSerial
+    artifacts:
+        paths:
+            - src/*.tar.gz
 windows-x86:
     image: debian:latest
     script:
@@ -16,6 +19,9 @@ windows-x86:
         - mkdir CleanSerial
         - mv -v "Clean System Files" {TTY,iTasksTTY}.[id]cl Windows/Platform.[id]cl CleanSerial
         - zip -rv CleanSerial-windows-x86.zip CleanSerial
+    artifacts:
+        paths:
+            - src/*.zip
 windows-x64:
     image: debian:latest
     script:
@@ -26,3 +32,6 @@ windows-x64:
         - mkdir CleanSerial
         - mv -v "Clean System Files" {TTY,iTasksTTY}.[id]cl Windows/Platform.[id]cl CleanSerial
         - zip -rv CleanSerial-windows-x64.zip CleanSerial
+    artifacts:
+        paths:
+            - src/*.zip
