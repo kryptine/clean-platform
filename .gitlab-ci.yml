@@ -8,7 +8,7 @@ linux:
         - tar czf ../CleanSerial-linux-x64.tar.gz CleanSerial
     artifacts:
         paths:
-            - *.tar.gz
+            - ./*.tar.gz
 windows-x86:
     image: debian:latest
     script:
@@ -21,7 +21,7 @@ windows-x86:
         - zip -rv ../CleanSerial-windows-x86.zip CleanSerial
     artifacts:
         paths:
-            - *.zip
+            - ./*.zip
 windows-x64:
     image: debian:latest
     script:
@@ -34,4 +34,4 @@ windows-x64:
         - zip -rv ../CleanSerial-windows-x64.zip CleanSerial
     artifacts:
         paths:
-            - *.zip
+            - ./*.zip
