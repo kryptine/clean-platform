@@ -1,2 +1,5 @@
 kernel32.dll
 QueryDosDeviceA@12
+GetCommState@8
+SetCommState@8
+ClearCommError@12
