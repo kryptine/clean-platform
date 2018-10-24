@@ -239,8 +239,8 @@ collectComments comments pm
 # (comments,coll) = case comments of
 	[] -> ([], coll)
 	[c:cs]
-		| c.line <= 3 -> (cs, putCC pm c coll)
-		| otherwise   -> (comments, coll)
+		| c.line <= 3 && startsWith "*" c.content -> (cs, putCC pm c coll)
+		| otherwise -> (comments, coll)
 # (_,_,coll) = collect comments Nothing pm.mod_defs coll
 = coll
 
