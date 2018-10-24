@@ -61,10 +61,13 @@ optional :: (f a) -> f (Maybe a) | Alternative f
  *     when debug (putStrLn "Debugging")
  *
  * will output the string Debugging if the Boolean value debug is True, and otherwise do nothing.
+ *
+ * @type Bool (f ()) -> f () | Applicative f
  */
 when p s :== if p s (pure ())
 
 /**
  * The reverse of `when`
+ * @type Bool (f ()) -> f () | Applicative f
  */
 unless p s :== if p (pure ()) s

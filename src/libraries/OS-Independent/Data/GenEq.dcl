@@ -26,14 +26,10 @@ derive gEq Int, Char, Bool, Real, String, {}, {!}
 derive gEq [], (), (,), (,,), (,,,), (,,,,), (,,,,,), (,,,,,,), (,,,,,,,)
 
 
-/**
- * @type a a -> Bool | gEq{|*|} a
- */
+//* @type a a -> Bool | gEq{|*|} a
 (===) infix 4
 (===) x y :== gEq{|*|} x y
 
-/**
- * @type a a -> Bool | gEq{|*|} a
- */
+//* @type a a -> Bool | gEq{|*|} a
 (=!=) infix 4
 (=!=) x y :== 'StdBool'.not (x === y)

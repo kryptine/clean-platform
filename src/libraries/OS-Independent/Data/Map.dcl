@@ -212,14 +212,10 @@ delU :: !a !.(Map a b) -> u:(!v:(Maybe b), !Map a b) | == a & < a, [u <= v] // !
 foldrWithKey :: !(k v u:a -> u:a) !u:a !(Map k v) -> u:a
 foldlWithKey :: !(.a -> .(k -> .(v -> .a))) !.a !(Map k v) -> .a
 
-/**
- * @type (v a -> a) a (Map k v) -> a
- */
+//* @type (v a -> a) a (Map k v) -> a
 foldrNoKey f x m :== foldrWithKey (\_ v acc -> f v acc) x m
 
-/**
- * @type (a v -> a) a (Map k v) -> a
- */
+//* @type (a v -> a) a (Map k v) -> a
 foldlNoKey f x m :== foldlWithKey (\acc _ v -> f acc v) x m
 
 /**
