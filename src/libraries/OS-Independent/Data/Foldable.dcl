@@ -158,9 +158,7 @@ msum :== foldr mplus mzero
  */
 toList t :== build (\c n -> foldr c n t)
 
-/**
- * @type ((a b -> b) b -> b) -> [a]
- */
+//* @type ((a b -> b) b -> b) -> [a]
 build g :== g (\x xs -> [x:xs]) []
 
 
