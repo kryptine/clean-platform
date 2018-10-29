@@ -185,7 +185,7 @@ skip_string_literal :: !Char !ScanState -> ScanState
 skip_string_literal term ss
 | ss.idx >= size ss.input = ss
 # c = ss.input.[ss.idx]
-| c == term = ss
+| c == term = advance ss
 | c == '\\' = skip_escape_sequence (advance ss)
 | otherwise = skip_string_literal term (advance ss)
 where
