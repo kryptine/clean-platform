@@ -24,11 +24,18 @@ extSeparator = '.'
 (</>) x y = (addTrailingPathSeparator x) +++ y
 
 splitExtension :: !FilePath -> (String, String)
-splitExtension path
-# [h:rest] = reverse (split {pathSeparator} path)
-= case lastIndexOf {extSeparator} h of
-	-1 -> (join {pathSeparator} (reverse [h:rest]), "")
-	i -> (join {pathSeparator} (reverse [subString 0 i h:rest]), subString (i+1) (size h - i - 1) h)
+splitExtension path = split sz
+where
+	sz = size path - 1
+
+	split :: !Int -> (String, String)
+	split 0 = (path, "")
+	split i
+	| c == pathSeparator = (path, "")
+	| c == extSeparator  = (path % (0,i-1), path % (i+1, sz))
+	| otherwise          = split (i-1)
+	where
+		c = path.[i]
 
 takeExtension :: !FilePath -> String
 takeExtension path = snd (splitExtension path)
