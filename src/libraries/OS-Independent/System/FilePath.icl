@@ -29,8 +29,8 @@ where
 	sz = size path - 1
 
 	split :: !Int -> (String, String)
-	split 0 = (path, "")
 	split i
+	| i <= 0             = (path, "")
 	| c == pathSeparator = (path, "")
 	| c == extSeparator  = (path % (0,i-1), path % (i+1, sz))
 	| otherwise          = split (i-1)
