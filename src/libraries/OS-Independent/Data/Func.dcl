@@ -20,6 +20,12 @@ instance Monoid (a -> b) | Monoid b
 ($) f :== f
 
 /**
+ * If function
+ * @type Bool a a -> a
+ */
+if` c t e :== if c t e
+
+/**
  * Function application.
  * @type a -> a
  */
@@ -45,7 +51,7 @@ seqSt        :: !(a .st -> .st)       ![a] !.st -> .st
  * @param The initial state.
  * @result The value results and the final state.
  */
-mapSt        :: !(a .st -> (!b,!.st)) ![a] !.st -> (![b],!.st)
+mapSt        :: !(a .st -> (!b,!.st)) ![a] !.st -> (![b],.st)
 /**
  * The fixed point combinator, reducing `fix f` to `f (fix f)`.
  */

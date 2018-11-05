@@ -7,7 +7,6 @@ from Control.Monad import class Monad(..), >>=
 from Data.List import instance Semigroup [a], instance Monoid [a], instance Foldable []
 import Data.Monoid
 import Data.Maybe
-import qualified StdList as SL
 import StdClass
 from StdOverloaded import class < (..)
 from StdBool import not
@@ -47,13 +46,13 @@ foldlM :: (b a -> m b) b (t a) -> m b | Foldable t & Monad m
 foldlM f z0 xs = foldr f` pure xs z0
   where f` x k z = f z x >>= k
 
-traverse_ :: (a -> f b) (t a) -> f () | Foldable t & Applicative, *> f
+traverse_ :: (a -> f b) (t a) -> f () | Foldable t & Applicative f
 traverse_ f x = foldr ((*>) o f) (pure ()) x
 
 mapM_ :: (a -> m b) (t a) -> m () | Foldable t & Monad m
 mapM_ f x = foldr ((\ma mb -> ma >>= \_ -> mb) o f) (pure ()) x
 
-sequenceA_ :: (t (f a)) -> f () | Foldable t & Applicative, *> f
+sequenceA_ :: (t (f a)) -> f () | Foldable t & Applicative f
 sequenceA_ x = foldr (*>) (pure ()) x
 
 concat :: (t [a]) -> [a] | Foldable t

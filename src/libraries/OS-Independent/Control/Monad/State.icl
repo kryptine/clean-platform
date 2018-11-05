@@ -1,5 +1,7 @@
 implementation module Control.Monad.State
 
+import StdFunctions
+import StdTuple
 import Control.Monad
 import Data.Functor
 import Control.Applicative
@@ -71,3 +73,5 @@ withState f m = withStateT f m
 withStateT :: (s -> s) .(StateT s m c) -> StateT s m c
 withStateT f m = StateT (runStateT m o f)
 
+transformStateT :: (s2 -> s1) (a s1 -> (a, s2)) (StateT s1 m a) -> (StateT s2 m a) | Functor m
+transformStateT to fro s = StateT (fmap (uncurry fro) o runStateT s o to)

@@ -19,12 +19,23 @@ import System.OSError
 import System._Pointer
 
 import System._Windows
-import qualified System._WinBase as WinBase
+import qualified System._WinBase
 
 import Text
+import Text.GenJSON
 
 :: ReadPipe  = ReadPipe  !Int
 :: WritePipe = WritePipe !Int
+derive JSONEncode WritePipe, ReadPipe
+derive JSONDecode WritePipe, ReadPipe
+
+defaultPtyOptions :: ProcessPtyOptions
+defaultPtyOptions =
+	{ProcessPtyOptions
+	|childInNewSession = True
+	,childControlsTty  = True
+	,useRawIO          = False
+	}
 
 runProcess :: !FilePath ![String] !(Maybe String) !*World -> (MaybeOSError ProcessHandle, *World)
 runProcess path args mCurrentDirectory world
@@ -171,6 +182,13 @@ readPipeNonBlocking (ReadPipe hPipe) world
 	# (_, world) = heapFree heap 0 buf world
 	= (Ok str, world)
 
+readPipeBlocking :: !ReadPipe !*World -> (!MaybeOSError String, !*World)
+readPipeBlocking pipe=:(ReadPipe hPipe) world
+	// wait for data by trying to read 0 bytes
+	# (ok, world) = readFile hPipe NULL 0 NULL NULL world
+	| not ok = getLastOSError world
+	= readPipeNonBlocking pipe world
+
 writePipe :: !String !WritePipe !*World -> (!MaybeOSError (), !*World)
 writePipe str (WritePipe hPipe) world
 	# (ok, world) = writeFile hPipe str (size str) NULL NULL world
@@ -179,7 +197,7 @@ writePipe str (WritePipe hPipe) world
 
 terminateProcess :: !ProcessHandle !*World -> (!MaybeOSError (), !*World)
 terminateProcess hProc=:{processHandle} world
-	# (ok, world) = 'WinBase'.terminateProcess processHandle 0 world
+	# (ok, world) = 'System._WinBase'.terminateProcess processHandle 0 world
 	= closeProcessHandle hProc world
 
 closeProcessIO :: !ProcessIO !*World -> (!MaybeOSError (), !*World)

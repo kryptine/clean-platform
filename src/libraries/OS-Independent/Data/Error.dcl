@@ -4,6 +4,7 @@ from Data.Functor import class Functor
 from Control.Monad import class Monad
 from Control.Applicative import class Applicative
 from Data.Maybe import :: Maybe
+from Data.GenEq import generic gEq
 
 /**
  * A type representing something that may have failed.
@@ -21,6 +22,8 @@ from Data.Maybe import :: Maybe
 instance Functor (MaybeError a)
 instance Applicative (MaybeError a)
 instance Monad (MaybeError a)
+
+derive gEq MaybeError
 
 /**
  * Return True when the argument is an Ok value and return False otherwise.

@@ -1,25 +1,18 @@
 implementation module Data.Maybe
 
+import StdMaybe
 import StdBool
-import StdFunc
+import StdFunctions
 import StdMisc
 import Data.Functor
 import Data.Monoid
+import Data.Func
 from Data.Foldable import class Foldable(..)
 from Data.Traversable import class Traversable(traverse)
-import qualified Data.Traversable as T
+import qualified Data.Traversable
 import Control.Applicative
-import Control.Monad
-
-:: Maybe a = Nothing | Just a
-
-instance == (Maybe x) | == x where
-	(==) Nothing  maybe	= case maybe of
-							Nothing -> True
-							just    -> False
-	(==) (Just a) maybe	= case maybe of
-							Just b  -> a == b
-							nothing -> False
+import Control.Monad, Control.Monad.Trans
+import Data.GenEq
 
 instance Functor Maybe where fmap f m = mapMaybe f m
 
@@ -28,17 +21,11 @@ where
 	pure x            = Just x
 	(<*>) Nothing  _  = Nothing
 	(<*>) (Just f) ma = fmap f ma
-
-instance *> Maybe
-where
-	*> (Just _) m = m
-	*> _        _ = Nothing
-
-instance <* Maybe
-where
-	<* Nothing _  = Nothing
-	<* m (Just _) = m
-	<* _ _        = Nothing
+	(*>) (Just _) m = m
+	(*>) _        _ = Nothing
+	(<*) Nothing _  = Nothing
+	(<*) m (Just _) = m
+	(<*) _ _        = Nothing
 
 instance Alternative Maybe
 where
@@ -62,6 +49,7 @@ where
 	mappend Nothing   m         = m
 	mappend m         Nothing   = m
 	mappend (Just m1) (Just m2) = Just (mappend m1 m2)
+	mappend _         _         = abort "impossible case in mappend_Maybe\n"
 
 instance Monoid (Maybe a)
 where
@@ -94,7 +82,9 @@ where
 	traverse f (Just x) = Just <$> f x
 	sequenceA f = traverse id f
 	mapM f x = unwrapMonad (traverse (WrapMonad o f) x)
-	sequence x = 'T'.mapM id x
+	sequence x = 'Data.Traversable'.mapM id x
+
+derive gEq Maybe
 
 mapMaybe :: .(.x -> .y) !(Maybe .x) -> Maybe .y
 mapMaybe f (Just x) = Just (f x)
@@ -111,33 +101,43 @@ maybeSt st f (Just x) = f x st
 fromMaybe :: .a !(Maybe .a) -> .a
 fromMaybe x mb = maybe x id mb
 
-isNothing :: !(Maybe .a) -> Bool
-isNothing Nothing = True
-isNothing _       = False
+runMaybeT :: !(MaybeT m a) -> m (Maybe a)
+runMaybeT (MaybeT f) = f
 
-isNothingU :: !u:(Maybe .a) -> (!Bool, !u:Maybe .a)
-isNothingU Nothing = (True, Nothing)
-isNothingU x       = (False, x)
+mapMaybeT :: !((m (Maybe a)) -> n (Maybe b)) !(MaybeT m a) -> MaybeT n b
+mapMaybeT f m = MaybeT $ f $ runMaybeT m
 
-isJust :: !(Maybe .a) -> Bool
-isJust (Just _)    = True
-isJust _           = False
+instance Functor (MaybeT m) | Functor m where
+	fmap f m = mapMaybeT (fmap $ fmap f) m
 
-isJustU :: !u:(Maybe .a) -> (!Bool, !u:Maybe .a)
-isJustU (Just x)    = (True, Just x)
-isJustU x           = (False, x)
+instance Applicative (MaybeT m) | Monad m where
+	pure x = MaybeT $ pure $ Just x
 
-fromJust :: !(Maybe .a) -> .a
-fromJust Nothing  = abort "Data.Maybe.fromJust: argument is Nothing"
-fromJust (Just x) = x
+	(<*>) mf mx = MaybeT $
+		runMaybeT mf >>= \mb_f ->
+		case mb_f of
+			Nothing = pure Nothing
+			Just f  =
+				runMaybeT mx >>= \mb_x ->
+				case mb_x of
+					Nothing = pure Nothing
+					Just x  = pure $ Just $ f x
 
-maybeToList :: !(Maybe .a) -> [.a]
-maybeToList Nothing  = []
-maybeToList (Just x) = [x]
+instance Alternative (MaybeT m) | Monad m where
+	empty = MaybeT $ return Nothing
 
-listToMaybe :: ![.a] -> Maybe .a
-listToMaybe []    = Nothing
-listToMaybe [x:_] = Just x 
+	<|> x y = MaybeT $
+		runMaybeT x >>= \v ->
+		case v of
+			Nothing -> runMaybeT y
+			Just _  -> return v
 
-catMaybes :: ![Maybe .a] -> .[.a]
-catMaybes xs = [x \\ Just x <- xs]
+instance Monad (MaybeT m) | Monad m where
+	bind x f = MaybeT $
+		runMaybeT x >>= \v ->
+		case v of
+			Nothing -> return Nothing
+			Just y  -> runMaybeT $ f y
+
+instance MonadTrans MaybeT where
+	liftT m = MaybeT $ liftM Just m

@@ -1,10 +1,13 @@
 implementation module System.IO
 
+import StdFile
+from StdFunc import o, id
+import StdMisc
+import StdString
+
 import Control.Applicative
 import Control.Monad
 import Data.Functor
-from StdFunc import o, id
-import StdFile, StdString
 from Text import class Text (trim), instance Text String
 
 execIO :: !(IO a) !*World -> *World
@@ -88,6 +91,7 @@ unsafePerformIO :: !(*World -> *(.a, !*World)) -> .a
 unsafePerformIO f
   # (x, world) = f make_world
   | world_to_true world = x
+  | otherwise           = abort "error in unsafePerformIO\n"
 
 unsafePerformIOTrue :: !(*World -> *(a, !*World)) -> Bool
 unsafePerformIOTrue f

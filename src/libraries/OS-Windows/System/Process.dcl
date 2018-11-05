@@ -3,12 +3,11 @@ definition module System.Process
 import Data.Maybe, Data.Either
 import System.OSError
 import System.FilePath
+from Text.GenJSON import generic JSONEncode, generic JSONDecode, :: JSONNode
 
 /*
 Not yet implemented:
-- Pass startup directory
 - Passsing environment, i.e. [(!String,!String)], to created process
-- Ability to redirect standard input, standard output, standard error
 */
 
 :: ProcessHandle = { processHandle :: !Int
@@ -22,6 +21,8 @@ Not yet implemented:
 
 :: WritePipe
 :: ReadPipe
+derive JSONEncode WritePipe, ReadPipe
+derive JSONDecode WritePipe, ReadPipe
 
 /**
 * runs a new process
@@ -53,13 +54,11 @@ runProcessPty fp args mdir opts world :== runProcessIO fp args mdir world
 
 //This is only here for API compatibility with linux and mac
 :: ProcessPtyOptions =
-	{ setsid   :: Bool
-	, ioctl    :: Maybe Int
-	, termiosT :: (Termios -> Termios)
+	{ childInNewSession :: !Bool
+	, childControlsTty  :: !Bool
+	, useRawIO          :: !Bool
 	}
-
-:: Termios = {c_iflag :: Int, c_oflag :: Int, c_cflag :: Int, c_lflag :: Int}
-cfmakerawT x :== x
+defaultPtyOptions :: ProcessPtyOptions
 
 /**
 * Check if a process is still running
@@ -92,7 +91,14 @@ callProcess :: !FilePath ![String] !(Maybe String) !*World -> (MaybeOSError Int,
 */
 readPipeNonBlocking   :: !ReadPipe   !*World -> (!MaybeOSError String,   !*World)
 
-//readPipeBlocking      :: !ReadPipe   !*World -> (!MaybeOSError String,   !*World)
+/**
+* read the currently available string from the pipe
+* and blocks until some data is available
+* @param the pipe to read from
+* @return the data read from the pipe (at least one character)
+*/
+readPipeBlocking      :: !ReadPipe   !*World -> (!MaybeOSError String,   !*World)
+
 //readPipeBlockingMulti :: ![ReadPipe] !*World -> (!MaybeOSError [String], !*World)
 
 /**

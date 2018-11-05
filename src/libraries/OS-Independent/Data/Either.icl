@@ -1,36 +1,33 @@
 implementation module Data.Either
 
-from StdEnv import flip, id, o
+from StdEnv import flip, id, o, const
 from StdMisc import abort
 import Control.Applicative
-import Control.Monad
+import Data.Monoid
 import Data.Functor
 import Data.Maybe
 import Data.Monoid
 from Data.Foldable import class Foldable(foldMap,foldl,foldr)
-from Data.Traversable import class Traversable(traverse)
-import qualified Data.Traversable as T
+from Data.Traversable import class Traversable(traverse,mapM)
 import Data.Bifunctor
+import Data.GenEq
 
 instance Functor (Either a) where
-  fmap f (Left l)  = Left l
-  fmap f (Right r) = Right (f r)
+	fmap f (Left l)  = Left l
+	fmap f (Right r) = Right (f r)
 
 instance Applicative (Either e) where
-  pure x        = Right x
-  (<*>) (Left  e) _ = Left e
-  (<*>) (Right f) r = fmap f r
+	pure x        = Right x
 
-instance *> (Either e)
-where
-	*> (Right _) e = e
-	*> (Left l)  _ = Left l
+	(<*>) (Left  e) _ = Left e
+	(<*>) (Right f) r = fmap f r
 
-instance <* (Either e)
-where
-	<* (Left l)  _         = Left l
-	<* _         (Left l)  = Left l
-	<* x         _         = x
+	(*>) (Right _) e = e
+	(*>) (Left l)  _ = Left l
+
+	(<*) (Left l)  _         = Left l
+	(<*) _         (Left l)  = Left l
+	(<*) x         _         = x
 
 instance Monad (Either e)
 where
@@ -65,7 +62,7 @@ where
 	traverse f (Right y) = Right <$> f y
 	sequenceA f = traverse id f
 	mapM f x = unwrapMonad (traverse (WrapMonad o f) x)
-	sequence x = 'T'.mapM id x
+	sequence x = mapM id x
 
 instance Bifunctor Either
 where
@@ -74,6 +71,25 @@ where
 	first f d = bifmap f id d
 	second g d = bifmap id g d
 
+instance Alternative (Either m) | Monoid m
+where
+	empty = Left mempty
+	(<|>) fa fb = either (\e->either (Left o mappend e) Right fb) Right fa
+
+derive gEq Either
+
 either :: .(.a -> .c) .(.b -> .c) !(Either .a .b) -> .c
 either f _ (Left x)     =  f x
 either _ g (Right y)    =  g y
+
+lefts :: .[Either .a .b] -> .[.a]
+lefts l = [l\\(Left l)<-l]
+
+rights :: .[Either .a .b] -> .[.b]
+rights l = [l\\(Right l)<-l]
+
+fromLeft :: .a (Either .a .b) -> .a
+fromLeft a e = either id (const a) e
+
+fromRight :: .b (Either .a .b) -> .b
+fromRight a e = either (const a) id e

@@ -28,6 +28,7 @@ resize_int_array :: !Int !*{#Int} -> *{#Int};
 resize_int_array s a
 	| size a>=s
 		= unsafe_resize_int_array s a;
+		= abort "error in resize_int_array\n";
 
 unsafe_resize_int_array :: !Int !*{#Int} -> *{#Int};
 unsafe_resize_int_array s a = code {
