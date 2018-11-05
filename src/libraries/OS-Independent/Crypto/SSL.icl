@@ -49,8 +49,8 @@ where
 
 initSSL :: !String !Int !*World -> *(!BIO, !*World)
 initSSL host port w
-#! (_,w)    = SSL_library_init w
-#! (meth,w) = SSLv23_method w
+#! (_,w)    = OPENSSL_init_ssl 0 0 w
+#! (meth,w) = TLS_method w
 | meth == 0 = abort "Method was 0\n"
 #! (ctx,w)  = SSL_CTX_new meth w
 | ctx == 0  = abort "CTX was 1\n"
@@ -78,14 +78,14 @@ initSSL host port w
 | res <> 1  = abort "DH was not 1\n"
 = (web,w)
 where
-	SSL_library_init :: !*World -> *(!Int, !*World)
-	SSL_library_init w = code {
-		ccall SSL_library_init ":I:A"
+	OPENSSL_init_ssl :: !Int !Pointer !*World -> *(!Int, !*World)
+	OPENSSL_init_ssl _ _ w = code {
+		ccall OPENSSL_init_ssl "Ip:I:A"
 	}
 
-SSLv23_method :: !*World -> *(!SSLMethod, !*World)
-SSLv23_method w = code {
-	ccall SSLv23_method ":p:A"
+TLS_method :: !*World -> *(!SSLMethod, !*World)
+TLS_method w = code {
+	ccall TLS_method ":p:A"
 }
 
 SSL_CTX_new :: !SSLMethod !*World -> *(!SSLCTX, !*World)
