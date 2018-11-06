@@ -2,6 +2,7 @@ implementation module iTasksTTY
 
 import StdEnv
 
+from Data.Map import :: Map, newMap
 import Data.Func
 import Text
 
@@ -32,7 +33,7 @@ where
 			| isError merr = (ExceptionResult (fromError merr), iworld)
 			= (ValueResult
 				NoValue
-				{TaskEvalInfo|lastEvent=ts,removedTasks=[],refreshSensitive=True}
+				{TaskEvalInfo|lastEvent=ts,removedTasks=[],attributes=newMap}
 				rep
 				(TCBasic taskId ts (DeferredJSONNode $ JSONString "") False)
 			  , iworld)
@@ -53,7 +54,7 @@ where
 				(_,_,True) =
 					(ValueResult
 						(Value () True)
-						{TaskEvalInfo|lastEvent=ts,removedTasks=[],refreshSensitive=True}
+						{TaskEvalInfo|lastEvent=ts,removedTasks=[],attributes=newMap}
 						rep
 						(TCDestroy tree)
 					, {iworld & resources=[TTYd dp tty:resources]})
@@ -71,7 +72,7 @@ where
 							| isError merr = (ExceptionResult (fromError merr), iworld)
 							= (ValueResult
 								NoValue
-								{TaskEvalInfo|lastEvent=ts,removedTasks=[],refreshSensitive=True}
+								{TaskEvalInfo|lastEvent=ts,removedTasks=[],attributes=newMap}
 								rep
 								(TCBasic taskId ts (DeferredJSONNode $ JSONString newacc) False)
 							  , iworld)
