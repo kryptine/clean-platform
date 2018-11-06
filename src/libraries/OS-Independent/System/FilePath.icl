@@ -32,7 +32,9 @@ where
 	split i
 	| i <= 0             = (path, "")
 	| c == pathSeparator = (path, "")
-	| c == extSeparator  = (path % (0,i-1), path % (i+1, sz))
+	| c == extSeparator
+		| i == sz        = (path, "")
+		| otherwise      = (path % (0,i-1), path % (i+1, sz))
 	| otherwise          = split (i-1)
 	where
 		c = path.[i]
