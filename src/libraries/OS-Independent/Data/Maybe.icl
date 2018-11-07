@@ -51,6 +51,7 @@ where
 
 instance Semigroup (Maybe a) | Semigroup a
 where
+	mappend :: !(Maybe a) !(Maybe a) -> Maybe a | Semigroup a
 	mappend Nothing   m         = m
 	mappend m         Nothing   = m
 	mappend (Just m1) (Just m2) = Just (mappend m1 m2)

@@ -24,6 +24,8 @@ instance Monad Maybe
 instance MonadPlus Maybe
 
 instance Semigroup (Maybe a) | Semigroup a
+where
+	mappend :: !(Maybe a) !(Maybe a) -> Maybe a | Semigroup a
 instance Monoid (Maybe a)
 instance Foldable Maybe
 instance Traversable Maybe
