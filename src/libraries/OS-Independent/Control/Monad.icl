@@ -1,11 +1,11 @@
 implementation module Control.Monad
 
-from Control.Applicative  import class Applicative (..), lift
-from Data.Functor         import class Functor (..)
-from Data.List            import map, zipWith, replicate
-from StdList              import foldr
-from StdFunc              import flip, id, o, const
-from StdInt               import class +, instance + Int
+import Control.Applicative
+from Data.Functor import class Functor (..)
+from Data.List    import map, zipWith, replicate
+from StdList      import foldr
+from StdFunc      import flip, id, o, const
+from StdInt       import class +, instance + Int
 
 sequence :: !.[a b] -> a [b] | Monad a
 sequence ms = foldr k (lift []) ms

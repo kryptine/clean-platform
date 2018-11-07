@@ -39,8 +39,12 @@ instance Functor (StateL *s) where
         # (v, s) = k s
         = (f v, s)
 
-instance Applicative (StateL *s) where
+instance pure (StateL *s)
+where
     pure x = StateL (\s -> (x, s))
+
+instance <*> (StateL *s)
+where
     (<*>) (StateL kf) (StateL kv) = StateL f
       where
       f s
@@ -67,8 +71,10 @@ instance Functor (StateR *s) where
         # (v, s) = k s
         = (f v, s)
 
-instance Applicative (StateR *s) where
-    pure x = StateR (\s -> (x, s))
+instance pure (StateR *s) where pure x = StateR \s -> (x, s)
+
+instance <*> (StateR *s)
+where
     (<*>) (StateR kf) (StateR kv) = StateR f
       where
       f s
@@ -104,6 +110,5 @@ getId (Id x) =x
 instance Functor Id where
     fmap f (Id x) = Id (f x)
 
-instance Applicative Id where
-    pure x = Id x
-    (<*>) (Id f) (Id x) = Id (f x)
+instance pure Id where pure x = Id x
+instance <*> Id where (<*>) (Id f) (Id x) = Id (f x)

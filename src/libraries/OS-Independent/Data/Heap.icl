@@ -1,11 +1,12 @@
 implementation module Data.Heap
 
-from Control.Applicative import class Applicative (..), :: WrappedMonad (..), unwrapMonad, instance Applicative (WrappedMonad m), instance Functor (WrappedMonad m)
+from Control.Applicative import class pure(..), class Applicative, :: WrappedMonad (..), unwrapMonad,
+	instance Functor (WrappedMonad m), instance pure (WrappedMonad m), instance <*> (WrappedMonad m)
 from Control.Monad import liftM, class Monad
 import Data.Monoid
 from Data.Func import on
 from Data.Functor import class Functor (..)
-from Data.List import instance Functor [], instance Applicative [],
+from Data.List import instance Functor [], instance pure [], instance <*> [],
 	instance Semigroup [a], instance Monoid [a], instance Foldable [], instance Traversable []
 import qualified Data.Traversable
 from Data.Traversable import class Traversable (..)

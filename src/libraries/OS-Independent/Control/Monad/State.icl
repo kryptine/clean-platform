@@ -14,9 +14,15 @@ from StdTuple import fst, snd
 instance Functor (StateT s m) | Monad m where
   fmap f m = StateT (\s -> fmap (\(a, s`) -> (f a, s`)) (runStateT m s))
 
-instance Applicative (StateT s m) | Monad m where
-  pure a = state (\s -> (a, s))
-  (<*>) sf sa = ap sf sa
+instance pure (StateT s m) | pure m
+where
+	pure a = state \s -> (a, s)
+
+instance <*> (StateT s m) | Monad m
+where
+	(<*>) sf sa = ap sf sa
+
+instance ApplicativeExtra (StateT s m) | Monad m
 
 instance Alternative (StateT s m) | Alternative m where
   empty = StateT (const empty)
@@ -28,7 +34,7 @@ instance Monad (StateT s m) | Monad m where
 instance MonadTrans (StateT s) where
   liftT m = StateT (\s -> m >>= \a -> pure (a, s))
 
-state :: (s -> .(a, s)) -> StateT s m a | Monad m
+state :: (s -> .(a, s)) -> StateT s m a | pure m
 state f = StateT (\s -> pure (f s))
 
 getState :: StateT s m s | Monad m

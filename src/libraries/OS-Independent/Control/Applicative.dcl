@@ -12,15 +12,17 @@ unwrapMonad :: !(WrappedMonad m a) -> m a
 
 getConst :: !(Const a b) -> a
 
-class Applicative f | Functor f
-where
-	pure           :: a -> f a
-	(<*>) infixl 4 :: !(f (a -> b)) (f a) -> f b
+class pure f :: a -> f a
+class (<*>) infixl 4 f :: !(f (a -> b)) (f a) -> f b
 
-	(<*) infixl 4  :: !(f a) (f b) -> f a
+class Applicative f | Functor, pure, <*> f
+
+class ApplicativeExtra f | Applicative f
+where
+	(<*) infixl 4 :: !(f a) (f b) -> f a
 	(<*) fa fb = pure (\x _->x) <*> fa <*> fb
 
-	(*>) infixl 4  :: !(f a) (f b) -> f b
+	(*>) infixl 4 :: !(f a) (f b) -> f b
 	(*>) fa fb = pure (\_ x->x) <*> fa <*> fb
 
 class Alternative f | Applicative f
@@ -30,8 +32,10 @@ where
 
 instance Functor (Const m)
 instance Functor (WrappedMonad m) | Monad m
-instance Applicative (Const m) | Monoid m
-instance Applicative (WrappedMonad m) | Monad m
+instance pure (Const m) | Monoid m
+instance pure (WrappedMonad m) | pure m
+instance <*> (Const m) | Monoid m
+instance <*> (WrappedMonad m) | Monad m
 instance Monad (WrappedMonad m) | Monad m
 
 instance Alternative (WrappedMonad m) | MonadPlus m
@@ -45,7 +49,7 @@ many :: (f a) -> f [a] | Alternative f
 
 (<**>) infixl 4 :: (f a) (f (a -> b)) -> f b | Applicative f
 
-lift :: a -> f a | Applicative f
+lift :: a -> f a | pure f
 
 liftA :: (a -> b) (f a) -> f b | Applicative f
 

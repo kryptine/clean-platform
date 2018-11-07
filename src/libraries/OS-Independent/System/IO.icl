@@ -21,12 +21,17 @@ evalIO (IO f) world = f world
 withWorld :: (*World -> *(.a, !*World)) -> IO .a
 withWorld f = IO f
 
-instance Applicative IO where
-  pure x     = IO (\s -> (x, s))
-  (<*>) f g  = liftA2 id f g
+instance Functor IO
+where
+	fmap f x = x >>= (lift o f)
 
-instance Functor IO where
-  fmap f x = x >>= (lift o f)
+instance pure IO
+where
+	pure x     = IO (\s -> (x, s))
+
+instance <*> IO
+where
+	(<*>) f g  = liftA2 id f g
 
 instance Monad IO where
   bind ma a2mb = IO (run ma)

@@ -1,7 +1,7 @@
 definition module Control.Monad.State
 
 from Control.Monad import class Monad
-from Control.Applicative import class Applicative, class Alternative
+from Control.Applicative import class pure, class <*>, class Applicative, class ApplicativeExtra, class Alternative
 from Data.Functor import class Functor
 from Data.Functor.Identity import :: Identity
 from Control.Monad.Trans import class MonadTrans
@@ -10,7 +10,7 @@ from Control.Monad.Trans import class MonadTrans
 
 :: State s a :== StateT s Identity a
 
-state      :: (s -> .(a, s)) -> StateT s m a | Monad m
+state      :: (s -> .(a, s)) -> StateT s m a | pure m
 getState   :: StateT s m s | Monad m
 put        :: s -> StateT s m () | Monad m
 modify     :: (s -> s) -> StateT s m () | Monad m
@@ -29,7 +29,9 @@ withStateT :: (s -> s) .(StateT s m c) -> StateT s m c
 transformStateT :: (s2 -> s1) (a s1 -> (a, s2)) (StateT s1 m a) -> (StateT s2 m a) | Functor m
 
 instance Functor (StateT s m) | Monad m
-instance Applicative (StateT s m) | Monad m
+instance pure (StateT s m) | pure m
+instance <*> (StateT s m) | Monad m
+instance ApplicativeExtra (StateT s m) | Monad m
 instance Alternative (StateT s m) | Alternative m
 instance Monad (StateT s m) | Monad m
 instance MonadTrans (StateT s)

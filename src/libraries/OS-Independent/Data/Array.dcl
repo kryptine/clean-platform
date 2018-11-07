@@ -3,7 +3,7 @@ definition module Data.Array
 from StdArray import class Array
 from StdOverloaded import class +++
 from Data.Functor import class Functor
-from Control.Applicative import class Applicative
+from Control.Applicative import class pure, class <*>, class Applicative
 from Control.Monad import class Monad
 
 mapArrSt :: !(.a -> .(*st -> *(!.a, !*st))) !*(arr .a) !*st -> *(!*(arr .a), !*st) | Array arr a
@@ -33,7 +33,8 @@ appendArr :: !(arr a) !(arr a) -> arr a | Array arr a
 instance +++ (arr a) | Array arr a
 
 instance Functor {}, {!}
-instance Applicative {}, {!}
+instance pure {}, {!}
+instance <*> {}, {!}
 instance Monad {}, {!}
 
 reduceArray :: ((.a -> u:(b -> b)) -> .(b -> .(c -> .a))) (.a -> u:(b -> b)) b .(d c) -> b | Array d c

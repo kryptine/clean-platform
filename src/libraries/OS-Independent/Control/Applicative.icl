@@ -5,17 +5,6 @@ import Data.Func, Data.Functor, System.IO, Data.List, Data.Maybe
 import Data.Monoid
 from StdFunc import id, o, flip, const
 
-class Applicative f | Functor f
-where
-	pure           :: a -> f a
-	(<*>) infixl 4 :: !(f (a -> b)) (f a) -> f b
-
-	(<*) infixl 4  :: !(f a) (f b) -> f a
-	(<*) fa fb = pure (\x _->x) <*> fa <*> fb
-
-	(*>) infixl 4  :: !(f a) (f b) -> f b
-	(*>) fa fb = pure (\_ x->x) <*> fa <*> fb
-
 getConst :: !(Const a b) -> a
 getConst (Const x) = x
 
@@ -28,9 +17,13 @@ instance Semigroup (Const a b) | Semigroup a where
 instance Monoid (Const a b) | Monoid a where
   mempty = Const mempty
 
-instance Applicative (Const m) | Monoid m where
-  pure _ = Const mempty
-  (<*>) (Const f) (Const v) = Const (mappend f v)
+instance pure (Const m) | Monoid m
+where
+	pure _ = Const mempty
+
+instance <*> (Const m) | Monoid m
+where
+	(<*>) (Const f) (Const v) = Const (mappend f v)
 
 unwrapMonad :: !(WrappedMonad m a) -> m a
 unwrapMonad (WrapMonad x) = x
@@ -38,9 +31,13 @@ unwrapMonad (WrapMonad x) = x
 instance Functor (WrappedMonad m) | Monad m where
   fmap f (WrapMonad v) = WrapMonad (liftM f v)
 
-instance Applicative (WrappedMonad m) | Monad m where
-  pure x = WrapMonad (pure x)
-  (<*>) (WrapMonad f) (WrapMonad v) = WrapMonad (ap f v)
+instance pure (WrappedMonad m) | pure m
+where
+	pure x = WrapMonad (pure x)
+
+instance <*> (WrappedMonad m) | Monad m
+where
+	(<*>) (WrapMonad f) (WrapMonad v) = WrapMonad (ap f v)
 
 instance Monad (WrappedMonad m) | Monad m where
   bind a f = WrapMonad (unwrapMonad a >>= unwrapMonad o f)
@@ -62,7 +59,7 @@ many v = many_v
 (<**>) infixl 4 :: (f a) (f (a -> b)) -> f b | Applicative f
 (<**>) fa fab = liftA2 (flip ($)) fa fab
 
-lift :: a -> f a | Applicative f
+lift :: a -> f a | pure f
 lift x = pure x
 
 liftA :: (a -> b) (f a) -> f b | Applicative f

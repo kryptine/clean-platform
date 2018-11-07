@@ -1,6 +1,6 @@
 definition module Data.Traversable
 
-from Control.Applicative import class Applicative
+from Control.Applicative import class pure, class <*>, class Applicative
 from Control.Monad import class Monad
 from Data.Functor import class Functor
 from Data.Foldable import class Foldable

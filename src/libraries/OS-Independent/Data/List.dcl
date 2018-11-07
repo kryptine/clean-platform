@@ -7,11 +7,12 @@ from Data.Maybe import :: Maybe
 from Data.Monoid import class Semigroup, class Monoid
 from Data.Foldable import class Foldable
 from Data.Traversable import class Traversable
-from Control.Applicative import class Applicative, class Alternative
+from Control.Applicative import class pure, class <*>, class Applicative, class Alternative
 from Control.Monad import class Monad, class MonadPlus
 
 instance Functor []
-instance Applicative []
+instance pure []
+instance <*> []
 instance Alternative []
 instance Monad []
 instance MonadPlus []

@@ -15,9 +15,15 @@ import Data.List
 instance Functor (Parser t) where
   fmap f p = pMap f p
 
-instance Applicative (Parser t) where
-  pure x    = pYield x
-  (<*>) l r = ap l r
+instance pure (Parser t)
+where
+	pure x    = pYield x
+
+instance <*> (Parser t)
+where
+	(<*>) l r = ap l r
+
+instance ApplicativeExtra (Parser t)
 
 instance Alternative (Parser t) where
   empty     = pFail

@@ -1,12 +1,13 @@
 definition module Data.Func
 
 from Data.Functor import class Functor
-from Control.Applicative import class Applicative
+from Control.Applicative import class pure, class <*>, class Applicative
 from Control.Monad import class Monad
 from Data.Monoid import class Semigroup, class Monoid
 
 instance Functor ((->) r)
-instance Applicative ((->) r)
+instance pure ((->) r)
+instance <*> ((->) r)
 instance Monad ((->) r)
 
 instance Semigroup (a -> b) | Semigroup b

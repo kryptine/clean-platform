@@ -16,13 +16,18 @@ import Data.GenEq
 
 instance Functor Maybe where fmap f m = mapMaybe f m
 
-instance Applicative Maybe
+instance pure Maybe where pure x = Just x
+
+instance <*> Maybe
 where
-	pure x            = Just x
 	(<*>) Nothing  _  = Nothing
 	(<*>) (Just f) ma = fmap f ma
+
+instance ApplicativeExtra Maybe
+where
 	(*>) (Just _) m = m
 	(*>) _        _ = Nothing
+
 	(<*) Nothing _  = Nothing
 	(<*) m (Just _) = m
 	(<*) _ _        = Nothing
@@ -110,9 +115,9 @@ mapMaybeT f m = MaybeT $ f $ runMaybeT m
 instance Functor (MaybeT m) | Functor m where
 	fmap f m = mapMaybeT (fmap $ fmap f) m
 
-instance Applicative (MaybeT m) | Monad m where
-	pure x = MaybeT $ pure $ Just x
+instance pure (MaybeT m) | pure m where pure x = MaybeT (pure (Just x))
 
+instance <*> (MaybeT m) | Monad m where
 	(<*>) mf mx = MaybeT $
 		runMaybeT mf >>= \mb_f ->
 		case mb_f of

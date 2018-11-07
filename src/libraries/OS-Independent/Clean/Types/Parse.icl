@@ -12,15 +12,17 @@ import Data.Either
 import Data.GenEq
 import Data.Maybe
 from Data.Func import $
-from Data.List import instance Functor [], instance Applicative [], instance Alternative []
+from Data.List import instance Functor [], instance pure [], instance <*> [],
+	instance Alternative []
 from Text import class Text(concat), instance Text String
 import Data.Functor
 import Control.Applicative
 import Control.Monad
 from Text.Parsers.Simple.Core import :: Parser, :: Error,
-	instance Functor (Parser t), instance Applicative (Parser t),
-	instance Alternative (Parser t), instance Monad (Parser t),
-	parse, pToken, pSepBy, pSepBy1, pList, pSatisfy, pPeek
+	instance Functor (Parser t), instance pure (Parser t),
+	instance <*> (Parser t), instance Alternative (Parser t),
+	instance Monad (Parser t), parse, pToken, pSepBy, pSepBy1, pList, pSatisfy,
+	pPeek
 
 (|<<) infixl 1 :: !(m a) !(m b) -> m a | Monad m
 (|<<) ma mb = ma >>= \a -> mb >>= \_ -> pure a
