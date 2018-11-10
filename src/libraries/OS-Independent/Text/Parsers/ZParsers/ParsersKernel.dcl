@@ -2,7 +2,7 @@ definition module Text.Parsers.ZParsers.ParsersKernel
 from StdEnv import class Eq, class toString, class ==
 from Data.Maybe import :: Maybe(..)
 
-from Control.Applicative import class pure, class <*>, class Applicative, class ApplicativeExtra, class Alternative
+from Control.Applicative import class pure, class <*>, class Applicative, class *>, class <*, class Alternative
 from Control.Monad import class Monad
 from Data.Functor import class Functor
 
@@ -60,9 +60,9 @@ instance Monad (Gram f) | Functor f
 
 mkP :: !(Gram f a) -> f a | Monad f & Applicative f & Alternative f
 
-sepBy :: !(Gram f a) (f b) -> f a | Monad, ApplicativeExtra, Alternative f
+sepBy :: !(Gram f a) (f b) -> f a | Monad, *>, Alternative f
 
-insertSep :: (f b) !(Gram f a) -> Gram f a | Monad, ApplicativeExtra, Alternative f
+insertSep :: (f b) !(Gram f a) -> Gram f a | Monad, *>, Alternative f
 
 gmList :: !(Gram f a) -> Gram f [a] | Functor f
 

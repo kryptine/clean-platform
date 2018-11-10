@@ -1,6 +1,6 @@
 definition module Text.Parsers.Simple.Core
 
-from Control.Applicative import class pure, class <*>, class Applicative, class ApplicativeExtra, class Alternative
+from Control.Applicative import class pure, class <*>, class Applicative, class *>, class <*, class Alternative
 from Control.Monad import class Monad, class MonadPlus
 from Data.Either import :: Either
 from Data.Functor import class Functor
@@ -13,7 +13,8 @@ from StdOverloaded import class ==
 instance Functor (Parser t)
 instance pure (Parser t)
 instance <*> (Parser t)
-instance ApplicativeExtra (Parser t)
+instance *> (Parser t)
+instance <* (Parser t)
 instance Alternative (Parser t)
 instance Monad (Parser t)
 instance MonadPlus (Parser t)

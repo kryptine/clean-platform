@@ -7,7 +7,7 @@ import StdMaybe
 
 from StdOverloaded import class ==(..)
 from Data.Functor import class Functor
-from Control.Applicative import class pure, class <*>, class Applicative, class ApplicativeExtra, class Alternative
+from Control.Applicative import class pure, class <*>, class Applicative, class *>, class <*, class Alternative
 from Control.Monad import class Monad, class MonadPlus
 from Control.Monad.Trans import class MonadTrans
 from Data.Monoid import class Semigroup, class Monoid
@@ -18,7 +18,8 @@ from Data.GenEq import generic gEq
 instance Functor Maybe
 instance pure Maybe
 instance <*> Maybe
-instance ApplicativeExtra Maybe
+instance *> Maybe
+instance <* Maybe
 instance Alternative Maybe
 instance Monad Maybe
 instance MonadPlus Maybe

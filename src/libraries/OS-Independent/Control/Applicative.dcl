@@ -17,11 +17,13 @@ class (<*>) infixl 4 f :: !(f (a -> b)) (f a) -> f b
 
 class Applicative f | Functor, pure, <*> f
 
-class ApplicativeExtra f | Applicative f
+class <* f | Applicative f
 where
 	(<*) infixl 4 :: !(f a) (f b) -> f a
 	(<*) fa fb = pure (\x _->x) <*> fa <*> fb
 
+class *> f | Applicative f
+where
 	(*>) infixl 4 :: !(f a) (f b) -> f b
 	(*>) fa fb = pure (\_ x->x) <*> fa <*> fb
 

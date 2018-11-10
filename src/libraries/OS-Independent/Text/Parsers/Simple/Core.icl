@@ -23,7 +23,8 @@ instance <*> (Parser t)
 where
 	(<*>) l r = ap l r
 
-instance ApplicativeExtra (Parser t)
+instance *> (Parser t)
+instance <* (Parser t)
 
 instance Alternative (Parser t) where
   empty     = pFail

@@ -196,18 +196,18 @@ mkP (Gram l_a m_a) = foldr (<|>) (maybe empty pure m_a)
   where  mkP_Alt (Seq f_b2a g_b)   = f_b2a <*> mkP g_b
          mkP_Alt (Bind f_b b2g_a)  = f_b >>= (mkP o b2g_a)
 
-sepBy :: !(Gram f a) (f b) -> f a | Monad, ApplicativeExtra, Alternative f
+sepBy :: !(Gram f a) (f b) -> f a | Monad, *>, Alternative f
 sepBy g sep = mkP (insertSep sep g)
 
-insertSep :: (f b) !(Gram f a) -> Gram f a | Monad, ApplicativeExtra, Alternative f
+insertSep :: (f b) !(Gram f a) -> Gram f a | Monad, *>, Alternative f
 insertSep sep (Gram na ea) = Gram (map insertSepInAlt na) ea
    where insertSepInAlt (Seq fb2a gb)   = Seq fb2a (prefixSepInGram sep gb)
          insertSepInAlt (Bind fc c2ga)  = Bind fc (insertSep sep o c2ga)
 
-prefixSepInGram :: (f b) (Gram f a) -> Gram f a | Monad, ApplicativeExtra, Alternative f
+prefixSepInGram :: (f b) (Gram f a) -> Gram f a | Monad, *>, Alternative f
 prefixSepInGram sep (Gram na ne)   = Gram (map (prefixSepInAlt sep) na) ne
 
-prefixSepInAlt :: (f a) (PAlt f b) -> PAlt f b | Monad, ApplicativeExtra, Alternative f
+prefixSepInAlt :: (f a) (PAlt f b) -> PAlt f b | Monad, *>, Alternative f
 prefixSepInAlt sep (Seq fb2a gb)   = Seq (sep *> fb2a) (prefixSepInGram sep gb)
 prefixSepInAlt _   _               = abort "prefixSepInAlt called on non-Seq\n"
 

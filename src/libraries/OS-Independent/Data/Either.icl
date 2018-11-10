@@ -25,11 +25,13 @@ where
 	(<*>) (Left  e) _ = Left e
 	(<*>) (Right f) r = fmap f r
 
-instance ApplicativeExtra (Either e)
+instance *> (Either e)
 where
 	(*>) (Right _) e = e
 	(*>) (Left l)  _ = Left l
 
+instance <* (Either e)
+where
 	(<*) (Left l)  _         = Left l
 	(<*) _         (Left l)  = Left l
 	(<*) x         _         = x

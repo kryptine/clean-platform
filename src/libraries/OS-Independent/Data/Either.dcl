@@ -5,7 +5,7 @@ definition module Data.Either
 * used inside generic functions, since most generic functions treat this
 * type in a special way which may lead to strange behavior.
 */
-from Control.Applicative import class pure, class <*>, class Applicative, class ApplicativeExtra, class Alternative
+from Control.Applicative import class pure, class <*>, class Applicative, class *>, class <*, class Alternative
 from Control.Monad import class Monad
 from Data.Functor import class Functor
 from Data.Monoid import class Monoid, class Semigroup
@@ -19,7 +19,8 @@ from Data.GenEq import generic gEq
 instance Functor (Either a)
 instance pure (Either e)
 instance <*> (Either e)
-instance ApplicativeExtra (Either e)
+instance *> (Either e)
+instance <* (Either e)
 instance Monad (Either e)
 
 instance Foldable (Either a)
