@@ -44,7 +44,7 @@ resize_int_array s a
 
 unsafe_resize_int_array :: !Int !*{#Int} -> *{#Int};
 unsafe_resize_int_array s a = code {
-	fill1_r _ARAY_ 0 1 0 01
+	fill1_r _ARRAY_ 0 1 0 01
 }
 
 (+<) infix 4;
