@@ -162,13 +162,14 @@ readPipeNonBlocking :: !ReadPipe !*World -> (!MaybeOSError String, !*World)
 readPipeNonBlocking (ReadPipe hPipe) world
 	// get nr of bytes available to read
 	# (heap, world) = getProcessHeap world
-	# (nBytesPtr, world) = heapAlloc heap 0 (IF_INT_64_OR_32 8 4) world
+	# (nBytesPtr, world) = heapAlloc heap 0 4 world
 	| nBytesPtr == 0 = abort "heapAlloc failed"
 	# (ok, world) = peekNamedPipe hPipe NULL 0 NULL nBytesPtr NULL world
 	| not ok
 		# (_, world) = heapFree heap 0 nBytesPtr world
 		= getLastOSError world
 	# (nBytes, nBytesPtr) = readIntP nBytesPtr 0
+	# nBytes = nBytes bitand 0xffffffff
 	# (_, world) = heapFree heap 0 nBytesPtr world
 	// read 'nBytes' bytes
 	| nBytes == 0 = (Ok "", world) // read blocks also if nBytes == 0
