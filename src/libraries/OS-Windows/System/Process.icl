@@ -105,21 +105,21 @@ runProcessIO path args mCurrentDirectory world
 		openPipe :: !*World -> (MaybeOSError (HANDLE, HANDLE), !*World)
 		openPipe world
 			# (heap, world) = getProcessHeap world
-			# (ptr, world) = heapAlloc heap 0 8 world
-    		| ptr == 0 = abort "heapAlloc failed"
-    		# (ok, world) = createPipe ptr (ptr + 4) securityAttributes 0 world
-    		| not ok
-        		# (_, world) = heapFree heap 0 ptr world
-        		= getLastOSError world
-    		# (rEnd, ptr)  = readIntP ptr 0
-    		# (wEnd, ptr)  = readIntP ptr 4
-    		# (_, world) = heapFree heap 0 ptr world
-    		= (Ok (rEnd, wEnd), world)
-    	
-    	securityAttributes = { createArray SECURITY_ATTRIBUTES_SIZE_INT 0
-    	                     & [SECURITY_ATTRIBUTES_nLength_INT_OFFSET]        = SECURITY_ATTRIBUTES_SIZE_BYTES
-	  			 	         , [SECURITY_ATTRIBUTES_bInheritHandle_INT_OFFSET] = TRUE
-					         }
+			# (ptr, world) = heapAlloc heap 0 (IF_INT_64_OR_32 16 8) world
+			| ptr == 0 = abort "heapAlloc failed"
+			# (ok, world) = createPipe ptr (ptr + IF_INT_64_OR_32 8 4) securityAttributes 0 world
+			| not ok
+				# (_, world) = heapFree heap 0 ptr world
+				= getLastOSError world
+			# (rEnd, ptr)  = readIntP ptr 0
+			# (wEnd, ptr)  = readIntP ptr (IF_INT_64_OR_32 8 4)
+			# (_, world) = heapFree heap 0 ptr world
+			= (Ok (rEnd, wEnd), world)
+
+		securityAttributes = { createArray SECURITY_ATTRIBUTES_SIZE_INT 0
+		                     & [SECURITY_ATTRIBUTES_nLength_INT_OFFSET]        = SECURITY_ATTRIBUTES_SIZE_BYTES
+		                     , [SECURITY_ATTRIBUTES_bInheritHandle_INT_OFFSET] = TRUE
+		                     }
 
 runProcessEscape :: !String -> String
 runProcessEscape s | indexOf " " s == -1                                    = s
@@ -162,8 +162,8 @@ readPipeNonBlocking :: !ReadPipe !*World -> (!MaybeOSError String, !*World)
 readPipeNonBlocking (ReadPipe hPipe) world
 	// get nr of bytes available to read
 	# (heap, world) = getProcessHeap world
-	# (nBytesPtr, world) = heapAlloc heap 0 4 world
-    | nBytesPtr == 0 = abort "heapAlloc failed"
+	# (nBytesPtr, world) = heapAlloc heap 0 (IF_INT_64_OR_32 8 4) world
+	| nBytesPtr == 0 = abort "heapAlloc failed"
 	# (ok, world) = peekNamedPipe hPipe NULL 0 NULL nBytesPtr NULL world
 	| not ok
 		# (_, world) = heapFree heap 0 nBytesPtr world
