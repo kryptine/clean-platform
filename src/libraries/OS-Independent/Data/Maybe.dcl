@@ -76,3 +76,5 @@ instance <*> (MaybeT m) | Monad m
 instance Alternative (MaybeT m) | Monad m
 instance Monad (MaybeT m) | Monad m
 instance MonadTrans MaybeT
+where
+	liftT :: !(a b) -> MaybeT a b | Monad a

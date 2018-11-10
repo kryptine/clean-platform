@@ -12,7 +12,8 @@ where
 
 instance pure ((->) r)
 where
-	pure x    = const x
+	pure :: !a -> b -> a
+	pure x = const x
 
 instance <*> ((->) r)
 where

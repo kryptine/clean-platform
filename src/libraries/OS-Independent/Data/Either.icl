@@ -73,9 +73,14 @@ where
 
 instance Bifunctor Either
 where
+	bifmap :: (a -> c) (b -> d) !(Either a b) -> Either c d
 	bifmap f _ (Left a) = Left (f a)
 	bifmap _ g (Right b) = Right (g b)
+
+	first :: (a -> c) !(Either a b) -> Either c b
 	first f d = bifmap f id d
+
+	second :: (b -> d) !(Either a b) -> Either a d
 	second g d = bifmap id g d
 
 instance Alternative (Either m) | Monoid m
@@ -89,14 +94,14 @@ either :: .(.a -> .c) .(.b -> .c) !(Either .a .b) -> .c
 either f _ (Left x)     =  f x
 either _ g (Right y)    =  g y
 
-lefts :: .[Either .a .b] -> .[.a]
+lefts :: !.[Either .a .b] -> .[.a]
 lefts l = [l\\(Left l)<-l]
 
-rights :: .[Either .a .b] -> .[.b]
+rights :: !.[Either .a .b] -> .[.b]
 rights l = [l\\(Right l)<-l]
 
-fromLeft :: .a (Either .a .b) -> .a
+fromLeft :: .a !(Either .a .b) -> .a
 fromLeft a e = either id (const a) e
 
-fromRight :: .b (Either .a .b) -> .b
+fromRight :: .b !(Either .a .b) -> .b
 fromRight a e = either (const a) id e

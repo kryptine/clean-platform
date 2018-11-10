@@ -147,5 +147,7 @@ instance Monad (MaybeT m) | Monad m where
 			Nothing -> return Nothing
 			Just y  -> runMaybeT $ f y
 
-instance MonadTrans MaybeT where
+instance MonadTrans MaybeT
+where
+	liftT :: !(a b) -> MaybeT a b | Monad a
 	liftT m = MaybeT $ liftM Just m

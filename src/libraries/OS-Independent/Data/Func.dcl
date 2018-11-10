@@ -6,7 +6,7 @@ from Control.Monad import class Monad
 from Data.Monoid import class Semigroup, class Monoid
 
 instance Functor ((->) r)
-instance pure ((->) r)
+instance pure ((->) r) where pure :: !a -> b -> a
 instance <*> ((->) r)
 instance Monad ((->) r)
 

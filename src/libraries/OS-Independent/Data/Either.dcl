@@ -27,13 +27,17 @@ instance Foldable (Either a)
 instance Traversable (Either a)
 
 instance Bifunctor Either
+where
+	bifmap :: (a -> c) (b -> d) !(Either a b) -> Either c d
+	first :: (a -> c) !(Either a b) -> Either c b
+	second :: (b -> d) !(Either a b) -> Either a d
 
 instance Alternative (Either m) | Monoid m
 
 derive gEq Either
 
 either    :: .(.a -> .c) .(.b -> .c) !(Either .a .b) -> .c
-lefts     :: .[Either .a .b] -> .[.a]
-rights    :: .[Either .a .b] -> .[.b]
-fromLeft :: .a (Either .a .b) -> .a
-fromRight :: .b (Either .a .b) -> .b
+lefts     :: !.[Either .a .b] -> .[.a]
+rights    :: !.[Either .a .b] -> .[.b]
+fromLeft  :: .a !(Either .a .b) -> .a
+fromRight :: .b !(Either .a .b) -> .b
