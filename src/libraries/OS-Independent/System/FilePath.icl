@@ -55,7 +55,7 @@ replaceExtension path ext = addExtension (dropExtension path) ext
 
 hasTrailingPathSeparator :: !FilePath -> Bool
 hasTrailingPathSeparator "" = False
-hasTrailingPathSeparator path = isMember (path.[size path - 1]) pathSeparators
+hasTrailingPathSeparator path = path.[size path - 1] == pathSeparator
 
 addTrailingPathSeparator :: !FilePath -> FilePath
 addTrailingPathSeparator path = if (hasTrailingPathSeparator path) path (path +++ {pathSeparator})
