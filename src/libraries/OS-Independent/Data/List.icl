@@ -21,8 +21,12 @@ instance Functor []
 where
 	fmap f l = [f e \\ e <- l]
 
-instance Applicative [] where
+instance pure []
+where
 	pure x      = [x]
+
+instance <*> []
+where
 	(<*>) fs xs = [f x\\f<-fs, x<-xs]
 
 instance Alternative [] where

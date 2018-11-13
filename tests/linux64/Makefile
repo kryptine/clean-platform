@@ -51,7 +51,7 @@ run_tartest: tartest
 	$(RM) -r _tartest-old _tartest _tartest.tar
 
 clean:
-	$(RM) -r $(BINARIES) Clean\ System\ Files
+	$(RM) -r $(filter-out checktest,$(BINARIES)) _tartest* Clean\ System\ Files
 
 .FORCE:
 .PHONY: all run clean .FORCE

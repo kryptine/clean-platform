@@ -6,6 +6,7 @@ import Control.Applicative
 from Control.Monad import class Monad(..)
 import Data.Either
 import Data.Func
+import Data.Functor
 import Data.Maybe
 import Data.Tuple
 import Text

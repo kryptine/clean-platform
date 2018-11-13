@@ -16,13 +16,20 @@ import Data.GenEq
 
 instance Functor Maybe where fmap f m = mapMaybe f m
 
-instance Applicative Maybe
+instance pure Maybe where pure x = Just x
+
+instance <*> Maybe
 where
-	pure x            = Just x
 	(<*>) Nothing  _  = Nothing
 	(<*>) (Just f) ma = fmap f ma
+
+instance *> Maybe
+where
 	(*>) (Just _) m = m
 	(*>) _        _ = Nothing
+
+instance <* Maybe
+where
 	(<*) Nothing _  = Nothing
 	(<*) m (Just _) = m
 	(<*) _ _        = Nothing
@@ -46,6 +53,7 @@ where
 
 instance Semigroup (Maybe a) | Semigroup a
 where
+	mappend :: !(Maybe a) !(Maybe a) -> Maybe a | Semigroup a
 	mappend Nothing   m         = m
 	mappend m         Nothing   = m
 	mappend (Just m1) (Just m2) = Just (mappend m1 m2)
@@ -110,9 +118,9 @@ mapMaybeT f m = MaybeT $ f $ runMaybeT m
 instance Functor (MaybeT m) | Functor m where
 	fmap f m = mapMaybeT (fmap $ fmap f) m
 
-instance Applicative (MaybeT m) | Monad m where
-	pure x = MaybeT $ pure $ Just x
+instance pure (MaybeT m) | pure m where pure x = MaybeT (pure (Just x))
 
+instance <*> (MaybeT m) | Monad m where
 	(<*>) mf mx = MaybeT $
 		runMaybeT mf >>= \mb_f ->
 		case mb_f of
@@ -139,5 +147,7 @@ instance Monad (MaybeT m) | Monad m where
 			Nothing -> return Nothing
 			Just y  -> runMaybeT $ f y
 
-instance MonadTrans MaybeT where
+instance MonadTrans MaybeT
+where
+	liftT :: !(a b) -> MaybeT a b | Monad a
 	liftT m = MaybeT $ liftM Just m

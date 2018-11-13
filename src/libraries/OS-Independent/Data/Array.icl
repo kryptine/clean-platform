@@ -118,15 +118,21 @@ instance +++ (arr a) | Array arr a where
 instance Functor {} where fmap f arr = {f a\\a<-:arr}
 instance Functor {!} where fmap f arr = {f a\\a<-:arr}
 
-instance Applicative {}
+instance pure {}
 where
 	pure x = {x}
+
+instance <*> {}
+where
 	(<*>) fs xs = {f x\\f<-:fs, x<-:xs}
 
-instance Applicative {!}
+instance pure {!}
 where
-	pure x = {x}
-	(<*>) fs xs = {f x\\f<-:fs, x<-:xs}
+	pure x = {!x}
+
+instance <*> {!}
+where
+	(<*>) fs xs = {!f x\\f<-:fs, x<-:xs}
 
 instance Monad {} where bind m k = foldrArr ((+++) o k) {} m
 instance Monad {!} where bind m k = foldrArr ((+++) o k) {} m

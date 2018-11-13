@@ -14,7 +14,7 @@ from Data.Map import :: Map, findKeyWith
 from Data.Maybe import :: Maybe (..), fromJust, maybeToList, instance Functor Maybe, instance == (Maybe a)
 import Data.Error
 from Data.Functor        import class Functor (..)
-from Control.Applicative import class Applicative (..)
+from Control.Applicative import class Applicative
 import Control.Monad
 import Data.MapCollection
 from Text.HTML import :: SVGColor (..)

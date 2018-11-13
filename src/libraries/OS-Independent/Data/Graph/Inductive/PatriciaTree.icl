@@ -19,11 +19,11 @@ implementation module Data.Graph.Inductive.PatriciaTree
 import Data.Graph.Inductive.Graph
 
 from Control.Monad import class Monad (..), >>=
-from           Control.Applicative import liftA2, class Applicative (..)
+from           Control.Applicative import liftA2, class pure(..), class Applicative
 import Data.Functor
 from           Data.IntMap.Strict         import :: IntMap, instance == (IntMap a), instance Functor IntMap
 import qualified Data.IntMap.Strict
-from Data.List import instance Functor [], instance Applicative [], instance Monad []
+from Data.List import instance Functor [], instance pure [], instance <*> [], instance Monad []
 import qualified Data.List
 import StdList, StdTuple, StdMisc, StdOrdList
 import StdClass, StdFunctions, StdOverloaded

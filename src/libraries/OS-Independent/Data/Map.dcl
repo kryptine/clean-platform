@@ -438,6 +438,8 @@ delList xs m :== 'StdList'.foldr (\k m -> del k m) m xs
 putList xs m :== union (fromList xs) m
 
 instance Functor (Map k)
+where
+	fmap :: !(a -> b) !(Map k a) -> Map k b
 
 difference :: !(Map k a) !(Map k b) -> Map k a | < k
 mapWithKey :: !(k a -> b) !(Map k a) -> Map k b

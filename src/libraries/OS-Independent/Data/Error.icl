@@ -10,8 +10,12 @@ where
 	fmap f (Ok x)		= Ok (f x)
 	fmap f (Error x)	= Error x
 
-instance Applicative (MaybeError e) where
-    pure x            = Ok x
+instance pure (MaybeError a)
+where
+	pure x = Ok x
+
+instance <*> (MaybeError a)
+where
     (<*>) (Error e) _ = Error e
     (<*>) (Ok f)    r = fmap f r
 

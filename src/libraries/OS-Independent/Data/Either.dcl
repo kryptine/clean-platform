@@ -5,7 +5,7 @@ definition module Data.Either
 * used inside generic functions, since most generic functions treat this
 * type in a special way which may lead to strange behavior.
 */
-from Control.Applicative import class Applicative, class Alternative
+from Control.Applicative import class pure, class <*>, class Applicative, class *>, class <*, class Alternative
 from Control.Monad import class Monad
 from Data.Functor import class Functor
 from Data.Monoid import class Monoid, class Semigroup
@@ -17,20 +17,27 @@ from Data.GenEq import generic gEq
 :: Either a b = Left a | Right b
 
 instance Functor (Either a)
-instance Applicative (Either e)
+instance pure (Either e)
+instance <*> (Either e)
+instance *> (Either e)
+instance <* (Either e)
 instance Monad (Either e)
 
 instance Foldable (Either a)
 instance Traversable (Either a)
 
 instance Bifunctor Either
+where
+	bifmap :: (a -> c) (b -> d) !(Either a b) -> Either c d
+	first :: (a -> c) !(Either a b) -> Either c b
+	second :: (b -> d) !(Either a b) -> Either a d
 
 instance Alternative (Either m) | Monoid m
 
 derive gEq Either
 
 either    :: .(.a -> .c) .(.b -> .c) !(Either .a .b) -> .c
-lefts     :: .[Either .a .b] -> .[.a]
-rights    :: .[Either .a .b] -> .[.b]
-fromLeft :: .a (Either .a .b) -> .a
-fromRight :: .b (Either .a .b) -> .b
+lefts     :: !.[Either .a .b] -> .[.a]
+rights    :: !.[Either .a .b] -> .[.b]
+fromLeft  :: .a !(Either .a .b) -> .a
+fromRight :: .b !(Either .a .b) -> .b

@@ -2,7 +2,7 @@ implementation module Data.Tree
 
 // Ported from Haskell's Data.Tree by Jurriën Stutterheim
 from Data.Functor import class Functor (..), <$>
-from Control.Applicative import class Applicative (..)
+from Control.Applicative import class pure(..), class <*>(..), class Applicative
 from Control.Monad import class Monad (..), liftM, `b`, mapM
 from Data.Monoid import class Monoid (..), class Semigroup
 from StdList import map, ++
@@ -25,10 +25,14 @@ instance Functor RTree where
 fmapRTree :: (a -> b) (RTree a) -> RTree b
 fmapRTree f (RNode x ts) = RNode (f x) (map (fmapRTree f) ts)
 
-instance Applicative RTree where
-  pure x = RNode x []
-  (<*>) (RNode f tfs) tx=:(RNode x txs) =
-      RNode (f x) (map (\x -> f <$> x) txs ++ map (\x -> x <*> tx) tfs)
+instance pure RTree
+where
+	pure x = RNode x []
+
+instance <*> RTree
+where
+	(<*>) (RNode f tfs) tx=:(RNode x txs) =
+		RNode (f x) (map (\x -> f <$> x) txs ++ map (\x -> x <*> tx) tfs)
 
 instance Monad RTree where
   bind (RNode x ts) f

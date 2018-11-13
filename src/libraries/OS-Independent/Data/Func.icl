@@ -10,9 +10,13 @@ instance Functor ((->) r)
 where
 	fmap f g = \x -> (f o g) x
 
-instance Applicative ((->) r)
+instance pure ((->) r)
 where
-	pure x    = const x
+	pure :: !a -> b -> a
+	pure x = const x
+
+instance <*> ((->) r)
+where
 	(<*>) f g = \x -> f x (g x)
 
 instance Monad ((->) r)

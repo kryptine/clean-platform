@@ -7,7 +7,7 @@ import StdMaybe
 
 from StdOverloaded import class ==(..)
 from Data.Functor import class Functor
-from Control.Applicative import class Applicative, class Alternative
+from Control.Applicative import class pure, class <*>, class Applicative, class *>, class <*, class Alternative
 from Control.Monad import class Monad, class MonadPlus
 from Control.Monad.Trans import class MonadTrans
 from Data.Monoid import class Semigroup, class Monoid
@@ -16,12 +16,17 @@ from Data.Traversable import class Traversable
 from Data.GenEq import generic gEq
 
 instance Functor Maybe
-instance Applicative Maybe
+instance pure Maybe
+instance <*> Maybe
+instance *> Maybe
+instance <* Maybe
 instance Alternative Maybe
 instance Monad Maybe
 instance MonadPlus Maybe
 
 instance Semigroup (Maybe a) | Semigroup a
+where
+	mappend :: !(Maybe a) !(Maybe a) -> Maybe a | Semigroup a
 instance Monoid (Maybe a)
 instance Foldable Maybe
 instance Traversable Maybe
@@ -66,7 +71,10 @@ runMaybeT :: !(MaybeT m a) -> m (Maybe a)
 mapMaybeT :: !((m (Maybe a)) -> n (Maybe b)) !(MaybeT m a) -> MaybeT n b
 
 instance Functor (MaybeT m) | Functor m
-instance Applicative (MaybeT m) | Monad m
+instance pure (MaybeT m) | pure m
+instance <*> (MaybeT m) | Monad m
 instance Alternative (MaybeT m) | Monad m
 instance Monad (MaybeT m) | Monad m
 instance MonadTrans MaybeT
+where
+	liftT :: !(a b) -> MaybeT a b | Monad a

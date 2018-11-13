@@ -12,7 +12,7 @@ import StdString
 import StdTuple
 
 import Control.Applicative
-from Control.Monad import mapM, class Monad
+from Control.Monad import mapM, class Monad(..), >>=
 import Data.Either
 import Data.Error
 from Data.Func import $

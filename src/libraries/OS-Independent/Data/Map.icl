@@ -1922,8 +1922,10 @@ instance < (Map k v) | Ord k & Ord v where
 ////////////////////////////////////////////////////////////////////
 //  Functor
 ////////////////////////////////////////////////////////////////////
-instance Functor (Map k) where
-  fmap f m  = map f m
+instance Functor (Map k)
+where
+	fmap :: !(a -> b) !(Map k a) -> Map k b
+	fmap f m  = map f m
 
 // TODO
 //instance Traversable (Map k) where

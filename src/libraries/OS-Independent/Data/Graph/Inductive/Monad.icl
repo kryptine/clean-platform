@@ -3,7 +3,7 @@
 implementation module Data.Graph.Inductive.Monad
 
 import Data.Graph.Inductive.Graph
-from Control.Applicative import class Applicative (..)
+from Control.Applicative import class Applicative
 import Control.Monad
 import Data.Functor
 from StdFunc import o, id
