@@ -41,7 +41,7 @@ instance Monoid ()
 :: Last a = Last (Maybe a)
 
 instance Semigroup (Dual a) | Semigroup a
-instance Semigroup (Endo a)
+instance Semigroup (Endo .a)
 instance Semigroup All
 instance Semigroup Any
 instance Semigroup (Sum a) | + a & zero a
@@ -50,7 +50,7 @@ instance Semigroup (First a)
 instance Semigroup (Last a)
 
 instance Monoid (Dual a) | Monoid a
-instance Monoid (Endo a)
+instance Monoid (Endo .a)
 instance Monoid All
 instance Monoid Any
 instance Monoid (Sum a) | + a & zero a
@@ -58,9 +58,9 @@ instance Monoid (Product a) | * a & one a
 instance Monoid (First a)
 instance Monoid (Last a)
 
-getDual :: !(Dual a) -> a
+getDual :: !(Dual .a) -> .a
 
-appEndo :: !(Endo a) -> (a -> a)
+appEndo :: !(Endo .a) -> (.a -> .a)
 
 getAll :: !All -> Bool
 
