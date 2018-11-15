@@ -76,14 +76,14 @@ class Foldable t where
 	 * applied to non-empty structures.
 	 * `foldr1 f = 'Data.List'.{{foldr1}} f o {{toList}}`
 	 */
-    foldr1 :: (a a -> a) !(t a) -> a
+    foldr1 :: !(a a -> a) !(t a) -> a
 
 	/**
 	 * A variant of {{foldl}} that has no base case, and thus may only be
 	 * applied to non-empty structures.
 	 * `foldl1 f = 'Data.List'.{{foldl1}} f o {{toList}}`
 	 */
-    foldl1 :: (a a -> a) !(t a) -> a
+    foldl1 :: !(a a -> a) !(t a) -> a
 
 // TODO Cleanify
 //instance Ix i => Foldable (Array i)

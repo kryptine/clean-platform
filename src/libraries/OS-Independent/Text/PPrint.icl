@@ -3,6 +3,7 @@ implementation module Text.PPrint
 import StdEnv
 import Data.List
 import Data.Maybe
+from Data.Foldable import class Foldable(foldr1)
 
 /*
  * PPrint

@@ -6,6 +6,7 @@ import StdFile
 import StdInt
 import StdString
 import StdTuple
+from StdList import foldr
 
 from Data.Func import $, hyperstrict
 import Data.Functor

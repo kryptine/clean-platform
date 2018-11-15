@@ -82,14 +82,12 @@ intercalate     :: !.[a] ![.[a]] -> .[a]
 transpose       :: ![[a]] -> [.[a]]
 subsequences    :: .[a] -> .[[a]]
 permutations    :: [a] -> .[[a]]
-foldl1          :: (.a -> .(.a -> .a)) ![.a] -> .a
 concatMap       :: (.a -> [.b]) ![.a] -> [.b]
 maximum         :: !.[a] -> a | < a
 minimum         :: !.[a] -> a | Ord a
 getItems        :: ![a] ![Int] -> [a]
 scanl           :: (a -> .(.b -> a)) a [.b] -> .[a]
 scanl1          :: (a -> .(a -> a)) !.[a] -> .[a]
-foldr1          :: (.a -> .(.a -> .a)) ![.a] -> .a
 replicate       :: !.Int a -> .[a]
 cycle           :: !.[a] -> [a]
 unfoldr         :: !(.a -> Maybe (.b,.a)) .a -> [.b]
@@ -144,15 +142,11 @@ hasDup :: ![a] -> Bool | Eq a
 
 isMemberGen :: !a !.[a] -> Bool | gEq{|*|} a
 
-strictFoldr         :: !(.a -> .(.b -> .b)) !.b ![.a] -> .b
-strictFoldl         :: !(.a -> .(.b -> .a)) !.a ![.b] -> .a
 strictTRMapRev      :: !(.a -> .b) ![.a] -> [.b]
 strictTRMapAcc      :: !(u:a -> v:b) !w:[u:a] !x:[v:b] -> y:[v:b], [w <= u,y <= v,x <= y]
 strictTRMap         :: !(.a -> .b) ![.a] -> [.b]
 reverseTR           :: ![.a] -> [.a]
 flattenTR           :: ![[a]] -> [a]
-strictFoldrSt       :: !(.a -> .(.b -> .(.st -> .(.b, .st)))) !.b ![.a] .st -> .(.b, .st)
-strictFoldlSt       :: !(.a -> .(.b -> .(.st -> .(.a, .st)))) !.a ![.b] .st -> .(.a, .st)
 strictTRMapSt       :: !(a .st -> (!b, !.st)) ![a] !.st -> (![b], !.st)
 strictTRMapStAcc    :: !(a .st -> (!b, !.st)) ![a] ![b] !.st -> (![b], !.st)
 strictTRZipWith     :: !(a b -> c) ![a] ![b] -> [c]

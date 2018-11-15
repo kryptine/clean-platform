@@ -12,7 +12,7 @@ import Data.Functor
 import Data.GenEq
 import Data.Maybe
 import Data.Monoid
-from Data.Foldable import class Foldable(foldMap)
+from Data.Foldable import class Foldable(foldMap, foldl1, foldr1)
 from Data.Traversable import class Traversable(traverse)
 import Control.Applicative
 import Control.Monad
@@ -55,12 +55,27 @@ where
 	fold x = foldMap id x
 	foldMap f x = foldr (mappend o f) mempty x
 	foldr f x y = foldr f x y
-	foldr` f z0 xs = foldl f` id xs z0
-	where f` k x z = k (f x z)
+
+	foldr` f x y = strictFoldr f x y
+	where
+		strictFoldr :: !(.a -> .(.b -> .b)) !.b ![.a] -> .b
+		strictFoldr _ b []     = b
+		strictFoldr f b [x:xs] = f x (strictFoldr f b xs)
+
 	foldl f x y = foldl f x y
-	foldl` f x y = foldl f x y
-	foldr1 f x = foldr1 f x
-	foldl1 f x = foldl1 f x
+
+	foldl` f x y = strictFoldl f x y
+	where
+		strictFoldl :: !(.a -> .(.b -> .a)) !.a ![.b] -> .a
+		strictFoldl _ b []     = b
+		strictFoldl f b [x:xs] = strictFoldl f (f b x) xs
+
+	foldr1 _ [x]    =  x
+	foldr1 f [x:xs] =  f x (foldr1 f xs)
+	foldr1 _ _      = abort "foldr1 called with empty list\n"
+
+	foldl1 f [x:xs] = foldl f x xs
+	foldl1 _ _      = abort "foldl1 called with empty list\n"
 
 instance Traversable []
 where
@@ -151,10 +166,6 @@ permutations xs0        =  [xs0 : perms xs0 []]
             interleave` f [y:ys] r = let (us,zs) = interleave` (f o (\xs -> [y:xs])) ys r
                                      in  ([y:us], [f [t:y:us] : zs])
 
-foldl1 :: (.a -> .(.a -> .a)) ![.a] -> .a
-foldl1 f [x:xs] = foldl f x xs
-foldl1 _ _      = abort "foldl1 called with empty list\n"
-
 concatMap :: (.a -> [.b]) ![.a] -> [.b]
 concatMap f ls = flatten (map f ls)
 
@@ -177,11 +188,6 @@ scanl f q ls            =  [q : (case ls of
 scanl1 :: (a -> .(a -> a)) !.[a] -> .[a]
 scanl1 f [x:xs]         =  scanl f x xs
 scanl1 _ []             =  []
-
-foldr1 :: (.a -> .(.a -> .a)) ![.a] -> .a
-foldr1 _ [x]    =  x
-foldr1 f [x:xs] =  f x (foldr1 f xs)
-foldr1 _ _      = abort "foldr1 called with empty list\n"
 
 replicate :: !.Int a -> .[a]
 replicate n x           =  take n (repeat x)
@@ -264,18 +270,12 @@ find :: (a -> .Bool) -> .(.[a] -> .(Maybe a))
 find p          = listToMaybe o filter p
 
 partition :: !(a -> .Bool) !.[a] -> (!.[a], !.[a])
-partition p xs = foldr` (select p) ([],[]) xs
+partition p xs = foldr (select p) ([],[]) xs
 
 select :: !.(a -> .Bool) !a !(!u:[a], !v:[a]) -> (!w:[a], !x:[a]), [u <= w,v <= x]
 select p x (ts, fs)
   | p x       = ([x:ts], fs)
   | otherwise = (ts, [x:fs])
-
-foldr` :: !(a .b -> .b) !.b !.[a] -> .b
-foldr` _ acc []       = acc
-foldr` f acc [x : xs]
-  #! tmp = foldr` f acc xs
-  = f x tmp
 
 elemIndex :: a -> .(.[a] -> .(Maybe Int)) | == a
 elemIndex x     = findIndex (\y -> x==y)
@@ -399,29 +399,6 @@ hasDup [x:xs] = isMember x xs || hasDup xs
 isMemberGen :: !a !.[a] -> Bool | gEq{|*|} a
 isMemberGen x [hd:tl]	= hd === x || isMemberGen x tl
 isMemberGen x []		= False
-
-strictFoldr :: !(.a -> .(.b -> .b)) !.b ![.a] -> .b
-strictFoldr _ b []     = b
-strictFoldr f b [x:xs] = f x (strictFoldr f b xs)
-
-strictFoldrSt       :: !(.a -> .(.b -> .(.st -> .(.b, .st)))) !.b ![.a] .st -> .(.b, .st)
-strictFoldrSt _ b []     st = (b, st)
-strictFoldrSt f b [x:xs] st
-  #! (acc, st) = strictFoldrSt f b xs st
-  #! (r, st)   = f x acc st
-  = (r, st)
-
-strictFoldlSt       :: !(.a -> .(.b -> .(.st -> .(.a, .st)))) !.a ![.b] .st -> .(.a, .st)
-strictFoldlSt _ b [] st = (b, st)
-strictFoldlSt f b [x:xs] st
-  #! (r, st) = f b x st
-  = strictFoldlSt f r xs st
-
-strictFoldl :: !(.a -> .(.b -> .a)) !.a ![.b] -> .a
-strictFoldl _ b [] = b
-strictFoldl f b [x:xs]
-  #! r = f b x
-  = strictFoldl f r xs
 
 strictTRMapRev :: !(.a -> .b) ![.a] -> [.b]
 strictTRMapRev f xs = strictTRMapAcc f xs []
