@@ -14,6 +14,7 @@ from Data.Map import :: Map, findKeyWith
 from Data.Maybe import :: Maybe (..), fromJust, maybeToList, instance Functor Maybe, instance == (Maybe a)
 import Data.Error
 from Data.Functor        import class Functor (..)
+from Data.Foldable       import class Foldable (foldl1)
 from Control.Applicative import class Applicative
 import Control.Monad
 import Data.MapCollection

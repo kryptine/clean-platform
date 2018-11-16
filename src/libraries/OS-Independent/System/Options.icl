@@ -15,6 +15,7 @@ import Data.Functor
 import Data.List
 import Data.Maybe
 import Data.Tuple
+from Data.Foldable import class Foldable(foldr1)
 from Text import class Text(join,rpad), instance Text String
 
 instance Alternative (MaybeError [String])
