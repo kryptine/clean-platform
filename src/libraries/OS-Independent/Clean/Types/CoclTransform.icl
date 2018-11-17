@@ -11,7 +11,7 @@ import Control.Monad
 import Control.Monad.State
 import Data.Functor
 from Data.Maybe import :: Maybe (..), instance Functor Maybe,
-	instance Applicative Maybe, instance Monad Maybe
+	instance pure Maybe, instance <*> Maybe, instance Monad Maybe
 import qualified Data.Map as M
 
 import syntax
