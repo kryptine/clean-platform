@@ -74,13 +74,16 @@ where
 	renameAndRemoveStrictness (Var v) = Var (prep +++ v)
 	renameAndRemoveStrictness (Cons c ts) = Cons (prep +++ c) $ map renameAndRemoveStrictness ts
 	renameAndRemoveStrictness (Type t ts) = Type t $ map renameAndRemoveStrictness ts
-	renameAndRemoveStrictness (Func is r tc) = Func (map renameAndRemoveStrictness is) (renameAndRemoveStrictness r) tc
+	renameAndRemoveStrictness (Func is r tc) = Func (map renameAndRemoveStrictness is) (renameAndRemoveStrictness r) (map (inTC renameAndRemoveStrictness) tc)
 	renameAndRemoveStrictness (Uniq t) = Uniq $ renameAndRemoveStrictness t
 	renameAndRemoveStrictness (Arrow t) = Arrow (renameAndRemoveStrictness <$> t)
 	renameAndRemoveStrictness (Forall vs t tc) = fromJust $
 		assignAll [(prep+++v,Var ("_"+++prep+++v)) \\ v <- map fromVarLenient vs] $
 		renameAndRemoveStrictness t
 	renameAndRemoveStrictness (Strict t) = renameAndRemoveStrictness t
+
+	inTC f (Derivation g t) = Derivation g (f t)
+	inTC f (Instance c ts)  = Instance c (map f ts)
 
 finish_unification :: ![TypeDef] ![TVAssignment] -> Unifier
 finish_unification syns tvs
