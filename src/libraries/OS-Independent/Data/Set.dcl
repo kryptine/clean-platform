@@ -63,12 +63,12 @@ definition module Data.Set
 
 from StdOverloaded	import class ==, class < (..)
 from StdClass import class Ord (..), <=, >
-from Data.Maybe		import :: Maybe
-from Data.List import foldl, map
+from StdList import foldl, map
+from Data.Maybe	import :: Maybe
 from StdBool import not, &&
 from Data.GenEq import generic gEq
 from Data.GenLexOrd import generic gLexOrd, :: LexOrd
-from Data.Foldable import class Foldable
+from Data.Foldable import class Foldable (foldr`)
 
 /**
  * A `Set a` is an unordered, uncounted collection of values of type `a`.
@@ -424,12 +424,6 @@ split :: !a !(Set a) -> (!Set a, !Set a) | < a
 splitMember :: !a !(Set a) -> (!Set a, !Bool, !Set a) | < a
 
 /**
- * Post-order fold.
- * @complexity O(n)
- */
-fold :: !(a -> .b -> .b) !.b !.(Set a) -> .b
-
-/**
  * Convert the set to an ascending list of elements.
  * @type (Set a) -> [a]
  * @complexity O(n)
@@ -443,7 +437,7 @@ toList s :== toAscList s
  * @complexity O(n)
  * @type (Set a) -> [a]
  */
-toAscList t :== fold (\a as -> [a:as]) [] t
+toAscList t :== foldr` (\a as -> [a:as]) [] t
 
 /**
  * Create a set from a list of elements.
