@@ -2,7 +2,7 @@ implementation module Data.GenCompress
 
 import StdGeneric, StdEnv
 from Data.Maybe import :: Maybe(..)
-import Data._Array
+import Data._Array, Data.Func
 
 //--------------------------------------------------
 // uncompressor monad
@@ -200,8 +200,8 @@ where
 			= fr >>= ret o RIGHT
 			= fl >>= ret o LEFT
 gUncompress{|CONS|} f = f >>= ret o CONS
-gUncompress{|FIELD|} f = f >>= ret o FIELD
-gUncompress{|OBJECT|} f = f >>= ret o OBJECT
+gUncompress{|FIELD|} f = f >>= \x -> ret $ FIELD x
+gUncompress{|OBJECT|} f = f >>= \x -> ret $ OBJECT x
 gUncompress{|[]|} f = uncompressList f
 gUncompress{|{}|} f = uncompressArray f
 gUncompress{|{!}|} f = uncompressArray f

@@ -417,7 +417,7 @@ gIRCParse{|EITHER|} lp rp as = case lp as of
 	(Left e1, _) = case rp as of
 		(Right a, rest) = (Right $ RIGHT a, rest)
 		(Left e2, _) = (Left $ e2, [])
-gIRCParse{|OBJECT|} p as = appFst (fmap OBJECT) $ p as
+gIRCParse{|OBJECT|} p as = appFst (fmap $ \x -> OBJECT x) $ p as
 gIRCParse{|CONS of d|} p []
 	= (Left $ concat ["Expected a cmd constructor: ", d.gcd_name], [])
 gIRCParse{|CONS of d|} p [a:as]

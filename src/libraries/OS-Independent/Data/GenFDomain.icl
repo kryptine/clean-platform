@@ -12,7 +12,7 @@ gFDomain{|UNIT|}         = [UNIT]
 gFDomain{|PAIR|}   dx dy = [PAIR x y\\x <- dx, y <- dy]
 gFDomain{|EITHER|} dx dy = map LEFT dx ++ map RIGHT dy
 gFDomain{|CONS|}   dx    = map CONS   dx
-gFDomain{|FIELD|}  dx    = map FIELD  dx
-gFDomain{|OBJECT|} dx    = map OBJECT dx
+gFDomain{|FIELD|}  dx    = map (\x -> FIELD x) dx
+gFDomain{|OBJECT|} dx    = map (\x -> OBJECT x) dx
 
 derive gFDomain (,), (,,), (,,,), (,,,,), (,,,,,), (,,,,,,), (,,,,,,,)

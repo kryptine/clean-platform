@@ -149,7 +149,7 @@ docBlockToDoc{|EITHER|} fl fr doc = case fl doc of
 	Left e -> case fr doc of
 		Right (v, ws) -> Right (RIGHT v, ws)
 		Left _ -> Left e
-docBlockToDoc{|OBJECT|} fx doc = appFst OBJECT <$> fx doc
+docBlockToDoc{|OBJECT|} fx doc = appFst (\x -> OBJECT x) <$> fx doc
 
 docBlockToDoc{|MultiLineString|} (Left [s]) = Right (MultiLine $ trimMultiLine $ split "\n" s, [])
 docBlockToDoc{|MultiLineString|} _          = abort "error in docBlockToDoc{|MultiLineString|}\n"
