@@ -5,7 +5,7 @@ definition module Data.Maybe
 
 import StdMaybe 
 
-from StdOverloaded import class ==(..)
+from StdOverloaded import class ==
 from Data.Functor import class Functor
 from Control.Applicative import class pure, class <*>, class Applicative, class *>, class <*, class Alternative
 from Control.Monad import class Monad, class MonadPlus

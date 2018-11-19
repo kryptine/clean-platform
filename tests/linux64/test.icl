@@ -123,6 +123,7 @@ import qualified Data.Map
 import qualified Data.MapCollection
 import qualified Data.Matrix
 import qualified Data.Maybe
+import qualified Data.Maybe.Ord
 import qualified Data.Monoid
 import qualified Data.NGramIndex
 import qualified Data.OrdList
