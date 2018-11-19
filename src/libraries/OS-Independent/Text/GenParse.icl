@@ -674,17 +674,17 @@ mkprod exprs
 	
 gParse{|FIELD of {gfd_name}|} parse_arg (ExprField name value) 
 	| gfd_name == name
-		= mapMaybe FIELD (parse_arg value)
+		= mapMaybe (\x -> FIELD x) (parse_arg value)
 		= Nothing
 gParse{|FIELD of {gfd_name}|} _ _ = Nothing
 gParse{|OBJECT of {gtd_num_conses,gtd_conses}|} parse_arg expr
 	| gtd_num_conses == 0 = case expr of
 		ExprApp ap
 			| size ap == 2 && is_ident (hd gtd_conses).gcd_name ap.[0]
-				= mapMaybe OBJECT (parse_arg ap.[1])
+				= mapMaybe (\x -> OBJECT x) (parse_arg ap.[1])
 			= Nothing
 		_ = Nothing
-	= mapMaybe OBJECT (parse_arg expr)
+	= mapMaybe (\x -> OBJECT x) (parse_arg expr)
 
 gParse{|[]|} parse_arg (ExprList exprs) 
 	= maybeAll [parse_arg e \\e<-exprs]

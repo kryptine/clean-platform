@@ -44,9 +44,9 @@ gFiniteDefault{|UNIT|}           = [Just UNIT]
 gFiniteDefault{|EITHER|} dsl dsr = [(LEFT <$> dl) <|> (RIGHT <$> dr) \\ dl <- dsl & dr <- dsr]
 gFiniteDefault{|PAIR|}   dsl dsr = [PAIR <$> dl <*> dr \\ dl <- dsl, dr <- dsr]
 gFiniteDefault{|CONS|}   dc      = fmap CONS   <$> dc
-gFiniteDefault{|FIELD|}  df      = fmap FIELD  <$> df
+gFiniteDefault{|FIELD|}  df      = fmap (\x -> FIELD x) <$> df
 // add a Nothing for each level to prevent infinite recursion to produce list elements for infinite branches
-gFiniteDefault{|OBJECT|} do      = [Nothing: fmap OBJECT <$> do]
+gFiniteDefault{|OBJECT|} do      = [Nothing: fmap (\x -> OBJECT x) <$> do]
 gFiniteDefault{|RECORD|} dr      = fmap RECORD <$> dr
 
 derive gFiniteDefault (), (,), (,,), (,,,), (,,,,), (,,,,,), (,,,,,,), (,,,,,,,)
