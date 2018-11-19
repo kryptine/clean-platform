@@ -9,12 +9,12 @@ import StdString
 from StdTuple import fst, snd
 import Data.List
 import Data.GenEq
-from Data.Set import :: Set, instance == (Set a), instance < (Set a), fold, fromList, toList, toAscList
+from Data.Set import :: Set, instance == (Set a), instance < (Set a), instance Foldable Set, fromList, toList, toAscList
 from Data.Map import :: Map, findKeyWith
 from Data.Maybe import :: Maybe (..), fromJust, maybeToList, instance Functor Maybe, instance == (Maybe a)
 import Data.Error
 from Data.Functor        import class Functor (..)
-from Data.Foldable       import class Foldable (foldl1)
+from Data.Foldable       import class Foldable (foldl1, foldr`)
 from Control.Applicative import class Applicative
 import Control.Monad
 import Data.MapCollection
@@ -952,7 +952,7 @@ where
 	
 	resolveImgAttrs :: !ImgTags !FontSpans !TextSpans !(Set BasicImgAttr) !*(!ImgPaths,!ImgSpans,!GridSpans) -> (!MaybeError SpanResolveError (Set BasicImgAttr),!*(!ImgPaths,!ImgSpans,!GridSpans))
 	resolveImgAttrs user_tags font_spans text_spans attrs spans
-	  #! (m_attrs`,spans) = strictTRMapSt (resolveImgAttr user_tags font_spans text_spans) (fold (\a as -> [a:as]) [] attrs) spans // USING (toList attrs) INSTEAD OF (fold (\a as -> [a:as]) [] attrs) CRASHES THE COMPILER: Run Time Error: index out of range
+	  #! (m_attrs`,spans) = strictTRMapSt (resolveImgAttr user_tags font_spans text_spans) (foldr` (\a as -> [a:as]) [] attrs) spans // USING (toList attrs) INSTEAD OF (fold (\a as -> [a:as]) [] attrs) CRASHES THE COMPILER: Run Time Error: index out of range
 	  = case [e \\ Error e <- m_attrs`] of
 	      [e : _] = (Error e,spans)
 	      _       = (Ok (fromList (map fromOk m_attrs`)),spans)
