@@ -13,20 +13,19 @@ import Data.Functor
 import Data.Maybe
 import Text.GenJSON
 
-:: *NativeDB v a = DB !*{!Entry v a}
+:: *NativeDB v a :== *{!Entry v a}
 
 instance == Index where == (Index a) (Index b) = a == b
 instance < Index where < (Index a) (Index b) = a < b
 
 newDB :: ![v] -> *NativeDB v a
-newDB vs = DB {{value=hyperstrict v,included=True,annotations=[]} \\ v <- vs}
+newDB vs = {{value=hyperstrict v,included=True,annotations=[]} \\ v <- vs}
 
 saveDB :: !*(NativeDB v a) !*File -> *(!*NativeDB v a, !*File) | JSONEncode{|*|} v
-saveDB (DB db) f
+saveDB db f
 # (s,db) = usize db
 # f = f <<< toString s <<< "\n"
-# (db,f) = loop 0 (s-1) db f
-= (DB db, f)
+= loop 0 (s-1) db f
 where
 	loop :: !Int !Int !*{!Entry v a} !*File -> *(*{!Entry v a}, !*File) | JSONEncode{|*|} v
 	loop i s es f
@@ -57,10 +56,9 @@ where
 			(Just es, f) -> (Just [e:es], f)
 
 resetDB :: !*(NativeDB v a) -> *NativeDB v a
-resetDB (DB db)
+resetDB db
 # (s,db) = usize db
-# db = upd (s-1) db
-= DB db
+= upd (s-1) db
 where
 	upd :: !Int !*{!Entry v a} -> *{!Entry v a}
 	upd -1 es = es
@@ -69,10 +67,9 @@ where
 	= upd (i-1) {es & [i]={e & included=True, annotations=[]}}
 
 allEntries :: !*(NativeDB v a) -> *(![v], !*NativeDB v a)
-allEntries (DB db)
+allEntries db
 # (s,db) = usize db
-# (es,db) = collect (s-1) db
-= (es, DB db)
+= collect (s-1) db
 where
 	collect :: !Int !*{!Entry v a} -> *(![v], !*{!Entry v a})
 	collect -1 es = ([], es)
@@ -82,10 +79,9 @@ where
 	= ([e.value:r], es)
 
 getEntries :: !*(NativeDB v a) -> *(![(v, [a])], !*NativeDB v a)
-getEntries (DB db)
+getEntries db
 # (s,db) = usize db
-# (es,db) = collect (s-1) db
-= (es,DB db)
+= collect (s-1) db
 where
 	collect :: !Int !*{!Entry v a} -> *(![(v, [a])], !*{!Entry v a})
 	collect -1 es = ([], es)
@@ -95,10 +91,9 @@ where
 	= (if e.included [(e.value,e.annotations):r] r, es)
 
 getEntriesWithIndices :: !*(NativeDB v a) -> *(![(Index, v, [a])], !*NativeDB v a)
-getEntriesWithIndices (DB db)
+getEntriesWithIndices db
 # (s,db) = usize db
-# (es,db) = collect (s-1) db
-= (es,DB db)
+= collect (s-1) db
 where
 	collect :: !Int !*{!Entry v a} -> *(![(Index, v, [a])], !*{!Entry v a})
 	collect -1 es = ([], es)
@@ -108,9 +103,9 @@ where
 	= (if e.included [(Index i,e.value,e.annotations):r] r, es)
 
 mapInPlace :: !(Int v -> v) !*(NativeDB v a) -> *(NativeDB v a)
-mapInPlace f (DB db)
+mapInPlace f db
 # (s,db) = usize db
-= DB (upd 0 s db)
+= upd 0 s db
 where
 	//upd :: !Int !Int !*{!Entry v a} -> *{!Entry v a}
 	upd i s es
@@ -120,9 +115,9 @@ where
 	= upd (i+1) s {es & [i]=e}
 
 search :: !SearchMode !(v -> (Bool, [a])) !*(NativeDB v a) -> *NativeDB v a
-search mode f (DB db)
+search mode f db
 # (s,db) = usize db
-= DB (upd (s - 1) db)
+= upd (s - 1) db
 where
 	//upd :: (!Int !*{!Entry v a} -> *{!Entry v a})
 	upd = case mode of
@@ -151,27 +146,20 @@ where
 		}}
 
 searchIndex :: !Index ![a] !*(NativeDB v a) -> *NativeDB v a
-searchIndex (Index i) annots (DB db)
+searchIndex (Index i) annots db
 # (e,db) = db![i]
-# db & [i] =
-	{ e
-	& included = True
-	, annotations = annots ++ e.annotations
-	}
-= DB db
+= {db & [i].included=True, [i].annotations=annots++e.annotations}
 
 unsearchIndex :: !Index !*(NativeDB v a) -> *NativeDB v a
-unsearchIndex (Index i) (DB db) = DB {db & [i].included=False}
+unsearchIndex (Index i) db = {db & [i].included=False}
 
 searchIndices :: !SearchMode ![(!Index, ![a])] !*(NativeDB v a) -> *NativeDB v a
-searchIndices mode idxs (DB db)
-# db = case mode of
+searchIndices mode idxs db = case mode of
 	Intersect
 		# (s,db) = usize db
 		-> upd_intersect 0 (s-1) idxs db
 	AddExcluded
 		-> foldr upd_addexcluded db idxs
-= (DB db)
 where
 	upd_addexcluded :: !(!Index, ![a]) !*{!Entry v a} -> *{!Entry v a}
 	upd_addexcluded (Index i,annots) es
@@ -200,19 +188,16 @@ where
 	where match = i == idx
 
 unsearchIndices :: ![Index] !*(NativeDB v a) -> *NativeDB v a
-unsearchIndices idxs (DB db)
-# db = upd idxs db
-= (DB db)
+unsearchIndices idxs db = upd idxs db
 where
 	upd :: ![Index] !*{!Entry v a} -> *{!Entry v a}
 	upd [] es = es
 	upd [Index i:is] es = upd is {es & [i].included=False}
 
 unsearchIndices` :: !{#Index} !*(NativeDB v a) -> *NativeDB v a
-unsearchIndices` idxs (DB db)
+unsearchIndices` idxs db
 # (sz,idxs) = usize idxs
-# db = upd (sz-1) idxs db
-= DB db
+= upd (sz-1) idxs db
 where
 	upd :: !Int !{#Index} !*{!Entry v a} -> *{!Entry v a}
 	upd -1 _ es = es
@@ -221,9 +206,7 @@ where
 	= upd (i-1) idxs {es & [ei].included=False}
 
 searchWithIndices :: !(v -> (Bool, ![a])) ![Index] !*(NativeDB v a) -> *NativeDB v a
-searchWithIndices prop idxs (DB db)
-# db = upd prop idxs db
-= (DB db)
+searchWithIndices prop idxs db = upd prop idxs db
 where
 	upd :: !(v -> (Bool, ![a])) ![Index] !*{!Entry v a} -> *{!Entry v a}
 	upd _ [] es = es
@@ -235,10 +218,9 @@ where
 	= upd prop is {es & [i]=e}
 
 searchWithIndices` :: !(v -> (Bool, ![a])) !{#Index} !*(NativeDB v a) -> *NativeDB v a
-searchWithIndices` prop idxs (DB db)
+searchWithIndices` prop idxs db
 # (sz,idxs) = usize idxs
-# db = upd prop (sz-1) idxs db
-= DB db
+= upd prop (sz-1) idxs db
 where
 	upd :: !(v -> (Bool, ![a])) !Int !{#Index} !*{!Entry v a} -> *{!Entry v a}
 	upd _ -1 _ es = es
@@ -251,14 +233,10 @@ where
 	= upd prop (i-1) idxs {es & [ei]=e}
 
 getIndex :: !Index !*(NativeDB v a) -> *(!Entry v a, !*(NativeDB v a))
-getIndex (Index n) (DB db)
-# (e,db) = db![n]
-= (e, DB db)
+getIndex (Index n) db = db![n]
 
 getIndices :: ![Index] !*(NativeDB v a) -> *(![Entry v a], !*(NativeDB v a))
-getIndices is (DB db)
-# (es,db) = get is db
-= (es, DB db)
+getIndices is db = get is db
 where
 	get :: ![Index] !*{!Entry v a} -> *(![Entry v a], !*{!Entry v a})
 	get [] db = ([], db)
@@ -268,10 +246,9 @@ where
 	= ([e:es], db)
 
 getIndices` :: !{#Index} !*(NativeDB v a) -> *(![Entry v a], !*(NativeDB v a))
-getIndices` idxs (DB db)
+getIndices` idxs db
 # (sz,idxs) = usize idxs
-# (es,db) = get (sz-1) idxs [] db
-= (es,DB db)
+= get (sz-1) idxs [] db
 where
 	get :: !Int !{#Index} ![Entry v a] !*{!Entry v a} -> *(![Entry v a], !*{!Entry v a})
 	get -1 _ es db = (es,db)
