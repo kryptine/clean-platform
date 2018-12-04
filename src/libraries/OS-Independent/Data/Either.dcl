@@ -27,10 +27,6 @@ instance Foldable (Either a)
 instance Traversable (Either a)
 
 instance Bifunctor Either
-where
-	bifmap :: (a -> c) (b -> d) !(Either a b) -> Either c d
-	first :: (a -> c) !(Either a b) -> Either c b
-	second :: (b -> d) !(Either a b) -> Either a d
 
 instance Alternative (Either m) | Monoid m
 
