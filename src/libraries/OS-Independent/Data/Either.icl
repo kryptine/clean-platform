@@ -70,6 +70,7 @@ where
 
 instance Bifunctor Either
 where
+	bifmap :: (a -> c) (b -> d) !(Either a b) -> Either c d
 	bifmap f _ (Left a) = Left (f a)
 	bifmap _ g (Right b) = Right (g b)
 
