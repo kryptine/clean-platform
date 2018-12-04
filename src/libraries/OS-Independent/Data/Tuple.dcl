@@ -19,6 +19,10 @@ appThd3 :: .(.c -> .d) !(.a,.b,.c) -> (.a,.b,.d)
 swap :: !.(.a, .b) -> .(.b, .a)
 
 instance Functor ((,) a)
+instance Functor ((,,) a b)
+instance Functor ((,,,) a b c)
+instance Functor ((,,,,) a b c d)
+instance Functor ((,,,,,) a b c d e)
 
 instance Semigroup (a, b) | Semigroup a & Semigroup b
 instance Semigroup (a, b, c) | Semigroup a & Semigroup b & Semigroup c

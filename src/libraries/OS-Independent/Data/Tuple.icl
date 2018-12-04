@@ -38,6 +38,22 @@ instance Functor ((,) a)
 where
 	fmap f (x, y) = (x, f y)
 
+instance Functor ((,,) a b)
+where
+	fmap f (x, y, z) = (x, y, f z)
+
+instance Functor ((,,,) a b c)
+where
+	fmap f (x, y, z, a) = (x, y, z, f a)
+
+instance Functor ((,,,,) a b c d)
+where
+	fmap f (x, y, z, a, b) = (x, y, z, a, f b)
+
+instance Functor ((,,,,,) a b c d e)
+where
+	fmap f (x, y, z, a, b, c) = (x, y, z, a, b, f c)
+
 instance Semigroup (a, b) | Semigroup a & Semigroup b
 where
 	mappend (a1, b1) (a2, b2)  = (mappend a1 a2, mappend b1 b2)
@@ -92,31 +108,20 @@ where
 
 instance Traversable ((,) a)
 where
-	traverse f (x, y) = (\x y -> (x, y)) x <$> f y
-	sequenceA f = traverse id f
-	mapM f x = unwrapMonad (traverse (WrapMonad o f) x)
-	sequence x = mapM id x
+	traverse f (x, y) = tuple x <$> f y
 
 instance Bifunctor (,)
 where
 	bifmap f g t = let (a, b) = t in (f a, g b)
-	first f d = bifmap f id d
-	second g d = bifmap id g d
 
 instance Bifunctor ((,,) x)
 where
 	bifmap f g t = let (x, a, b) = t in (x, f a, g b)
-	first f d = bifmap f id d
-	second g d = bifmap id g d
 
 instance Bifunctor ((,,,) x y)
 where
 	bifmap f g t = let (x, y, a, b) = t in (x, y, f a, g b)
-	first f d = bifmap f id d
-	second g d = bifmap id g d
 
 instance Bifunctor ((,,,,) x y z)
 where
 	bifmap f g t = let (x, y, z, a, b) = t in (x, y, z, f a, g b)
-	first f d = bifmap f id d
-	second g d = bifmap id g d

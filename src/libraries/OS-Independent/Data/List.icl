@@ -13,9 +13,9 @@ import Data.GenEq
 import Data.Maybe
 import Data.Monoid
 from Data.Foldable import class Foldable(foldMap, foldl1, foldr1)
-from Data.Traversable import class Traversable(traverse)
+from Data.Traversable import class Traversable(..)
 import Control.Applicative
-import Control.Monad
+from Control.Monad import class Monad(..)
 
 instance Functor []
 where
@@ -79,11 +79,7 @@ where
 
 instance Traversable []
 where
-	traverse f x = foldr cons_f (pure []) x
-	where cons_f x ys = (\x xs -> [x:xs]) <$> f x <*> ys
-	mapM f x = mapM f x
-	sequenceA f = traverse id f
-	sequence x = mapM id x
+	traverse f x = foldr (\x ys->(\x xs->[x:xs]) <$> f x <*> ys) (pure []) x
 
 (!?) infixl 9   :: ![.a] !Int -> Maybe .a
 (!?) [x:_]  0 = Just x
