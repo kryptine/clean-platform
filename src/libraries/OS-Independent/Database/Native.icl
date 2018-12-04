@@ -206,22 +206,49 @@ unsearchIndices idxs (DB db)
 where
 	upd :: ![Index] !*{!Entry v a} -> *{!Entry v a}
 	upd [] es = es
-	upd [Index i:is] es
-	# (e,es) = es![i]
-	= upd is {es & [i].included=False}
+	upd [Index i:is] es = upd is {es & [i].included=False}
+
+unsearchIndices` :: !{#Index} !*(NativeDB v a) -> *NativeDB v a
+unsearchIndices` idxs (DB db)
+# (sz,idxs) = usize idxs
+# db = upd (sz-1) idxs db
+= DB db
+where
+	upd :: !Int !{#Index} !*{!Entry v a} -> *{!Entry v a}
+	upd -1 _ es = es
+	upd i idxs es
+	# (Index ei) = idxs.[i]
+	= upd (i-1) idxs {es & [ei].included=False}
 
 searchWithIndices :: !(v -> (Bool, ![a])) ![Index] !*(NativeDB v a) -> *NativeDB v a
 searchWithIndices prop idxs (DB db)
-# db = upd idxs db
+# db = upd prop idxs db
 = (DB db)
 where
-	upd [] es = es
-	upd [Index i:is] es
+	upd :: !(v -> (Bool, ![a])) ![Index] !*{!Entry v a} -> *{!Entry v a}
+	upd _ [] es = es
+	upd prop [Index i:is] es
 	# (e,es) = es![i]
 	# e = case prop e.value of
 		(False, _)     -> {e & included=False}
 		(True, annots) -> {e & included=True, annotations=annots ++ e.annotations}
-	= upd is {es & [i]=e}
+	= upd prop is {es & [i]=e}
+
+searchWithIndices` :: !(v -> (Bool, ![a])) !{#Index} !*(NativeDB v a) -> *NativeDB v a
+searchWithIndices` prop idxs (DB db)
+# (sz,idxs) = usize idxs
+# db = upd prop (sz-1) idxs db
+= DB db
+where
+	upd :: !(v -> (Bool, ![a])) !Int !{#Index} !*{!Entry v a} -> *{!Entry v a}
+	upd _ -1 _ es = es
+	upd prop i idxs es
+	# (Index ei) = idxs.[i]
+	# (e,es) = es![ei]
+	# e = case prop e.value of
+		(False, _)     -> {e & included=False}
+		(True, annots) -> {e & included=True, annotations=annots ++ e.annotations}
+	= upd prop (i-1) idxs {es & [ei]=e}
 
 getIndex :: !Index !*(NativeDB v a) -> *(!Entry v a, !*(NativeDB v a))
 getIndex (Index n) (DB db)
@@ -239,3 +266,16 @@ where
 	# (e,db) = db![i]
 	# (es,db) = get is db
 	= ([e:es], db)
+
+getIndices` :: !{#Index} !*(NativeDB v a) -> *(![Entry v a], !*(NativeDB v a))
+getIndices` idxs (DB db)
+# (sz,idxs) = usize idxs
+# (es,db) = get (sz-1) idxs [] db
+= (es,DB db)
+where
+	get :: !Int !{#Index} ![Entry v a] !*{!Entry v a} -> *(![Entry v a], !*{!Entry v a})
+	get -1 _ es db = (es,db)
+	get i idxs es db
+	# (Index ei) = idxs.[i]
+	# (e,db) = db![ei]
+	= get (i-1) idxs [e:es] db
