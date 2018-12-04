@@ -3,6 +3,7 @@ definition module Data.Traversable
 from Control.Applicative import class pure, class <*>, class Applicative
 from Control.Monad import class Monad
 from Data.Functor import class Functor
+import qualified Data.Functor
 from Data.Foldable import class Foldable
 from Data.Monoid import class Monoid, class Semigroup
 
@@ -95,6 +96,7 @@ class Traversable t | Functor t & Foldable t where
 	// Map each element of a structure to an action, evaluate
 	// these actions from left to right, and collect the results.
 	traverse :: (a -> f b) !(t a) -> f (t b) | Applicative f
+	traverse f a = sequenceA ('Data.Functor'.fmap f a)
 
 	// Evaluate each action in the structure from left to right,
 	// and collect the results.
