@@ -15,7 +15,7 @@ import Data.Functor
 import Data.List
 import Data.Maybe
 import Data.Tuple
-from Data.Foldable import class Foldable(foldr1)
+import qualified Data.Foldable
 from Text import class Text(join,rpad), instance Text String
 
 instance Alternative (MaybeError [String])
@@ -89,7 +89,7 @@ where
 		p` (map (\arg -> if (arg == short) long arg) args) st opts
 	optParser (Options ps) = OptParser \args st opts -> case catMaybes [p args st opts \\ p <- optps] of
 		[]  -> Nothing
-		res -> Just (foldr1 (<|>) res)
+		res -> Just ('Data.Foldable'.foldr1 (<|>) res)
 	where
 		optps = [p \\ OptParser p <- map optParser ps]
 	optParser wh=:(WithHelp short p) = OptParser \args st opts -> case args of
