@@ -1,6 +1,9 @@
 definition module Data.List
 
+from StdClass import class Ord, class Eq, class IncDec
+from StdOverloaded import class ==, class <, class length, class %, class toString, class toChar, class fromString, class fromChar, class +, class *, class /, class *, class /, class *, class /, class *, class /, class zero, class one, class -
 import StdList
+
 from Data.GenEq import generic gEq
 from Data.Functor import class Functor
 from Data.Maybe import :: Maybe

@@ -68,7 +68,8 @@ from Data.Maybe	import :: Maybe
 from StdBool import not, &&
 from Data.GenEq import generic gEq
 from Data.GenLexOrd import generic gLexOrd, :: LexOrd
-from Data.Foldable import class Foldable (foldr`)
+import qualified Data.Foldable
+from Data.Foldable import class Foldable
 
 /**
  * A `Set a` is an unordered, uncounted collection of values of type `a`.
@@ -437,7 +438,7 @@ toList s :== toAscList s
  * @complexity O(n)
  * @type (Set a) -> [a]
  */
-toAscList t :== foldr` (\a as -> [a:as]) [] t
+toAscList t :== 'Data.Foldable'.foldr` (\a as -> [a:as]) [] t
 
 /**
  * Create a set from a list of elements.

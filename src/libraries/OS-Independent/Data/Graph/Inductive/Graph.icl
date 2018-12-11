@@ -9,7 +9,7 @@ import qualified Data.IntSet
 import qualified Data.List
 //import           Data.Maybe    (fromMaybe, isJust)
 //import Data.Monoid (mappend)
-import StdBool, StdTuple, StdFunc, StdMisc, StdEnum, StdString, StdOverloaded, StdClass
+import StdList, StdBool, StdTuple, StdFunc, StdMisc, StdEnum, StdString, StdOverloaded, StdClass
 import Data.List
 import Data.Maybe
 import Data.Functor

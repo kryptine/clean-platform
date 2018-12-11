@@ -3,7 +3,8 @@ implementation module Data.List
 import StdBool
 import StdEnum
 import StdFunctions
-import StdList
+from StdList import ++, prod, isMember, any, scan, last, filter, zip, hd, tl, isEmpty, span, drop, map, flatten, repeat, take, reverse, zip2, instance length []
+import qualified StdList
 import StdMisc
 import StdOrdList
 import StdTuple
@@ -12,7 +13,7 @@ import Data.Functor
 import Data.GenEq
 import Data.Maybe
 import Data.Monoid
-from Data.Foldable import class Foldable(foldMap, foldl1, foldr1)
+from Data.Foldable import class Foldable(..)
 from Data.Traversable import class Traversable(..)
 import Control.Applicative
 from Control.Monad import class Monad(..)
@@ -35,7 +36,7 @@ instance Alternative [] where
 
 instance Monad []
 where
-	bind m k = foldr ((++) o k) [] m
+	bind m k = 'StdList'.foldr ((++) o k) [] m
 
 instance MonadPlus []
 where
@@ -52,30 +53,18 @@ where
 
 instance Foldable []
 where
-	fold x = foldMap id x
-	foldMap f x = foldr (mappend o f) mempty x
-	foldr f x y = foldr f x y
-
+	foldr a b c = 'StdList'.foldr a b c
 	foldr` f x y = strictFoldr f x y
 	where
 		strictFoldr :: !(.a -> .(.b -> .b)) !.b ![.a] -> .b
 		strictFoldr _ b []     = b
 		strictFoldr f b [x:xs] = f x (strictFoldr f b xs)
 
-	foldl f x y = foldl f x y
-
 	foldl` f x y = strictFoldl f x y
 	where
 		strictFoldl :: !(.a -> .(.b -> .a)) !.a ![.b] -> .a
 		strictFoldl _ b []     = b
 		strictFoldl f b [x:xs] = strictFoldl f (f b x) xs
-
-	foldr1 _ [x]    =  x
-	foldr1 f [x:xs] =  f x (foldr1 f xs)
-	foldr1 _ _      = abort "foldr1 called with empty list\n"
-
-	foldl1 f [x:xs] = foldl f x xs
-	foldl1 _ _      = abort "foldl1 called with empty list\n"
 
 instance Traversable []
 where
@@ -149,14 +138,14 @@ subsequences xs = [[] : nonEmptySubsequences xs]
 
 nonEmptySubsequences :: .[a] -> .[[a]]
 nonEmptySubsequences []      =  []
-nonEmptySubsequences [x:xs]  =  [[x] : foldr f [] (nonEmptySubsequences xs)]
+nonEmptySubsequences [x:xs]  =  [[x] : 'StdList'.foldr f [] (nonEmptySubsequences xs)]
   where f ys r = [ys : [x : ys] : r]
 
 permutations :: [a] -> .[[a]]
 permutations xs0        =  [xs0 : perms xs0 []]
   where
     perms []     _  = []
-    perms [t:ts] is = foldr interleave (perms ts [t:is]) (permutations is)
+    perms [t:ts] is = 'StdList'.foldr interleave (perms ts [t:is]) (permutations is)
       where interleave    xs     r = let (_,zs) = interleave` id xs r in zs
             interleave` _ []     r = (ts, r)
             interleave` f [y:ys] r = let (us,zs) = interleave` (f o (\xs -> [y:xs])) ys r
@@ -266,7 +255,7 @@ find :: (a -> .Bool) -> .(.[a] -> .(Maybe a))
 find p          = listToMaybe o filter p
 
 partition :: !(a -> .Bool) !.[a] -> (!.[a], !.[a])
-partition p xs = foldr (select p) ([],[]) xs
+partition p xs = 'StdList'.foldr (select p) ([],[]) xs
 
 select :: !.(a -> .Bool) !a !(!u:[a], !v:[a]) -> (!w:[a], !x:[a]), [u <= w,v <= x]
 select p x (ts, fs)

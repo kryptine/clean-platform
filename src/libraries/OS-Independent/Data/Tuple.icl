@@ -1,7 +1,7 @@
 implementation module Data.Tuple
 
-from StdFunc import id, o
-from StdMisc import abort
+import StdFunc
+import StdMisc
 import Data.Bifunctor
 import Data.Functor
 import Data.Maybe
