@@ -70,7 +70,7 @@ allEntries :: !*(NativeDB v a) -> *(![v], !*NativeDB v a)
 /**
  * Get all entries that are still included, and their annotations.
  */
-getEntries :: !*(NativeDB v a) -> *(![(v, [a])], !*NativeDB v a)
+getEntries :: !*(NativeDB v a) -> *(![!(v, [a])!], !*NativeDB v a)
 
 /**
  * Like {{`getEntries`}}, but also returns the indices of the entries.

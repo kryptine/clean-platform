@@ -78,17 +78,17 @@ where
 	# (r,es) = collect (i-1) es
 	= ([e.value:r], es)
 
-getEntries :: !*(NativeDB v a) -> *(![(v, [a])], !*NativeDB v a)
+getEntries :: !*(NativeDB v a) -> *(![!(v, [a])!], !*NativeDB v a)
 getEntries db
 # (s,db) = usize db
 = collect (s-1) db
 where
-	collect :: !Int !*{!Entry v a} -> *(![(v, [a])], !*{!Entry v a})
-	collect -1 es = ([], es)
+	collect :: !Int !*{!Entry v a} -> *(![!(v, [a])!], !*{!Entry v a})
+	collect -1 es = ([!!], es)
 	collect i  es
 	# (e,es) = es![i]
 	# (r,es) = collect (i-1) es
-	= (if e.included [(e.value,e.annotations):r] r, es)
+	= (if e.included [!(e.value,e.annotations):r!] r, es)
 
 getEntriesWithIndices :: !*(NativeDB v a) -> *(![(Index, v, [a])], !*NativeDB v a)
 getEntriesWithIndices db
