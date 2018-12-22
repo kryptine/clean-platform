@@ -25,9 +25,20 @@ instance Functor ((,,,,) a b c d)
 instance Functor ((,,,,,) a b c d e)
 
 instance Semigroup (a, b) | Semigroup a & Semigroup b
+where
+	mappend :: !(a,b) !(a,b) -> (a,b) | Semigroup a & Semigroup b
+
 instance Semigroup (a, b, c) | Semigroup a & Semigroup b & Semigroup c
+where
+	mappend :: !(a,b,c) !(a,b,c) -> (a,b,c) | Semigroup a & Semigroup b & Semigroup c
+
 instance Semigroup (a, b, c, d) | Semigroup a & Semigroup b & Semigroup c & Semigroup d
+where
+	mappend :: !(a,b,c,d) !(a,b,c,d) -> (a,b,c,d) | Semigroup a & Semigroup b & Semigroup c & Semigroup d
+
 instance Semigroup (a, b, c, d, e) | Semigroup a & Semigroup b & Semigroup c & Semigroup d & Semigroup e
+where
+	mappend :: !(a,b,c,d,e) !(a,b,c,d,e) -> (a,b,c,d,e) | Semigroup a & Semigroup b & Semigroup c & Semigroup d & Semigroup e
 
 instance Monoid (a, b) | Monoid a & Monoid b
 instance Monoid (a, b, c) | Monoid a & Monoid b & Monoid c
