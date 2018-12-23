@@ -1,5 +1,6 @@
 definition module Data.Tuple
 
+from Control.Monad import class pure, class <*>, class Applicative
 from Data.Functor import class Functor
 from Data.Monoid import class Semigroup, class Monoid
 from Data.Foldable import class Foldable
@@ -46,7 +47,13 @@ instance Monoid (a, b, c, d) | Monoid a & Monoid b & Monoid c & Monoid d
 instance Monoid (a, b, c, d, e) | Monoid a & Monoid b & Monoid c & Monoid d & Monoid e
 
 instance Foldable ((,) a)
+where
+	foldMap :: !(a -> b) !(c,a) -> b | Monoid b
+	foldr :: !(a -> .b -> .b) .b !(c,a) -> .b
+
 instance Traversable ((,) a)
+where
+	traverse :: !(a -> b c) !(d,a) -> b (d,c) | Applicative b
 
 instance Bifunctor (,)
 instance Bifunctor ((,,) x)

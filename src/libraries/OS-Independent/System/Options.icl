@@ -26,7 +26,7 @@ where
 	(<|>) (Error e) (Error _) = Error e
 	(<|>) (Error _) r = r
 
-showHelpText :: [HelpText] -> String
+showHelpText :: ![HelpText] -> String
 showHelpText help = join "\n" $ map show help
 where
 	maxLeftWidth = maxList $ map leftWidth help
@@ -43,7 +43,7 @@ where
 	show (OperandHelpText var help add) =
 		rpad var (maxLeftWidth + 2) ' ' +++ join "\n  " [help:add]
 
-parseOptions :: (t opts) [String] opts -> MaybeError [String] opts | OptionDescription t
+parseOptions :: !(t opts) ![String] !opts -> MaybeError [String] opts | OptionDescription t
 parseOptions p args opts = parse (optParser p) args defaultState opts
 where
 	defaultState =
@@ -59,7 +59,7 @@ where
 
 instance OptionDescription Option
 where
-	optParser :: (Option opts) -> OptParser opts
+	optParser :: !(Option opts) -> OptParser opts
 	optParser (Flag f upd _) = OptParser \args st opts -> case args of
 		[arg:args] | arg == f -> case st.operands_state of
 			NoOperandsSeenYet -> Just $ (\opts -> (opts,st,args)) <$> upd opts
@@ -122,7 +122,7 @@ where
 		[OperandHelpText var help add:rest]      -> [OperandHelpText var help (add ++ lines):rest]
 		[]                                       -> []
 
-cleanupHelpText :: [HelpText] -> [HelpText]
+cleanupHelpText :: ![HelpText] -> [HelpText]
 cleanupHelpText [oht=:OptionHelpText opts _ _ _:rest] = [oht:cleanupHelpText $ catMaybes $ map cleanup rest]
 where
 	cleanup :: HelpText -> Maybe HelpText

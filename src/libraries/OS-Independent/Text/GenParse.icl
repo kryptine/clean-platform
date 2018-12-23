@@ -515,7 +515,7 @@ where
 
 //----------------------------------------------------------------------------------		
 
-generic gParse a :: Expr -> Maybe a
+generic gParse a :: !Expr -> Maybe a
 
 gParse{|Int|} (ExprInt x)			= Just x 
 gParse{|Int|} _						= Nothing

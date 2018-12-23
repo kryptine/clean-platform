@@ -92,9 +92,11 @@ where
 
 instance Foldable ((,) a)
 where
+	foldMap :: !(a -> b) !(c,a) -> b | Monoid b
 	foldMap f (_, y) = f y
 	fold x = foldMap id x
 
+	foldr :: !(a -> .b -> .b) .b !(c,a) -> .b
 	foldr f z (_, y) = f y z
 	foldr` f z0 xs = foldl f` id xs z0
 	where f` k x z = k (f x z)
@@ -112,6 +114,7 @@ where
 
 instance Traversable ((,) a)
 where
+	traverse :: !(a -> b c) !(d,a) -> b (d,c) | Applicative b
 	traverse f (x, y) = tuple x <$> f y
 
 instance Bifunctor (,)

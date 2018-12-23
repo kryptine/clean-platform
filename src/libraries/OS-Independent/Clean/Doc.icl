@@ -242,7 +242,7 @@ where
 	fields = filter ((<>) "description" o fst) fields`
 	desc = lookup "description" fields`
 
-generic docToDocBlock a :: Bool a -> Either [String] DocBlock
+generic docToDocBlock a :: !Bool !a -> Either [String] DocBlock
 docToDocBlock{|String|} True s = Left [s]
 docToDocBlock{|String|} _    _ = abort "error in docToDocBlock{|String|}\n"
 docToDocBlock{|[]|} fx True xs = Left [x \\ Left xs` <- map (fx True) xs, x <- xs`]

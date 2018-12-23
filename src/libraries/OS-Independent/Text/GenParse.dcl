@@ -35,7 +35,7 @@ instance ParseInput File
 instance toString Expr
 instance == Expr
 
-generic gParse a :: Expr -> Maybe a
+generic gParse a :: !Expr -> Maybe a
 
 derive gParse Int, Char, Bool, Real, String, UNIT, PAIR, EITHER, CONS of d, RECORD of {grd_name}, FIELD of {gfd_name}, OBJECT of {gtd_num_conses,gtd_conses}, [], {!}, {}
 
