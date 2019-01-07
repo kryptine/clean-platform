@@ -56,13 +56,13 @@ where
 	foldr a b c = 'StdList'.foldr a b c
 	foldr` f x y = strictFoldr f x y
 	where
-		strictFoldr :: !(.a -> .(.b -> .b)) !.b ![.a] -> .b
+		strictFoldr :: (.a -> .(.b -> .b)) !.b ![.a] -> .b
 		strictFoldr _ b []     = b
 		strictFoldr f b [x:xs] = f x (strictFoldr f b xs)
 
 	foldl` f x y = strictFoldl f x y
 	where
-		strictFoldl :: !(.a -> .(.b -> .a)) !.a ![.b] -> .a
+		strictFoldl :: (.a -> .(.b -> .a)) !.a ![.b] -> .a
 		strictFoldl _ b []     = b
 		strictFoldl f b [x:xs] = strictFoldl f (f b x) xs
 

@@ -56,6 +56,7 @@ where
 
 instance Semigroup (a, b) | Semigroup a & Semigroup b
 where
+	mappend :: !(a,b) !(a,b) -> (a,b) | Semigroup a & Semigroup b
 	mappend (a1, b1) (a2, b2)  = (mappend a1 a2, mappend b1 b2)
 
 instance Monoid (a, b) | Monoid a & Monoid b
@@ -64,6 +65,7 @@ where
 
 instance Semigroup (a, b, c) | Semigroup a & Semigroup b & Semigroup c
 where
+	mappend :: !(a,b,c) !(a,b,c) -> (a,b,c) | Semigroup a & Semigroup b & Semigroup c
 	mappend (a1, b1, c1) (a2, b2, c2)  = (mappend a1 a2, mappend b1 b2, mappend c1 c2)
 
 instance Monoid (a, b, c) | Monoid a & Monoid b & Monoid c
@@ -72,6 +74,7 @@ where
 
 instance Semigroup (a, b, c, d) | Semigroup a & Semigroup b & Semigroup c & Semigroup d
 where
+	mappend :: !(a,b,c,d) !(a,b,c,d) -> (a,b,c,d) | Semigroup a & Semigroup b & Semigroup c & Semigroup d
 	mappend (a1, b1, c1, d1) (a2, b2, c2, d2)  = (mappend a1 a2, mappend b1 b2, mappend c1 c2, mappend d1 d2)
 
 instance Monoid (a, b, c, d) | Monoid a & Monoid b & Monoid c & Monoid d
@@ -80,6 +83,7 @@ where
 
 instance Semigroup (a, b, c, d, e) | Semigroup a & Semigroup b & Semigroup c & Semigroup d & Semigroup e
 where
+	mappend :: !(a,b,c,d,e) !(a,b,c,d,e) -> (a,b,c,d,e) | Semigroup a & Semigroup b & Semigroup c & Semigroup d & Semigroup e
 	mappend (a1, b1, c1, d1, e1) (a2, b2, c2, d2, e2)  = (mappend a1 a2, mappend b1 b2, mappend c1 c2, mappend d1 d2, mappend e1 e2)
 
 instance Monoid (a, b, c, d, e) | Monoid a & Monoid b & Monoid c & Monoid d & Monoid e
@@ -88,9 +92,11 @@ where
 
 instance Foldable ((,) a)
 where
+	foldMap :: !(a -> b) !(c,a) -> b | Monoid b
 	foldMap f (_, y) = f y
 	fold x = foldMap id x
 
+	foldr :: !(a -> .b -> .b) .b !(c,a) -> .b
 	foldr f z (_, y) = f y z
 	foldr` f z0 xs = foldl f` id xs z0
 	where f` k x z = k (f x z)
@@ -108,6 +114,7 @@ where
 
 instance Traversable ((,) a)
 where
+	traverse :: !(a -> b c) !(d,a) -> b (d,c) | Applicative b
 	traverse f (x, y) = tuple x <$> f y
 
 instance Bifunctor (,)
