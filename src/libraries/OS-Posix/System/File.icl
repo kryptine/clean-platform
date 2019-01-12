@@ -112,15 +112,3 @@ moveFile oldpath newpath world
 		= (Ok (), world)
 	| otherwise
 		= getLastOSError world
-
-fflush :: !*File -> (!Bool,!*File)
-fflush f = IF_MAC (fflushm f) (fflushl f)
-where
-	fflushm f = (True,f)
-
-	fflushl :: !*File -> (!Bool, !*File)
-	fflushl f = code {
-		.d 0 2 f
-		jsr flushF
-		.o 0 3 bf
-	}
