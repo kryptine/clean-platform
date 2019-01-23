@@ -154,14 +154,6 @@ permutations xs0        =  [xs0 : perms xs0 []]
 concatMap :: (.a -> [.b]) ![.a] -> [.b]
 concatMap f ls = flatten (map f ls)
 
-maximum :: !.[a] -> a | < a
-maximum [x]    = x
-maximum [x:xs] = max x (maximum xs)
-maximum []     = abort "maximum of empty list\n"
-
-minimum :: !.[a] -> a | Ord a
-minimum xs =  foldl1 min xs
-
 getItems :: ![a] ![Int] -> [a]
 getItems list indexes = [x \\ x <- list & idx <- [0..] | isMember idx indexes]
 

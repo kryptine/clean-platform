@@ -86,8 +86,6 @@ transpose       :: ![[a]] -> [.[a]]
 subsequences    :: .[a] -> .[[a]]
 permutations    :: [a] -> .[[a]]
 concatMap       :: (.a -> [.b]) ![.a] -> [.b]
-maximum         :: !.[a] -> a | < a
-minimum         :: !.[a] -> a | Ord a
 getItems        :: ![a] ![Int] -> [a]
 scanl           :: (a -> .(.b -> a)) a [.b] -> .[a]
 scanl1          :: (a -> .(a -> a)) !.[a] -> .[a]
