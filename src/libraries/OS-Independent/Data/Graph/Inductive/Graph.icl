@@ -14,6 +14,7 @@ import Data.List
 import Data.Maybe
 import Data.Functor
 import Data.GenLexOrd
+from Data.Foldable import minimum, maximum
 
 unLPath :: (LPath a) -> [LNode a]
 unLPath (LP xs) = xs
