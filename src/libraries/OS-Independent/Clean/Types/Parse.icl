@@ -130,6 +130,8 @@ where
 		<|> parenthised type
 		<|> liftM (\t -> Type t []) ident
 		<|> liftM Uniq (uniq argtype)
+		<|> liftM Uniq (uniq (liftM2 Cons cons  $ some argtype))
+		<|> liftM Uniq (uniq (liftM2 Type ident $ some argtype))
 		<|> liftM (\t -> Type "_#Array" [t]) (braced  (pToken TUnboxed >>| type))
 		<|> liftM (\t -> Type "_!Array" [t]) (braced  (pToken TStrict  >>| type))
 		<|> liftM (\t -> Type "_Array"  [t]) (braced  type)
