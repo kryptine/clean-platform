@@ -23,7 +23,9 @@ definition module Data.Set
  *
  * @property-bootstrap
  *   import StdBool, StdChar, StdInt, StdOrdList, StdTuple
- *   import StdList => qualified insert, filter
+ *   from StdList import ++, all, isMember, removeDup,
+ *     instance == [a], instance length []
+ *   import qualified StdList
  *   from Data.Func import on, `on`
  *   import Data.GenLexOrd
  *
