@@ -136,7 +136,7 @@ where
 	#! (val,es) = es![i].value
 	#! (annots,es) = es![i].annotations
 	#! (inc,new_annots) = f val
-	= intersect (i-1) {es & [i].included=inc, [i].annotations=new_annots ++| annots}
+	= intersect (i-1) {es & [i].included=inc, [i].annotations=new_annots ++$ annots}
 
 	addExcluded -1 es = es
 	addExcluded i  es
@@ -144,12 +144,12 @@ where
 	#! (val,es) = es![i].value
 	#! (annots,es) = es![i].annotations
 	#! (new_inc,new_annots) = f val
-	= addExcluded (i-1) {es & [i].included=inc||new_inc, [i].annotations=new_annots ++| annots}
+	= addExcluded (i-1) {es & [i].included=inc||new_inc, [i].annotations=new_annots ++$ annots}
 
 searchIndex :: !Index ![!a!] !*(NativeDB v a) -> *NativeDB v a
 searchIndex (Index i) new_annots db
 # (annots,db) = db![i].annotations
-= {db & [i].included=True, [i].annotations=new_annots ++| annots}
+= {db & [i].included=True, [i].annotations=new_annots ++$ annots}
 
 unsearchIndex :: !Index !*(NativeDB v a) -> *NativeDB v a
 unsearchIndex (Index i) db = {db & [i].included=False}
@@ -165,7 +165,7 @@ where
 	upd_addexcluded :: !(!Index, ![!a!]) !*{!*Entry v a} -> *{!*Entry v a}
 	upd_addexcluded (Index i,new_annots) es
 	# (annots,es) = es![i].annotations
-	= {es & [i].included=True, [i].annotations=new_annots ++| annots}
+	= {es & [i].included=True, [i].annotations=new_annots ++$ annots}
 
 	upd_intersect :: !Int !Int ![(!Index, ![!a!])] !*{!*Entry v a} -> *{!*Entry v a}
 	upd_intersect i s _  es | i > s = es
@@ -175,7 +175,7 @@ where
 	# (inc,es) = es![i].included
 	| not inc = upd_intersect (i+1) s idxs {es & [i].included=False}
 	# (annots,es) = es![i].annotations
-	= upd_intersect (i+1) s idxs {es & [i].annotations=new_annots ++| annots}
+	= upd_intersect (i+1) s idxs {es & [i].annotations=new_annots ++$ annots}
 
 unsearchIndices :: ![Index] !*(NativeDB v a) -> *NativeDB v a
 unsearchIndices idxs db = upd idxs db
@@ -207,7 +207,7 @@ where
 			-> upd prop is {es & [i].included=False}
 		(True, new_annots)
 			# (annots,es) = es![i].annotations
-			-> upd prop is {es & [i].included=True, [i].annotations=new_annots ++| annots}
+			-> upd prop is {es & [i].included=True, [i].annotations=new_annots ++$ annots}
 
 searchWithIndices` :: !(v -> (Bool, ![!a!])) !{#Index} !*(NativeDB v a) -> *NativeDB v a
 searchWithIndices` prop idxs db
@@ -224,7 +224,7 @@ where
 			-> upd prop (i-1) idxs {es & [ei].included=False}
 		(True, new_annots)
 			# (annots,es) = es![ei].annotations
-			-> upd prop (i-1) idxs {es & [ei].included=True, [ei].annotations=new_annots ++| annots}
+			-> upd prop (i-1) idxs {es & [ei].included=True, [ei].annotations=new_annots ++$ annots}
 
 getValueByIndex :: !Index !*(NativeDB v a) -> *(!v, !*(NativeDB v a))
 getValueByIndex (Index i) db = db![i].value
