@@ -252,9 +252,12 @@ collect [] Nothing _ coll = ([], Nothing, coll)
 collect [{content}:cs] prev pds coll | not (startsWith "*" content) = collect cs prev pds coll
 collect allcmnts=:[c:cs] prev allpds=:[pd:pds] coll = case c canBelongTo pd of
 	Nothing -> collect allcmnts prev pds coll
-	Just True -> collect cs (Just c) allpds coll
-	Just False
-		-> case prev of
+	Just True -> case prev of
+		Just prev | prev.multiline && not c.multiline
+			-> collect cs (Just c) pds (putCC pd prev coll)
+		_
+			-> collect cs (Just c) allpds coll
+	Just False -> case prev of
 		Nothing
 			# (allcmnts,prev,coll) = recurse allcmnts Nothing (children pd) coll
 			-> collect allcmnts Nothing pds coll
