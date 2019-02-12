@@ -254,17 +254,17 @@ collect allcmnts=:[c:cs] prev allpds=:[pd:pds] coll = case c canBelongTo pd of
 	Nothing -> collect allcmnts prev pds coll
 	Just True -> case prev of
 		Just prev | prev.multiline && not c.multiline
-			-> collect cs (Just c) pds (putCC pd prev coll)
+			# coll = putCC pd prev coll
+			# (allcmnts,prev,coll) = recurse allcmnts (Just c) (children pd) coll
+			-> collect allcmnts prev pds coll
 		_
 			-> collect cs (Just c) allpds coll
-	Just False -> case prev of
-		Nothing
-			# (allcmnts,prev,coll) = recurse allcmnts Nothing (children pd) coll
-			-> collect allcmnts Nothing pds coll
-		Just cmnt
-			# coll = putCC pd cmnt coll
-			# (allcmnts,prev,coll) = recurse allcmnts Nothing (children pd) coll
-			-> collect allcmnts prev pds coll
+	Just False
+		# coll = case prev of
+			Nothing -> coll
+			Just cmnt -> putCC pd cmnt coll
+		# (allcmnts,prev,coll) = recurse allcmnts Nothing (children pd) coll
+		-> collect allcmnts prev pds coll
 where
 	// Compiler cannot figure out the overloading if we call collect from collect directly
 	recurse :: ![CleanComment] !(Maybe CleanComment) !Children !CollectedComments -> (![CleanComment], !Maybe CleanComment, !CollectedComments)
