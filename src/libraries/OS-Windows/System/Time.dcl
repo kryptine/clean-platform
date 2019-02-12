@@ -30,7 +30,7 @@ CLK_PER_SEC	:== 1000
 /**
 * The time data type represents a number of seconds since the epoch (1-1-1970).
 */
-:: Timestamp	= Timestamp !Int
+:: Timestamp	=: Timestamp Int
 
 derive gEq Timestamp
 
