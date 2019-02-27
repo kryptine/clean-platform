@@ -1,7 +1,7 @@
 implementation module Text.PPrint
 
 import StdEnv
-from Data.Foldable import class Foldable(foldr1)
+import qualified Data.Foldable
 import Data.List
 import Data.Maybe
 
@@ -98,9 +98,9 @@ hcat            = fold (<->)
 vcat :: ([Doc] -> Doc)
 vcat            = fold (<$$>)
 
-fold :: (Doc Doc ->Doc) ![Doc] -> Doc
+fold :: (Doc Doc -> Doc) ![Doc] -> Doc
 fold f []       = empty
-fold f ds       = foldr1 f ds
+fold f ds       = 'Data.Foldable'.foldr1 f ds
 
 (<->) infixr 6 :: Doc Doc -> Doc
 (<->) x y         = beside x y
