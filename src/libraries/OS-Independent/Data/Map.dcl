@@ -69,7 +69,6 @@ from Data.Maybe		import :: Maybe (..)
 from StdOverloaded	import class ==, class <
 from StdBool        import not
 from StdFunc        import id
-from Text.GenJSON      import generic JSONEncode, generic JSONDecode, :: JSONNode
 from Data.GenEq import generic gEq
 from Data.GenLexOrd import generic gLexOrd, :: LexOrd
 from Data.Monoid    import class Monoid, class Semigroup
@@ -290,8 +289,6 @@ keysSet :: !(Map k a) -> Set k
  */
 fromSet :: !(k -> a) !(Set k) -> Map k a
 
-derive JSONEncode Map
-derive JSONDecode Map
 derive gEq Map
 derive gLexOrd Map
 

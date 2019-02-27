@@ -9,7 +9,6 @@ import Data.Functor
 import Data.List
 import Control.Applicative
 import Control.Monad
-import Text.GenJSON
 
 import qualified Data.Set
 from Data.Set import :: Set
@@ -2060,8 +2059,6 @@ height :: !u:(Map k w:v) -> x:(!Int, !y:(Map k w:v)), [u y <= w, x <= y, u <= y]
 height Tip                    = (0, Tip)
 height (Bin h k v left right) = (h, Bin h k v left right)
 
-derive JSONEncode Map
-derive JSONDecode Map
 gEq{|Map|} fk fv mx my = mapSize mx == mapSize my && and [fk kx ky && fv vx vy \\ (kx,vx) <- toList mx & (ky,vy) <- toList my]
 
 gLexOrd{|Map|} kLexOrd vLexOrd x y = gLexOrd{|* -> *|} (gLexOrd{|* -> * -> *|} kLexOrd vLexOrd) (toAscList x) (toAscList y)
