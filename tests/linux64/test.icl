@@ -120,6 +120,7 @@ import qualified Data.Integer.ToInteger
 import qualified Data.Integer.ToString
 import qualified Data.List
 import qualified Data.Map
+import qualified Data.Map.GenJSON
 import qualified Data.MapCollection
 import qualified Data.Matrix
 import qualified Data.Maybe
