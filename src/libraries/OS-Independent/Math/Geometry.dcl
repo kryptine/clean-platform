@@ -33,7 +33,7 @@ pi :== 3.14159265359
  * @param the radian representation
  * @result the corresponding angle
  * @property correct angle from radian: A.r :: Real:
- *  r =.= toRad (rad r)
+ *  not (isNaN r) ==> r =.= toRad (rad r)
  */
 rad :: !Real -> Angle
 
@@ -43,7 +43,7 @@ rad :: !Real -> Angle
  * @param the degree representation
  * @result the corresponding angle
  * @property correct angle from degrees: A.d :: Real:
- *  d =.= toDeg (deg d)
+ *  not (isNaN d) ==> d =.= toDeg (deg d)
  */
 deg :: !Real -> Angle
 
