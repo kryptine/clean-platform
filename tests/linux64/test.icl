@@ -76,6 +76,7 @@ import qualified Data.Data
 import qualified Data.Dynamic
 import qualified Data.Either
 import qualified Data.Either.GenJSON
+import qualified Data.Either.Ord
 import qualified Data.Encoding.RunLength
 import qualified Data.Eq
 import qualified Data.Error
