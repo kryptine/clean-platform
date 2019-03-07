@@ -17,12 +17,6 @@ instance == (Either a b) | == a & == b where
 	== (Right x) (Right y) = x == y
 	== _         _         = False
 
-instance < (Either a b) | < a & < b where
-	< (Left x)  (Left y)  = x < y
-	< (Right x) (Right y) = x < y
-	< (Left _)  (Right _) = True
-	< (Right _) (Left _)  = False
-
 instance Functor (Either a) where
 	fmap f (Left l)  = Left l
 	fmap f (Right r) = Right (f r)
