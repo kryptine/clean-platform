@@ -5,7 +5,7 @@ definition module Data.Either
 * used inside generic functions, since most generic functions treat this
 * type in a special way which may lead to strange behavior.
 */
-from StdOverloaded import class <
+from StdOverloaded import class ==, class <
 from Control.Applicative import class pure, class <*>, class Applicative, class *>, class <*, class Alternative
 from Control.Monad import class Monad
 from Data.Functor import class Functor
