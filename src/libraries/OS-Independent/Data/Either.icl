@@ -1,6 +1,6 @@
 implementation module Data.Either
 
-from StdEnv import flip, id, o, const, class < (..)
+from StdEnv import flip, id, o, const, class == (..)
 from StdMisc import abort
 import Control.Applicative
 import Data.Monoid
