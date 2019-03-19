@@ -19,7 +19,7 @@ import System.OSError
 import System._Pointer
 
 import System._Windows
-import qualified System._WinBase as WinBase
+import qualified System._WinBase
 
 import Text
 import Text.GenJSON
@@ -105,21 +105,21 @@ runProcessIO path args mCurrentDirectory world
 		openPipe :: !*World -> (MaybeOSError (HANDLE, HANDLE), !*World)
 		openPipe world
 			# (heap, world) = getProcessHeap world
-			# (ptr, world) = heapAlloc heap 0 8 world
-    		| ptr == 0 = abort "heapAlloc failed"
-    		# (ok, world) = createPipe ptr (ptr + 4) securityAttributes 0 world
-    		| not ok
-        		# (_, world) = heapFree heap 0 ptr world
-        		= getLastOSError world
-    		# (rEnd, ptr)  = readIntP ptr 0
-    		# (wEnd, ptr)  = readIntP ptr 4
-    		# (_, world) = heapFree heap 0 ptr world
-    		= (Ok (rEnd, wEnd), world)
-    	
-    	securityAttributes = { createArray SECURITY_ATTRIBUTES_SIZE_INT 0
-    	                     & [SECURITY_ATTRIBUTES_nLength_INT_OFFSET]        = SECURITY_ATTRIBUTES_SIZE_BYTES
-	  			 	         , [SECURITY_ATTRIBUTES_bInheritHandle_INT_OFFSET] = TRUE
-					         }
+			# (ptr, world) = heapAlloc heap 0 (IF_INT_64_OR_32 16 8) world
+			| ptr == 0 = abort "heapAlloc failed"
+			# (ok, world) = createPipe ptr (ptr + IF_INT_64_OR_32 8 4) securityAttributes 0 world
+			| not ok
+				# (_, world) = heapFree heap 0 ptr world
+				= getLastOSError world
+			# (rEnd, ptr)  = readIntP ptr 0
+			# (wEnd, ptr)  = readIntP ptr (IF_INT_64_OR_32 8 4)
+			# (_, world) = heapFree heap 0 ptr world
+			= (Ok (rEnd, wEnd), world)
+
+		securityAttributes = { createArray SECURITY_ATTRIBUTES_SIZE_INT 0
+		                     & [SECURITY_ATTRIBUTES_nLength_INT_OFFSET]        = SECURITY_ATTRIBUTES_SIZE_BYTES
+		                     , [SECURITY_ATTRIBUTES_bInheritHandle_INT_OFFSET] = TRUE
+		                     }
 
 runProcessEscape :: !String -> String
 runProcessEscape s | indexOf " " s == -1                                    = s
@@ -163,12 +163,13 @@ readPipeNonBlocking (ReadPipe hPipe) world
 	// get nr of bytes available to read
 	# (heap, world) = getProcessHeap world
 	# (nBytesPtr, world) = heapAlloc heap 0 4 world
-    | nBytesPtr == 0 = abort "heapAlloc failed"
+	| nBytesPtr == 0 = abort "heapAlloc failed"
 	# (ok, world) = peekNamedPipe hPipe NULL 0 NULL nBytesPtr NULL world
 	| not ok
 		# (_, world) = heapFree heap 0 nBytesPtr world
 		= getLastOSError world
 	# (nBytes, nBytesPtr) = readIntP nBytesPtr 0
+	# nBytes = nBytes bitand 0xffffffff
 	# (_, world) = heapFree heap 0 nBytesPtr world
 	// read 'nBytes' bytes
 	| nBytes == 0 = (Ok "", world) // read blocks also if nBytes == 0
@@ -182,6 +183,13 @@ readPipeNonBlocking (ReadPipe hPipe) world
 	# (_, world) = heapFree heap 0 buf world
 	= (Ok str, world)
 
+readPipeBlocking :: !ReadPipe !*World -> (!MaybeOSError String, !*World)
+readPipeBlocking pipe=:(ReadPipe hPipe) world
+	// wait for data by trying to read 0 bytes
+	# (ok, world) = readFile hPipe NULL 0 NULL NULL world
+	| not ok = getLastOSError world
+	= readPipeNonBlocking pipe world
+
 writePipe :: !String !WritePipe !*World -> (!MaybeOSError (), !*World)
 writePipe str (WritePipe hPipe) world
 	# (ok, world) = writeFile hPipe str (size str) NULL NULL world
@@ -190,7 +198,7 @@ writePipe str (WritePipe hPipe) world
 
 terminateProcess :: !ProcessHandle !*World -> (!MaybeOSError (), !*World)
 terminateProcess hProc=:{processHandle} world
-	# (ok, world) = 'WinBase'.terminateProcess processHandle 0 world
+	# (ok, world) = 'System._WinBase'.terminateProcess processHandle 0 world
 	= closeProcessHandle hProc world
 
 closeProcessIO :: !ProcessIO !*World -> (!MaybeOSError (), !*World)

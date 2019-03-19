@@ -1,6 +1,8 @@
 implementation module Text.PPrint
 
 import StdEnv
+import qualified Data.Foldable
+import Data.List
 import Data.Maybe
 
 /*
@@ -96,9 +98,9 @@ hcat            = fold (<->)
 vcat :: ([Doc] -> Doc)
 vcat            = fold (<$$>)
 
-fold :: (Doc Doc ->Doc) ![Doc] -> Doc
+fold :: (Doc Doc -> Doc) ![Doc] -> Doc
 fold f []       = empty
-fold f ds       = foldr1 f ds
+fold f ds       = 'Data.Foldable'.foldr1 f ds
 
 (<->) infixr 6 :: Doc Doc -> Doc
 (<->) x y         = beside x y
@@ -452,10 +454,3 @@ where
 
 spaceString :: Int -> *{#Char}
 spaceString i = createArray i ' '
-
-/* -----------------------------------------------------------
- * Utility functions
- * ----------------------------------------------------------- */
-foldr1 :: (a a -> a) [a] -> a
-foldr1 f [x]      = x
-foldr1 f [x:xs]   = f x (foldr1 f xs)

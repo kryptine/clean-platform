@@ -2,8 +2,10 @@ implementation module Data.List
 
 import StdBool
 import StdEnum
-import StdFunc
-import StdList
+import StdFunctions
+from StdList import ++, prod, isMember, any, scan, last, filter, zip, hd, tl, isEmpty, span, drop, map, flatten, repeat, take, reverse, zip2, instance length []
+import qualified StdList
+import StdMisc
 import StdOrdList
 import StdTuple
 
@@ -11,18 +13,21 @@ import Data.Functor
 import Data.GenEq
 import Data.Maybe
 import Data.Monoid
-from Data.Foldable import class Foldable(foldMap)
-from Data.Traversable import class Traversable
-import qualified Data.Traversable as T
+from Data.Foldable import class Foldable(..)
+from Data.Traversable import class Traversable(..)
 import Control.Applicative
-import Control.Monad
+from Control.Monad import class Monad(..)
 
 instance Functor []
 where
 	fmap f l = [f e \\ e <- l]
 
-instance Applicative [] where
+instance pure []
+where
 	pure x      = [x]
+
+instance <*> []
+where
 	(<*>) fs xs = [f x\\f<-fs, x<-xs]
 
 instance Alternative [] where
@@ -31,7 +36,7 @@ instance Alternative [] where
 
 instance Monad []
 where
-	bind m k = foldr ((++) o k) [] m
+	bind m k = 'StdList'.foldr ((++) o k) [] m
 
 instance MonadPlus []
 where
@@ -48,23 +53,22 @@ where
 
 instance Foldable []
 where
-	fold x = foldMap id x
-	foldMap f x = foldr (mappend o f) mempty x
-	foldr f x y = foldr f x y
-	foldr` f z0 xs = foldl f` id xs z0
-	where f` k x z = k (f x z)
-	foldl f x y = foldl f x y
-	foldl` f x y = foldl f x y
-	foldr1 f x = foldr1 f x
-	foldl1 f x = foldl1 f x
+	foldr a b c = 'StdList'.foldr a b c
+	foldr` f x y = strictFoldr f x y
+	where
+		strictFoldr :: (.a -> .(.b -> .b)) !.b ![.a] -> .b
+		strictFoldr _ b []     = b
+		strictFoldr f b [x:xs] = f x (strictFoldr f b xs)
+
+	foldl` f x y = strictFoldl f x y
+	where
+		strictFoldl :: (.a -> .(.b -> .a)) !.a ![.b] -> .a
+		strictFoldl _ b []     = b
+		strictFoldl f b [x:xs] = strictFoldl f (f b x) xs
 
 instance Traversable []
 where
-	traverse f x = foldr cons_f (pure []) x
-	where cons_f x ys = (\x xs -> [x:xs]) <$> f x <*> ys
-	mapM f x = mapM f x
-	sequenceA f = 'T'.traverse id f
-	sequence x = 'T'.mapM id x
+	traverse f x = foldr (\x ys->(\x xs->[x:xs]) <$> f x <*> ys) (pure []) x
 
 (!?) infixl 9   :: ![.a] !Int -> Maybe .a
 (!?) [x:_]  0 = Just x
@@ -113,12 +117,6 @@ replaceInList cond new [x:xs]
     | cond new x            = [new : xs]
     | otherwise             = [x : replaceInList cond new xs]
 
-splitWith :: !(a -> Bool) ![a] -> (![a],![a])
-splitWith f [] = ([],[])
-splitWith f [x:xs]
-  | f x  = let (y,n) = splitWith f xs in ([x:y],n)
-      = let (y,n)  = splitWith f xs in (y,[x:n])
-
 sortByIndex :: ![(!Int,!a)] -> [a]
 sortByIndex l = map snd (sortBy (\(a,_) (b,_) -> a < b) l)
 
@@ -140,31 +138,21 @@ subsequences xs = [[] : nonEmptySubsequences xs]
 
 nonEmptySubsequences :: .[a] -> .[[a]]
 nonEmptySubsequences []      =  []
-nonEmptySubsequences [x:xs]  =  [[x] : foldr f [] (nonEmptySubsequences xs)]
+nonEmptySubsequences [x:xs]  =  [[x] : 'StdList'.foldr f [] (nonEmptySubsequences xs)]
   where f ys r = [ys : [x : ys] : r]
 
 permutations :: [a] -> .[[a]]
 permutations xs0        =  [xs0 : perms xs0 []]
   where
     perms []     _  = []
-    perms [t:ts] is = foldr interleave (perms ts [t:is]) (permutations is)
+    perms [t:ts] is = 'StdList'.foldr interleave (perms ts [t:is]) (permutations is)
       where interleave    xs     r = let (_,zs) = interleave` id xs r in zs
             interleave` _ []     r = (ts, r)
             interleave` f [y:ys] r = let (us,zs) = interleave` (f o (\xs -> [y:xs])) ys r
                                      in  ([y:us], [f [t:y:us] : zs])
 
-foldl1 :: (.a -> .(.a -> .a)) ![.a] -> .a
-foldl1 f [x:xs]         =  foldl f x xs
-
 concatMap :: (.a -> [.b]) ![.a] -> [.b]
 concatMap f ls = flatten (map f ls)
-
-maximum :: !.[a] -> a | < a
-maximum [x]     = x
-maximum [x:xs]  = max x (maximum xs)
-
-minimum :: !.[a] -> a | Ord a
-minimum xs =  foldl1 min xs
 
 getItems :: ![a] ![Int] -> [a]
 getItems list indexes = [x \\ x <- list & idx <- [0..] | isMember idx indexes]
@@ -177,10 +165,6 @@ scanl f q ls            =  [q : (case ls of
 scanl1 :: (a -> .(a -> a)) !.[a] -> .[a]
 scanl1 f [x:xs]         =  scanl f x xs
 scanl1 _ []             =  []
-
-foldr1 :: (.a -> .(.a -> .a)) ![.a] -> .a
-foldr1 _ [x]            =  x
-foldr1 f [x:xs]         =  f x (foldr1 f xs)
 
 replicate :: !.Int a -> .[a]
 replicate n x           =  take n (repeat x)
@@ -226,9 +210,10 @@ tails xs                =  [xs : case xs of
                                   [_ : xs`] -> tails xs`]
 
 isPrefixOf :: !.[a] .[a] -> .Bool | == a
-isPrefixOf [] _          =  True
-isPrefixOf _  []         =  False
-isPrefixOf [x:xs] [y:ys] =  x == y && isPrefixOf xs ys
+isPrefixOf [] _          = True
+isPrefixOf _  []         = False
+isPrefixOf [x:xs] [y:ys] = x == y && isPrefixOf xs ys
+isPrefixOf _      _      = abort "error in isPrefixOf\n"
 
 isSuffixOf :: !.[a] .[a] -> .Bool | == a
 isSuffixOf x y          =  isPrefixOf (reverse x) (reverse y)
@@ -241,6 +226,7 @@ levenshtein :: !.[a] !.[a] -> Int | == a
 levenshtein xs ys = last (foldl transform [0..length xs] ys)
 where
 	transform ns=:[n:ns`] c = scan (calc c) (n+1) (zip3 xs ns ns`)
+	transform _           _ = abort "error in levenshtein\n"
 	calc c z (c`, x, y) = minList [y+1, z+1, if (c`<>c) 1 0 + x]
 
 elem :: a !.[a] -> .Bool | == a
@@ -261,18 +247,12 @@ find :: (a -> .Bool) -> .(.[a] -> .(Maybe a))
 find p          = listToMaybe o filter p
 
 partition :: !(a -> .Bool) !.[a] -> (!.[a], !.[a])
-partition p xs = foldr` (select p) ([],[]) xs
+partition p xs = 'StdList'.foldr (select p) ([],[]) xs
 
 select :: !.(a -> .Bool) !a !(!u:[a], !v:[a]) -> (!w:[a], !x:[a]), [u <= w,v <= x]
 select p x (ts, fs)
   | p x       = ([x:ts], fs)
   | otherwise = (ts, [x:fs])
-
-foldr` :: !(a .b -> .b) !.b !.[a] -> .b
-foldr` _ acc []       = acc
-foldr` f acc [x : xs]
-  #! tmp = foldr` f acc xs
-  = f x tmp
 
 elemIndex :: a -> .(.[a] -> .(Maybe Int)) | == a
 elemIndex x     = findIndex (\y -> x==y)
@@ -396,29 +376,6 @@ hasDup [x:xs] = isMember x xs || hasDup xs
 isMemberGen :: !a !.[a] -> Bool | gEq{|*|} a
 isMemberGen x [hd:tl]	= hd === x || isMemberGen x tl
 isMemberGen x []		= False
-
-strictFoldr :: !(.a -> .(.b -> .b)) !.b ![.a] -> .b
-strictFoldr _ b []     = b
-strictFoldr f b [x:xs] = f x (strictFoldr f b xs)
-
-strictFoldrSt       :: !(.a -> .(.b -> .(.st -> .(.b, .st)))) !.b ![.a] .st -> .(.b, .st)
-strictFoldrSt _ b []     st = (b, st)
-strictFoldrSt f b [x:xs] st
-  #! (acc, st) = strictFoldrSt f b xs st
-  #! (r, st)   = f x acc st
-  = (r, st)
-
-strictFoldlSt       :: !(.a -> .(.b -> .(.st -> .(.a, .st)))) !.a ![.b] .st -> .(.a, .st)
-strictFoldlSt _ b [] st = (b, st)
-strictFoldlSt f b [x:xs] st
-  #! (r, st) = f b x st
-  = strictFoldlSt f r xs st
-
-strictFoldl :: !(.a -> .(.b -> .a)) !.a ![.b] -> .a
-strictFoldl _ b [] = b
-strictFoldl f b [x:xs]
-  #! r = f b x
-  = strictFoldl f r xs
 
 strictTRMapRev :: !(.a -> .b) ![.a] -> [.b]
 strictTRMapRev f xs = strictTRMapAcc f xs []

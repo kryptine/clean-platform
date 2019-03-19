@@ -1,12 +1,13 @@
 implementation module Text.Parsers.Simple.Core
 
+import StdEnv
+
 import Control.Applicative
 import Control.Monad
 import Data.Either
 import Data.Func
 import Data.Functor
 import Data.List
-from StdFunc import o, const
 
 :: PCont t a :== [t] -> ([(a, [t])], [Error])
 :: Parser t a = Parser (PCont t a)
@@ -14,9 +15,16 @@ from StdFunc import o, const
 instance Functor (Parser t) where
   fmap f p = pMap f p
 
-instance Applicative (Parser t) where
-  pure x    = pYield x
-  (<*>) l r = ap l r
+instance pure (Parser t)
+where
+	pure x    = pYield x
+
+instance <*> (Parser t)
+where
+	(<*>) l r = ap l r
+
+instance *> (Parser t)
+instance <* (Parser t)
 
 instance Alternative (Parser t) where
   empty     = pFail
@@ -29,7 +37,7 @@ instance MonadPlus (Parser t) where
   mzero = pFail
   mplus l r = l <|> r
 
-parse :: (Parser t a) [t] -> Either [Error] a
+parse :: !(Parser t a) [t] -> Either [Error] a
 parse p ts
   = case runParser p ts of
       (rs, []) -> case [r \\ (r, []) <- rs] of
@@ -37,7 +45,7 @@ parse p ts
                     _       -> Left ["No parse results with a fully consumed input."]
       (_, es)  -> Left es
 
-runParser :: (Parser t a) [t] -> ([(a, [t])], [Error])
+runParser :: !(Parser t a) [t] -> ([(a, [t])], [Error])
 runParser (Parser f) xs = f xs
 
 pFail :: Parser t a
@@ -58,6 +66,9 @@ pSatisfy pred = Parser pSatisfy`
   pSatisfy` [token : input]
     | pred token = ([(token, input)], [])
   pSatisfy` _ = ([], [])
+
+pPeek :: Parser t [t]
+pPeek = Parser \input -> ([(input, input)], [])
 
 pMap :: (a -> b) (Parser t a) -> Parser t b
 pMap f p = pure f <*> p
@@ -97,25 +108,25 @@ pBind pl f = Parser (bind pl)
 (<|>>) infixr 4 :: (Parser t a) (Parser t a) -> Parser t a
 (<|>>) pl pr = pr <<|> pl
 
-(<:>) infixr 6 :: (Parser s r) (Parser s [r]) -> Parser s [r]
+(<:>) infixr 6 :: !(Parser s r) (Parser s [r]) -> Parser s [r]
 (<:>) p1 p2 = (\r rs -> [r : rs]) <$> p1 <*> p2
 
 pMany :: (Parser s r) -> Parser s [r]
 pMany p = pSome p <<|> pure []
 
-pSome :: (Parser s r) -> Parser s [r]
+pSome :: !(Parser s r) -> Parser s [r]
 pSome p = p <:> pMany p
 
-pOptional :: (Parser s r) (r -> Parser s r) -> Parser s r
+pOptional :: !(Parser s r) (r -> Parser s r) -> Parser s r
 pOptional p1 p2 = p1 >>= \r -> p2 r <<|> pure r
 
 pOneOf :: [t] -> Parser t t | == t
 pOneOf ts = pSatisfy (\x -> elem x ts)
 
-pChainl :: (Parser t a) (Parser t (a a -> a)) a -> Parser t a
+pChainl :: !(Parser t a) (Parser t (a a -> a)) a -> Parser t a
 pChainl p op a = pChainl1 p op <|> pure a
 
-pChainl1 :: (Parser t a) (Parser t (a a -> a)) -> Parser t a
+pChainl1 :: !(Parser t a) (Parser t (a a -> a)) -> Parser t a
 pChainl1 p op = p >>= \a -> rest a
   where
   rest a = (op >>= \f -> p >>= \b -> rest (f a b))
@@ -124,11 +135,11 @@ pChainl1 p op = p >>= \a -> rest a
 pToken :: t -> Parser t t | == t
 pToken c = pSatisfy (\x -> c == x)
 
-pSepBy :: (Parser t a) (Parser t s) -> Parser t [a]
+pSepBy :: !(Parser t a) (Parser t s) -> Parser t [a]
 pSepBy pa psep = pSepBy1 pa psep <|> pure []
 
-pSepBy1 :: (Parser t a) (Parser t s) -> Parser t [a]
+pSepBy1 :: !(Parser t a) (Parser t s) -> Parser t [a]
 pSepBy1 pa psep = pa <:> pMany (psep >>| pa)
 
-pList :: [Parser t a] -> Parser t [a]
+pList :: ![Parser t a] -> Parser t [a]
 pList xs = sequence xs

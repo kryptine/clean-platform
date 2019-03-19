@@ -8,6 +8,7 @@ import StdList
 import StdMisc
 import StdString
 
+import Data.Func
 import Data.Error
 import System.OSError
 import System._Pointer
@@ -60,7 +61,7 @@ readAllLines file
 # (result, file) = rec file []
 = case result of
 	Error e	   = (Error e, file)
-	Ok lines = (Ok lines, file)
+	Ok lines = (Ok $ reverse lines, file)
 where	
 	rec :: *File [String] -> (!MaybeError FileError [String], *File)
 	rec file acc 
@@ -167,4 +168,3 @@ moveFile oldpath newpath world
 		= (Ok (), world)
 	| otherwise
 		= getLastOSError world
-	

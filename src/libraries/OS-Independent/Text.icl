@@ -85,9 +85,14 @@ instance Text String
 				= offs
 
     startsWith :: !String !String -> Bool
-	startsWith needle haystack
-		#! s_needle = size needle
-		= s_needle <= size haystack && needle == haystack%(0,s_needle-1)
+	startsWith start string
+	#! sz = size start
+	| sz > size string = False
+	| otherwise        = check (sz-1)
+	where
+		check :: !Int -> Bool
+		check -1 = True
+		check i  = start.[i]==string.[i] && check (i-1)
 
     endsWith :: !String !String -> Bool
 	endsWith needle haystack
@@ -248,5 +253,5 @@ instance + String
 where
 	(+) s1 s2 = s1 +++ s2
 
-(<+) infixr 5 :: a b -> String | toString a & toString b
+(<+) infixr 5 :: !a !b -> String | toString a & toString b
 (<+) x y = toString x + toString y

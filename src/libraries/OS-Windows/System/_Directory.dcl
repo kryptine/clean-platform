@@ -1,4 +1,4 @@
-definition module System.Directory
+definition module System._Directory
 
 from System.FilePath import :: FilePath
 from Data.Error import :: MaybeError

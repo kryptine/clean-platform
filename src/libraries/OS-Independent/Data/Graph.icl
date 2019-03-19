@@ -4,15 +4,15 @@ import StdBool
 import StdFunc
 import StdInt
 from StdList import ++, filter, hd, isEmpty, isMember, map, reverse, tl,
-	instance length []
+	instance length [], foldr
 import StdOrdList
 import StdTuple
 
-import Data.Map
+import Data.Map, Data.Map.GenJSON
 import Data.Maybe
 import Data.Functor
 import Text.GenJSON
-from Data.Generics.GenEq import generic gEq
+from Data.GenEq import generic gEq
 
 :: Graph n e = 
 	{ nodes		:: !Map NodeIndex (Node n)

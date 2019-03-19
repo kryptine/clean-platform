@@ -1,6 +1,18 @@
-test:
+test-nightly:
   before_script:
-    - install_clean.sh bundle-complete && apt-get update -qq && apt-get install -y -qq build-essential
+    - install_clean.sh bundle-complete
+    - apt-get update -qq
+    - apt-get install -y -qq build-essential git coreutils libsnappy-dev
   image: "camilstaps/clean:nightly"
   script:
-    - make -C tests/linux64
+    - make -C tests/linux64 run
+    - stdbuf -o0 -e0 testproperties -IL Dynamics -d src/libraries/OS-Independent -P Quiet -r -T 'Tests 100000' -C -h -C 100m
+
+test-stable:
+  before_script:
+    - apt-get update -qq
+    - apt-get install -y -qq patch build-essential coreutils libsnappy-dev
+    - install_clean.sh "stable lib-dynamics lib-tcpip lib-graphcopy lib-graphcopy test"
+  image: "camilstaps/clean:nightly"
+  script:
+    - make -C tests/linux64 run

@@ -4,7 +4,7 @@ implementation module Data.Graph.Inductive.Internal.RootPath
 
 import Data.Graph.Inductive.Graph
 import Data.List
-import StdFunc, StdTuple
+import StdFunc, StdTuple, StdInt
 
 :: LRTree a :== [LPath a]
 :: RTree    :== [Path]
@@ -22,7 +22,7 @@ findP v [LP (p=:[(w,_):_]):ps] | v==w      = p
                                | otherwise = findP v ps
 
 getPath :: Node RTree -> Path
-getPath v t = (reverse o first (\[w:_]->w==v)) t
+getPath v t = (reverse o first (\w->hd w==v)) t
 
 getLPath :: Node (LRTree a) -> LPath a
 getLPath v t = (LP o reverse o findP v) t

@@ -10,8 +10,44 @@ import qualified StdArrayExtensions
 import qualified StdListExtensions
 import qualified StdMaybe
 import qualified StdLibMisc
+// Deprecated libraries: Generics
+import qualified GenBimap
+import qualified GenCompress
+import qualified GenDefault
+import qualified GenEq
+import qualified GenFMap
+import qualified GenHylo
+import qualified GenLexOrd
+import qualified GenLib
+import qualified GenMap
+import qualified GenMapSt
+import qualified GenMonad
+import qualified GenParse
+import qualified GenPrint
+import qualified GenReduce
+import qualified GenZip
+import qualified _Array
 
 // Main libraries
+//import qualified Clean.PrettyPrint // requires Clean compiler
+//import qualified Clean.PrettyPrint.Common // requires Clean compiler
+//import qualified Clean.PrettyPrint.Definition // requires Clean compiler
+//import qualified Clean.PrettyPrint.Expression // requires Clean compiler
+//import qualified Clean.PrettyPrint.Util // requires Clean compiler
+import qualified Clean.Doc
+//import qualified Clean.Parse // requires Clean compiler
+//import qualified Clean.Parse.Comments // requires Clean compiler
+import qualified Clean.Parse.ModuleName
+import qualified Clean.Types
+//import qualified Clean.Types.CoclTransform // requires Clean compiler
+import qualified Clean.Types.Parse
+import qualified Clean.Types.Tree
+import qualified Clean.Types.Unify
+import qualified Clean.Types.Util
+import qualified Clean.ModuleFinder
+import qualified Codec.Archive.Tar
+import qualified Codec.Compression.Snappy
+import qualified Codec.Compression.Snappy.Graph
 import qualified Control.Applicative
 import qualified Control.Arrow
 import qualified Control.Category
@@ -37,10 +73,14 @@ import qualified Data.Bifunctor
 import qualified Data.CircularStack
 import qualified Data.Complex
 import qualified Data.Data
+import qualified Data.Dynamic
 import qualified Data.Either
+import qualified Data.Either.GenJSON
+import qualified Data.Either.Ord
 import qualified Data.Encoding.RunLength
 import qualified Data.Eq
 import qualified Data.Error
+import qualified Data.Error.GenJSON
 import qualified Data.Foldable
 import qualified Data.Func
 import qualified Data.Functor
@@ -53,19 +93,20 @@ import qualified Data.GenEq
 import qualified Data.GenFDomain
 import qualified Data.GenLexOrd
 import qualified Data.GenZip
-//import qualified Data.Graph
-//import qualified Data.Graph.Inductive
-//import qualified Data.Graph.Inductive.Basic
-//import qualified Data.Graph.Inductive.Graph
-//import qualified Data.Graph.Inductive.Internal.Queue
-//import qualified Data.Graph.Inductive.Internal.RootPath
-//import qualified Data.Graph.Inductive.Internal.Thread
-//import qualified Data.Graph.Inductive.Monad
-//import qualified Data.Graph.Inductive.NodeMap
-//import qualified Data.Graph.Inductive.PatriciaTree
-//import qualified Data.Graph.Inductive.Query
-//import qualified Data.Graph.Inductive.Query.BFS
-//import qualified Data.Graph.Inductive.Query.MaxFlow
+import qualified Data.Generics
+import qualified Data.Graph
+import qualified Data.Graph.Inductive
+import qualified Data.Graph.Inductive.Basic
+import qualified Data.Graph.Inductive.Graph
+import qualified Data.Graph.Inductive.Internal.Queue
+import qualified Data.Graph.Inductive.Internal.RootPath
+import qualified Data.Graph.Inductive.Internal.Thread
+import qualified Data.Graph.Inductive.Monad
+import qualified Data.Graph.Inductive.NodeMap
+import qualified Data.Graph.Inductive.PatriciaTree
+import qualified Data.Graph.Inductive.Query
+import qualified Data.Graph.Inductive.Query.BFS
+import qualified Data.Graph.Inductive.Query.MaxFlow
 import qualified Data.Graphviz
 import qualified Data.Heap
 import qualified Data.IntMap.Base
@@ -80,21 +121,23 @@ import qualified Data.Integer.ToInteger
 import qualified Data.Integer.ToString
 import qualified Data.List
 import qualified Data.Map
+import qualified Data.Map.GenJSON
 import qualified Data.MapCollection
 import qualified Data.Matrix
 import qualified Data.Maybe
+import qualified Data.Maybe.Ord
 import qualified Data.Monoid
 import qualified Data.NGramIndex
 import qualified Data.OrdList
 import qualified Data.Queue
 import qualified Data.Set
+import qualified Data.Set.GenJSON
 import qualified Data.Stack
 import qualified Data.Traversable
 import qualified Data.Tree
 import qualified Data.Tuple
 import qualified Data.Word8
 import qualified Data._Array
-import qualified Data.Generics
 import qualified Database.Native
 import qualified Database.Native.JSON
 import qualified Database.SQL
@@ -104,13 +147,16 @@ import qualified Database.SQL.SQLite
 import qualified Database.SQL._MySQL
 import qualified Database.SQL._SQLite
 import qualified Debug.Performance
-import qualified Graphics.Layout
+import qualified Debug.Trace
+//import qualified Graphics.Layout
+import qualified Graphics.Scalable.Extensions
 import qualified Graphics.Scalable.Image
 import qualified Graphics.Scalable.Internal.Image`
 import qualified Graphics.Scalable.Internal.Types
 import qualified Graphics.Scalable.Types
 import qualified Internet.HTTP
 import qualified Internet.HTTP.CGI
+import qualified Internet.IRC
 import qualified Math.Geometry
 import qualified Math.Random
 import qualified Network.IP
@@ -121,13 +167,17 @@ import qualified System.File
 import qualified System.FilePath
 import qualified System.GetOpt
 import qualified System.IO
+import qualified System.Options
 import qualified System.OS
 import qualified System.OSError
 import qualified System.Platform
 import qualified System.Process
 import qualified System.TTS
 import qualified System.Time
+import qualified System.Time.GenJSON
+import qualified System._Directory
 import qualified System._FilePath
+import qualified System._Finalized
 import qualified System._Platform
 import qualified System._Pointer
 import qualified System._Posix
@@ -144,6 +194,7 @@ import qualified Text.GenParse
 import qualified Text.GenPrint
 import qualified Text.GenXML
 import qualified Text.HTML
+import qualified Text.HTML.GenJSON
 import qualified Text.LaTeX
 import qualified Text.Language
 import qualified Text.PPrint

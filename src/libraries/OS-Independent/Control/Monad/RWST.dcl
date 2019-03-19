@@ -1,6 +1,6 @@
 definition module Control.Monad.RWST
 
-from Control.Applicative import class Applicative
+from Control.Applicative import class pure, class <*>, class Applicative
 from Control.Monad import class Monad
 from Control.Monad.Trans import class MonadTrans
 from Data.Functor import class Functor
@@ -11,10 +11,11 @@ from Data.Monoid import class Monoid, class Semigroup
 :: RWS r w s a :== RWST r w s Identity a
 
 // The RWST monad transformer
-:: RWST r w s m a = RWST (r s -> m (a, s, w))
+:: RWST r w s m a = RWST !(r s -> m (a, s, w))
 
 instance Functor (RWST r w s m) | Monad m & Monoid w
-instance Applicative (RWST r w s m) | Monad m & Monoid w
+instance pure (RWST r w s m) | pure m & Monoid w
+instance <*> (RWST r w s m) | Monad m & Monoid w
 instance Monad (RWST r w s m) | Monad m & Monoid w
 instance MonadTrans (RWST r w s) | Monoid w
 
@@ -25,9 +26,9 @@ execRWS :: (RWS r w s a) r s -> (s, w)
 mapRWS :: ((a, s, w) -> (b, s, w`)) (RWS r w s a) -> RWS r w` s b
 withRWS :: (r` s -> (r, s)) (RWS r w s a) -> RWS r` w s a
 
-runRWST :: (RWST r w s m a) r s -> m (a, s, w)
-evalRWST :: (RWST r w s m a) r s -> m (a, w) | Monad m
-execRWST :: (RWST r w s m a) r s -> m (s, w) | Monad m
+runRWST :: !(RWST r w s m a) r s -> m (a, s, w)
+evalRWST :: !(RWST r w s m a) r s -> m (a, w) | Monad m
+execRWST :: !(RWST r w s m a) r s -> m (s, w) | Monad m
 mapRWST :: ((m (a, s, w)) -> n (b, s, w`)) (RWST r w s m a) -> RWST r w` s n b
 withRWST :: (r` -> s -> (r, s)) (RWST r w s m a) -> RWST r` w s m a
 

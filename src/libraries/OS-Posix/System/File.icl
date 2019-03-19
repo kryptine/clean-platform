@@ -13,6 +13,7 @@ import Data.Error
 import System.OSError
 import System._Pointer
 import System._Posix
+import System.OS
 
 CHUNK_SIZE :== 1024
 
@@ -34,12 +35,12 @@ readAllLines file
 = case result of
 	Error e	 = (Error e, file)
 	Ok lines = (Ok (reverse lines), file)
-where	
+where
 	rec :: *File [String] -> (!MaybeError FileError [String], *File)
-	rec file acc 
+	rec file acc
 		# (string, file) = freadline file
 		# (err,file)	 = ferror file
-		| err			 = (Error IOError,file)			
+		| err			 = (Error IOError,file)
 		| string == ""   = (Ok acc, file)
 		| otherwise      = rec file [string:acc]
 
@@ -57,13 +58,13 @@ where
 		| err			= (Error IOError,file)
 		# (eof,file)	= fend file
 		| eof			= (Ok [str:acc],file)
-		| otherwise		= readAcc file [str:acc]			
+		| otherwise		= readAcc file [str:acc]
 
 writeFile :: !String !String !*env -> (!MaybeError FileError (), !*env) | FileSystem env
-writeFile filename contents env = 
+writeFile filename contents env =
 	withFile filename FWriteData (\file -> (Ok (), fwrites contents file)) env
 
-withFile :: !String Int (*File -> (!MaybeError FileError a,!*File)) !*env 
+withFile :: !String !Int (*File -> (!MaybeError FileError a,!*File)) !*env
 			-> (!MaybeError FileError a, !*env) | FileSystem env
 withFile filename filemode operation env
 # (ok,file,env)	= fopen filename filemode env
@@ -75,12 +76,12 @@ withFile filename filemode operation env
 = (Ok (fromOk result), env)
 
 fileExists ::  !String !*World -> (!Bool, !*World)
-fileExists path world 
+fileExists path world
 	# buf			= createArray sizeOfStat '\0'
 	# (ok,world)	= stat (packString path) buf world
 	| ok == 0		= (True, world)
 					= (False, world)
-	
+
 deleteFile :: !String !*World -> (!MaybeOSError (), !*World)
 deleteFile path world
 	# (ok,world)	= unlink (packString path) world
@@ -88,19 +89,19 @@ deleteFile path world
 					= (Ok (), world)
 
 getFileInfo :: !String !*World -> (!MaybeOSError FileInfo, !*World)
-getFileInfo path world 
- 	# buf           = createArray sizeOfStat '\0'
-    # (ok,world)    = stat (packString path) buf world
+getFileInfo path world
+	# buf           = createArray sizeOfStat '\0'
+	# (ok,world)    = stat (packString path) buf world
 	| ok <> 0		= getLastOSError world
 	# stat			= unpackStat buf
 	# (ctime,world)	= toLocalTime (Timestamp stat.st_ctimespec) world //NOT RELIABLE ctime is actually inode change time
 	# (mtime,world) = toLocalTime (Timestamp stat.st_mtimespec) world
 	# (atime,world) = toLocalTime (Timestamp stat.st_atimespec) world
 	= (Ok { directory = (stat.st_mode bitand S_IFMT) == S_IFDIR
-		  , creationTime = ctime 
-		  , lastModifiedTime = mtime 
-		  , lastAccessedTime = atime 
-		  , sizeHigh = stat.st_blocks * stat.st_blksize 
+		  , creationTime = ctime
+		  , lastModifiedTime = mtime
+		  , lastAccessedTime = atime
+		  , sizeHigh = stat.st_blocks * stat.st_blksize
 		  , sizeLow = stat.st_size
 		  }, world)
 

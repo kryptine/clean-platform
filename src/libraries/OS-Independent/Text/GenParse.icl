@@ -1,14 +1,14 @@
 implementation module Text.GenParse
 
-import StdGeneric, StdEnv
-from Data.Maybe import :: Maybe(..), mapMaybe
+import StdGeneric, StdEnv, _SystemStrictLists, StdOverloadedList, Data.GenEq, Data.Maybe
+import Text
 
 //---------------------------------------------------------------------------
 
 
 :: StringInput = { si_str :: !String, si_pos :: !Int} 
 
-mkStringInput :: String -> StringInput 
+mkStringInput :: !String -> StringInput
 mkStringInput str = {si_str = str, si_pos = 0}
 
 instance ParseInput StringInput where
@@ -64,54 +64,28 @@ instance toString Token where
 	toString TokenEnd = "<end>"
 	toString (TokenError err) = "<error: " +++ err +++ ">"
 
-// preparsed expressions
-:: Expr 
-	= ExprInt Int
-	| ExprChar Char
-	| ExprReal Real 
-	| ExprBool Bool
-	| ExprString String
-	| ExprIdent String
-	| ExprApp {Expr} 
-	| ExprTuple {Expr}
-	| ExprField String Expr
-	| ExprRecord (Maybe String) {Expr}
-	| ExprList [Expr]
-	| ExprArray [Expr]
-	| ExprEnd Token
-	| ExprError String
-
-	// aux
-	| ExprUnit
-	| ExprAppInInfix {Expr} GenConsAssoc Int GenConsAssoc
-	| ExprPair Expr Expr
-
-
 instance toString Expr where
 	toString (ExprInt x) = toString x
 	toString (ExprChar x) = toString x
-	toString (ExprBool x) = toString x
 	toString (ExprReal x) = toString x
+	toString (ExprBool x) = toString x
 	toString (ExprString x) = x
 	toString (ExprIdent x) = x
-	toString (ExprApp xs) = "(" +++ tostr [x\\x<-:xs] +++ ")"
-	where
-		tostr [] = ""
-		tostr [x] = toString x
-		tostr [x:xs] = toString x +++ " " +++ tostr xs
-	toString (ExprTuple xs) = "(" +++ tostr [x\\x<-:xs] +++ ")"
-	where
-		tostr [] = ""
-		tostr [x] = toString x
-		tostr [x:xs] = toString x +++ ", " +++ tostr xs
-	toString (ExprRecord name xs) = "{" +++ tostr [x\\x<-:xs] +++ "}"
-	where
-		tostr [] = ""
-		tostr [x] = toString x
-		tostr [x:xs] = toString x +++ ", " +++ tostr xs
+	toString (ExprApp xs) = "(" +++ join " " [toString x\\x<-:xs] +++ ")"
+	toString (ExprTuple xs) = "(" +++ join ", " [toString x\\x<-:xs] +++ ")"
 	toString (ExprField name expr) = name +++ "=" +++ toString expr
+	toString (ExprRecord name xs) = "{" +++ maybe "" (\n -> n +++ "|") name +++ join ", " [toString x\\x<-:xs] +++ "}"
+	toString (ExprList xs) = "[" +++ join ", " (map toString xs) +++ "]"
+	toString (ExprArray xs) = "{" +++ join ", " (map toString xs) +++ "}"
+	toString (ExprError err) = "<error: " +++ err +++ ">"
+	toString ExprUnit = abort "toString on auxiliary ExprUnit\n"
+	toString (ExprAppInInfix _ _ _ _) = abort "toString on auxiliary ExprAppInInfix\n"
+	toString (ExprPair _ _) = abort "toString on auxiliary ExprPair\n"
 
-		
+instance == Expr where
+    == x y = x === y
+derive gEq Expr, GenConsAssoc
+
 :: ParseState s =
 	{ ps_input 	:: !s			// lex input
 	, ps_char 	:: !Maybe Char	// unget char
@@ -469,7 +443,7 @@ where
 		= case token of
 			TokenCloseList 
 				-> (ExprList [], s)
-			_  
+			_
 				#! (expr, s) = parse_expr PEList (lexUngetToken token s)
 				-> case expr of
 					ExprError err -> (ExprError (err +++ " ; parse list"), s)
@@ -501,7 +475,7 @@ where
 						#! (expr, s) = parse_expr PERecord s
 						-> parse_record Nothing [ExprField name expr] s
 					TokenIdent "|"
-						-> parse_record (Just ("_" +++ name)) [] (lexUngetToken TokenComma s)
+						-> parse_record (Just name) [] (lexUngetToken TokenComma s)
 					_
 						#! (expr, s) = parse_expr PERecord 
 							(lexUngetToken (TokenIdent name) (lexUngetToken token s))
@@ -524,7 +498,9 @@ where
 								TokenIdent "=" 
 									#! (expr, s) = parse_expr PERecord s
 									-> parse_record rec_name [ExprField field_name expr:fields] s
-				_ -> (ExprError ("parse record failed on token " +++ toString token), s)			
+								_ -> (ExprError ("parse record failed on token " +++ toString token), s)
+						_ -> (ExprError ("parse record failed on token " +++ toString token), s)
+				_ -> (ExprError ("parse record failed on token " +++ toString token), s)
 
 		parse_array exprs s
 			#! (token, s) = lexGetToken s
@@ -534,12 +510,12 @@ where
 				TokenComma
 					#! (expr, s) = parse_expr PERecord s
 					-> parse_array [expr:exprs] s
-				_ -> (ExprError ("parse array failed on token " +++ toString token), s)			
+				_ -> (ExprError ("parse array failed on token " +++ toString token), s)
 
 
 //----------------------------------------------------------------------------------		
 
-generic gParse a :: Expr -> Maybe a
+generic gParse a :: !Expr -> Maybe a
 
 gParse{|Int|} (ExprInt x)			= Just x 
 gParse{|Int|} _						= Nothing
@@ -607,9 +583,6 @@ where
 		| otherwise
 			= Nothing
 	
-	is_ident wanted_name (ExprIdent name) = name == wanted_name
-	is_ident _ _ = False		
-
 	parse_tuple (ExprTuple exprs) 
 		= mapMaybe CONS (parse_arg (mkprod [e\\e<-:exprs]))
 	parse_tuple expr = Nothing
@@ -680,14 +653,17 @@ where
 		&& isDigit name.[6]
 		&& (size_name == 7 || isDigit name.[7])
 
-gParse{|RECORD of d|} parse_arg (ExprRecord rec_name exprs)
-	| check_name rec_name d.grd_name
+is_ident wanted_name (ExprIdent name) = name == wanted_name
+is_ident _ _ = False		
+
+gParse{|RECORD of {grd_name}|} parse_arg (ExprRecord rec_name exprs)
+	| check_name rec_name grd_name
 		= mapMaybe RECORD (parse_arg (mkprod [e\\e<-:exprs]))
 		= Nothing
 	where
 		check_name Nothing cons_name = True
 		check_name (Just rec_name) cons_name = rec_name == cons_name
-gParse{|RECORD of d|} parse_arg expr
+gParse{|RECORD of {grd_name}|} parse_arg expr
 	= Nothing
 
 mkprod [] 		= abort "mkprod\n"
@@ -696,15 +672,22 @@ mkprod exprs
 	# (xs, ys) = splitAt (length exprs / 2) exprs
 	= ExprPair (mkprod xs) (mkprod ys)
 	
-gParse{|FIELD of d|} parse_arg (ExprField name value) 
-	| d.gfd_name == name
-		= mapMaybe FIELD (parse_arg value)
+gParse{|FIELD of {gfd_name}|} parse_arg (ExprField name value) 
+	| gfd_name == name
+		= mapMaybe (\x -> FIELD x) (parse_arg value)
 		= Nothing
-gParse{|OBJECT|} parse_arg expr
-	= mapMaybe OBJECT (parse_arg expr)
+gParse{|FIELD of {gfd_name}|} _ _ = Nothing
+gParse{|OBJECT of {gtd_num_conses,gtd_conses}|} parse_arg expr
+	| gtd_num_conses == 0 = case expr of
+		ExprApp ap
+			| size ap == 2 && is_ident (hd gtd_conses).gcd_name ap.[0]
+				= mapMaybe (\x -> OBJECT x) (parse_arg ap.[1])
+			= Nothing
+		_ = Nothing
+	= mapMaybe (\x -> OBJECT x) (parse_arg expr)
 
 gParse{|[]|} parse_arg (ExprList exprs) 
-	= maybeAll (map parse_arg exprs)
+	= maybeAll [parse_arg e \\e<-exprs]
 gParse{|[]|} parse_arg _ = Nothing
 
 gParse{|{}|} parse_arg (ExprArray exprs)
@@ -715,30 +698,30 @@ gParse{|{!}|} parse_arg (ExprArray exprs)
 	= mapMaybe (\xs -> {x\\x<-xs}) (maybeAll (map parse_arg exprs))
 gParse{|{!}|} parse_arg _ = Nothing
 
-maybeAll [] 			= Just []
-maybeAll [Nothing:_] 	= Nothing
-maybeAll [Just x: mxs] 
+maybeAll [|] 			= Just [|]
+maybeAll [|Nothing:_] 	= Nothing
+maybeAll [|Just x: mxs] 
 	= case maybeAll mxs of
 		Nothing -> Nothing
-		Just xs -> Just [x:xs]  
+		Just xs -> Just [|x:xs]  
 
 //----------------------------------------------------------------------------------		
 
-preParseInput :: s -> Expr | ParseInput s
-preParseInput input 
+preParseInput :: !s -> Expr | ParseInput s
+preParseInput input
 	# (expr, s) = preParse {ps_input=input, ps_char = Nothing, ps_tokens = [] }
 	= expr
-	
-preParseString :: String -> Expr
+
+preParseString :: !String -> Expr
 preParseString str = preParseInput {si_pos = 0, si_str = str}
 
-preParseFile :: File -> Expr 
+preParseFile :: !File -> Expr
 preParseFile file = preParseInput file
 
-parseString :: String -> Maybe a | gParse{|*|} a
+parseString :: !String -> Maybe a | gParse{|*|} a
 parseString str = gParse{|*|} (preParseString str)
 
-parseFile :: File -> Maybe a | gParse{|*|} a
+parseFile :: !File -> Maybe a | gParse{|*|} a
 parseFile file = gParse{|*|} (preParseFile file)
 
 //Start = preParseString "{rec_field = A (B1, B2) (C D), rec_field2 = (X,Y)}"

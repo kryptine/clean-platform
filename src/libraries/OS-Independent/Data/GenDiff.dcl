@@ -26,15 +26,16 @@ instance == DiffStatus
 /**
  * Recursively set the status in a Diff.
  */
-setStatus :: DiffStatus Diff -> Diff
+setStatus :: !DiffStatus !Diff -> Diff
 
 /**
  * Compute the {{`Diff`}} between two values.
  */
-generic gDiff a :: a a -> [Diff]
+generic gDiff a :: !a !a -> [Diff]
 derive gDiff UNIT, PAIR, EITHER, OBJECT, CONS of d, RECORD of d, FIELD of d
 derive gDiff Int, Char, Bool, Real, String
-derive gDiff [], (,), (,,), (,,,), (,,,,), (,,,,,), (,,,,,,), (,,,,,,,)
+derive gDiff [], [!], [ !], [!!], {}, {!}
+derive gDiff (,), (,,), (,,,), (,,,,), (,,,,,), (,,,,,,), (,,,,,,,)
 
 /**
  * A String representation of a {{`Diff`}} using ANSI escape codes.

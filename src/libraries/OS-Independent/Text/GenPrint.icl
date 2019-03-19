@@ -1,6 +1,7 @@
 implementation module Text.GenPrint
 
 import StdGeneric, StdEnv
+import _SystemStrictLists
 from Data.Maybe import :: Maybe(..)
 
 //-------------------------------------------------------------------------------------
@@ -116,6 +117,7 @@ needParenthesis (CtxInfix _ _ _ _) CtxNonfix = True // False // PK
 needParenthesis (CtxInfix _ this_assoc this_prio _) (CtxInfix _ outer_assoc outer_prio branch) 
 	= 	outer_prio > this_prio 
 	||  (outer_prio == this_prio && not (this_assoc == outer_assoc && this_assoc == branch))
+needParenthesis _ _ = abort "error in needParenthesis\n"
 
 //derive bimap PrintState
 
@@ -163,15 +165,15 @@ printList f xs ps=:{ps_context}
 		& ps_context = ps_context 
 		}
 where
-	print_list f [] = id
-	print_list f [x] = f x
-	print_list f [x:xs] 
+	print_list f [|] = id
+	print_list f [|x] = f x
+	print_list f [|x:xs] 
 		= f x 			
 		$ printString ", "
 		$ print_list f xs	
 
 //-------------------------------------------------------------------------------------
-generic gPrint a :: a (PrintState *s) -> (PrintState *s) | PrintOutput s
+generic gPrint a :: !a !(PrintState *s) -> (PrintState *s) | PrintOutput s
 gPrint{|Int|} x st 
 	= printString (toString x) st
 gPrint{|Real|} x st 
@@ -217,17 +219,15 @@ gPrint{|CONS of d|} print_arg (CONS x) st=:{ps_context}
 	#! ctx = mkContextCons d
 	#! st = { st & ps_context = ctx }
 	| needParenthesis ctx ps_context
-		= 	{ printChar '(' 
-			$ print print_arg ctx 
-			$ printChar ')' 
+		= 	{ printChar '('
+			$ print print_arg ctx
+			$ printChar ')'
 			@ st 
 			& ps_context = ps_context 
 			}
 	| otherwise
 		= { print print_arg ctx st & ps_context = ps_context }
 where
-	print print_arg CtxNone 			
-		= abort "gOutput{|CONS|}: CtxNone\n"
 	print print_arg CtxNullary  		
 		= printStringLiteral d.gcd_name 
 	print print_arg CtxTuple
@@ -238,11 +238,13 @@ where
 		$ print_arg x 
 	print print_arg (CtxInfix _ _ _ _)  		
 		= print_arg x
+	print print_arg ctx
+		= abort "error in gOutput{|CONS|}\n"
 
-gPrint{|RECORD of d|} print_arg (RECORD x) st=:{ps_context}
+gPrint{|RECORD of {grd_name}|} print_arg (RECORD x) st=:{ps_context}
 	#! st = {st & ps_context = CtxRecord}
 	= { printString "{ "
-		$ printStringLiteral d.grd_name 
+		$ printStringLiteral grd_name 
 		$ printString " | "
 		$ print_arg x
 		$ printString " }"
@@ -250,12 +252,17 @@ gPrint{|RECORD of d|} print_arg (RECORD x) st=:{ps_context}
 		& ps_context = ps_context
 	  }
 
-gPrint{|FIELD of d|} f (FIELD x) st
-	= printStringLiteral d.gfd_name
+gPrint{|FIELD of {gfd_name}|} f (FIELD x) st
+	= printStringLiteral gfd_name
 	$ printString " = " 
 	$ f x 
 	@ st
-gPrint{|OBJECT|} f (OBJECT x) st
+gPrint{|OBJECT of {gtd_num_conses,gtd_conses}|} f (OBJECT x) st=:{ps_context}
+	| gtd_num_conses == 0
+		# cnsstr = (hd gtd_conses).gcd_name +++ " "
+		| needParenthesis CtxNonfix ps_context
+			= printChar '(' $ printString cnsstr $ f x $ printChar ')' @ st 
+			= printString cnsstr $ f x @ st
 	= f x st	
 	
 gPrint{|[]|} f xs st
@@ -263,7 +270,6 @@ gPrint{|[]|} f xs st
 	$ printList f xs 
 	$ printChar ']'
 	@ st
-
 gPrint{|{}|} f xs st
 	= printChar '{'
 	$ printList f [ x \\ x <-: xs] 
@@ -280,10 +286,10 @@ derive gPrint (,), (,,), (,,,), (,,,,), (,,,,,), (,,,,,,), (,,,,,,,)
 //derive gOutput (,), (,,), (,,,), (,,,,), (,,,,,), (,,,,,,), (,,,,,,,)
 	
 //-------------------------------------------------------------------------------------
-(<<-) infixl 0 :: (PrintState *s) a -> *(PrintState *s) | gPrint{|*|} a & PrintOutput s
+(<<-) infixl 0 :: !(PrintState *s) !a -> *(PrintState *s) | gPrint{|*|} a & PrintOutput s
 (<<-) s x = gPrint{|*|} x s
 
-mkPrintState :: *s -> PrintState *s | PrintOutput s
+mkPrintState :: !*s -> PrintState *s | PrintOutput s
 mkPrintState s =
 	{ ps_output = s
 	, ps_context = CtxNone
@@ -298,7 +304,7 @@ openFilePrintState name fs
 	| ok 	= (Just (mkPrintState file), fs)
 			= (Nothing, fs)
 
-printToString :: a -> String | gPrint{|*|} a
+printToString :: !a -> String | gPrint{|*|} a
 printToString x
 	# string_output = (mkStringPrintState <<- x).ps_output
 	= string_output.so_str % (0,string_output.so_pos-1)
