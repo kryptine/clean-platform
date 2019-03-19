@@ -3,14 +3,13 @@ implementation module Graphics.Scalable.Internal.Image`
 import StdBool
 import StdClass
 import StdEnum
-import StdFunc
+import StdFunctions
 import StdInt
 import StdMisc
 import StdOrdList
 import StdOverloaded
 import StdReal
 import StdString
-from   StdTuple   import fst, snd
 import StdTuple
 import Data.Error
 import Data.Functor
@@ -20,9 +19,11 @@ import Data.Maybe
 import Data.Monoid
 import Data.MapCollection
 
-from Data.Set   import :: Set, instance == (Set a), instance < (Set a), fold, fromList, toList, toAscList
+import qualified Data.Foldable
+import qualified Data.Set
+from Data.Set   import :: Set, instance == (Set a), instance < (Set a), /*fold,*/ instance Foldable Set, fromList//, toList, toAscList
+import qualified Data.Map
 from Data.Map   import :: Map, findKeyWith, instance Functor (Map k)
-from Data.Maybe import :: Maybe (..), fromJust, maybeToList, instance Functor Maybe, instance == (Maybe a)
 from Control.Applicative import class Applicative (..)
 import Control.Monad
 from Text.HTML import :: SVGColor (..)
@@ -33,7 +34,7 @@ import Graphics.Scalable.Internal.Types
 
 import StdDebug
 
-derive gEq ImgTransform, Span, LookupSpan, BasicImg, BasicImgAttr, Angle, ImageTag, SVGColor
+derive gEq ImgTransform, Span, LookupSpan, BasicImg, BasicImgAttr, Angle, ImageTag
 
 instance == ImgTransform where == a b = a === b
 
