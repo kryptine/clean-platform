@@ -94,7 +94,7 @@ getImgAtNodePath img []     = Just img
 getImgAtNodePath img [ViaChild i:p]
 #! imgs = imgChildNodes img
 | i < 0 || i >= length imgs = Nothing
-| otherwise                 = trace ("getImgAtNodePath [ViaChild " +++ toString i +++ ":p] legal index")  // TO LASZLO: if you remove the trace_n, then the client displays the runtime error 'uncaught exception: ABORT: Subscript error in !!,index too large'
+| otherwise                 = //trace ("getImgAtNodePath [ViaChild " +++ toString i +++ ":p] legal index")  // TO LASZLO: if you remove the trace_n, then the client displays the runtime error 'uncaught exception: ABORT: Subscript error in !!,index too large'
                               (getImgAtNodePath (imgs !! i) p)
 getImgAtNodePath img [ViaHost:p]
 	= case imgHostNode img of
