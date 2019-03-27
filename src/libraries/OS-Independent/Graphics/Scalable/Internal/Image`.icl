@@ -1,6 +1,6 @@
 implementation module Graphics.Scalable.Internal.Image`
 
-import StdEnv
+import StdBool, StdEnum, StdFunctions, StdInt, StdList, StdMisc, StdOrdList, StdString, StdTuple
 import Data.Error
 import Data.Functor
 import Data.GenEq
@@ -8,8 +8,6 @@ import Data.List
 import Data.Maybe
 import Data.Monoid
 import Data.MapCollection
-
-//from Data.Foldable import class Foldable(foldr`, foldl,foldMap)
 import qualified Data.Foldable
 import qualified Data.Set
 import qualified Data.Map
@@ -18,15 +16,13 @@ from Data.Map   import :: Map, findKeyWith, instance Functor (Map k)
 from Control.Applicative import class Applicative (..)
 import Control.Monad
 from Text.HTML import :: SVGColor (..)
-
 import Math.Geometry
 import Graphics.Scalable.Types
 import Graphics.Scalable.Internal.Types
 
 import StdDebug
 
-//derive gEq ImgTransform, Span, LookupSpan, BasicImg, BasicImgAttr, Angle, ImageTag, SVGColor
-derive gEq BasicImgAttr, BasicImg, Span, LookupSpan, ImgTransform, Angle, ImageTag
+derive gEq Angle, BasicImg, BasicImgAttr, ImageTag, ImgTransform, LookupSpan, Span
 
 instance == ImgTransform where == a b = a === b
 
