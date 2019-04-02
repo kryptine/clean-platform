@@ -176,6 +176,7 @@ import qualified System.TTS
 import qualified System.Time
 import qualified System.Time.GenJSON
 import qualified System.Signal
+import qualified System._Signal
 import qualified System._Directory
 import qualified System._FilePath
 import qualified System._Finalized
