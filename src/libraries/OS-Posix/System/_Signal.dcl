@@ -19,7 +19,6 @@ SIGALRM   :== 14
 SIGTERM   :== 15
 SIGSTKFLT :== 16
 SIGCHLD   :== 17
-SIGCLD    :== -
 SIGCONT   :== 18
 SIGSTOP   :== 19
 SIGTSTP   :== 20
