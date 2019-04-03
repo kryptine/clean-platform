@@ -2,6 +2,7 @@ definition module System.Signal
 
 from Data.Error import :: MaybeErrorString, :: MaybeError
 from System.OSError import :: MaybeOSError, :: OSError, :: OSErrorMessage, :: OSErrorCode
+import System._Signal
 
 :: SigHandler
 
