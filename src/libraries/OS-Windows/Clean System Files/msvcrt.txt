@@ -8,3 +8,4 @@ localtime
 mktime
 strftime
 _mkgmtime
+signal
