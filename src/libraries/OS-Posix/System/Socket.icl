@@ -31,15 +31,14 @@ where
 
 bind :: !sa !*(Socket sa) -> *(!MaybeOSError (), !*(Socket sa)) | SocketAddress sa
 bind addr sockfd
-	#! p = malloc (sa_length addr)
+	#! (p, sockfd) = mallocSt (sa_length addr) sockfd
 	| p == 0 = getLastOSError sockfd
 	#! (p, sockfd) = sa_serialize addr p sockfd
 	#! len = sa_length addr
 	#! (fd, sockfd) = getFd sockfd
 	#! (r, sockfd) = bind` fd p len sockfd
 	| r == -1 = getLastOSError sockfd
-	#! r = free p
-	| r == -1 = getLastOSError sockfd
+	#! sockfd = freeSt p sockfd
 	= (Ok (), sockfd)
 where
 	bind` :: !Int !Pointer !Int !*e -> *(!Int, !*e)
@@ -61,18 +60,16 @@ where
 accept :: !*(Socket sa) -> *(!MaybeOSError (!*(Socket sa), !sa), !*(Socket sa)) | SocketAddress sa
 accept sockfd
 	# (fd, sockfd) = getFd sockfd
-	# p1 = malloc 64
-	# p2 = malloc 8
+	# (p1, sockfd) = mallocSt 64 sockfd
+	# (p2, sockfd) = mallocSt 8 sockfd
 	# p2 = writeInt p2 0 64
 	= case accept` fd p1 p2 sockfd of
 		(-1, sockfd) = getLastOSError sockfd
 		(sock, sockfd)
 			#! (merr, p1) = readP sa_deserialize p1
 			| isError merr = (Error (0, fromError merr), sockfd)
-			#! r = free p1
-			| r == -1 = getLastOSError sockfd
-			#! r = free p2
-			| r == -1 = getLastOSError sockfd
+			#! sockfd = freeSt p1 sockfd
+			#! sockfd = freeSt p2 sockfd
 			= (Ok (sock, fromOk merr), sockfd)
 where
 	accept` :: !Int !Pointer !Int !*e -> *(!*Int, !*e)

@@ -2,3 +2,6 @@ Clean System Files
 _Tests
 _Tests.*
 *.o
+*-sapl
+*-www
+*-data

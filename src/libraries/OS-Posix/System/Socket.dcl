@@ -5,12 +5,6 @@ from System.OSError import :: MaybeOSError, :: OSError, :: OSErrorMessage, :: OS
 from System._Pointer import :: Pointer
 
 :: *Socket a (:== Int)
-:: SaInet6 =
-	{ sin6_port     :: !Int
-	, sin6_flowinfo :: !Int
-	, sin6_addr     :: !String
-	, sin6_scope_id :: !Int
-	}
 
 :: SocketType = ST_Stream | ST_DGram
 
