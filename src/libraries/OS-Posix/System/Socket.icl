@@ -1,38 +1,16 @@
 implementation module System.Socket
 
-import Network.IP
 import StdEnv
-import Data.Maybe 
 import Data.Error
 import System.OSError
 import System._Pointer
 import System._Posix
-import System._Unsafe
 
 :: *Socket a :== Int
 
 instance toInt SocketType where
 	toInt ST_Stream = 1
 	toInt ST_DGram = 2
-
-import StdDebug
-derive gPrint MaybeError
-instance SocketAddress SaInet where
-	sa_serialize sa p w
-		#! p = writeInt2 p 0 2
-		#! p = writeInt2 p 2 (htons sa.sin_port)
-		#! p = writeInt4 p 4 (maybe 0 toInt sa.sin_addr)
-		= (p, forceEvalPointer p w)
-	sa_deserialize p
-		= Ok {sin_port=ntohs (readInt2Z p 2),sin_addr=Just (fromInt (readInt4Z p 4))}
-	sa_length _ = 16
-	sa_domain _ = 2
-	sa_null = {sin_port=0, sin_addr=Nothing}
-	
-import Text.GenPrint
-derive gPrint SaInet, Maybe
-gPrint{|IPAddress|} a s = gPrint{|*|} (toString a) s
-instance toString SaInet where toString s = printToString s
 
 socket :: !SocketType !Int !*e -> *(!MaybeOSError *(Socket sa), !*e) | SocketAddress sa
 socket type protocol w
@@ -51,8 +29,8 @@ where
 			ccall socket "III:I:A"
 		}
 
-bind :: !*(Socket sa) !sa -> *(!MaybeOSError (), !*(Socket sa)) | SocketAddress sa
-bind sockfd addr
+bind :: !sa !*(Socket sa) -> *(!MaybeOSError (), !*(Socket sa)) | SocketAddress sa
+bind addr sockfd
 	#! p = malloc (sa_length addr)
 	| p == 0 = getLastOSError sockfd
 	#! (p, sockfd) = sa_serialize addr p sockfd
@@ -69,8 +47,8 @@ where
 			ccall bind "IpI:I:A"
 		}
 
-listen :: !*(Socket sa) !Int -> *(!MaybeOSError (), !*(Socket sa)) | SocketAddress sa
-listen sockfd backlog
+listen :: !Int !*(Socket sa) -> *(!MaybeOSError (), !*(Socket sa)) | SocketAddress sa
+listen backlog sockfd
 	#! r = listen` sockfd backlog
 	| r == -1 = getLastOSError sockfd
 	= (Ok (), sockfd)
@@ -102,8 +80,8 @@ where
 			ccall accept "IpI:I:A"
 		}
 
-connect :: !*(Socket sa) !sa -> *(!MaybeOSError (), !*(Socket sa)) | SocketAddress sa
-connect sockfd addr
+connect :: !sa !*(Socket sa) -> *(!MaybeOSError (), !*(Socket sa)) | SocketAddress sa
+connect addr sockfd
 	#! (p, sockfd) = mallocSt (sa_length addr) sockfd
 	| p == 0 = getLastOSError sockfd
 	#! (p, sockfd) = sa_serialize addr p sockfd
@@ -116,6 +94,34 @@ where
 	connect` :: !Int !Pointer !Int !*e -> *(!Int, !*e)
 	connect` _ _ _ _ = code {
 			ccall connect "IpI:I:A"
+		}
+
+send :: !String !Int !*(Socket sa) -> *(!MaybeOSError Int, !*(Socket sa))
+send data flags sockfd
+	#! (fd, sockfd) = getFd sockfd
+	#! (r, sockfd) = send` fd (packString data) (size data) flags sockfd
+	| r == -1 = getLastOSError sockfd
+	= (Ok r, sockfd)
+where
+	send` :: !Int !String !Int !Int !*e -> *(!Int, !*e)
+	send` _ _ _ _ _ = code {
+			ccall send "IsII:I:A"
+		}
+
+recv :: !Int !Int !*(Socket sa) -> *(!MaybeOSError String, !*(Socket sa))
+recv length flags sockfd
+	#! (p, sockfd) = mallocSt length sockfd
+	#! (fd, sockfd) = getFd sockfd
+	#! (r, sockfd) = recv` fd p length flags sockfd
+	| r == -1 = getLastOSError sockfd
+	#! (s, p) = readP derefString p
+	#! sockfd = freeSt p sockfd
+	= (Ok s, sockfd)
+	
+where
+	recv` :: !Int !Pointer !Int !Int !*e -> *(!Int, !*e)
+	recv` _ _ _ _ _ = code {
+			ccall recv "IpII:I:A"
 		}
 
 close :: !*(Socket sa) !*e -> *(!MaybeOSError (), !*e) | SocketAddress sa
