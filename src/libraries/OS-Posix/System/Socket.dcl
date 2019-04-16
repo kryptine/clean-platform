@@ -24,23 +24,23 @@ from System._Pointer import :: Pointer
 
 class SocketAddress sa where
 	sa_length      :: !sa -> Int
-	sa_serialize   :: !sa !Pointer !*e -> *(Pointer, !*e)
+	sa_serialize   :: !sa !Pointer !*e -> *(!Pointer, !*e)
 	sa_deserialize :: !Pointer -> MaybeErrorString sa
 	sa_domain      :: !sa -> Int
 	sa_null        :: sa
 instance SocketAddress SaInet
 instance toString SaInet
 
-socket :: !SocketType !Int !*e -> *(MaybeOSError *(Socket sa), !*e) | SocketAddress sa
-bind :: !*(Socket sa) !sa -> *(MaybeOSError (), !*(Socket sa)) | SocketAddress sa
+socket :: !SocketType !Int !*e -> *(!MaybeOSError *(Socket sa), !*e) | SocketAddress sa
+bind :: !*(Socket sa) !sa -> *(!MaybeOSError (), !*(Socket sa)) | SocketAddress sa
 listen :: !*(Socket sa) !Int -> *(!MaybeOSError (), !*(Socket sa)) | SocketAddress sa
 accept :: !*(Socket sa) -> *(!MaybeOSError (!*(Socket sa), !sa), !*(Socket sa)) | SocketAddress sa
 close :: !*(Socket sa) !*e -> *(!MaybeOSError (), !*e) | SocketAddress sa
 
-connect :: !*(Socket sa) !sa -> *(MaybeOSError (), !*(Socket sa)) | SocketAddress sa
+connect :: !*(Socket sa) !sa -> *(!MaybeOSError (), !*(Socket sa)) | SocketAddress sa
 
 
 /*
  * Get access to the raw file descriptor
  */
-getFd :: !*(Socket sa) -> *(!Int, !*(Socket sa)) | SocketAddress sa
+getFd :: !*(Socket sa) -> *(!Int, !*(Socket sa))
