@@ -7,6 +7,7 @@ from System.Socket import :: SocketType, class SocketAddress
 :: *Socket a
 
 AF_INET :== 2
+AF_UNIX :== 1
 AF_INET6 :== 10
 AF_IPX :== 4
 AF_APPLETALK :== 5

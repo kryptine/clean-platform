@@ -6,6 +6,7 @@
 int main(void)
 {
 	printf("AF_INET :== %lu\n", AF_INET);
+	printf("AF_UNIX :== %lu\n", AF_UNIX);
 	printf("AF_INET6 :== %lu\n", AF_INET6);
 	printf("AF_IPX :== %lu\n", AF_IPX);
 	printf("AF_APPLETALK :== %lu\n", AF_APPLETALK);
