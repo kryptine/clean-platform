@@ -6,7 +6,6 @@ import Data.Maybe
 import Network.IP
 import System.Socket
 import System.Socket.Ipv4
-import System.Socket.Ipv6
 
 Start :: *World -> (MaybeOSError String, *World)
 Start w
