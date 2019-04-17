@@ -1,4 +1,4 @@
-implementation module System.Socket
+implementation module System._Socket
 
 import Data.Error
 import StdEnv
@@ -11,8 +11,8 @@ import code from library "Ws2_32"
 
 :: *Socket a :== Int
 
-getLastWSAError :: !*e -> *(MaybeOSError .a, !*e)
-getLastWSAError w
+getLastWSAError :: !String !*e -> *(MaybeOSError .a, !*e)
+getLastWSAError prefix w
 	#! (r, w) = WSAGetLastError` w
 	#! (p, w) = mallocSt 8 w
 	#! msg = case r of
@@ -111,22 +111,22 @@ getLastWSAError w
 		11029  = "Invalid QoS shape discard mode object."
 		11030  = "Invalid QoS shaping rate object."
 		11031  = "Reserved policy QoS element type."
-	= (Error (r, msg), w)
+	= (Error (r, prefix +++ ": " +++ msg), w)
 where
 	WSAGetLastError` :: !*env -> *(!Int, !*e)
 	WSAGetLastError` _ = code {
 			ccall WSAGetLastError@0 "P:I:A"
 		}
-
+import StdDebug
 socket :: !SocketType !Int !*e -> *(!MaybeOSError *(Socket sa), !*e) | SocketAddress sa
 socket type protocol w
 	#! (p, w) = mallocSt 2048 w
 	#! (r, w) = WSAStartup (2 * 256 + 2) p w
-	| r <> 0 = getLastWSAError w
+	| r <> 0 = getLastWSAError "WSAStartup" w
 	#! w = freeSt p w
 	#! (sockfd, w) = socket` (sa_domain msa) (toInt type) protocol w
 	#! (fd, sockfd) = getFd sockfd
-	| fd == -1 = getLastWSAError w
+	| fd == -1 = getLastWSAError "socket" w
 	= (Ok (coerce sockfd msa), w)
 where
 	msa = sa_null
@@ -163,7 +163,7 @@ bind addr sockfd
 	#! len = sa_length addr
 	#! (fd, sockfd) = getFd sockfd
 	#! (r, sockfd) = bind` fd p len sockfd
-	| r == -1 = getLastWSAError sockfd
+	| r == -1 = getLastWSAError "bind" sockfd
 	#! sockfd = freeSt p sockfd
 	= (Ok (), sockfd)
 where
@@ -175,7 +175,7 @@ where
 listen :: !Int !*(Socket sa) -> *(!MaybeOSError (), !*(Socket sa)) | SocketAddress sa
 listen backlog sockfd
 	#! r = listen` sockfd backlog
-	| r == -1 = getLastWSAError sockfd
+	| r == -1 = getLastWSAError "listen" sockfd
 	= (Ok (), sockfd)
 where
 	listen` :: !Int !Int -> Int
@@ -190,7 +190,7 @@ accept sockfd
 	# (p2, sockfd) = mallocSt 8 sockfd
 	# p2 = writeInt p2 0 64
 	= case accept` fd p1 p2 sockfd of
-		(-1, sockfd) = getLastWSAError sockfd
+		(-1, sockfd) = getLastWSAError "accept" sockfd
 		(sock, sockfd)
 			#! (merr, p1) = readP sa_deserialize p1
 			| isError merr = (Error (0, fromError merr), sockfd)
@@ -210,7 +210,7 @@ connect addr sockfd
 	#! (p, sockfd) = sa_serialize addr p sockfd
 	#! (fd, sockfd) = getFd sockfd
 	#! (r, sockfd) = connect` fd p (sa_length addr) sockfd
-	| r == -1 = getLastWSAError sockfd
+	| r == -1 = getLastWSAError "connect" sockfd
 	#! sockfd = freeSt p sockfd
 	= (Ok (), sockfd)
 where
@@ -223,7 +223,7 @@ send :: !String !Int !*(Socket sa) -> *(!MaybeOSError Int, !*(Socket sa))
 send data flags sockfd
 	#! (fd, sockfd) = getFd sockfd
 	#! (r, sockfd) = send` fd (packString data) (size data) flags sockfd
-	| r == -1 = getLastWSAError sockfd
+	| r == -1 = getLastWSAError "send" sockfd
 	= (Ok r, sockfd)
 where
 	send` :: !Int !String !Int !Int !*e -> *(!Int, !*e)
@@ -236,7 +236,7 @@ recv length flags sockfd
 	#! (p, sockfd) = mallocSt length sockfd
 	#! (fd, sockfd) = getFd sockfd
 	#! (r, sockfd) = recv` fd p length flags sockfd
-	| r == -1 = getLastOSError sockfd
+	| r == -1 = getLastWSAError "recv" sockfd
 	#! (s, p) = readP derefString p
 	#! sockfd = freeSt p sockfd
 	= (Ok s, sockfd)
@@ -251,7 +251,7 @@ close :: !*(Socket sa) !*e -> *(!MaybeOSError (), !*e) | SocketAddress sa
 close sock w
 	# (r, w) = close` sock w
 	| r == -1 = getLastOSError w
-	# w = WSACleanup w
+//	# w = WSACleanup w
 	= (Ok (), w)
 where
 	close` :: !Int !*e -> *(!Int, !*e)
