@@ -6,6 +6,7 @@ import Data.Maybe
 import System.Socket
 import System._Pointer
 import Text.GenPrint
+from System._Socket import AF_INET6
 
 instance SocketAddress SaInet6 where
 	sa_serialize sa p w

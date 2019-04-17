@@ -2,8 +2,10 @@ implementation module System.Socket.Unix
 
 import StdEnv
 import Data.Error
+import System.FilePath
 import System.Socket
 import System._Pointer
+from System._Socket import AF_UNIX
 
 instance SocketAddress SaUnix where
 	sa_serialize sa p w
@@ -14,6 +16,6 @@ instance SocketAddress SaUnix where
 		= Ok {sun_path=derefString (p+2)}
 	sa_length _ = 110
 	sa_domain _ = AF_UNIX
-	sa_null = {sin_path="/"}
+	sa_null = {sun_path="/"}
 
-instance toString SaInet where toString s = s.sun_path
+instance toString SaUnix where toString s = s.sun_path
