@@ -1,17 +1,15 @@
 implementation module System.Socket
 
-import StdEnv
 import Data.Error
+import StdEnv
 import System.OSError
+import System.Socket => qualified socket, bind, listen, accept, close, connect, send, recv, htons, ntohs
 import System._Pointer
+import System._WinBase
 
 import code from library "Ws2_32"
 
 :: *Socket a :== Int
-
-instance toInt SocketType where
-	toInt ST_Stream = 1
-	toInt ST_DGram = 2
 
 getLastWSAError :: !*e -> *(MaybeOSError .a, !*e)
 getLastWSAError w
@@ -146,7 +144,6 @@ where
 			ccall WSAStartup@8 "PIp:I:A"
 		}
 		
-import System._WinBase
 mallocSt :: !Int !*env -> *(!Pointer, !*env)
 mallocSt size e
 	#! (heap, e) = getProcessHeap e 

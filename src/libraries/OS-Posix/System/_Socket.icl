@@ -1,16 +1,13 @@
-implementation module System.Socket
+implementation module System._Socket
 
 import StdEnv
 import Data.Error
 import System.OSError
 import System._Pointer
 import System._Posix
+import System.Socket => qualified socket, bind, listen, accept, close, connect, send, recv, htons, ntohs
 
 :: *Socket a :== Int
-
-instance toInt SocketType where
-	toInt ST_Stream = 1
-	toInt ST_DGram = 2
 
 socket :: !SocketType !Int !*e -> *(!MaybeOSError *(Socket sa), !*e) | SocketAddress sa
 socket type protocol w

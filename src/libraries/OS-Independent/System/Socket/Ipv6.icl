@@ -24,7 +24,7 @@ instance SocketAddress SaInet6 where
 		, sin6_scope_id = readInt4Z p 24
 		}
 	sa_length _ = 28
-	sa_domain _ = 10
+	sa_domain _ = AF_INET6
 	sa_null = {sin6_port=0,sin6_flowinfo=0,sin6_addr=Nothing,sin6_scope_id=0}
 
 derive gPrint SaInet6, Maybe

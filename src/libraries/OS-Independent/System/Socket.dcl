@@ -1,18 +1,13 @@
 definition module System.Socket
 
+from StdOverloaded import class toInt
 from Data.Error import :: MaybeError, :: MaybeErrorString
+from System._Pointer import :: Pointer(..)
+from System._Socket import :: Socket
 from System.OSError import :: MaybeOSError, :: OSError, :: OSErrorMessage, :: OSErrorCode
-from System._Pointer import :: Pointer
-
-:: *Socket a (:== Int)
-:: SaInet6 =
-	{ sin6_port     :: !Int
-	, sin6_flowinfo :: !Int
-	, sin6_addr     :: !String
-	, sin6_scope_id :: !Int
-	}
 
 :: SocketType = ST_Stream | ST_DGram
+instance toInt SocketType
 
 class SocketAddress sa where
 	sa_length      :: !sa -> Int
@@ -31,11 +26,6 @@ connect :: !sa !*(Socket sa) -> *(!MaybeOSError (), !*(Socket sa)) | SocketAddre
 
 send :: !String !Int !*(Socket sa) -> *(!MaybeOSError Int, !*(Socket sa))
 recv :: !Int !Int !*(Socket sa) -> *(!MaybeOSError String, !*(Socket sa))
-
-/*
- * Get access to the raw file descriptor
- */
-getFd :: !*(Socket sa) -> *(!Int, !*(Socket sa))
 
 ntohs :: !Int -> Int
 htons :: !Int -> Int
