@@ -11,7 +11,7 @@ import code from library "Ws2_32"
 
 :: *Socket a :== Int
 
-getLastWSAError :: !String !*e -> *(MaybeOSError .a, !*e)
+getLastWSAError :: !String !*env -> *(MaybeOSError .a, !*env)
 getLastWSAError prefix w
 	#! (r, w) = WSAGetLastError` w
 	#! (p, w) = mallocSt 8 w
@@ -113,12 +113,12 @@ getLastWSAError prefix w
 		11031  = "Reserved policy QoS element type."
 	= (Error (r, prefix +++ ": " +++ msg), w)
 where
-	WSAGetLastError` :: !*env -> *(!Int, !*e)
+	WSAGetLastError` :: !*envnv -> *(!Int, !*env)
 	WSAGetLastError` _ = code {
 			ccall WSAGetLastError@0 "P:I:A"
 		}
 
-socket :: !SocketType !Int !*e -> *(!MaybeOSError *(Socket sa), !*e) | SocketAddress sa
+socket :: !SocketType !Int !*env -> *(!MaybeOSError *(Socket sa), !*env) | SocketAddress sa
 socket type protocol w
 	#! (p, w) = mallocSt 2048 w
 	#! (r, w) = WSAStartup (2 * 256 + 2) p w
@@ -131,15 +131,15 @@ socket type protocol w
 where
 	msa = sa_null
 
-	coerce :: *(Socket sa) sa -> *(Socket sa) | SocketAddress sa
+	coerce :: *(Socket sa) sa -> *Socket sa | SocketAddress sa
 	coerce x y = x
 
-	socket` :: !Int !Int !Int !*e -> *(!*Int, !*e)
+	socket` :: !Int !Int !Int !*env -> *(!*Int, !*env)
 	socket` _ _ _ _ = code {
 			ccall socket@12 "PIII:I:A"
 		}
 		
-	WSAStartup :: !Int !Pointer !*e -> *(!Int, !*e)
+	WSAStartup :: !Int !Pointer !*env -> *(!Int, !*env)
 	WSAStartup _ _ _ = code {
 			ccall WSAStartup@8 "PIp:I:A"
 		}
@@ -155,7 +155,7 @@ freeSt p e
 	#! (ok, e) = heapFree heap p 0 e
 	= e
 
-bind :: !sa !*(Socket sa) -> *(!MaybeOSError (), !*(Socket sa)) | SocketAddress sa
+bind :: !sa !*(Socket sa) -> *(!MaybeOSError (), !*Socket sa) | SocketAddress sa
 bind addr sockfd
 	#! (p, sockfd) = mallocSt (sa_length addr) sockfd
 	| p == 0 = getLastOSError sockfd
@@ -167,12 +167,12 @@ bind addr sockfd
 	#! sockfd = freeSt p sockfd
 	= (Ok (), sockfd)
 where
-	bind` :: !Int !Pointer !Int !*e -> *(!Int, !*e)
+	bind` :: !Int !Pointer !Int !*env -> *(!Int, !*env)
 	bind` _ _ _ _ = code {
 			ccall bind@12 "PIpI:I:A"
 		}
 
-listen :: !Int !*(Socket sa) -> *(!MaybeOSError (), !*(Socket sa)) | SocketAddress sa
+listen :: !Int !*(Socket sa) -> *(!MaybeOSError (), !*Socket sa) | SocketAddress sa
 listen backlog sockfd
 	#! r = listen` sockfd backlog
 	| r == -1 = getLastWSAError "listen" sockfd
@@ -183,7 +183,7 @@ where
 			ccall listen@8 "PII:I"
 		}
 
-accept :: !*(Socket sa) -> *(!MaybeOSError (!*(Socket sa), !sa), !*(Socket sa)) | SocketAddress sa
+accept :: !*(Socket sa) -> *(!MaybeOSError (!*Socket sa, !sa), !*Socket sa) | SocketAddress sa
 accept sockfd
 	# (fd, sockfd) = getFd sockfd
 	# (p1, sockfd) = mallocSt 64 sockfd
@@ -198,12 +198,12 @@ accept sockfd
 			#! sockfd = freeSt p2 sockfd
 			= (Ok (sock, fromOk merr), sockfd)
 where
-	accept` :: !Int !Pointer !Int !*e -> *(!*Int, !*e)
+	accept` :: !Int !Pointer !Int !*env -> *(!*Int, !*env)
 	accept` _ _ _ _ = code {
 			ccall accept@12 "PIpI:I:A"
 		}
 
-connect :: !sa !*(Socket sa) -> *(!MaybeOSError (), !*(Socket sa)) | SocketAddress sa
+connect :: !sa !*(Socket sa) -> *(!MaybeOSError (), !*Socket sa) | SocketAddress sa
 connect addr sockfd
 	#! (p, sockfd) = mallocSt (sa_length addr) sockfd
 	| p == 0 = getLastOSError sockfd
@@ -214,24 +214,24 @@ connect addr sockfd
 	#! sockfd = freeSt p sockfd
 	= (Ok (), sockfd)
 where
-	connect` :: !Int !Pointer !Int !*e -> *(!Int, !*e)
+	connect` :: !Int !Pointer !Int !*env -> *(!Int, !*env)
 	connect` _ _ _ _ = code {
 			ccall connect@12 "PIpI:I:A"
 		}
 
-send :: !String !Int !*(Socket sa) -> *(!MaybeOSError Int, !*(Socket sa))
+send :: !String !Int !*(Socket sa) -> *(!MaybeOSError Int, !*Socket sa)
 send data flags sockfd
 	#! (fd, sockfd) = getFd sockfd
 	#! (r, sockfd) = send` fd (packString data) (size data) flags sockfd
 	| r == -1 = getLastWSAError "send" sockfd
 	= (Ok r, sockfd)
 where
-	send` :: !Int !String !Int !Int !*e -> *(!Int, !*e)
+	send` :: !Int !String !Int !Int !*env -> *(!Int, !*env)
 	send` _ _ _ _ _ = code {
 			ccall send@16 "PIsII:I:A"
 		}
 
-recv :: !Int !Int !*(Socket sa) -> *(!MaybeOSError String, !*(Socket sa))
+recv :: !Int !Int !*(Socket sa) -> *(!MaybeOSError String, !*Socket sa)
 recv length flags sockfd
 	#! (p, sockfd) = mallocSt length sockfd
 	#! (fd, sockfd) = getFd sockfd
@@ -242,24 +242,24 @@ recv length flags sockfd
 	= (Ok s, sockfd)
 	
 where
-	recv` :: !Int !Pointer !Int !Int !*e -> *(!Int, !*e)
+	recv` :: !Int !Pointer !Int !Int !*env -> *(!Int, !*env)
 	recv` _ _ _ _ _ = code {
 			ccall recv@16 "PIpII:I:A"
 		}
 
-close :: !*(Socket sa) !*e -> *(!MaybeOSError (), !*e) | SocketAddress sa
+close :: !*(Socket sa) !*env -> *(!MaybeOSError (), !*env) | SocketAddress sa
 close sock w
 	# (r, w) = close` sock w
 	| r == -1 = getLastOSError w
 //	# w = WSACleanup w
 	= (Ok (), w)
 where
-	close` :: !Int !*e -> *(!Int, !*e)
+	close` :: !Int !*env -> *(!Int, !*env)
 	close` _ _ = code {
 			ccall closesocket@4 "PI:I:A"
 		}
 		
-	WSACleanup :: !*e -> *e
+	WSACleanup :: !*env -> *env
 	WSACleanup _ = code {
 			ccall WSACleanup@0 "P:V:A"
 		}
@@ -274,7 +274,7 @@ ntohs x = code {
 		ccall ntohs@4 "PI:I"
 	}
 
-getFd :: !*(Socket sa) -> *(!Int, !*(Socket sa))
+getFd :: !*(Socket sa) -> *(!Int, !*Socket sa)
 getFd s = code {
 		push_b 0
 	}

@@ -16,16 +16,16 @@ AF_IRDA :== 23
 SOCK_STREAM :== 1
 SOCK_DGRAM :== 2
 
-socket :: !SocketType !Int !*e -> *(!MaybeOSError *(Socket sa), !*e) | SocketAddress sa
-bind :: !sa !*(Socket sa) -> *(!MaybeOSError (), !*(Socket sa)) | SocketAddress sa
-listen :: !Int !*(Socket sa) -> *(!MaybeOSError (), !*(Socket sa)) | SocketAddress sa
-accept :: !*(Socket sa) -> *(!MaybeOSError (!*(Socket sa), !sa), !*(Socket sa)) | SocketAddress sa
-close :: !*(Socket sa) !*e -> *(!MaybeOSError (), !*e) | SocketAddress sa
+socket :: !SocketType !Int !*env -> *(!MaybeOSError *(Socket sa), !*env) | SocketAddress sa
+bind :: !sa !*(Socket sa) -> *(!MaybeOSError (), !*Socket sa) | SocketAddress sa
+listen :: !Int !*(Socket sa) -> *(!MaybeOSError (), !*Socket sa) | SocketAddress sa
+accept :: !*(Socket sa) -> *(!MaybeOSError (!*Socket sa, !sa), !*Socket sa) | SocketAddress sa
+close :: !*(Socket sa) !*env -> *(!MaybeOSError (), !*env) | SocketAddress sa
 
-connect :: !sa !*(Socket sa) -> *(!MaybeOSError (), !*(Socket sa)) | SocketAddress sa
+connect :: !sa !*(Socket sa) -> *(!MaybeOSError (), !*Socket sa) | SocketAddress sa
 
-send :: !String !Int !*(Socket sa) -> *(!MaybeOSError Int, !*(Socket sa))
-recv :: !Int !Int !*(Socket sa) -> *(!MaybeOSError String, !*(Socket sa))
+send :: !String !Int !*(Socket sa) -> *(!MaybeOSError Int, !*Socket sa)
+recv :: !Int !Int !*(Socket sa) -> *(!MaybeOSError String, !*Socket sa)
 
 ntohs :: !Int -> Int
 htons :: !Int -> Int
