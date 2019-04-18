@@ -12,25 +12,20 @@ CLMLIBS:=\
 	-I ../../src/libraries/OS-Linux-64\
 	-I ../../src/libraries/Platform-x86\
 	-IL Dynamics\
-	-IL Gast\
 	-IL GraphCopy\
 	-IL TCPIP
 
-BINARIES:=jsontest checktest test gentest snappytest tartest
+BINARIES:=checktest test gentest snappytest tartest
 RUN_BINARIES:=$(addprefix run_,$(BINARIES))
 
 all: $(RUN_BINARIES)
 
-$(filter-out jsontest checktest tartest snappytest,$(BINARIES)): .FORCE
+$(filter-out checktest tartest snappytest,$(BINARIES)): .FORCE
 	$(CLM) $(CLMLIBS) -PABC StdEnv
 	$(CLM) $(CLMLIBS) -PABC StdMaybe
 	$(CLM) $(CLMLIBS) -PABC -dynamics _SystemDynamic
 	$(CLM) $(CLMLIBS) -PABC TCPIP
 	$(CLM) $(CLMLIBS) $(CLMFLAGS) $@ -o $@
-
-# For some reason, gast cannot be precompiled with funcmayfail
-jsontest: %: %.icl .FORCE
-	$(CLM) $(CLMLIBS) $(filter-out -funcmayfail,$(CLMFLAGS)) -h 20m $@ -o $@
 
 $(filter-out run_tartest,$(RUN_BINARIES)): run_%: %
 	./$<
