@@ -34,8 +34,8 @@ bind addr sockfd
 	# len = sa_length addr
 	# (fd, sockfd) = getFd sockfd
 	# (r, sockfd) = bind` fd p len sockfd
-	| r == -1 = getLastOSError sockfd
 	# sockfd = freeSt p sockfd
+	| r == -1 = getLastOSError sockfd
 	= (Ok (), sockfd)
 where
 	bind` :: !Int !Pointer !Int !*env -> *(!Int, !*env)
@@ -58,15 +58,20 @@ accept :: !*(Socket sa) -> *(!MaybeOSError (!*Socket sa, !sa), !*Socket sa) | So
 accept sockfd
 	# (fd, sockfd) = getFd sockfd
 	# (p1, sockfd) = mallocSt 64 sockfd
+	| p1 == 0 = getLastOSError sockfd
 	# (p2, sockfd) = mallocSt 8 sockfd
+	| p2 == 0 = getLastOSError (freeSt p2 sockfd)
 	# p2 = writeInt p2 0 64
 	= case accept` fd p1 p2 sockfd of
-		(-1, sockfd) = getLastOSError sockfd
-		(sock, sockfd)
-			#! (merr, p1) = readP sa_deserialize p1
-			| isError merr = (Error (0, fromError merr), sockfd)
+		(-1, sockfd)
 			#! sockfd = freeSt p1 sockfd
 			#! sockfd = freeSt p2 sockfd
+			= getLastOSError sockfd
+		(sock, sockfd)
+			#! (merr, p1) = readP sa_deserialize p1
+			#! sockfd = freeSt p1 sockfd
+			#! sockfd = freeSt p2 sockfd
+			| isError merr = (Error (0, fromError merr), sockfd)
 			= (Ok (sock, fromOk merr), sockfd)
 where
 	accept` :: !Int !Pointer !Int !*env -> *(!*Int, !*env)
@@ -105,9 +110,10 @@ where
 recv :: !Int !Int !*(Socket sa) -> *(!MaybeOSError String, !*Socket sa)
 recv length flags sockfd
 	# (p, sockfd) = mallocSt length sockfd
+	| p == 0 = getLastOSError sockfd
 	# (fd, sockfd) = getFd sockfd
 	# (r, sockfd) = recv` fd p length flags sockfd
-	| r == -1 = getLastOSError sockfd
+	| r == -1 = getLastOSError (freeSt p sockfd)
 	# (s, p) = readP derefString p
 	# sockfd = freeSt p sockfd
 	= (Ok s, sockfd)
