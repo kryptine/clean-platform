@@ -18,7 +18,7 @@ class SocketAddress sa where
 	sa_domain      :: !sa -> Int
 	sa_null        :: sa
 
-/*
+/**
  * Register a socket with the given type
  *
  * @param type of communication semantics
@@ -28,7 +28,7 @@ class SocketAddress sa where
  */
 socket :: !SocketType !*env -> *(!MaybeOSError *(Socket sa), !*env) | SocketAddress sa
 
-/*
+/**
  * Bind a socket to an address
  *
  * @param address
@@ -38,7 +38,7 @@ socket :: !SocketType !*env -> *(!MaybeOSError *(Socket sa), !*env) | SocketAddr
  */
 bind :: !sa !*(Socket sa) -> *(!MaybeOSError (), !*Socket sa) | SocketAddress sa
 
-/*
+/**
  * Listen for connections on a socket
  *
  * @param maximum number of backlog connections
@@ -48,7 +48,7 @@ bind :: !sa !*(Socket sa) -> *(!MaybeOSError (), !*Socket sa) | SocketAddress sa
  */
 listen :: !Int !*(Socket sa) -> *(!MaybeOSError (), !*Socket sa) | SocketAddress sa
 
-/*
+/**
  * Accept a connection from a listening socket
  *
  * @param socket
@@ -57,7 +57,7 @@ listen :: !Int !*(Socket sa) -> *(!MaybeOSError (), !*Socket sa) | SocketAddress
  */
 accept :: !*(Socket sa) -> *(!MaybeOSError (!*Socket sa, !sa), !*Socket sa) | SocketAddress sa
 
-/*
+/**
  * Close a socket
  *
  * @param socket
@@ -67,7 +67,7 @@ accept :: !*(Socket sa) -> *(!MaybeOSError (!*Socket sa, !sa), !*Socket sa) | So
  */
 close :: !*(Socket sa) !*env -> *(!MaybeOSError (), !*env) | SocketAddress sa
 
-/*
+/**
  * Connect to a listening address
  *
  * @param address
@@ -77,7 +77,7 @@ close :: !*(Socket sa) !*env -> *(!MaybeOSError (), !*env) | SocketAddress sa
  */
 connect :: !sa !*(Socket sa) -> *(!MaybeOSError (), !*Socket sa) | SocketAddress sa
 
-/*
+/**
  * Send data to a socket
  *
  * @param data
@@ -87,7 +87,7 @@ connect :: !sa !*(Socket sa) -> *(!MaybeOSError (), !*Socket sa) | SocketAddress
  */
 send :: !String ![SendFlag] !*(Socket sa) -> *(!MaybeOSError Int, !*Socket sa)
 
-/*
+/**
  * Receive data from a socket
  *
  * @param number of bytes to receive
@@ -97,22 +97,22 @@ send :: !String ![SendFlag] !*(Socket sa) -> *(!MaybeOSError Int, !*Socket sa)
  */
 recv :: !Int ![RecvFlag] !*(Socket sa) -> *(!MaybeOSError String, !*Socket sa)
 
-/*
+/**
  * Convert a short in network order to a short in host order
  */
 networkToHostByteOrderShort :: !Int -> Int
 
-/*
+/**
  * Convert a short in network order to a short in host order
  */
 hostToNetworkByteOrderShort :: !Int -> Int
 
-/*
+/**
  * Convert a long in network order to a long in host order
  */
 networkToHostByteOrderLong :: !Int -> Int
 
-/*
+/**
  * Convert a long in network order to a long in host order
  */
 hostToNetworkByteOrderLong :: !Int -> Int
