@@ -118,14 +118,14 @@ where
 			ccall WSAGetLastError@0 "P:I:A"
 		}
 
-socket :: !SocketType !Int !*env -> *(!MaybeOSError *(Socket sa), !*env) | SocketAddress sa
-socket type protocol w
-	#! (p, w) = mallocSt 2048 w
+socket :: !SocketType !*env -> *(!MaybeOSError *(Socket sa), !*env) | SocketAddress sa
+socket type w
+	#! (p, w) = mallocSt 400 w
 	| p == 0 = getLastOSError w
 	#! (r, w) = WSAStartup (2 * 256 + 2) p w
 	#! w = freeSt p w
 	| r <> 0 = getLastWSAError "WSAStartup" w
-	#! (sockfd, w) = socket` (sa_domain msa) (toInt type) protocol w
+	#! (sockfd, w) = socket` (sa_domain msa) (toInt type) 0 w
 	#! (fd, sockfd) = getFd sockfd
 	| fd == -1 = getLastWSAError "socket" w
 	= (Ok (coerce sockfd msa), w)
@@ -225,8 +225,9 @@ where
 			ccall connect@12 "PIpI:I:A"
 		}
 
-send :: !String !Int !*(Socket sa) -> *(!MaybeOSError Int, !*Socket sa)
+send :: !String ![SendFlag] !*(Socket sa) -> *(!MaybeOSError Int, !*Socket sa)
 send data flags sockfd
+	#! flags = foldr (bitor) 0 (map toInt flags)
 	#! (fd, sockfd) = getFd sockfd
 	#! (r, sockfd) = send` fd (packString data) (size data) flags sockfd
 	| r == -1 = getLastWSAError "send" sockfd
@@ -237,8 +238,9 @@ where
 			ccall send@16 "PIsII:I:A"
 		}
 
-recv :: !Int !Int !*(Socket sa) -> *(!MaybeOSError String, !*Socket sa)
+recv :: !Int ![RecvFlag] !*(Socket sa) -> *(!MaybeOSError String, !*Socket sa)
 recv length flags sockfd
+	# flags = foldr (bitor) 0 (map toInt flags)
 	#! (p, sockfd) = mallocSt length sockfd
 	| p == 0 = getLastOSError sockfd
 	#! (fd, sockfd) = getFd sockfd

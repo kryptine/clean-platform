@@ -14,7 +14,7 @@ Start w
 		(Ok sockfd, w)
 			#! (merr, sockfd) = connect {sin_port=8124,sin_addr=Just (fromString "127.0.0.1")} sockfd
 			| isError merr = (liftError merr, w)
-			#! (merr, sockfd) = recv 128 0 sockfd
+			#! (merr, sockfd) = recv 128 [] sockfd
 			| isError merr = (merr, w)
 			# (Ok msg) = merr
 			# (merr, w) = close sockfd w

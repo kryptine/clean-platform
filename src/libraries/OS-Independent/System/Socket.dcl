@@ -7,7 +7,9 @@ from System._Socket import :: Socket
 from System.OSError import :: MaybeOSError, :: OSError, :: OSErrorMessage, :: OSErrorCode
 
 :: SocketType = ST_Stream | ST_DGram
-instance toInt SocketType
+:: SendFlag = SendFlagOob | SendFlagDontRoute
+:: RecvFlag = RecvFlagOob | RecvFlagWaitAll | RecvFlagPeek
+instance toInt SocketType, SendFlag, RecvFlag
 
 class SocketAddress sa where
 	sa_length      :: !sa -> Int
@@ -16,16 +18,16 @@ class SocketAddress sa where
 	sa_domain      :: !sa -> Int
 	sa_null        :: sa
 
+
 /*
  * Register a socket with the given type
  *
  * @param Socket type
- * @param Socket protocol
  * @param environment
  * @return socket
  * @return new environment
  */
-socket :: !SocketType !Int !*env -> *(!MaybeOSError *(Socket sa), !*env) | SocketAddress sa
+socket :: !SocketType !*env -> *(!MaybeOSError *(Socket sa), !*env) | SocketAddress sa
 
 /*
  * Bind a socket to an address
@@ -84,7 +86,7 @@ connect :: !sa !*(Socket sa) -> *(!MaybeOSError (), !*Socket sa) | SocketAddress
  * @return error if something went wrong or the number of bytes sent otherwise
  * @return new socket
  */
-send :: !String !Int !*(Socket sa) -> *(!MaybeOSError Int, !*Socket sa)
+send :: !String ![SendFlag] !*(Socket sa) -> *(!MaybeOSError Int, !*Socket sa)
 
 /*
  * Receive data from a socket
@@ -94,7 +96,7 @@ send :: !String !Int !*(Socket sa) -> *(!MaybeOSError Int, !*Socket sa)
  * @return error if something went wrong or the data received otherwise
  * @return new socket
  */
-recv :: !Int !Int !*(Socket sa) -> *(!MaybeOSError String, !*Socket sa)
+recv :: !Int ![RecvFlag] !*(Socket sa) -> *(!MaybeOSError String, !*Socket sa)
 
 ntohs :: !Int -> Int
 htons :: !Int -> Int

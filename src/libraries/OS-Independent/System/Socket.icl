@@ -8,8 +8,17 @@ instance toInt SocketType where
 	toInt ST_Stream = SOCK_STREAM
 	toInt ST_DGram = SOCK_DGRAM
 
-socket :: !SocketType !Int !*env -> *(!MaybeOSError *(Socket sa), !*env) | SocketAddress sa
-socket a b c = 'System._Socket'.socket a b c
+instance toInt SendFlag where
+	toInt SendFlagOob = MSG_OOB
+	toInt SendFlagDontRoute = MSG_DONTROUTE
+
+instance toInt RecvFlag where
+	toInt RecvFlagOob = MSG_OOB
+	toInt RecvFlagWaitAll = MSG_WAITALL
+	toInt RecvFlagPeek = MSG_PEEK
+
+socket :: !SocketType !*env -> *(!MaybeOSError *(Socket sa), !*env) | SocketAddress sa
+socket a b = 'System._Socket'.socket a b
 
 bind :: !sa !*(Socket sa) -> *(!MaybeOSError (), !*Socket sa) | SocketAddress sa
 bind a b = 'System._Socket'.bind a b
@@ -26,10 +35,10 @@ close a b = 'System._Socket'.close a b
 connect :: !sa !*(Socket sa) -> *(!MaybeOSError (), !*Socket sa) | SocketAddress sa
 connect a b = 'System._Socket'.connect a b
 
-send :: !String !Int !*(Socket sa) -> *(!MaybeOSError Int, !*Socket sa)
+send :: !String ![SendFlag] !*(Socket sa) -> *(!MaybeOSError Int, !*Socket sa)
 send a b c = 'System._Socket'.send a b c
 
-recv :: !Int !Int !*(Socket sa) -> *(!MaybeOSError String, !*Socket sa)
+recv :: !Int ![RecvFlag] !*(Socket sa) -> *(!MaybeOSError String, !*Socket sa)
 recv a b c = 'System._Socket'.recv a b c
 
 ntohs :: !Int -> Int

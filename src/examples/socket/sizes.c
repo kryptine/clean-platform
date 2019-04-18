@@ -24,6 +24,12 @@ int main(void)
 	printf("SOCK_STREAM :== %lu\n", SOCK_STREAM);
 	printf("SOCK_DGRAM :== %lu\n", SOCK_DGRAM);
 
+	printf("MSG_DONTROUTE :== %lu\n", MSG_DONTROUTE);
+	printf("MSG_OOB :== %lu\n", MSG_OOB);
+
+	printf("MSG_PEEK :== %lu\n", MSG_PEEK);
+	printf("MSG_WAITALL :== %lu\n", MSG_WAITALL);
+
 	printf("\nsockaddr_in offsets:\n");
 	printf("sin_family: %lu\n", offsetof(struct sockaddr_in, sin_family));
 	printf("sin_port: %lu\n", offsetof(struct sockaddr_in, sin_port));
@@ -31,9 +37,11 @@ int main(void)
 	printf("in_addr offsets:\n");
 	printf("s_addr: %lu\n", offsetof(struct in_addr, s_addr));
 
+#ifdef linux
 	printf("\nsockaddr_un offsets:\n");
 	printf("sun_family: %lu\n", offsetof(struct sockaddr_un, sun_family));
 	printf("sun_path: %lu\n", offsetof(struct sockaddr_un, sun_path));
+#endif
 
 	printf("\nsockaddr_in6 offsets:\n");
 	printf("sin6_family: %lu\n",
@@ -46,6 +54,10 @@ int main(void)
 		offsetof(struct sockaddr_in6, sin6_scope_id));
 	printf("in6_addr offsets:\n");
 	printf("s6_addr: %lu\n", offsetof(struct in6_addr, s6_addr));
+
+#ifdef _WIN32
+	printf("sizeof(WSADATA): %lu\n", sizeof(WSADATA));
+#endif
 
 	return 0;
 }

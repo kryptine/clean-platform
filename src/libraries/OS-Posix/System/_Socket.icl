@@ -10,8 +10,8 @@ import System.Socket => qualified socket, bind, listen, accept, close, connect, 
 :: *Socket a :== Int
 
 socket :: !SocketType !Int !*env -> *(!MaybeOSError *(Socket sa), !*env) | SocketAddress sa
-socket type protocol w
-	# (sockfd, w) = socket` (sa_domain msa) (toInt type) protocol w
+socket type w
+	# (sockfd, w) = socket` (sa_domain msa) (toInt type) 0 w
 	# (fd, sockfd) = getFd sockfd
 	| fd == -1 = getLastOSError w
 	= (Ok (coerce sockfd msa), w)
@@ -95,8 +95,9 @@ where
 			ccall connect "IpI:I:A"
 		}
 
-send :: !String !Int !*(Socket sa) -> *(!MaybeOSError Int, !*Socket sa)
+send :: !String ![SendFlag] !*(Socket sa) -> *(!MaybeOSError Int, !*Socket sa)
 send data flags sockfd
+	# flags = foldr (bitor) 0 (map toInt flags)
 	# (fd, sockfd) = getFd sockfd
 	# (r, sockfd) = send` fd (packString data) (size data) flags sockfd
 	| r == -1 = getLastOSError sockfd
@@ -107,8 +108,9 @@ where
 			ccall send "IsII:I:A"
 		}
 
-recv :: !Int !Int !*(Socket sa) -> *(!MaybeOSError String, !*Socket sa)
+recv :: !Int ![RecvFlag] !*(Socket sa) -> *(!MaybeOSError String, !*Socket sa)
 recv length flags sockfd
+	# flags = foldr (bitor) 0 (map toInt flags)
 	# (p, sockfd) = mallocSt length sockfd
 	| p == 0 = getLastOSError sockfd
 	# (fd, sockfd) = getFd sockfd

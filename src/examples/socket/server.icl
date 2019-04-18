@@ -20,7 +20,7 @@ Start w
 			= case accept sockfd of
 				(Error e, sockfd) = (Error e, w)
 				(Ok (sock, addr), sockfd)
-					# (merr, sock) = send "Hello world!" 0 sock
+					# (merr, sock) = send "Hello world!" [] sock
 					| isError merr = (liftError merr, w)
 					# (merr, w) = close sock w
 					| isError merr = (merr, w)
