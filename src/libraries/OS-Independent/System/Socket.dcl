@@ -97,5 +97,22 @@ send :: !String ![SendFlag] !*(Socket sa) -> *(!MaybeOSError Int, !*Socket sa)
  */
 recv :: !Int ![RecvFlag] !*(Socket sa) -> *(!MaybeOSError String, !*Socket sa)
 
-ntohs :: !Int -> Int
-htons :: !Int -> Int
+/*
+ * Convert a short in network order to a short in host order
+ */
+networkToHostByteOrderShort :: !Int -> Int
+
+/*
+ * Convert a short in network order to a short in host order
+ */
+hostToNetworkByteOrderShort :: !Int -> Int
+
+/*
+ * Convert a long in network order to a long in host order
+ */
+networkToHostByteOrderLong :: !Int -> Int
+
+/*
+ * Convert a long in network order to a long in host order
+ */
+hostToNetworkByteOrderLong :: !Int -> Int

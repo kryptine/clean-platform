@@ -10,11 +10,11 @@ import Text.GenPrint
 instance SocketAddress SaInet where
 	sa_serialize sa p w
 		# p = writeInt2 p 0 (sa_domain sa)
-		# p = writeInt2 p 2 (htons sa.sin_port)
+		# p = writeInt2 p 2 (hostToNetworkByteOrderShort sa.sin_port)
 		# p = writeInt4 p 4 (maybe 0 toInt sa.sin_addr)
 		= (p, w)
 	sa_deserialize p
-		= Ok {sin_port=ntohs (readInt2Z p 2),sin_addr=Just (fromInt (readInt4Z p 4))}
+		= Ok {sin_port=networkToHostByteOrderShort (readInt2Z p 2),sin_addr=Just (fromInt (readInt4Z p 4))}
 	sa_length _ = 16
 	sa_domain _ = 2
 	sa_null = {sin_port=0, sin_addr=Nothing}

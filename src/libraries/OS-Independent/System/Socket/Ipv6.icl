@@ -11,7 +11,7 @@ from System._Socket import AF_INET6
 instance SocketAddress SaInet6 where
 	sa_serialize sa p w
 		# p = writeInt2 p 0 (sa_domain sa)
-		# p = writeInt2 p 2 (htons sa.sin6_port)
+		# p = writeInt2 p 2 (hostToNetworkByteOrderShort sa.sin6_port)
 		# p = writeInt4 p 4 (sa.sin6_flowinfo)
 		# p = writeCharArray (p+8) (pad16 (fromMaybe "::" sa.sin6_addr))
 		# p = writeInt4 p 24 (sa.sin6_scope_id)
@@ -19,7 +19,7 @@ instance SocketAddress SaInet6 where
 	where
 		pad16 s = s +++ {'\0'\\_<-[0..16-1-size s]}
 	sa_deserialize p = Ok
-		{ sin6_port     = ntohs (readInt2Z p 2)
+		{ sin6_port     = networkToHostByteOrderShort (readInt2Z p 2)
 		, sin6_flowinfo = readInt4Z p 4
 		, sin6_addr     = Just (derefCharArray (p+8) 16)
 		, sin6_scope_id = readInt4Z p 24

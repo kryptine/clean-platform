@@ -1,7 +1,7 @@
 implementation module System.Socket
 
 import StdEnv
-import System._Socket => qualified socket, bind, listen, accept, close, connect, send, recv, htons, ntohs
+import System._Socket => qualified socket, bind, listen, accept, close, connect, send, recv, hostToNetworkByteOrderLong, hostToNetworkByteOrderShort, networkToHostByteOrderShort, networkToHostByteOrderLong
 import System.OSError
 
 instance toInt SocketType where
@@ -41,8 +41,14 @@ send a b c = 'System._Socket'.send a b c
 recv :: !Int ![RecvFlag] !*(Socket sa) -> *(!MaybeOSError String, !*Socket sa)
 recv a b c = 'System._Socket'.recv a b c
 
-ntohs :: !Int -> Int
-ntohs a = 'System._Socket'.ntohs a
+networkToHostByteOrderShort :: !Int -> Int
+networkToHostByteOrderShort a = 'System._Socket'.networkToHostByteOrderShort a
 
-htons :: !Int -> Int
-htons a = 'System._Socket'.htons a
+hostToNetworkByteOrderShort :: !Int -> Int
+hostToNetworkByteOrderShort a = 'System._Socket'.hostToNetworkByteOrderShort a
+
+networkToHostByteOrderLong :: !Int -> Int
+networkToHostByteOrderLong a = 'System._Socket'.networkToHostByteOrderShort a
+
+hostToNetworkByteOrderLong :: !Int -> Int
+hostToNetworkByteOrderLong a = 'System._Socket'.hostToNetworkByteOrderLong a

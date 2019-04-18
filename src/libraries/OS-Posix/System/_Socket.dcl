@@ -32,5 +32,7 @@ connect :: !sa !*(Socket sa) -> *(!MaybeOSError (), !*Socket sa) | SocketAddress
 send :: !String ![SendFlag] !*(Socket sa) -> *(!MaybeOSError Int, !*Socket sa)
 recv :: !Int ![RecvFlag] !*(Socket sa) -> *(!MaybeOSError String, !*Socket sa)
 
-ntohs :: !Int -> Int
-htons :: !Int -> Int
+networkToHostByteOrderShort :: !Int -> Int
+hostToNetworkByteOrderShort :: !Int -> Int
+networkToHostByteOrderLong :: !Int -> Int
+hostToNetworkByteOrderLong :: !Int -> Int

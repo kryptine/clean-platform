@@ -3,7 +3,7 @@ implementation module System._Socket
 import Data.Error
 import StdEnv
 import System.OSError
-import System.Socket => qualified socket, bind, listen, accept, close, connect, send, recv, htons, ntohs
+import System.Socket => qualified socket, bind, listen, accept, close, connect, send, recv, networkToHostByteOrderLong, networkToHostByteOrderShort, hostToNetworkByteOrderLong, hostToNetworkByteOrderShort
 import System._Pointer
 import System._WinBase
 
@@ -281,6 +281,26 @@ htons x = code {
 ntohs :: !Int -> Int
 ntohs x = code {
 		ccall ntohs@4 "PI:I"
+	}
+
+networkToHostByteOrderShort :: !Int -> Int
+networkToHostByteOrderShort a = code {
+		ccall ntohs@4 "PI:I"
+	}
+
+hostToNetworkByteOrderShort :: !Int -> Int
+hostToNetworkByteOrderShort a = code {
+		ccall htons@4 "PI:I"
+	}
+
+networkToHostByteOrderLong :: !Int -> Int
+networkToHostByteOrderLong a = code {
+		ccall ntohl@4 "PI:I"
+	}
+
+hostToNetworkByteOrderLong :: !Int -> Int
+hostToNetworkByteOrderLong a = code {
+		ccall htonl@4 "PI:I"
 	}
 
 getFd :: !*(Socket sa) -> *(!Int, !*Socket sa)

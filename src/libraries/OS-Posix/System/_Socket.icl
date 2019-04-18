@@ -5,7 +5,7 @@ import Data.Error
 import System.OSError
 import System._Pointer
 import System._Posix
-import System.Socket => qualified socket, bind, listen, accept, close, connect, send, recv, htons, ntohs
+import System.Socket => qualified socket, bind, listen, accept, close, connect, send, recv, networkToHostByteOrderLong, networkToHostByteOrderShort, hostToNetworkByteOrderLong, hostToNetworkByteOrderShort
 
 :: *Socket a :== Int
 
@@ -137,14 +137,24 @@ where
 			ccall close "I:I"
 		}
 
-htons :: !Int -> Int
-htons x = code {
+networkToHostByteOrderShort :: !Int -> Int
+networkToHostByteOrderShort a = code {
+		ccall ntohs "I:I"
+	}
+
+hostToNetworkByteOrderShort :: !Int -> Int
+hostToNetworkByteOrderShort a = code {
 		ccall htons "I:I"
 	}
 
-ntohs :: !Int -> Int
-ntohs x = code {
-		ccall ntohs "I:I"
+networkToHostByteOrderLong :: !Int -> Int
+networkToHostByteOrderLong a = code {
+		ccall ntohl "I:I"
+	}
+
+hostToNetworkByteOrderLong :: !Int -> Int
+hostToNetworkByteOrderLong a = code {
+		ccall htonl "I:I"
 	}
 
 getFd :: !*(Socket sa) -> *(!Int, !*(Socket sa))
