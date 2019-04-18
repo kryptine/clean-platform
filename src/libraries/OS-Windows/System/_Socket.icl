@@ -118,13 +118,24 @@ where
 			ccall WSAGetLastError@0 "P:I:A"
 		}
 
-socket :: !SocketType !*env -> *(!MaybeOSError *(Socket sa), !*env) | SocketAddress sa
-socket type w
+WSAStartup :: !*env -> *(!MaybeOSError (), !*env)
+WSAStartup w
 	#! (p, w) = mallocSt 400 w
 	| p == 0 = getLastOSError w
-	#! (r, w) = WSAStartup (2 * 256 + 2) p w
+	#! (r, w) = WSAStartup` (2 * 256 + 2) p w
 	#! w = freeSt p w
 	| r <> 0 = getLastWSAError "WSAStartup" w
+	= (Ok (), w)
+where
+	WSAStartup` :: !Int !Pointer !*env -> *(!Int, !*env)
+	WSAStartup` _ _ _ = code {
+			ccall WSAStartup@8 "PIp:I:A"
+		}
+
+socket :: !SocketType !*env -> *(!MaybeOSError *(Socket sa), !*env) | SocketAddress sa
+socket type w
+	#! (merr, w) = WSAStartup w
+	| isError merr = (liftError merr, w)
 	#! (sockfd, w) = socket` (sa_domain msa) (toInt type) 0 w
 	#! (fd, sockfd) = getFd sockfd
 	| fd == -1 = getLastWSAError "socket" w
@@ -138,11 +149,6 @@ where
 	socket` :: !Int !Int !Int !*env -> *(!*Int, !*env)
 	socket` _ _ _ _ = code {
 			ccall socket@12 "PIII:I:A"
-		}
-		
-	WSAStartup :: !Int !Pointer !*env -> *(!Int, !*env)
-	WSAStartup _ _ _ = code {
-			ccall WSAStartup@8 "PIp:I:A"
 		}
 		
 mallocSt :: !Int !*env -> *(!Pointer, !*env)
@@ -202,7 +208,10 @@ accept sockfd
 			#! sockfd = freeSt p1 sockfd
 			#! sockfd = freeSt p2 sockfd
 			| isError merr = (Error (0, fromError merr), sockfd)
-			= (Ok (sock, fromOk merr), sockfd)
+			#! (Ok addr) = merr
+			#! (merr, sockfd) = WSAStartup sockfd
+			| isError merr = (liftError merr, sockfd)
+			= (Ok (sock, addr), sockfd)
 where
 	accept` :: !Int !Pointer !Int !*env -> *(!*Int, !*env)
 	accept` _ _ _ _ = code {
@@ -260,7 +269,8 @@ close :: !*(Socket sa) !*env -> *(!MaybeOSError (), !*env) | SocketAddress sa
 close sock w
 	# (r, w) = close` sock w
 	| r == -1 = getLastOSError w
-//	# w = WSACleanup w
+	# (r, w) = WSACleanup w
+	| r <> 0 = getLastWSAError "WSACleanup" w
 	= (Ok (), w)
 where
 	close` :: !Int !*env -> *(!Int, !*env)
@@ -268,9 +278,9 @@ where
 			ccall closesocket@4 "PI:I:A"
 		}
 		
-	WSACleanup :: !*env -> *env
+	WSACleanup :: !*env -> *(!Int, *env)
 	WSACleanup _ = code {
-			ccall WSACleanup@0 "P:V:A"
+			ccall WSACleanup@0 "P:I:A"
 		}
 
 htons :: !Int -> Int
