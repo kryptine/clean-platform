@@ -8,28 +8,28 @@ instance toInt SocketType where
 	toInt ST_Stream = SOCK_STREAM
 	toInt ST_DGram = SOCK_DGRAM
 
-socket :: !SocketType !Int !*e -> *(!MaybeOSError *(Socket sa), !*e) | SocketAddress sa
+socket :: !SocketType !Int !*env -> *(!MaybeOSError *(Socket sa), !*env) | SocketAddress sa
 socket a b c = 'System._Socket'.socket a b c
 
-bind :: !sa !*(Socket sa) -> *(!MaybeOSError (), !*(Socket sa)) | SocketAddress sa
+bind :: !sa !*(Socket sa) -> *(!MaybeOSError (), !*Socket sa) | SocketAddress sa
 bind a b = 'System._Socket'.bind a b
 
-listen :: !Int !*(Socket sa) -> *(!MaybeOSError (), !*(Socket sa)) | SocketAddress sa
+listen :: !Int !*(Socket sa) -> *(!MaybeOSError (), !*Socket sa) | SocketAddress sa
 listen a b = 'System._Socket'.listen a b
 
-accept :: !*(Socket sa) -> *(!MaybeOSError (!*(Socket sa), !sa), !*(Socket sa)) | SocketAddress sa
+accept :: !*(Socket sa) -> *(!MaybeOSError (!*Socket sa, !sa), !*(Socket sa)) | SocketAddress sa
 accept a = 'System._Socket'.accept a
 
-close :: !*(Socket sa) !*e -> *(!MaybeOSError (), !*e) | SocketAddress sa
+close :: !*(Socket sa) !*env -> *(!MaybeOSError (), !*env) | SocketAddress sa
 close a b = 'System._Socket'.close a b
 
-connect :: !sa !*(Socket sa) -> *(!MaybeOSError (), !*(Socket sa)) | SocketAddress sa
+connect :: !sa !*(Socket sa) -> *(!MaybeOSError (), !*Socket sa) | SocketAddress sa
 connect a b = 'System._Socket'.connect a b
 
-send :: !String !Int !*(Socket sa) -> *(!MaybeOSError Int, !*(Socket sa))
+send :: !String !Int !*(Socket sa) -> *(!MaybeOSError Int, !*Socket sa)
 send a b c = 'System._Socket'.send a b c
 
-recv :: !Int !Int !*(Socket sa) -> *(!MaybeOSError String, !*(Socket sa))
+recv :: !Int !Int !*(Socket sa) -> *(!MaybeOSError String, !*Socket sa)
 recv a b c = 'System._Socket'.recv a b c
 
 ntohs :: !Int -> Int
