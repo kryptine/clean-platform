@@ -5,8 +5,8 @@ import System._Socket => qualified socket, bind, listen, accept, close, connect,
 import System.OSError
 
 instance toInt SocketType where
-	toInt ST_Stream = SOCK_STREAM
-	toInt ST_DGram = SOCK_DGRAM
+	toInt SocketStream = SOCK_STREAM
+	toInt SocketDataGram = SOCK_DGRAM
 
 instance toInt SendFlag where
 	toInt SendFlagOob = MSG_OOB

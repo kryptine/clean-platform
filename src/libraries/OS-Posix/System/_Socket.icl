@@ -9,7 +9,7 @@ import System.Socket => qualified socket, bind, listen, accept, close, connect, 
 
 :: *Socket a :== Int
 
-socket :: !SocketType !Int !*env -> *(!MaybeOSError *(Socket sa), !*env) | SocketAddress sa
+socket :: !SocketType !*env -> *(!MaybeOSError *(Socket sa), !*env) | SocketAddress sa
 socket type w
 	# (sockfd, w) = socket` (sa_domain msa) (toInt type) 0 w
 	# (fd, sockfd) = getFd sockfd

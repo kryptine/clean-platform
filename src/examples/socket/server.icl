@@ -10,7 +10,7 @@ import System.Socket.Ipv4
 
 Start :: *World -> (MaybeOSError (), *World)
 Start w
-	= case socket ST_Stream 0 w of
+	= case socket ST_Stream w of
 		(Error e, w) = (Error e, w)
 		(Ok sockfd, w)
 			#! (merr, sockfd) = bind {sin_port=8124,sin_addr=Nothing} sockfd

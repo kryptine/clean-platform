@@ -9,7 +9,7 @@ import System.Socket.Ipv4
 
 Start :: *World -> (MaybeOSError String, *World)
 Start w
-	= case socket ST_Stream 0 w of
+	= case socket ST_Stream w of
 		(Error e, w) = (Error e, w)
 		(Ok sockfd, w)
 			#! (merr, sockfd) = connect {sin_port=8124,sin_addr=Just (fromString "127.0.0.1")} sockfd

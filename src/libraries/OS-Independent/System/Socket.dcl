@@ -6,7 +6,7 @@ from System._Pointer import :: Pointer(..)
 from System._Socket import :: Socket
 from System.OSError import :: MaybeOSError, :: OSError, :: OSErrorMessage, :: OSErrorCode
 
-:: SocketType = ST_Stream | ST_DGram
+:: SocketType = SocketStream | SocketDataGram
 :: SendFlag = SendFlagOob | SendFlagDontRoute
 :: RecvFlag = RecvFlagOob | RecvFlagWaitAll | RecvFlagPeek
 instance toInt SocketType, SendFlag, RecvFlag
@@ -18,11 +18,10 @@ class SocketAddress sa where
 	sa_domain      :: !sa -> Int
 	sa_null        :: sa
 
-
 /*
  * Register a socket with the given type
  *
- * @param Socket type
+ * @param type of communication semantics
  * @param environment
  * @return socket
  * @return new environment
