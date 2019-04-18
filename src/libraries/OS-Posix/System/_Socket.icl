@@ -11,8 +11,8 @@ import System.Socket => qualified socket, bind, listen, accept, close, connect, 
 
 socket :: !SocketType !Int !*e -> *(!MaybeOSError *(Socket sa), !*e) | SocketAddress sa
 socket type protocol w
-	#! (sockfd, w) = socket` (sa_domain msa) (toInt type) protocol w
-	#! (fd, sockfd) = getFd sockfd
+	# (sockfd, w) = socket` (sa_domain msa) (toInt type) protocol w
+	# (fd, sockfd) = getFd sockfd
 	| fd == -1 = getLastOSError w
 	= (Ok (coerce sockfd msa), w)
 where
@@ -28,14 +28,14 @@ where
 
 bind :: !sa !*(Socket sa) -> *(!MaybeOSError (), !*(Socket sa)) | SocketAddress sa
 bind addr sockfd
-	#! (p, sockfd) = mallocSt (sa_length addr) sockfd
+	# (p, sockfd) = mallocSt (sa_length addr) sockfd
 	| p == 0 = getLastOSError sockfd
-	#! (p, sockfd) = sa_serialize addr p sockfd
-	#! len = sa_length addr
-	#! (fd, sockfd) = getFd sockfd
-	#! (r, sockfd) = bind` fd p len sockfd
+	# (p, sockfd) = sa_serialize addr p sockfd
+	# len = sa_length addr
+	# (fd, sockfd) = getFd sockfd
+	# (r, sockfd) = bind` fd p len sockfd
 	| r == -1 = getLastOSError sockfd
-	#! sockfd = freeSt p sockfd
+	# sockfd = freeSt p sockfd
 	= (Ok (), sockfd)
 where
 	bind` :: !Int !Pointer !Int !*e -> *(!Int, !*e)
@@ -76,12 +76,12 @@ where
 
 connect :: !sa !*(Socket sa) -> *(!MaybeOSError (), !*(Socket sa)) | SocketAddress sa
 connect addr sockfd
-	#! (p, sockfd) = mallocSt (sa_length addr) sockfd
+	# (p, sockfd) = mallocSt (sa_length addr) sockfd
 	| p == 0 = getLastOSError sockfd
-	#! (p, sockfd) = sa_serialize addr p sockfd
-	#! (fd, sockfd) = getFd sockfd
-	#! (r, sockfd) = connect` fd p (sa_length addr) sockfd
-	#! sockfd = freeSt p sockfd
+	# (p, sockfd) = sa_serialize addr p sockfd
+	# (fd, sockfd) = getFd sockfd
+	# (r, sockfd) = connect` fd p (sa_length addr) sockfd
+	# sockfd = freeSt p sockfd
 	| r == -1 = getLastOSError sockfd
 	= (Ok (), sockfd)
 where
@@ -92,8 +92,8 @@ where
 
 send :: !String !Int !*(Socket sa) -> *(!MaybeOSError Int, !*(Socket sa))
 send data flags sockfd
-	#! (fd, sockfd) = getFd sockfd
-	#! (r, sockfd) = send` fd (packString data) (size data) flags sockfd
+	# (fd, sockfd) = getFd sockfd
+	# (r, sockfd) = send` fd (packString data) (size data) flags sockfd
 	| r == -1 = getLastOSError sockfd
 	= (Ok r, sockfd)
 where
@@ -104,12 +104,12 @@ where
 
 recv :: !Int !Int !*(Socket sa) -> *(!MaybeOSError String, !*(Socket sa))
 recv length flags sockfd
-	#! (p, sockfd) = mallocSt length sockfd
-	#! (fd, sockfd) = getFd sockfd
-	#! (r, sockfd) = recv` fd p length flags sockfd
+	# (p, sockfd) = mallocSt length sockfd
+	# (fd, sockfd) = getFd sockfd
+	# (r, sockfd) = recv` fd p length flags sockfd
 	| r == -1 = getLastOSError sockfd
-	#! (s, p) = readP derefString p
-	#! sockfd = freeSt p sockfd
+	# (s, p) = readP derefString p
+	# sockfd = freeSt p sockfd
 	= (Ok s, sockfd)
 	
 where

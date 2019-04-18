@@ -117,7 +117,7 @@ where
 	WSAGetLastError` _ = code {
 			ccall WSAGetLastError@0 "P:I:A"
 		}
-import StdDebug
+
 socket :: !SocketType !Int !*e -> *(!MaybeOSError *(Socket sa), !*e) | SocketAddress sa
 socket type protocol w
 	#! (p, w) = mallocSt 2048 w
