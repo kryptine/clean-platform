@@ -196,7 +196,7 @@ accept sockfd
 	# (p1, sockfd) = mallocSt 64 sockfd
 	| p1 == 0 = getLastOSError sockfd
 	# (p2, sockfd) = mallocSt 8 sockfd
-	| p2 == 0 = getLastOSError (freeSt p2 sockfd)
+	| p2 == 0 = getLastOSError (freeSt p1 sockfd)
 	# p2 = writeInt p2 0 64
 	= case accept` fd p1 p2 sockfd of
 		(-1, sockfd)
