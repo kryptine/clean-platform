@@ -33,7 +33,7 @@ socket :: !SocketType !*env -> *(!MaybeOSError *(Socket sa), !*env) | SocketAddr
  *
  * @param address
  * @param socket
- * @return error is something went wrong
+ * @return error if something went wrong
  * @return new socket
  */
 bind :: !sa !*(Socket sa) -> *(!MaybeOSError (), !*Socket sa) | SocketAddress sa
@@ -43,7 +43,7 @@ bind :: !sa !*(Socket sa) -> *(!MaybeOSError (), !*Socket sa) | SocketAddress sa
  *
  * @param maximum number of backlog connections
  * @param socket
- * @return error is something went wrong
+ * @return error if something went wrong
  * @return new socket
  */
 listen :: !Int !*(Socket sa) -> *(!MaybeOSError (), !*Socket sa) | SocketAddress sa
@@ -52,7 +52,7 @@ listen :: !Int !*(Socket sa) -> *(!MaybeOSError (), !*Socket sa) | SocketAddress
  * Accept a connection from a listening socket
  *
  * @param socket
- * @return error is something went wrong or a connected socket with its address if it went okay
+ * @return error if something went wrong or a connected socket with its address if it went okay
  * @return new socket
  */
 accept :: !*(Socket sa) -> *(!MaybeOSError (!*Socket sa, !sa), !*Socket sa) | SocketAddress sa
