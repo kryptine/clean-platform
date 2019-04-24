@@ -18,3 +18,4 @@ test-stable:
   image: "camilstaps/clean:nightly"
   script:
     - make -C tests/linux64 run
+  allow_failure: true

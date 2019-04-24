@@ -176,7 +176,12 @@ import qualified System.TTS
 import qualified System.Time
 import qualified System.Time.GenJSON
 import qualified System.Signal
+import qualified System.Socket
+import qualified System.Socket.Ipv4
+import qualified System.Socket.Ipv6
+import qualified System.Socket.Unix
 import qualified System._Signal
+import qualified System._Socket
 import qualified System._Directory
 import qualified System._FilePath
 import qualified System._Finalized
