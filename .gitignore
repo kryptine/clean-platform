@@ -2,3 +2,11 @@ Clean System Files
 _Tests
 _Tests.*
 *.o
+*-sapl
+*-www
+*-data
+*.prj
+*.prp
+* Time Profile.pcl
+*.exe
+a.out
