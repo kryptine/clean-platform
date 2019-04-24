@@ -143,7 +143,7 @@ socket type w
 where
 	msa = sa_null
 
-	coerce :: *(Socket sa) sa -> *Socket sa | SocketAddress sa
+	coerce :: *(Socket sa) sa -> *Socket sa
 	coerce x y = x
 
 	socket` :: !Int !Int !Int !*env -> *(!*Int, !*env)
