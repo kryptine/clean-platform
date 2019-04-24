@@ -5,7 +5,7 @@ from StdOverloaded import class toString
 from System.Socket import class SocketAddress
 
 :: UnixSocketAddress =
-	{ sun_path :: !FilePath
+	{ unix_socket_path :: !FilePath
 	}
 instance SocketAddress UnixSocketAddress
 instance toString UnixSocketAddress

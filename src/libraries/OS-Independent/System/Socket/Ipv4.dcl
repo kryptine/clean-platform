@@ -6,8 +6,8 @@ from StdMaybe import :: Maybe
 from System.Socket import class SocketAddress
 
 :: Ipv4SocketAddress =
-	{ sin_port :: !Int
-	, sin_addr :: !Maybe IPAddress
+	{ ipv4_socket_port :: !Int
+	, ipv4_socket_addr :: !Maybe IPAddress
 	}
 instance SocketAddress Ipv4SocketAddress
 instance toString Ipv4SocketAddress

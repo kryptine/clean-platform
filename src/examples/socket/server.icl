@@ -13,7 +13,7 @@ Start w
 	= case socket SocketStream w of
 		(Error e, w) = (Error e, w)
 		(Ok sockfd, w)
-			#! (merr, sockfd) = bind {sin_port=8124,sin_addr=Nothing} sockfd
+			#! (merr, sockfd) = bind {ipv4_socket_port=8124,ipv4_socket_addr=Nothing} sockfd
 			| isError merr = (merr, w)
 			#! (merr, sockfd) = listen 3 sockfd
 			| isError merr = (merr, w)
