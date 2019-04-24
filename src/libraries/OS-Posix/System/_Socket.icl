@@ -157,7 +157,7 @@ hostToNetworkByteOrderLong a = code {
 		ccall htonl "I:I"
 	}
 
-getFd :: !*(Socket sa) -> *(!Int, !*(Socket sa))
+getFd :: !*(Socket sa) -> *(!Int, !*Socket sa)
 getFd s = code {
 		push_b 0
 	}
