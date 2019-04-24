@@ -4,8 +4,8 @@ from System.FilePath import :: FilePath(..)
 from StdOverloaded import class toString
 from System.Socket import class SocketAddress
 
-:: SaUnix =
+:: UnixSocketAddress =
 	{ sun_path :: !FilePath
 	}
-instance SocketAddress SaUnix
-instance toString SaUnix
+instance SocketAddress UnixSocketAddress
+instance toString UnixSocketAddress

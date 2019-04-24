@@ -7,7 +7,7 @@ import System.Socket
 import System._Pointer
 from System._Socket import AF_UNIX
 
-instance SocketAddress SaUnix where
+instance SocketAddress UnixSocketAddress where
 	sa_serialize sa p w
 		# p = writeInt2 p 0 (sa_domain sa)
 		# p = writeCharArray (p+2) (packString sa.sun_path)
@@ -18,4 +18,4 @@ instance SocketAddress SaUnix where
 	sa_domain _ = AF_UNIX
 	sa_null = {sun_path="/"}
 
-instance toString SaUnix where toString s = s.sun_path
+instance toString UnixSocketAddress where toString s = s.sun_path

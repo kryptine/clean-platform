@@ -5,9 +5,9 @@ from Network.IP import :: IPAddress
 from StdMaybe import :: Maybe
 from System.Socket import class SocketAddress
 
-:: SaInet =
+:: Ipv4SocketAddress =
 	{ sin_port :: !Int
 	, sin_addr :: !Maybe IPAddress
 	}
-instance SocketAddress SaInet
-instance toString SaInet
+instance SocketAddress Ipv4SocketAddress
+instance toString Ipv4SocketAddress

@@ -7,7 +7,7 @@ import System.Socket
 import System._Pointer
 import Text.GenPrint
 
-instance SocketAddress SaInet where
+instance SocketAddress Ipv4SocketAddress where
 	sa_serialize sa p w
 		# p = writeInt2 p 0 (sa_domain sa)
 		# p = writeInt2 p 2 (hostToNetworkByteOrderShort sa.sin_port)
@@ -20,5 +20,5 @@ instance SocketAddress SaInet where
 	sa_null = {sin_port=0, sin_addr=Nothing}
 
 gPrint{|IPAddress|} a s = gPrint{|*|} (toString a) s
-derive gPrint SaInet, Maybe
-instance toString SaInet where toString s = printToString s
+derive gPrint Ipv4SocketAddress, Maybe
+instance toString Ipv4SocketAddress where toString s = printToString s
