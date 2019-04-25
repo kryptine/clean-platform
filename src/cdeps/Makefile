@@ -1,5 +1,5 @@
 CC=gcc
-OBJS:=systemsignal.o
+OBJS:=$(wildcard *.c)
 all: $(OBJS)
 install: $(OBJS)
 	mkdir -p ../libraries/OS-Independent/Clean\ System\ Files/

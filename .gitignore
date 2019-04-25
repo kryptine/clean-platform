@@ -5,8 +5,3 @@ _Tests.*
 *-sapl
 *-www
 *-data
-*.prj
-*.prp
-* Time Profile.pcl
-*.exe
-a.out
