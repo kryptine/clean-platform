@@ -14,11 +14,13 @@ getDevices :: !*World -> *(MaybeOSError [String], !*World)
 getDevices w
 	# (ph, w) = getProcessHeap w
 	# (ptr, w) = heapAlloc ph 0 40960 w
+	| ptr == 0 = getLastOSError w
 	# (ret, w) = realQDD 0 ptr 40960 w
 	| ret == 0
-		= getLastError w
+		= getLastOSError w
 	#! res = derefCharArray ptr ret
 	# (ok, w) = heapFree ph 0 ptr w
+	| not ok = getLastOSError w
 	= (Ok (split "\0" res), w)
 
 realQDD :: !Pointer !Pointer !Int !*env -> *(!Int, !*env)
