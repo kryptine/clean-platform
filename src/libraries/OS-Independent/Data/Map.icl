@@ -557,10 +557,10 @@ union t1 Tip  = t1
 union t1 t2 = hedgeUnion Nothing Nothing t1 t2
 
 unions :: ![Map k a] -> Map k a | < k
-unions ts = foldlStrict union newMap ts
+unions ts = foldl union newMap ts
 
 unionsWith :: !(a a -> a) ![Map k a] -> Map k a | < k
-unionsWith f ts = foldlStrict (unionWith f) newMap ts
+unionsWith f ts = foldl (unionWith f) newMap ts
 
 unionWith :: !(a a -> a) !(Map k a) !(Map k a) -> Map k a | < k
 unionWith f m1 m2 = unionWithKey (appUnion f) m1 m2
@@ -1088,9 +1088,9 @@ foldr` f z` (Bin _ _ x l r) = foldr` f (f x (foldr` f z` r)) l
 //
 // > let f len a = len + (length a)
 // > foldl f 0 (fromList [(5,"a"), (3,"bbb")]) == 4
-foldl :: !(a b -> a) !a !(Map k b) -> a
+/*foldl :: !(a b -> a) !a !(Map k b) -> a
 foldl f z` Tip             = z`
-foldl f z` (Bin _ _ x l r) = foldl f (f (foldl f z` l) x) r
+foldl f z` (Bin _ _ x l r) = foldl f (f (foldl f z` l) x) r*/
 
 // | /O(n)/. A strict version of 'foldl`. Each application of the operator is
 // evaluated before using the result in the next application. This
@@ -1200,7 +1200,7 @@ fromList [(kx0, x0) : xs0]
     not_ordered kx [(ky,_) : _] = kx >= ky
 
     fromList` :: !(Map a b) !u:[v:(!a, !b)] -> Map a b | == a & < a, [u <= v]
-    fromList` t0 xs = foldlStrict ins t0 xs
+    fromList` t0 xs = foldl ins t0 xs
       where ins t (k,x) = put k x t
 
     go :: !Int !(Map a b) !u:[v:(!a, !b)] -> Map a b | == a & < a, [u <= v]
@@ -1244,7 +1244,7 @@ fromListWith f xs :== fromListWithKey (\_ x y -> f x y) xs
 // > fromListWithKey f [] == newMap
 
 fromListWithKey :: !(k a a -> a) ![(!k, !a)] -> Map k a | < k
-fromListWithKey f xs = foldlStrict (ins f) newMap xs
+fromListWithKey f xs = foldl (ins f) newMap xs
   where
   ins :: !(k a a -> a) !(Map k a) !(!k, !a) -> Map k a | < k
   ins f t (k, x) = putWithKey f k x t
@@ -1962,12 +1962,6 @@ validmapSize t
   realmapSize (Bin sz _ _ l r) = case (realmapSize l, realmapSize r) of
                                    (Just n,Just m)  | n+m+1 == sz  -> Just sz
                                    _                               -> Nothing
-
-foldlStrict :: !(a b -> a) !a ![b] -> a
-foldlStrict f acc [] = acc
-foldlStrict f acc [x:xs]
-  #! z` = f acc x
-  = foldlStrict f z` xs
 
 // | /O(1)/.  Decompose a map into pieces based on the structure of the underlying
 // tree.  This function is useful for consuming a map in parallel.
