@@ -438,8 +438,6 @@ union :: !(Map k a) !(Map k a) -> Map k a | < k
 mergeWithKey :: !(k a b -> Maybe c) !((Map k a) -> Map k c) !((Map k b) -> Map k c)
              !(Map k a) !(Map k b) -> Map k c | < k
 
-foldlStrict :: !(a b -> a) !a ![b] -> a
-
 /**
  * Removes the values at given key positions. The mapping itself can be spine unique.
  *
