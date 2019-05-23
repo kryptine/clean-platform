@@ -38,8 +38,9 @@ import Graphics.Scalable.Internal.Types
   | LineMarkerAttr` !(LineMarkerAttr m)
   | MaskAttr`       !(Image` m)
   | HandlerAttr`    !(ImgEventhandler m)
-:: ImgTables m
-  = { imgEventhandlers :: !ImgEventhandlers m
+:: ImgTables //m
+//= { imgEventhandlers :: !ImgEventhandlers m
+  = { imgEventhandlers :: !ImgEventhandlers`
     , imgNewFonts      :: !ImgFonts
     , imgNewTexts      :: !ImgTexts
     , imgMasks         :: !ImgMasks
@@ -58,7 +59,7 @@ import Graphics.Scalable.Internal.Types
 :: FontSpans          :== Map FontDef FontDescent                         // of each font, the font descent
 :: ImgFonts           :== Set FontDef                                     // the collection of fonts used in the image for which no metrics are available
 :: TextSpans          :== Map FontDef (Map String TextSpan)               // of each font, of each text of that font, the width
-:: ImgEventhandlers m :== Map ImgTagNo [(ImgNodePath,ImgEventhandler m)]  // the event handlers of the image identified by the id (once registered, an event handler can not be overruled)
+//:: ImgEventhandlers m :== Map ImgTagNo [(ImgNodePath,ImgEventhandler m)]  // the event handlers of the image identified by the id (once registered, an event handler can not be overruled)
 :: ImgEventhandlers`  :== Map ImgTagNo [(ImgNodePath,ImgEventhandler`)]   // the defunctionalized version of ImgEventhandlers
 :: ImgTexts           :== Map FontDef (Set String)                        // of each font, the collection of texts
 :: ImgMasks           :== Map ImgTagNo Img                                // of each mask, the mask-image (associate the id with (MaskImg id))
@@ -159,11 +160,11 @@ defaultLineMarkers :: LineMarkers
   = { n :: !Span, e :: !Span, s :: !Span, w :: !Span }
 defaultMargins`     :: Margins`
 
-toImg :: !(Image` m) !ImgNodePath !FontSpans !TextSpans !(ImgTables m) -> (!Img,!ImgTables m)
+toImg :: !(Image` m) !ImgNodePath !FontSpans !TextSpans !(ImgTables /*m*/) -> (!Img,!ImgTables /*m*/)
 
 getImgEventhandler :: !(Image` m) !ImgNodePath -> Maybe (ImgEventhandler m)
 
-defuncImgEventhandlers :: !(ImgEventhandlers m) -> ImgEventhandlers`
+//defuncImgEventhandlers :: !(ImgEventhandlers m) -> ImgEventhandlers`
 
 :: SpanResolveError :== String
 
