@@ -24,12 +24,12 @@ from   Text.GenJSON import generic JSONEncode, generic JSONDecode, :: JSONNode
   | PathXSpan   !ImageTag                  // (PathXSpan t) is x-span of path element tagged with t
   | PathYSpan   !ImageTag                  // (PathYSpan t) is y-span of path element tagged with t
 :: FontDef`
-  = { fontfamily`  :: !String
-    , fontysize`   :: !Real
-    , fontstretch` :: !String
-    , fontstyle`   :: !String
-    , fontvariant` :: !String
-    , fontweight`  :: !String
+  = { fontfamily`  :: !String              // font family name
+    , fontysize`   :: !Real                // font size as span (px -)
+    , fontstretch` :: !String              // default value: "normal"
+    , fontstyle`   :: !String              // default value: "normal"
+    , fontvariant` :: !String              // default value: "normal"
+    , fontweight`  :: !String              // default value: "normal"
     }
 
 class (*.) infixl 7 a :: !a !n -> Span | toReal n
