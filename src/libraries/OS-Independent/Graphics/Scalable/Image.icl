@@ -165,4 +165,4 @@ tag t image = Tag` t image
 tagWithSrc :: !*TagSource !(Image m) -> *(!(!Image m, !ImageTag), !*TagSource)
 tagWithSrc [(nut, t) : tsrc] image
   = ((Tag` t image, nut), tsrc)
-tagWithSrc _ _ = abort "empty TagSource in tagWithSrc\n"
+tagWithSrc _ _ = abort "empty TagSource in tagWithSrc.\n"
