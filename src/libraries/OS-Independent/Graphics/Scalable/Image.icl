@@ -1,6 +1,5 @@
 implementation module Graphics.Scalable.Image
 
-from StdList      import repeat
 import StdMisc
 from Data.Maybe   import :: Maybe (..), instance Functor Maybe, maybeToList
 from Data.Functor import class Functor (..)
@@ -78,7 +77,7 @@ overlay :: ![XYAlign] ![ImageOffset] ![Image m] !(Host m) -> Image m
 overlay aligns offsets images host = Overlay` aligns offsets images (toHost` host)
 
 collage :: ![ImageOffset] ![Image m] !(Host m) -> Image m
-collage offsets images host = Overlay` (repeat (AtLeft,AtTop)) offsets images (toHost` host)
+collage offsets images host = Overlay` [] offsets images (toHost` host)
 
 beside :: ![YAlign] ![Span] !(Maybe Span) ![ImageOffset] ![Image m] !(Host m) -> Image m
 beside ylayouts column_widths row_height offsets imgs host
