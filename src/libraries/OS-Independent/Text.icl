@@ -1,5 +1,6 @@
 implementation module Text
 
+import qualified StdArray
 import StdOverloaded, StdString, StdArray, StdChar, StdInt, StdBool, StdClass, StdList
 import Data.List
 
@@ -9,16 +10,15 @@ instance Text String
 	textSize s = size s	
 
 	concat :: ![String] -> String
-	concat xs = concat` xs (createArray (foldl (\s a -> s+size a) 0 xs) '\0') 0
+	concat xs = concat` xs ('StdArray'._createArray (foldl (\s a -> s+size a) 0 xs)) 0
 		where
         concat` :: ![String] !*String !Int -> *String
 		concat` []     dst _		= dst
-		concat` [x:xs] dst offset	= concat` xs (copyChars offset 0 (size x) x dst) (offset + size x)
+		concat` [x:xs] dst offset	= concat` xs (copyChars offset (size x-1) x dst) (offset + size x)
 
-		copyChars :: !Int !Int !Int !String !*String -> *String
-		copyChars offset i num src dst
-		| i == num		= dst
-		| otherwise		= copyChars offset (inc i) num src {dst & [offset + i] = src.[i]}
+		copyChars :: !Int !Int !String !*String -> *String
+		copyChars _ -1 _ dst = dst
+		copyChars offset i src dst = copyChars offset (i-1) src {dst & [offset+i]=src.[i]}
 
 	split :: !String !String -> [String]
 	split sep s = splitAfter 0 (size s-1) sep s
