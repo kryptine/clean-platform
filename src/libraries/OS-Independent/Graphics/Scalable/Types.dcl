@@ -54,12 +54,13 @@ instance == LineMarkerPos
 :: YAlign            = AtTop  | AtMiddleY | AtBottom
 :: XYAlign         :== (!XAlign, !YAlign)
 
-:: OnClickAttr     m = { onclick     :: !(Int m -> m), local :: !Bool }
-:: OnMouseDownAttr m = { onmousedown :: !(m -> m), local :: !Bool }
-:: OnMouseUpAttr   m = { onmouseup   :: !(m -> m), local :: !Bool }
-:: OnMouseOverAttr m = { onmouseover :: !(m -> m), local :: !Bool }
-:: OnMouseMoveAttr m = { onmousemove :: !(m -> m), local :: !Bool }
-:: OnMouseOutAttr  m = { onmouseout  :: !(m -> m), local :: !Bool }
+:: OnClickAttr     m = { onclick     :: !(m -> m),     local :: !Bool }   // handle single mouse click, without delay
+:: OnNClickAttr    m = { onNclick    :: !(Int m -> m), local :: !Bool }   // handle multiple mouse clicks, this comes with a brief (client dependent) delay
+:: OnMouseDownAttr m = { onmousedown :: !(m -> m),     local :: !Bool }   // handle mouse down event
+:: OnMouseUpAttr   m = { onmouseup   :: !(m -> m),     local :: !Bool }   // handle mouse up event
+:: OnMouseOverAttr m = { onmouseover :: !(m -> m),     local :: !Bool }   // handle mouse over event (move into associated image)
+:: OnMouseMoveAttr m = { onmousemove :: !(m -> m),     local :: !Bool }   // handle mouse move event (move inside associated image)
+:: OnMouseOutAttr  m = { onmouseout  :: !(m -> m),     local :: !Bool }   // handle mouse out event (move away from associated image)
 :: DraggableAttr   m = { draggable   :: !(SVGDragFun m) }
 :: SVGDragFun    m :== (Set ImageTag) (Real,Real) m -> m     // \tags (x,y) model: tags is the set of ImageTag-s associated with the 'dragged-on' image, (x,y) the location within that image
 :: RGB               = { r :: !Int, g :: !Int, b :: !Int }

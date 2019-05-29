@@ -70,6 +70,7 @@ import Graphics.Scalable.Internal.Types
 :: TextSpan           :== Real
 :: ImgEventhandler m
   = ImgEventhandlerOnClickAttr     !(OnClickAttr     m)
+  | ImgEventhandlerOnNClickAttr    !(OnNClickAttr    m)
   | ImgEventhandlerOnMouseDownAttr !(OnMouseDownAttr m)
   | ImgEventhandlerOnMouseUpAttr   !(OnMouseUpAttr   m)
   | ImgEventhandlerOnMouseOverAttr !(OnMouseOverAttr m)
@@ -80,12 +81,14 @@ import Graphics.Scalable.Internal.Types
   = { handler :: !DefuncImgEventhandler`, local :: !Bool }
 :: DefuncImgEventhandler`
   = ImgEventhandlerOnClickAttr`
+  | ImgEventhandlerOnNClickAttr`
   | ImgEventhandlerOnMouseDownAttr`
   | ImgEventhandlerOnMouseUpAttr`
   | ImgEventhandlerOnMouseOverAttr`
   | ImgEventhandlerOnMouseMoveAttr`
   | ImgEventhandlerOnMouseOutAttr`
   | ImgEventhandlerDraggableAttr`
+instance == DefuncImgEventhandler`
 :: ImgPath
   = { pathPoints   :: ![ImageOffset]                                      // the connecting points of the path
     , pathSpan     :: !ImageSpan                                          // the span of the path (also stored in imgSpans after resolving span-expressions)

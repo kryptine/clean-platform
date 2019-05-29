@@ -268,7 +268,7 @@ tuneIf         :: !Bool !(Image m) !(attr m) -> Image m | tuneImage attr
 
 instance tuneImage NoAttr, DashAttr, FillAttr, LineEndMarker, LineMidMarker, LineStartMarker, MaskAttr, OpacityAttr, 
                    StrokeAttr, StrokeWidthAttr, XRadiusAttr, YRadiusAttr, 
-                   OnClickAttr, OnMouseDownAttr, OnMouseUpAttr, OnMouseOverAttr, OnMouseMoveAttr, OnMouseOutAttr, DraggableAttr
+                   OnClickAttr, OnNClickAttr, OnMouseDownAttr, OnMouseUpAttr, OnMouseOverAttr, OnMouseMoveAttr, OnMouseOutAttr, DraggableAttr
 
 class margin a where margin :: !a !(Image m) -> Image m
 

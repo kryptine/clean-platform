@@ -138,6 +138,7 @@ instance tuneImage YRadiusAttr     where tuneImage image attr = Attr` (BasicImag
 
 instance tuneImage DraggableAttr   where tuneImage image attr = Attr` (HandlerAttr` (ImgEventhandlerDraggableAttr   attr)) image
 instance tuneImage OnClickAttr     where tuneImage image attr = Attr` (HandlerAttr` (ImgEventhandlerOnClickAttr     attr)) image
+instance tuneImage OnNClickAttr    where tuneImage image attr = Attr` (HandlerAttr` (ImgEventhandlerOnNClickAttr    attr)) image
 instance tuneImage OnMouseDownAttr where tuneImage image attr = Attr` (HandlerAttr` (ImgEventhandlerOnMouseDownAttr attr)) image
 instance tuneImage OnMouseMoveAttr where tuneImage image attr = Attr` (HandlerAttr` (ImgEventhandlerOnMouseMoveAttr attr)) image
 instance tuneImage OnMouseOutAttr  where tuneImage image attr = Attr` (HandlerAttr` (ImgEventhandlerOnMouseOutAttr  attr)) image

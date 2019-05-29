@@ -137,6 +137,7 @@ imgAttrNode _                               = Nothing
 
 defunc :: !(ImgEventhandler m) -> ImgEventhandler`
 defunc (ImgEventhandlerOnClickAttr     {OnClickAttr     | local}) = {ImgEventhandler` | handler = ImgEventhandlerOnClickAttr`,     local=local}
+defunc (ImgEventhandlerOnNClickAttr    {OnNClickAttr    | local}) = {ImgEventhandler` | handler = ImgEventhandlerOnNClickAttr`,    local=local}
 defunc (ImgEventhandlerOnMouseDownAttr {OnMouseDownAttr | local}) = {ImgEventhandler` | handler = ImgEventhandlerOnMouseDownAttr`, local=local}
 defunc (ImgEventhandlerOnMouseUpAttr   {OnMouseUpAttr   | local}) = {ImgEventhandler` | handler = ImgEventhandlerOnMouseUpAttr`,   local=local}
 defunc (ImgEventhandlerOnMouseOverAttr {OnMouseOverAttr | local}) = {ImgEventhandler` | handler = ImgEventhandlerOnMouseOverAttr`, local=local}
@@ -630,6 +631,16 @@ where
 	add_new_eventhandler p h (Just hs)
 	| any ((match_eventhandler h) o snd) hs = Just hs
 	| otherwise                             = Just [(p,h):hs]
+	where
+		match_eventhandler :: !ImgEventhandler` !ImgEventhandler` -> Bool
+		match_eventhandler new present
+	//	if onclick or onNclick already present, then new onclick / onNclick attributes are ignored (innermost 'wins')
+		| present` == ImgEventhandlerOnClickAttr` || present` == ImgEventhandlerOnNClickAttr`
+											= new` == ImgEventhandlerOnClickAttr` || new` == ImgEventhandlerOnNClickAttr`
+		| otherwise							= new` == present`
+		where
+			new`							= new.ImgEventhandler`.handler
+			present`						= present.ImgEventhandler`.handler
 
 defaultLineMarkers :: LineMarkers
 defaultLineMarkers = {LineMarkers | lineStart = Nothing, lineMid = Nothing, lineEnd = Nothing}
@@ -649,19 +660,18 @@ ImgEventhandlerConsName (ImgEventhandlerOnMouseOutAttr  _) = "ImgEventhandlerOnM
 ImgEventhandlerConsName (ImgEventhandlerDraggableAttr   _) = "ImgEventhandlerDraggableAttr"
 
 ImgEventhandler`ConsName :: !DefuncImgEventhandler` -> String
-ImgEventhandler`ConsName ImgEventhandlerOnClickAttr`       = "ImgEventhandlerOnClickAttr"
-ImgEventhandler`ConsName ImgEventhandlerOnMouseDownAttr`   = "ImgEventhandlerOnMouseDownAttr"
-ImgEventhandler`ConsName ImgEventhandlerOnMouseUpAttr`     = "ImgEventhandlerOnMouseUpAttr"
-ImgEventhandler`ConsName ImgEventhandlerOnMouseOverAttr`   = "ImgEventhandlerOnMouseOverAttr"
-ImgEventhandler`ConsName ImgEventhandlerOnMouseMoveAttr`   = "ImgEventhandlerOnMouseMoveAttr"
-ImgEventhandler`ConsName ImgEventhandlerOnMouseOutAttr`    = "ImgEventhandlerOnMouseOutAttr"
-ImgEventhandler`ConsName ImgEventhandlerDraggableAttr`     = "ImgEventhandlerDraggableAttr"
+ImgEventhandler`ConsName ImgEventhandlerOnClickAttr`       = "ImgEventhandlerOnClickAttr`"
+ImgEventhandler`ConsName ImgEventhandlerOnNClickAttr`      = "ImgEventhandlerOnNClickAttr`"
+ImgEventhandler`ConsName ImgEventhandlerOnMouseDownAttr`   = "ImgEventhandlerOnMouseDownAttr`"
+ImgEventhandler`ConsName ImgEventhandlerOnMouseUpAttr`     = "ImgEventhandlerOnMouseUpAttr`"
+ImgEventhandler`ConsName ImgEventhandlerOnMouseOverAttr`   = "ImgEventhandlerOnMouseOverAttr`"
+ImgEventhandler`ConsName ImgEventhandlerOnMouseMoveAttr`   = "ImgEventhandlerOnMouseMoveAttr`"
+ImgEventhandler`ConsName ImgEventhandlerOnMouseOutAttr`    = "ImgEventhandlerOnMouseOutAttr`"
+ImgEventhandler`ConsName ImgEventhandlerDraggableAttr`     = "ImgEventhandlerDraggableAttr`"
 
-match_eventhandler :: !ImgEventhandler` !ImgEventhandler` -> Bool
-match_eventhandler a b = ImgEventhandler`ConsName a.ImgEventhandler`.handler == ImgEventhandler`ConsName b.ImgEventhandler`.handler
-
-instance <  (ImgEventhandler m) where <  a b = ImgEventhandlerConsName a <  ImgEventhandlerConsName b
-instance == (ImgEventhandler m) where == a b = ImgEventhandlerConsName a == ImgEventhandlerConsName b
+instance <  (ImgEventhandler m)    where <  a b = ImgEventhandlerConsName  a <  ImgEventhandlerConsName  b
+instance == (ImgEventhandler m)    where == a b = ImgEventhandlerConsName  a == ImgEventhandlerConsName  b
+instance == DefuncImgEventhandler` where == a b = ImgEventhandler`ConsName a == ImgEventhandler`ConsName b
 
 ImgAttrConsName :: !BasicImgAttr -> String
 ImgAttrConsName (BasicImgStrokeAttr        _) = "BasicImgStrokeAttr"
