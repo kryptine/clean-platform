@@ -1,6 +1,6 @@
 implementation module Graphics.Scalable.Image
 
-import StdMisc
+import StdList, StdMisc
 from Data.Maybe   import :: Maybe (..), instance Functor Maybe, maybeToList
 from Data.Functor import class Functor (..)
 import Graphics.Scalable.Internal.Image`
@@ -74,22 +74,32 @@ skewy :: !Angle !(Image m) -> Image m
 skewy a image = Skewy` a image
 
 overlay :: ![XYAlign] ![ImageOffset] ![Image m] !(Host m) -> Image m
-overlay aligns offsets images host = Overlay` aligns offsets images (toHost` host)
+overlay aligns offsets images host = Overlay` (take n aligns) (take n offsets) images (toHost` host)
+where
+  n = length images
 
 collage :: ![ImageOffset] ![Image m] !(Host m) -> Image m
-collage offsets images host = Overlay` [] offsets images (toHost` host)
+collage offsets images host = Overlay` [] (take n offsets) images (toHost` host)
+where
+  n = length images
 
 beside :: ![YAlign] ![Span] !(Maybe Span) ![ImageOffset] ![Image m] !(Host m) -> Image m
-beside ylayouts column_widths row_height offsets imgs host
-  = Grid` (Rows 1) (RowMajor, LeftToRight, TopToBottom) [(AtLeft, ylayout) \\ ylayout <- ylayouts] column_widths (maybeToList row_height) offsets imgs (toHost` host)
+beside ylayouts column_widths row_height offsets images host
+  = Grid` (Rows 1) (RowMajor, LeftToRight, TopToBottom) [(AtLeft, ylayout) \\ ylayout <- take n ylayouts] (take n column_widths) (maybeToList row_height) (take n offsets) images (toHost` host)
+where
+  n = length images
 
 above :: ![XAlign] ![Span] !(Maybe Span) ![ImageOffset] ![Image m] !(Host m) -> Image m
-above xlayouts row_heights column_width offsets imgs host
-  = Grid` (Columns 1) (ColumnMajor, LeftToRight, TopToBottom) [(xlayout, AtTop) \\ xlayout <- xlayouts] (maybeToList column_width) row_heights offsets imgs (toHost` host)
+above xlayouts row_heights column_width offsets images host
+  = Grid` (Columns 1) (ColumnMajor, LeftToRight, TopToBottom) [(xlayout, AtTop) \\ xlayout <- take n xlayouts] (maybeToList column_width) (take n row_heights) (take n offsets) images (toHost` host)
+where
+  n = length images
 
 grid :: !GridDimension !GridLayout ![XYAlign] ![Span] ![Span] ![ImageOffset] ![Image m] !(Host m) -> Image m
 grid dimension layout aligns column_widths row_heights offsets images host
-  = Grid` dimension layout aligns column_widths row_heights offsets images (toHost` host)
+  = Grid` dimension layout (take n aligns) (take n column_widths) (take n row_heights) (take n offsets) images (toHost` host)
+where
+  n = length images
 
 :: Host  m = NoHost | Host (Image m)
 
