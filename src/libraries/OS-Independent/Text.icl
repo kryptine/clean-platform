@@ -2,7 +2,7 @@ implementation module Text
 
 import qualified StdArray
 import StdOverloaded, StdString, StdArray, StdChar, StdInt, StdBool, StdClass, StdList
-import Data.List
+import Data.List, Data.Func
 
 instance Text String
 	where
@@ -104,13 +104,15 @@ instance Text String
 	subString start len haystack = haystack % (start, start + len - 1)
 
 	replaceSubString :: !String !String !String -> String
-	replaceSubString needle replacement haystack
-		#! index = indexOf needle haystack
-		| index == -1 = haystack
-		| otherwise
-			#! start = subString 0 index haystack
-			#! end   = subString (index + size needle) (size haystack) haystack
-			= start +++ replacement +++ (replaceSubString needle replacement end)
+	replaceSubString needle replacement haystack = concat $ replaceSubString` 0 []
+	where
+		replaceSubString` :: !Int ![String] -> [String]
+		replaceSubString` haystackIdx acc
+			# index = indexOfAfter haystackIdx needle haystack
+			| index == -1 = reverse [subString haystackIdx (size haystack - index) haystack: acc]
+			| otherwise
+				#! start = subString haystackIdx (index - haystackIdx) haystack
+				= replaceSubString` (index + size needle) [replacement, start: acc]
 
     trim :: !String -> String
 	trim s = ltrim (rtrim s)
