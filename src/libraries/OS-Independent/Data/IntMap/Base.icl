@@ -1488,15 +1488,15 @@ fromAscListWithKey f [x0 : xs0] = fromDistinctAscList (combineEq x0 xs0)
 // /The precondition (input list is strictly ascending) is not checked./
 //
 // > fromDistinctAscList [(3,"b"), (5,"a")] == fromList [(3, "b"), (5, "a")]
-fromDistinctAscList :: ![(!Int, !a)] -> IntMap a
+fromDistinctAscList :: ![(Int, a)] -> IntMap a
 fromDistinctAscList []         = Nil
 fromDistinctAscList [z0 : zs0] = work z0 zs0 Nada
   where
-    work :: !(!Int, !a) ![(!Int, !a)] !(Stack a) -> IntMap a
+    work :: !(!Int, !a) ![(Int, a)] !(Stack a) -> IntMap a
     work (kx,vx) []             stk = finish kx (Tip kx vx) stk
     work (kx,vx) [z=:(kz,_):zs] stk = reduce z zs (branchMask kx kz) kx (Tip kx vx) stk
 
-    reduce :: !(!Int, !a) ![(!Int, !a)] !Mask !Prefix !(IntMap a) !(Stack a) -> IntMap a
+    reduce :: !(!Int, !a) ![(Int, a)] !Mask !Prefix !(IntMap a) !(Stack a) -> IntMap a
     reduce z zs _ px tx Nada = work z zs (Push px tx Nada)
     reduce z zs m px tx stk=:(Push py ty stk`) =
         let mxy = branchMask px py

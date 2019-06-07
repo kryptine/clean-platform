@@ -60,7 +60,7 @@ writeFile :: !String !String !*env -> (!MaybeError FileError (), !*env) | FileSy
 writeFile filename contents env =
 	withFile filename FWriteData (\file -> (Ok (), fwrites contents file)) env
 
-withFile :: !String !Int (*File -> (!MaybeError FileError a,!*File)) !*env
+withFile :: !String !Int (*File -> (MaybeError FileError a,*File)) !*env
 			-> (!MaybeError FileError a, !*env) | FileSystem env
 withFile filename filemode operation env
 # (ok,file,env)	= fopen filename filemode env

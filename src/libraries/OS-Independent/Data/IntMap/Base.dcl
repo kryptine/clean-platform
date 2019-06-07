@@ -50,7 +50,7 @@ foldrWithKey :: (Int a b -> b) b !(IntMap a) -> b
  *     where
  *         distinctAscList = sort $ removeDup list
  */
-fromDistinctAscList :: ![(!Int, !a)] -> IntMap a
+fromDistinctAscList :: ![(Int, a)] -> IntMap a
 
 union :: !(IntMap a) !(IntMap a) -> IntMap a
 
