@@ -427,6 +427,4 @@ instance html HtmlTag
 instance html [a] | html a
 instance html (Maybe a) | html a
 
-browserFriendlySVGEltToString :: !SVGElt -> String
-
 escapeStr :: !String -> String
