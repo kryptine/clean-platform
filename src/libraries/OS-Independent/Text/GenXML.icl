@@ -421,4 +421,3 @@ getNodes (XMLEncElem elem)		= [toElem elem]
 getNodes (XMLEncText txt)		= [toText txt]
 getNodes (XMLEncNodes nodes _)	= nodes
 getNodes XMLEncNothing			= []
-
