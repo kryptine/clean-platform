@@ -7,7 +7,11 @@ class PrintOutput s where
 	
 :: *StringOutput
 
-:: PrintState s
+:: PrintState s =
+	{ ps_output :: !s
+	, ps_context :: !Context
+	}
+:: Context
 
 mkPrintState :: !*s -> PrintState *s | PrintOutput s
 mkStringPrintState :: PrintState StringOutput
