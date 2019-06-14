@@ -11,7 +11,7 @@ import Data.MapCollection
 import qualified Data.Foldable
 import qualified Data.Set
 import qualified Data.Map
-from Data.Set   import :: Set, instance == (Set a), instance < (Set a), fromList, toList, toAscList, instance Foldable Set
+from Data.Set   import :: Set, instance == (Set a), instance < (Set a), instance Foldable Set
 from Data.Map   import :: Map, findKeyWith, instance Functor (Map k)
 from Control.Applicative import class Applicative (..)
 import Control.Monad
@@ -440,8 +440,9 @@ skewy` a image p font_spans text_spans imgTables=:{ImgTables | imgNewTexts = cur
 
 margin` :: !Margins` !(Image` m) !ImgNodePath !FontSpans !TextSpans !ImgTables -> (!Img,!ImgTables)
 margin` {Margins` | n,e,s,w} image p font_spans text_spans imgTables=:{ImgTables | imgNewTexts = txts, imgUniqIds = no}
-  #! (nesw,txts)      = strictTRMapSt (spanImgTexts text_spans) [n,e,s,w] txts
-  #! [n,e,s,w : _]    = nesw
+  #! (n,e,s,w,txts)   = case strictTRMapSt (spanImgTexts text_spans) [n,e,s,w] txts of
+      ([n,e,s,w:_],txts) -> (n,e,s,w,txts)
+      _                  -> abort "Graphics.Scalable: margin` failed\n"
   #! (img,imgTables=:{ImgTables | imgSpans = curSpans}) = toImg image [ViaChild 0:p] font_spans text_spans {ImgTables | imgTables & imgNewTexts = txts,imgUniqIds = no-1}
   #! (img_w,img_h)    = 'Data.Map'.find img.Img.uniqId curSpans
   #! span_host        = (w + img_w + e, n + img_h + s)
@@ -902,7 +903,7 @@ where
 	
 	resolveImgAttrs :: !ImgTags !FontSpans !TextSpans !(Set BasicImgAttr) !*(!ImgPaths,!ImgSpans,!GridSpans) -> (!MaybeError SpanResolveError (Set BasicImgAttr),!*(!ImgPaths,!ImgSpans,!GridSpans))
 	resolveImgAttrs user_tags font_spans text_spans attrs spans
-	  #! (m_attrs`,spans) = strictTRMapSt (resolveImgAttr user_tags font_spans text_spans) ('Data.Foldable'.foldr` (\a as -> [a:as]) [] attrs) spans // USING (toList attrs) INSTEAD OF (fold (\a as -> [a:as]) [] attrs) CRASHES THE COMPILER: Run Time Error: index out of range
+	  #! (m_attrs`,spans) = strictTRMapSt (resolveImgAttr user_tags font_spans text_spans) ('Data.Set'.toList attrs) spans
 	  = case [e \\ Error e <- m_attrs`] of
 	      [e : _] = (Error e,spans)
 	      _       = (Ok ('Data.Set'.fromList (map fromOk m_attrs`)),spans)
