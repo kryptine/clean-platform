@@ -206,7 +206,8 @@ from Data.GenEq import generic gEq
 			| OnselectAttr		!String
 			| OnsubmitAttr		!String
 			| OnunloadAttr		!String
-			| OntoggleAttr      !String
+			| OntoggleAttr		!String
+			| OpenAttr			!String
 			| PlaceholderAttr	!String
 			| ProfileAttr		!String
 			| PromptAttr		!String
