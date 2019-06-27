@@ -211,6 +211,17 @@ grid_layout (no_of_cols,no_of_rows) (major,xlayout,ylayout) cells
       (LeftToRight, BottomToTop) = reverseTR cells
       (RightToLeft, BottomToTop) = strictTRMapRev reverseTR cells
 
+grid_unlayout :: !GridLayout ![[a]] -> [a]
+grid_unlayout (major,xlayout,ylayout) rows
+  #! cells = case (xlayout,ylayout) of
+               (LeftToRight, TopToBottom) = rows
+               (RightToLeft, TopToBottom) = strictTRMap reverseTR rows
+               (LeftToRight, BottomToTop) = reverseTR rows
+               (RightToLeft, BottomToTop) = strictTRMapRev reverseTR rows
+  = case major of
+      RowMajor = flatten cells
+      column   = flatten (transpose cells)
+
 perhaps_look_up_span :: !Span !ImgTagNo !(ImageTag -> LookupSpan) -> Span
 perhaps_look_up_span span no spanf
 | isPxSpan span = span
@@ -545,7 +556,8 @@ where
 	                                       Host` _     = 'Data.Map'.find host.Img.uniqId newSpans
 	                                       no_host     = (grid_width,grid_height)
 	  #! imgid_offsets                 = offsets_within_grid grid_widths grid_heights imgid_span_align_offsets_grid
-	  #! offsets                       = associate_offset_with_img imgid_offsets imgs
+//	  #! offsets                       = associate_offset_with_img imgid_offsets imgs
+	  #! offsets                       = map snd (grid_unlayout layout imgid_offsets)
 	  = ({Img | uniqId    = no
 	          , host      = CompositeImg host
 	          , transform = Nothing
