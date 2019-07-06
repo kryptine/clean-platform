@@ -11,10 +11,10 @@ import Graphics.Scalable.Internal.Types
 
 :: FontDef :== FontDef`
 
-normalFontDef :: !String !Real -> FontDef // (normalFontDef family size) sets all other fields to "normal"
+normalFontDef :: !String !n -> FontDef | toMilliInt n // (normalFontDef family size) sets all other fields to "normal"
 normalFontDef family size
   = { fontfamily`  = family
-    , fontysize`   = to2dec (max zero size)  // make sure the size can be converted correctly to the client and vice versa
+    , fontysize`   = max zero (toMilliInt size)
     , fontstretch` = "normal"
     , fontstyle`   = "normal"
     , fontvariant` = "normal"
@@ -24,7 +24,7 @@ normalFontDef family size
 setfontfamily :: !String !FontDef -> FontDef
 setfontfamily family fontdef = setfontfamily` family fontdef
 
-setfontysize :: !Real !FontDef -> FontDef
+setfontysize :: !MilliInt !FontDef -> FontDef
 setfontysize ysize fontdef = setfontysize` ysize fontdef
 
 setfontstretch :: !String !FontDef -> FontDef
@@ -42,7 +42,7 @@ setfontweight weight fontdef = setfontweight` weight fontdef
 getfontfamily :: !FontDef -> String
 getfontfamily fontdef = getfontfamily` fontdef
 
-getfontysize :: !FontDef -> Real
+getfontysize :: !FontDef -> MilliInt
 getfontysize fontdef = getfontysize` fontdef
 
 getfontstretch :: !FontDef -> String

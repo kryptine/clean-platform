@@ -148,17 +148,17 @@ defunc (ImgEventhandlerDraggableAttr   _)                         = {ImgEventhan
 defaultFilledImgAttributes :: Set BasicImgAttr
 defaultFilledImgAttributes
 	= 'Data.Set'.fromList [ BasicImgStrokeAttr      (toSVGColor "black")
-                    , BasicImgStrokeWidthAttr (PxSpan 1.0)
-                    , BasicImgFillAttr        (toSVGColor "black")
-                    , BasicImgFillOpacityAttr 1.0
-                    ]
+	                      , BasicImgStrokeWidthAttr (mpx 1)
+	                      , BasicImgFillAttr        (toSVGColor "black")
+	                      , BasicImgFillOpacityAttr 1.0
+	                      ]
 
 defaultOutlineImgAttributes :: Set BasicImgAttr
 defaultOutlineImgAttributes
 	= 'Data.Set'.fromList [ BasicImgFillAttr        (toSVGColor "none")
-                    , BasicImgStrokeAttr      (toSVGColor "black")
-                    , BasicImgStrokeWidthAttr (PxSpan 1.0)
-                    ]
+                          , BasicImgStrokeAttr      (toSVGColor "black")
+                          , BasicImgStrokeWidthAttr (mpx 1)
+                          ]
 
 defaultMargins` :: Margins`
 defaultMargins` = {Margins` | n=zero, e=zero, s=zero, w=zero}
@@ -749,7 +749,7 @@ imgAttrTexts text_spans (BasicImgXRadiusAttr     span) txts = let (span`,txts`) 
 imgAttrTexts text_spans (BasicImgYRadiusAttr     span) txts = let (span`,txts`) = spanImgTexts text_spans span txts in (BasicImgYRadiusAttr     span`,txts`)
 imgAttrTexts _          attr                           txts = (attr,txts)
 
-lookupTextSpan :: !FontDef !String !TextSpans -> Maybe Real
+lookupTextSpan :: !FontDef !String !TextSpans -> Maybe MilliInt
 lookupTextSpan font str text_spans
 	= case 'Data.Map'.get font text_spans of
 	    Just ws = 'Data.Map'.get str ws
@@ -955,11 +955,11 @@ where
 	  = (Ok transform,spans)
 
 //	span resolve algorithm memoizes path, image-span, and grid-span dimensions
-resolve_span :: !ImgTags !FontSpans !TextSpans !Span !*(!ImgPaths,!ImgSpans,!GridSpans) -> (!MaybeError SpanResolveError Real,!*(!ImgPaths,!ImgSpans,!GridSpans))
+resolve_span :: !ImgTags !FontSpans !TextSpans !Span !*(!ImgPaths,!ImgSpans,!GridSpans) -> (!MaybeError SpanResolveError MilliInt,!*(!ImgPaths,!ImgSpans,!GridSpans))
 resolve_span user_tags font_spans text_spans span (paths,imgs_spans,grids_spans)
 	= resolve_span` 'Data.Set'.newSet user_tags font_spans text_spans span (paths,imgs_spans,grids_spans)
 where
-	resolve_span` :: !(Set ImgTagNo) !ImgTags !FontSpans !TextSpans !Span !*(!ImgPaths,!ImgSpans,!GridSpans) -> (!MaybeError SpanResolveError Real,!*(!ImgPaths,!ImgSpans,!GridSpans))
+	resolve_span` :: !(Set ImgTagNo) !ImgTags !FontSpans !TextSpans !Span !*(!ImgPaths,!ImgSpans,!GridSpans) -> (!MaybeError SpanResolveError MilliInt,!*(!ImgPaths,!ImgSpans,!GridSpans))
 	resolve_span` visited user_tags font_spans text_spans (PxSpan r) spans
 		= (Ok r,spans)
 	resolve_span` visited user_tags font_spans text_spans (LookupSpan l) spans
@@ -1023,7 +1023,7 @@ where
 	  = resolve_span_exprs [a,b] combine visited user_tags font_spans text_spans spans
 	where
 	  combine [a,b]
-	  | b == 0.0  = user_error "(/.)" "division by zero"
+	  | b == zero  = user_error "(/.)" "division by zero"
 	  | otherwise = Ok (a/b)
 	  combine _   = abort "error in resolve_span\n"
 	resolve_span` visited user_tags font_spans text_spans (MinSpan as) spans
@@ -1035,14 +1035,14 @@ where
 	      (Ok    r,spans) = (Ok (abs r),spans)
 	      (Error e,spans) = (Error e,   spans)
 	
-	resolve_span_exprs :: ![Span] !([Real] -> MaybeError SpanResolveError Real) 
-	                      !(Set ImgTagNo) !ImgTags !FontSpans !TextSpans !*(!ImgPaths,!ImgSpans,!GridSpans) -> (!MaybeError SpanResolveError Real,!*(!ImgPaths,!ImgSpans,!GridSpans))
+	resolve_span_exprs :: ![Span] !([MilliInt] -> MaybeError SpanResolveError MilliInt) 
+	                      !(Set ImgTagNo) !ImgTags !FontSpans !TextSpans !*(!ImgPaths,!ImgSpans,!GridSpans) -> (!MaybeError SpanResolveError MilliInt,!*(!ImgPaths,!ImgSpans,!GridSpans))
 	resolve_span_exprs span_exprs combine visited user_tags font_spans text_spans spans
 	  = case foldl (resolve_span_expr visited user_tags font_spans text_spans) (Ok [],spans) span_exprs of
 	      (Ok   rs,spans) = (combine (reverse rs),spans)
 	      (Error e,spans) = (Error   e,           spans)
 	where
-		resolve_span_expr :: !(Set ImgTagNo) !ImgTags !FontSpans !TextSpans !(!MaybeError SpanResolveError [Real],!*(!ImgPaths,!ImgSpans,!GridSpans)) !Span -> (!MaybeError SpanResolveError [Real],!*(!ImgPaths,!ImgSpans,!GridSpans))
+		resolve_span_expr :: !(Set ImgTagNo) !ImgTags !FontSpans !TextSpans !(!MaybeError SpanResolveError [MilliInt],!*(!ImgPaths,!ImgSpans,!GridSpans)) !Span -> (!MaybeError SpanResolveError [MilliInt],!*(!ImgPaths,!ImgSpans,!GridSpans))
 		resolve_span_expr visited user_tags font_spans text_spans (Ok resolved_spans,spans) span_expr
 			= case resolve_span` visited user_tags font_spans text_spans span_expr spans of
 			    (Ok r,   spans) = (Ok [r:resolved_spans],spans)
@@ -1050,8 +1050,8 @@ where
 		resolve_span_expr visited user_tags font_spans text_spans error span_expr
 			= error
 	
-	resolve_from_grid_span :: !String !String !(GridSpan -> [Span]) !([Span] GridSpan -> GridSpan) !Int !(String -> MaybeError SpanResolveError Real) !Int 
-	                          !(Set ImgTagNo) !ImgTags !FontSpans !TextSpans !*(!ImgPaths,!ImgSpans,!GridSpans) -> (!MaybeError SpanResolveError Real,!*(!ImgPaths,!ImgSpans,!GridSpans))
+	resolve_from_grid_span :: !String !String !(GridSpan -> [Span]) !([Span] GridSpan -> GridSpan) !Int  !(String -> MaybeError SpanResolveError MilliInt) !Int 
+	                          !(Set ImgTagNo) !ImgTags !FontSpans !TextSpans !*(!ImgPaths,!ImgSpans,!GridSpans) -> (!MaybeError SpanResolveError MilliInt,!*(!ImgPaths,!ImgSpans,!GridSpans))
 	resolve_from_grid_span dim tag_type select replace elem_no error no visited user_tags font_spans text_spans spans=:(paths,imgs_spans,grids_spans)
 		= case 'Data.Map'.get no grids_spans of
             Nothing   = (error (tag_type +++ " does not refer to grid"),spans)
@@ -1071,8 +1071,8 @@ where
                                    )
                                )
 	
-	resolve_from_image_span :: !String !String !(ImageSpan -> Span) !(Span ImageSpan -> ImageSpan) !(String -> MaybeError SpanResolveError Real) !Int 
-	                           !(Set ImgTagNo) !ImgTags !FontSpans !TextSpans !*(!ImgPaths,!ImgSpans,!GridSpans) -> (!MaybeError SpanResolveError Real,!*(!ImgPaths,!ImgSpans,!GridSpans))
+	resolve_from_image_span :: !String !String !(ImageSpan -> Span) !(Span ImageSpan -> ImageSpan) !(String -> MaybeError SpanResolveError MilliInt) !Int 
+	                           !(Set ImgTagNo) !ImgTags !FontSpans !TextSpans !*(!ImgPaths,!ImgSpans,!GridSpans) -> (!MaybeError SpanResolveError MilliInt,!*(!ImgPaths,!ImgSpans,!GridSpans))
 	resolve_from_image_span dim tag_type select replace error no visited user_tags font_spans text_spans spans=:(paths,imgs_spans,grids_spans)
         = case 'Data.Map'.get no imgs_spans of
             Nothing    = (error (tag_type +++ " is not associated with an image"),spans)
@@ -1088,8 +1088,8 @@ where
                                       unresolved_error = unresolved_error
                             )
 	
-	resolve_from_path :: !String !String !(ImageSpan -> Span) !(Span ImageSpan -> ImageSpan) !(String -> MaybeError SpanResolveError Real) !Int
-	                     !(Set ImgTagNo) !ImgTags !FontSpans !TextSpans !*(!ImgPaths,!ImgSpans,!GridSpans) -> (!MaybeError SpanResolveError Real,!*(!ImgPaths,!ImgSpans,!GridSpans))
+	resolve_from_path :: !String !String !(ImageSpan -> Span) !(Span ImageSpan -> ImageSpan) !(String -> MaybeError SpanResolveError MilliInt) !Int
+	                     !(Set ImgTagNo) !ImgTags !FontSpans !TextSpans !*(!ImgPaths,!ImgSpans,!GridSpans) -> (!MaybeError SpanResolveError MilliInt,!*(!ImgPaths,!ImgSpans,!GridSpans))
 	resolve_from_path dim span_type select replace error no visited user_tags font_spans text_spans spans=:(paths,imgs_spans,grids_spans)
 		= case 'Data.Map'.get no paths of
 		    Nothing    = (sys_error "resolve_span" ("unassigned system tag for " +++ span_type),spans)
@@ -1108,10 +1108,10 @@ where
 		                                         unresolved_error = unresolved_error
 		                    )
 	where
-		replace_in_span :: !Real !(Span ImageSpan -> ImageSpan) !(Maybe ImageSpan) -> Maybe ImageSpan
+		replace_in_span :: !MilliInt !(Span ImageSpan -> ImageSpan) !(Maybe ImageSpan) -> Maybe ImageSpan
 		replace_in_span r f (Just pair)    = Just (f (PxSpan r) pair)
 		replace_in_span _ _ nothing        = nothing
 		
-		replace_in_path :: ![ImageOffset] !Real !(Span ImageSpan -> ImageSpan) !(Maybe ImgPath) -> Maybe ImgPath
+		replace_in_path :: ![ImageOffset] !MilliInt !(Span ImageSpan -> ImageSpan) !(Maybe ImgPath) -> Maybe ImgPath
 		replace_in_path ps r f (Just path) = Just {ImgPath | path & pathPoints = ps, pathSpan = f (PxSpan r) path.ImgPath.pathSpan}
 		replace_in_path _ _ _ nothing      = nothing

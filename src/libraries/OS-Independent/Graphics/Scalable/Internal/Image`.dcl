@@ -66,8 +66,8 @@ import Graphics.Scalable.Internal.Types
 :: ImgSpans           :== Map ImgTagNo ImageSpan                          // of each image, its (width,height)
 :: GridSpans          :== Map ImgTagNo GridSpan                           // of each grid, the spans of its columns and the spans of its rows
 :: ImgTags            :== Map ImageTag ImgTagNo                           // map user-tag to system number
-:: FontDescent        :== Real
-:: TextSpan           :== Real
+:: FontDescent        :== MilliInt
+:: TextSpan           :== MilliInt
 :: ImgEventhandler m
   = ImgEventhandlerOnClickAttr     !(OnClickAttr     m)
   | ImgEventhandlerOnNClickAttr    !(OnNClickAttr    m)

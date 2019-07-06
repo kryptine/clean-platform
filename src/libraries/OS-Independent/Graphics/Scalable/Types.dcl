@@ -4,33 +4,34 @@ import Data.GenEq
 from Data.Maybe import :: Maybe (..)
 from Data.Set   import :: Set
 from Text.HTML  import :: SVGColor
-from StdOverloaded import class zero (..), class + (..), class -  (..), class ~ (..), class sign (..), 
+from StdOverloaded import class zero (..), class one (..), class + (..), class -  (..), class ~ (..), class sign (..), 
                           class abs  (..), class < (..), class == (..), class toReal (..), class / (..), class * (..), class toString (..)
 from Graphics.Scalable.Internal.Types import
-  :: Span, class *. (..), class /. (..), instance zero Span, instance + Span, instance -  Span, instance * Span,  instance / Span,
-                                         instance abs  Span, instance ~ Span, instance *. Span, instance *. Real, instance *. Int,
-                                                                              instance /. Span, instance /. Real, instance /. Int, 
-  px, textxspan, imagexspan, imageyspan, columnspan, rowspan, minSpan, maxSpan,
+  :: Span, instance zero Span, instance + Span, instance -  Span, instance abs  Span, instance ~ Span, instance * Span, instance / Span, *., /., 
+  mpx, textxspan, imagexspan, imageyspan, columnspan, rowspan, minSpan, maxSpan,
   :: ImageTag, instance == ImageTag, instance < ImageTag,
-  :: FontDef`
+  :: FontDef`,
+  :: MilliInt, class toMilliInt, instance toMilliInt Int, instance toMilliInt Real,
+  instance zero MilliInt, instance one MilliInt, instance == MilliInt, instance < MilliInt, instance + MilliInt, instance - MilliInt,
+  instance abs  MilliInt, instance ~   MilliInt, instance *  MilliInt, instance / MilliInt, instance toReal MilliInt
 
 :: ImageSpan   :== (!Span, !Span)
 :: ImageOffset :== (!Span, !Span)
 
 :: FontDef     :== FontDef`
-normalFontDef     :: !String !Real    -> FontDef  // (normalFontDef family size) sets all other fields to "normal"
-setfontfamily     :: !String !FontDef -> FontDef
-setfontysize      :: !Real   !FontDef -> FontDef
-setfontstretch    :: !String !FontDef -> FontDef
-setfontstyle      :: !String !FontDef -> FontDef
-setfontvariant    :: !String !FontDef -> FontDef
-setfontweight     :: !String !FontDef -> FontDef
-getfontfamily     ::         !FontDef -> String
-getfontysize      ::         !FontDef -> Real
-getfontstretch    ::         !FontDef -> String
-getfontstyle      ::         !FontDef -> String
-getfontvariant    ::         !FontDef -> String
-getfontweight     ::         !FontDef -> String
+normalFontDef     :: !String   !n        -> FontDef | toMilliInt n  // (normalFontDef family size) sets all other fields to "normal"
+setfontfamily     :: !String   !FontDef  -> FontDef
+setfontysize      :: !MilliInt !FontDef  -> FontDef
+setfontstretch    :: !String   !FontDef  -> FontDef
+setfontstyle      :: !String   !FontDef  -> FontDef
+setfontvariant    :: !String   !FontDef  -> FontDef
+setfontweight     :: !String   !FontDef  -> FontDef
+getfontfamily     ::           !FontDef  -> String
+getfontysize      ::           !FontDef  -> MilliInt
+getfontstretch    ::           !FontDef  -> String
+getfontstyle      ::           !FontDef  -> String
+getfontvariant    ::           !FontDef  -> String
+getfontweight     ::           !FontDef  -> String
 
 instance ==       FontDef
 instance <        FontDef

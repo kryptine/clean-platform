@@ -1,11 +1,13 @@
 definition module Graphics.Scalable.Internal.Types
 
+import iTasks.UI.JavaScript
 import Graphics.Scalable.Types
+import iTasks.Internal.Generic.Visualization
 import Text.GenPrint
 from   Text.GenJSON import generic JSONEncode, generic JSONDecode, :: JSONNode
 
 :: Span
-  = PxSpan      !Real                      // (PxSpan a) is a pixels
+  = PxSpan      !MilliInt                  // (PxSpan a) is a milli-pixels
   | LookupSpan  !LookupSpan                // (LookupSpan a) needs to be looked up after computing dimensions
   | AddSpan     !Span !Span                // (AddSpan a b) is span a + span b
   | SubSpan     !Span !Span                // (SubSpan a b) is span a - span b
@@ -25,30 +27,47 @@ from   Text.GenJSON import generic JSONEncode, generic JSONDecode, :: JSONNode
   | PathYSpan   !ImageTag                  // (PathYSpan t) is y-span of path element tagged with t
 :: FontDef`
   = { fontfamily`  :: !String              // font family name
-    , fontysize`   :: !Real                // font size as span (px -)
+    , fontysize`   :: !MilliInt            // font size as span (mpx -)
     , fontstretch` :: !String              // default value: "normal"
     , fontstyle`   :: !String              // default value: "normal"
     , fontvariant` :: !String              // default value: "normal"
     , fontweight`  :: !String              // default value: "normal"
     }
+:: MilliInt
+derive gEq        MilliInt
+derive JSONEncode MilliInt
+derive JSONDecode MilliInt
+derive gText      MilliInt
+derive gToJS      MilliInt
 
-class (*.) infixl 7 a :: !a !n -> Span | toReal n
-class (/.) infixl 7 a :: !a !n -> Span | toReal n
+instance zero     MilliInt
+instance one      MilliInt
+instance ==       MilliInt
+instance <        MilliInt
+instance +        MilliInt
+instance -        MilliInt
+instance abs      MilliInt
+instance ~        MilliInt
+instance *        MilliInt
+instance /        MilliInt
+instance toReal   MilliInt
+instance toString MilliInt
+
+(*.) infixl 7 :: !Span !scalar -> Span | toReal scalar
+(/.) infixl 7 :: !Span !scalar -> Span | toReal scalar
 
 instance zero Span
 instance +    Span
 instance -    Span
 instance abs  Span
 instance ~    Span
-instance *.   Span, Real, Int
 instance *    Span
-instance /.   Span, Real, Int
 instance /    Span
 
 isPxSpan    :: !Span -> Bool               // returns True only if argument is (PxSpan ...)
-getPxSpan   :: !Span -> Real               // returns r only if argument is (PxSpan r), aborts otherwise
+getPxSpan   :: !Span -> MilliInt           // returns r only if argument is (PxSpan r), aborts otherwise
 
-px          :: !Real            -> Span    // (px r) is r pixels
+mpx         :: !n               -> Span | toMilliInt n   // (mpx n) is n milli-pixels
 textxspan   :: !FontDef !String -> Span    // (textxspan font str) is the x-span of str written in font
 imagexspan  :: !ImageTag        -> Span    // (imagexspan t) is x-span of image tagged with t
 imageyspan  :: !ImageTag        -> Span    // (imageyspan t) is y-span of image tagged with t
@@ -70,21 +89,27 @@ derive   gPrint     FontDef`
 derive   JSONEncode FontDef`
 derive   JSONDecode FontDef`
 
-setfontfamily`  :: !String !FontDef` -> FontDef`
-setfontysize`   :: !Real   !FontDef` -> FontDef`
-setfontstretch` :: !String !FontDef` -> FontDef`
-setfontstyle`   :: !String !FontDef` -> FontDef`
-setfontvariant` :: !String !FontDef` -> FontDef`
-setfontweight`  :: !String !FontDef` -> FontDef`
-getfontfamily`  ::         !FontDef` -> String
-getfontysize`   ::         !FontDef` -> Real
-getfontstretch` ::         !FontDef` -> String
-getfontstyle`   ::         !FontDef` -> String
-getfontvariant` ::         !FontDef` -> String
-getfontweight`  ::         !FontDef` -> String
+setfontfamily`  :: !String   !FontDef` -> FontDef`
+setfontysize`   :: !MilliInt !FontDef` -> FontDef`
+setfontstretch` :: !String   !FontDef` -> FontDef`
+setfontstyle`   :: !String   !FontDef` -> FontDef`
+setfontvariant` :: !String   !FontDef` -> FontDef`
+setfontweight`  :: !String   !FontDef` -> FontDef`
+getfontfamily`  ::           !FontDef` -> String
+getfontysize`   ::           !FontDef` -> MilliInt
+getfontstretch` ::           !FontDef` -> String
+getfontstyle`   ::           !FontDef` -> String
+getfontvariant` ::           !FontDef` -> String
+getfontweight`  ::           !FontDef` -> String
 
 /** to2dec r:
 		converts @r to a real value of two decimals in order to avoid errors in communicating real values
 		with SVG clients
 */
 to2dec :: !Real -> Real
+
+class toMilliInt a :: !a -> MilliInt
+instance toMilliInt MilliInt
+instance toMilliInt Int
+instance toMilliInt Real
+instance toMilliInt Span	// this is a partial function! Only defined on (PxSpan _)
