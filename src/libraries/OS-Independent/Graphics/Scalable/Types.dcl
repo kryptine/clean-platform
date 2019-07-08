@@ -8,7 +8,7 @@ from StdOverloaded import class zero (..), class one (..), class + (..), class -
                           class abs  (..), class < (..), class == (..), class toReal (..), class / (..), class * (..), class toString (..)
 from Graphics.Scalable.Internal.Types import
   :: Span, instance zero Span, instance + Span, instance -  Span, instance abs  Span, instance ~ Span, instance * Span, instance / Span, *., /., 
-  mpx, textxspan, imagexspan, imageyspan, columnspan, rowspan, minSpan, maxSpan,
+  px, textxspan, imagexspan, imageyspan, columnspan, rowspan, minSpan, maxSpan,
   :: ImageTag, instance == ImageTag, instance < ImageTag,
   :: FontDef`,
   :: MilliInt, class toMilliInt, instance toMilliInt Int, instance toMilliInt Real,

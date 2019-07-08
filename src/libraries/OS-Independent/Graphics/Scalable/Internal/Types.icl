@@ -7,7 +7,7 @@ import Text
 import Text.GenPrint
 from StdOrdList import minList, maxList
 import Graphics.Scalable.Types
-import StdBool, StdInt, StdMisc, StdReal, StdString
+import StdArray, StdBool, StdInt, StdMisc, StdReal, StdString
 from Text.GenJSON  import generic JSONEncode, generic JSONDecode, :: JSONNode
 
 :: Span
@@ -60,7 +60,9 @@ instance toString MilliInt where toString (MilliInt a)
                                  | a <  0                      = concat ["-",toString (MilliInt (~a))]
                                  | a == 0                      = "0.0"
                                  | a < 1000                    = concat ["0.",toString a]
-                                 | otherwise                   = concat [toString (a / 1000),".",toString (a rem 1000)]
+                                 | otherwise                   = concat [toString (a / 1000),".",createArray (3-size trailer) '0',trailer]
+                                 where
+                                 	trailer                    = toString (a rem 1000)
 
 (*.) infixl 7 :: !Span !scalar -> Span | toReal scalar
 (*.) span scalar = (PxSpan (toMilliInt (toReal scalar))) * span
@@ -195,8 +197,8 @@ getPxSpan :: !Span -> MilliInt
 getPxSpan (PxSpan r) = r
 getPxSpan _          = abort "Fatal error in module Graphics.Scalable.Internal.Types: getPxSpan applied to illegal argument"
 
-mpx :: !n -> Span | toMilliInt n
-mpx n = PxSpan (toMilliInt n)
+px :: !a -> Span | toMilliInt a
+px x = PxSpan (toMilliInt x)
 
 textxspan :: !FontDef !String -> Span
 textxspan a b = LookupSpan (TextXSpan a b)
@@ -304,7 +306,7 @@ instance toMilliInt MilliInt where toMilliInt n = n
 instance toMilliInt Int      where toMilliInt n = MilliInt        (n * 1000)
 instance toMilliInt Real     where toMilliInt r = MilliInt (toInt (r * 1000.0))
 instance toMilliInt Span     where toMilliInt (PxSpan n) = n
-                                   toMilliInt _ = abort "toMilliInt: applied to value other than PxSpan"
+                                   toMilliInt _ = abort "Fatal error in module Graphics.Scalable.Internal.Types: instance toMilliInt Span applied to illegal argument"
 
 to2dec :: !Real -> Real
 to2dec r = toReal (toInt (r * 100.0)) / 100.0

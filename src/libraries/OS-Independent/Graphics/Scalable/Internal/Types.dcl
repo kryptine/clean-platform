@@ -65,9 +65,8 @@ instance *    Span
 instance /    Span
 
 isPxSpan    :: !Span -> Bool               // returns True only if argument is (PxSpan ...)
-getPxSpan   :: !Span -> MilliInt           // returns r only if argument is (PxSpan r), aborts otherwise
 
-mpx         :: !n               -> Span | toMilliInt n   // (mpx n) is n milli-pixels
+px          :: !a               -> Span | toMilliInt a
 textxspan   :: !FontDef !String -> Span    // (textxspan font str) is the x-span of str written in font
 imagexspan  :: !ImageTag        -> Span    // (imagexspan t) is x-span of image tagged with t
 imageyspan  :: !ImageTag        -> Span    // (imageyspan t) is y-span of image tagged with t
@@ -112,4 +111,4 @@ class toMilliInt a :: !a -> MilliInt
 instance toMilliInt MilliInt
 instance toMilliInt Int
 instance toMilliInt Real
-instance toMilliInt Span	// this is a partial function! Only defined on (PxSpan _)
+instance toMilliInt Span	// this is a partial function! Only defined when isPxSpan returns True.

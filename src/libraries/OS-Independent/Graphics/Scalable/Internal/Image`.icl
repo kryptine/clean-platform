@@ -148,7 +148,7 @@ defunc (ImgEventhandlerDraggableAttr   _)                         = {ImgEventhan
 defaultFilledImgAttributes :: Set BasicImgAttr
 defaultFilledImgAttributes
 	= 'Data.Set'.fromList [ BasicImgStrokeAttr      (toSVGColor "black")
-	                      , BasicImgStrokeWidthAttr (mpx 1)
+	                      , BasicImgStrokeWidthAttr (px 1)
 	                      , BasicImgFillAttr        (toSVGColor "black")
 	                      , BasicImgFillOpacityAttr 1.0
 	                      ]
@@ -157,7 +157,7 @@ defaultOutlineImgAttributes :: Set BasicImgAttr
 defaultOutlineImgAttributes
 	= 'Data.Set'.fromList [ BasicImgFillAttr        (toSVGColor "none")
                           , BasicImgStrokeAttr      (toSVGColor "black")
-                          , BasicImgStrokeWidthAttr (mpx 1)
+                          , BasicImgStrokeWidthAttr (px 1)
                           ]
 
 defaultMargins` :: Margins`
