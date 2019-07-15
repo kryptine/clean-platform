@@ -1538,7 +1538,7 @@ nequal _   _   = True
 instance Functor IntMap where
     fmap f xs = map f xs
 
-link :: Prefix (IntMap a) Prefix (IntMap a) -> IntMap a
+link :: !Prefix !(IntMap a) !Prefix !(IntMap a) -> IntMap a
 link p1 t1 p2 t2
   | zero p1 m = Bin p m t1 t2
   | otherwise = Bin p m t2 t1
@@ -1551,29 +1551,30 @@ bin _ _ l Nil = l
 bin _ _ Nil r = r
 bin p m l r   = Bin p m l r
 
-zero :: Int Mask -> Bool
+zero :: !Int !Mask -> Bool
 zero i m = (i bitand m) == 0
 
 nomatch :: !Int !Prefix !Mask -> Bool
 nomatch i p m = mask i m <> p
 
-match :: Int Prefix Mask -> Bool
+match :: !Int !Prefix !Mask -> Bool
 match i p m = mask i m == p
 
 mask :: !Int !Mask -> Prefix
-mask i m = maskW i m
+mask i m = i bitand (~m bitxor m)
 
-maskW :: !Int !Int -> Prefix
-maskW i m = i bitand (bitnot (m - 1) bitxor m)
-
+// we have to treat the masks as unsigned ints
+// this means that the sign bit has to be inverted to preserve order
 shorter :: !Mask !Mask -> Bool
-shorter m1 m2 = m1 > m2
+shorter m1 m2 = (m1 bitxor signBitOnly) > (m2 bitxor signBitOnly)
 
 branchMask :: !Prefix !Prefix -> Mask
 branchMask p1 p2 = highestBitMask (p1 bitxor p2)
 
 highestBitMask :: !Int -> Int
-highestBitMask x0 = x6 bitxor (x6 >> 1)
+highestBitMask x0 =
+	// for the right shift `x6` has to be treated as unsigned int, so the highest bit has to be set to 0
+	x6 bitxor (allExceptSignBit bitand (x6 >> 1))
 where
 	x1 = x0 bitor (x0 >> 1)
 	x2 = x1 bitor (x1 >> 2)
@@ -1581,3 +1582,6 @@ where
 	x4 = x3 bitor (x3 >> 8)
 	x5 = x4 bitor (x4 >> 16)
 	x6 = x5 bitor (x5 >> 32)
+
+signBitOnly      =: ~2^(IF_INT_64_OR_32 63 31)
+allExceptSignBit =: bitnot signBitOnly

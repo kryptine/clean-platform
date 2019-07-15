@@ -1,5 +1,19 @@
 definition module Data.IntMap.Strict
 
+/**
+ * @property-bootstrap
+ *     from StdEnv import removeDup, sort, instance == [a]
+ *     import StdTuple, StdInt
+ *     from Data.Func import $
+ *
+ *     instance == () where
+ *         == _ _ = True
+ *     instance < () where
+ *         < _ _ = False
+ *
+ * @property-test-with a = ()
+ */
+
 from Data.Maybe		import :: Maybe (..)
 from StdClass		import class Eq, class Ord
 from StdOverloaded	import class ==, class <
@@ -137,6 +151,12 @@ mapWithKey :: !(Int a -> b) !(IntMap a) -> IntMap b
 
 mapSt :: !(a *st -> *(!b, !*st)) !.(IntMap a) !*st -> *(!IntMap b, !*st)
 
+/**
+ * @property is distinct and sorted: A.list :: [(Int, a)]:
+ *     toList (fromList list) =.= distinctAscList
+ *     where
+ *         distinctAscList = sort $ removeDup list
+ */
 toList :: !(IntMap a) -> [(!Int, !a)]
 
 toAscList :: !(IntMap a) -> [(!Int, !a)]

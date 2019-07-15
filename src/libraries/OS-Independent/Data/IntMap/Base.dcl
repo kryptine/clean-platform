@@ -1,5 +1,21 @@
 definition module Data.IntMap.Base
 
+/**
+ * @property-bootstrap
+ *     import StdEnv, Data.Func
+ *     // TODO: this is a bad dependency as IntMap.Base should not depend on IntMap.Strict
+ *     from Data.IntMap.Strict import fromList, toList
+ *
+ *     instance == () where
+ *         == _ _ = True
+ *     instance < () where
+ *         < _ _ = False
+ *
+ *     derive genShow IntMap
+ *     derive gPrint  IntMap
+ *
+ * @property-test-with a = ()
+ */
 from StdOverloaded import class ==
 from Data.Maybe import :: Maybe
 
@@ -28,6 +44,12 @@ empty :: IntMap a
 
 foldrWithKey :: (Int a b -> b) b !(IntMap a) -> b
 
+/**
+ * @property correctness: A.list :: [(Int, a)]:
+ *     fromDistinctAscList distinctAscList =.= fromList distinctAscList
+ *     where
+ *         distinctAscList = sort $ removeDup list
+ */
 fromDistinctAscList :: ![(!Int, !a)] -> IntMap a
 
 union :: !(IntMap a) !(IntMap a) -> IntMap a
