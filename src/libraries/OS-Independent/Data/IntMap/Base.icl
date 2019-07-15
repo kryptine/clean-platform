@@ -1566,7 +1566,7 @@ mask i m = i bitand (~m bitxor m)
 // we have to treat the masks as unsigned ints
 // this means that the sign bit has to be inverted to preserve order
 shorter :: !Mask !Mask -> Bool
-shorter m1 m2 = (m1 bitxor signBitOnly) >  (m2 bitxor signBitOnly)
+shorter m1 m2 = (m1 bitxor signBitOnly) > (m2 bitxor signBitOnly)
 
 branchMask :: !Prefix !Prefix -> Mask
 branchMask p1 p2 = highestBitMask (p1 bitxor p2)
