@@ -202,14 +202,25 @@ grid_dimension (Columns no) no_of_elts = let no` = max 1 no in (no`, no_of_elts 
 
 grid_layout :: !(!Int,!Int) !GridLayout ![a] -> [[a]]
 grid_layout (no_of_cols,no_of_rows) (major,xlayout,ylayout) cells
-  #! cells = case major of
-               RowMajor = chop no_of_cols cells
-               column   = transpose (chop no_of_rows cells)
-  = case (xlayout,ylayout) of
-      (LeftToRight, TopToBottom) = cells
-      (RightToLeft, TopToBottom) = strictTRMap reverseTR cells
-      (LeftToRight, BottomToTop) = reverseTR cells
-      (RightToLeft, BottomToTop) = strictTRMapRev reverseTR cells
+  = grid_normalize xlayout ylayout rows
+where
+	rows = case major of
+             RowMajor = chop no_of_cols cells
+             column   = transpose (chop no_of_rows cells)
+
+grid_unlayout :: !GridLayout ![[a]] -> [a]
+grid_unlayout (major,xlayout,ylayout) rows
+  = case major of
+      RowMajor = flatten cells
+      column   = flatten (transpose cells)
+where
+	cells = grid_normalize xlayout ylayout rows
+
+grid_normalize :: !GridXLayout !GridYLayout ![[a]] -> [[a]]
+grid_normalize LeftToRight TopToBottom cells = cells
+grid_normalize RightToLeft TopToBottom cells = strictTRMap reverseTR cells
+grid_normalize LeftToRight BottomToTop cells = reverseTR cells
+grid_normalize RightToLeft BottomToTop cells = strictTRMapRev reverseTR cells
 
 perhaps_look_up_span :: !Span !ImgTagNo !(ImageTag -> LookupSpan) -> Span
 perhaps_look_up_span span no spanf
@@ -545,7 +556,7 @@ where
 	                                       Host` _     = 'Data.Map'.find host.Img.uniqId newSpans
 	                                       no_host     = (grid_width,grid_height)
 	  #! imgid_offsets                 = offsets_within_grid grid_widths grid_heights imgid_span_align_offsets_grid
-	  #! offsets                       = associate_offset_with_img imgid_offsets imgs
+	  #! offsets                       = map snd (grid_unlayout layout imgid_offsets)
 	  = ({Img | uniqId    = no
 	          , host      = CompositeImg host
 	          , transform = Nothing
@@ -587,11 +598,6 @@ where
 			                   AtTop     = zero
 			                   AtMiddleY = (row_height - img_height) /. 2.0
 			                   AtBottom  =  row_height - img_height
-	
-	associate_offset_with_img :: ![[(ImgTagNo,ImageOffset)]] ![Img] -> [ImageOffset]
-	associate_offset_with_img cells imgs = [fromJust (lookup uniqId offsets) \\ {Img | uniqId} <- imgs]
-	where
-		offsets = flatten cells
 
 attr` :: !(ImageAttr` m) !(Image` m) !ImgNodePath !FontSpans !TextSpans !ImgTables -> (!Img,!ImgTables)
 attr` (BasicImageAttr` attr) image p font_spans text_spans imgTables
