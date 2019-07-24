@@ -54,7 +54,12 @@ generic XMLEncode a :: !a -> XMLEncodeResult
 :: XMLStringAttribute	a = XMLStringAttribute	!XMLQName !String	!a
 :: XMLBoolAttribute		a = XMLBoolAttribute	!XMLQName !Bool		!a
 
-derive XMLEncode OBJECT, CONS of d, FIELD of d, PAIR, EITHER, UNIT, Int, Char, Real, String, Bool
+derive XMLEncode OBJECT, CONS of {gcd_name,gcd_type_def}, FIELD of {gfd_name}, RECORD of {grd_name}, PAIR, EITHER, UNIT, Int, Char, Real, String, Bool
 derive XMLEncode Maybe, Either, (,), (,,), (,,,), []
 derive XMLEncode XMLIntAttribute, XMLCharAttribute, XMLRealAttribute, XMLStringAttribute, XMLBoolAttribute
 
+fromXML       :: XMLDoc -> MaybeErrorString a | XMLDecode{|*|} a
+fromXMLString :: String -> MaybeErrorString a | XMLDecode{|*|} a
+generic XMLDecode a :: [XMLNode] -> MaybeErrorString a
+derive XMLDecode OBJECT, UNIT, CONS of {gcd_name}, EITHER, PAIR, RECORD of {grd_name}, FIELD of {gfd_name}
+derive XMLDecode Int, Char, Real, Bool, String

@@ -1,7 +1,10 @@
 implementation module Text.GenXML
 
-import StdArray, StdBool, StdInt, StdList, StdMisc, StdTuple, StdGeneric, StdFunc, StdString
+import StdEnv
 import Data.Error, Data.Either, Data.Maybe, Text, Data.GenEq
+from Control.Monad import class Monad(bind), >>=
+import Data.Functor
+from Control.Applicative import class <*>(<*>)
 from Text.Parsers.CParsers.ParserCombinators import :: Parser, :: ParsResult, :: CParser, &>, +&+, +&-, -&+, <!>, <&, <&>, <*?>, <@, >?<, @>, begin1, satisfy, symbol, yield, <|>, <+?>
 
 uname :: !String -> XMLQName
@@ -339,31 +342,12 @@ toXMLString a = toString (toXML a)
 generic XMLEncode a :: !a -> XMLEncodeResult
 
 XMLEncode{|OBJECT|} fx (OBJECT o) = fx o
-XMLEncode{|CONS of d|} fx (CONS c)
-	# nodes	= getNodes (fx c)
-	# name	= uname (formatConsName d.gcd_name)
-	| d.gcd_type_def.gtd_num_conses > 1 = XMLEncElem (name,[],nodes)
-	| otherwise							= XMLEncNodes nodes name
-where
-	nonEmpty (XMLElem _ _ [])	= False
-	nonEmpty _					= True
-	
-	formatConsName name
-		| startsWith "_" name	= subString 1 (textSize name - 1) name
-		| otherwise				= name
-XMLEncode{|RECORD of d|} fx (RECORD c)
-	# nodes	= getNodes (fx c)
-	# name	= uname (formatConsName d.grd_name)
-	| not (isEmpty d.grd_fields)		= XMLEncNodes (filter nonEmpty nodes) name
-	| otherwise							= XMLEncNodes nodes name
-where
-	nonEmpty (XMLElem _ _ [])	= False
-	nonEmpty _					= True
-	
-	formatConsName name
-		| startsWith "_" name	= subString 1 (textSize name - 1) name
-		| otherwise				= name
-XMLEncode{|FIELD of d|} fx (FIELD f) = XMLEncElem (uname d.gfd_name,[],getNodes (fx f))
+XMLEncode{|CONS of {gcd_name,gcd_type_def}|} fx (CONS c)
+	= XMLEncNodes (getNodes (fx c)) (uname gcd_name)
+XMLEncode{|RECORD of {grd_name}|} fx (RECORD c)
+	= XMLEncNodes (getNodes (fx c)) (uname grd_name)
+XMLEncode{|FIELD of {gfd_name}|} fx (FIELD f)
+	= XMLEncElem (uname gfd_name,[],getNodes (fx f))
 XMLEncode{|EITHER|} fx fy either = case either of
 	LEFT x	= fx x
 	RIGHT y	= fy y
@@ -421,3 +405,43 @@ getNodes (XMLEncElem elem)		= [toElem elem]
 getNodes (XMLEncText txt)		= [toText txt]
 getNodes (XMLEncNodes nodes _)	= nodes
 getNodes XMLEncNothing			= []
+
+fromXML       :: XMLDoc -> MaybeErrorString a | XMLDecode{|*|} a
+fromXML (XMLDoc _ _ n) = XMLDecode{|*|} [n]
+
+fromXMLString :: String -> MaybeErrorString a | XMLDecode{|*|} a
+fromXMLString a = fromString a >>= fromXML
+
+import Text.GenPrint
+derive gPrint XMLNode, XMLAttr, XMLQName, Maybe
+basicDeXML _ [XMLText t] f = f t
+basicDeXML name [XMLElem (XMLQName Nothing n) [] [XMLText t]] f
+	| n == name = f t
+	= Error ("expected xml name: " +++ name +++ " but got: " +++ n)
+basicDeXML name f _ = Error (name +++ " malformed xml structure: " +++ printToString f)
+
+XMLDecode{|Int|}    e   = basicDeXML "integer" e (Ok o toInt)
+XMLDecode{|Char|}   c   = basicDeXML "character" c (\s->Ok s.[0])
+XMLDecode{|Real|}   r   = basicDeXML "float" r (Ok o toReal)
+XMLDecode{|String|} s   = basicDeXML "string" s Ok
+XMLDecode{|Bool|}   b   = basicDeXML "boolean" b (Ok o (==) "True")
+XMLDecode{|UNIT|}   s   = Ok UNIT
+XMLDecode{|OBJECT|} f s = (\x->OBJECT x) <$> f s
+XMLDecode{|EITHER|} fx fy s = case fx s of
+	Ok a = Ok (LEFT a)
+	Error e = case fy s of
+		Ok a = Ok (RIGHT a)
+		Error e` = Error ("e: " +++ e +++ "\ne:" +++ e`)
+XMLDecode{|PAIR|} fx fy [] = Error "not enough children"
+XMLDecode{|PAIR|} fx fy [l:r] = PAIR <$> fx [l] <*> fy r
+basicField name f [] t = Error ("No nodes available")
+basicField name f [XMLElem (XMLQName _ n) _ s:_] t
+	| name == n = t <$> f s
+	= Error ("expected: " +++ name +++ " but got: " +++ n)
+XMLDecode{|CONS of {gcd_name}|} f s = basicField gcd_name f s \x->CONS x
+XMLDecode{|RECORD of {grd_name}|} f s = basicField grd_name f s \x->RECORD x
+XMLDecode{|RECORD of {grd_name}|} f s = basicField grd_name f s \x->RECORD x
+XMLDecode{|FIELD of {gfd_name}|} f s = basicField gfd_name f s \x->FIELD x
+//XMLEncode{|[]|} fx list = XMLEncNodes (map (wrapToElem o fx) list) (uname "list")
+//XMLEncode{|Maybe|} fx (Just x)	= fx x
+//XMLEncode{|Maybe|} _ Nothing	= XMLEncNothing
