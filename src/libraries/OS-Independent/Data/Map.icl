@@ -16,6 +16,7 @@ from Data.Set import :: Set
 // Ported from Haskell`s Data.Map by Jurriën Stutterheim, 10-09-2014
 
 instance Semigroup (Map k v) | < k where
+	mappend :: !(Map k v) !(Map k v) -> Map k v | < k
     mappend x y = union x y
 
 instance Monoid (Map k v) | < k where

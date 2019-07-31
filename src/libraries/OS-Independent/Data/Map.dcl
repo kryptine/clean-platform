@@ -111,7 +111,8 @@ import StdClass
   | Tip
 
 instance Monoid (Map k v) | < k
-instance Semigroup (Map k v) | < k
+instance Semigroup (Map k v) | < k where
+	mappend :: !(Map k v) !(Map k v) -> Map k v | < k
 
 instance == (Map k v) | Eq k  & Eq v
 instance <  (Map k v) | Ord k & Ord v
