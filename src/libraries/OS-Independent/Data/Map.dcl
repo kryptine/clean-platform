@@ -276,7 +276,7 @@ toAscList m :== foldrWithKey (\k x xs -> [(k,x):xs]) [] m
  *     m = fromList elems
  * @complexity O(n*log n)
  */
-fromList :: !u:[v:(!a, !b)] -> Map a b | == a & < a, [u <= v]
+fromList :: !u:[v:(a, b)] -> Map a b | == a & < a, [u <= v]
 
 /**
  * The keys of all keys of a map.

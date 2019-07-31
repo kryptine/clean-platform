@@ -972,7 +972,7 @@ traverseWithKey f (Bin s k v l r) = flip (Bin s k) <$> traverseWithKey f l <*> f
 // > let f a b = (a ++ b, b ++ "X")
 // > mapAccum f "Everything: " (fromList [(5,"a"), (3,"b")]) == ("Everything: ba", fromList [(3, "bX"), (5, "aX")])
 
-mapAccum :: !(a b -> (!a, !c)) !a !(Map k b) -> (!a, !Map k c)
+mapAccum :: !(a b -> (a, c)) !a !(Map k b) -> (!a, !Map k c)
 mapAccum f a m = mapAccumWithKey (\a` _ x` -> f a` x`) a m
 
 // | /O(n)/. The function 'mapAccumWithKey` threads an accumulating
@@ -981,12 +981,12 @@ mapAccum f a m = mapAccumWithKey (\a` _ x` -> f a` x`) a m
 // > let f a k b = (a ++ " " ++ (show k) ++ "-" ++ b, b ++ "X")
 // > mapAccumWithKey f "Everything:" (fromList [(5,"a"), (3,"b")]) == ("Everything: 3-b 5-a", fromList [(3, "bX"), (5, "aX")])
 
-mapAccumWithKey :: !(a k b -> (!a, !c)) !a !(Map k b) -> (!a, !Map k c)
+mapAccumWithKey :: !(a k b -> (a, c)) !a !(Map k b) -> (!a, !Map k c)
 mapAccumWithKey f a t = mapAccumL f a t
 
 // | /O(n)/. The function 'mapAccumL' threads an accumulating
 // argument through the map in ascending order of keys.
-mapAccumL :: !(a k b -> (!a, !c)) !a !(Map k b) -> (!a, !Map k c)
+mapAccumL :: !(a k b -> (a, c)) !a !(Map k b) -> (!a, !Map k c)
 mapAccumL _ a Tip               = (a,Tip)
 mapAccumL f a (Bin sx kx x l r)
   #! (a1,l`) = mapAccumL f a l
@@ -996,7 +996,7 @@ mapAccumL f a (Bin sx kx x l r)
 
 // | /O(n)/. The function 'mapAccumR' threads an accumulating
 // argument through the map in descending order of keys.
-mapAccumRWithKey :: !(a k b -> (!a, !c)) !a !(Map k b) -> (!a, !Map k c)
+mapAccumRWithKey :: !(a k b -> (a, c)) !a !(Map k b) -> (!a, !Map k c)
 mapAccumRWithKey _ a Tip = (a,Tip)
 mapAccumRWithKey f a (Bin sx kx x l r)
   #! (a1,r`) = mapAccumRWithKey f a r
@@ -1177,7 +1177,7 @@ foldMapWithKey f (Bin _ k v l r) = mappend (foldMapWithKey f l) (mappend (f k v)
 // > assocs (fromList [(5,"a"), (3,"b")]) == [(3,"b"), (5,"a")]
 // > assocs newMap == []
 
-assocs :: !(Map k a) -> [(!k, !a)]
+assocs :: !(Map k a) -> [(k, a)]
 assocs m = toAscList m
 
 keysSet :: !(Map k a) -> Set k
@@ -1188,22 +1188,22 @@ fromSet :: !(k -> a) !(Set k) -> Map k a
 fromSet _ 'Data.Set'.Tip            = Tip
 fromSet f ('Data.Set'.Bin sz x l r) = Bin sz x (f x) (fromSet f l) (fromSet f r)
 
-fromList :: !u:[v:(!a, !b)] -> Map a b | == a & < a, [u <= v]
+fromList :: !u:[v:(a, b)] -> Map a b | == a & < a, [u <= v]
 fromList [] = Tip
 fromList [(kx, x)] = Bin 1 kx x Tip Tip
 fromList [(kx0, x0) : xs0]
   | not_ordered kx0 xs0 = fromList` (Bin 1 kx0 x0 Tip Tip) xs0
   | otherwise = go 1 (Bin 1 kx0 x0 Tip Tip) xs0
   where
-    not_ordered :: !a !u:[v:(!a, !b)] -> Bool | == a & < a, [u <= v]
+    not_ordered :: !a !u:[v:(a, b)] -> Bool | == a & < a, [u <= v]
     not_ordered _ [] = False
     not_ordered kx [(ky,_) : _] = kx >= ky
 
-    fromList` :: !(Map a b) !u:[v:(!a, !b)] -> Map a b | == a & < a, [u <= v]
+    fromList` :: !(Map a b) !u:[v:(a, b)] -> Map a b | == a & < a, [u <= v]
     fromList` t0 xs = foldl ins t0 xs
       where ins t (k,x) = put k x t
 
-    go :: !Int !(Map a b) !u:[v:(!a, !b)] -> Map a b | == a & < a, [u <= v]
+    go :: !Int !(Map a b) !u:[v:(a, b)] -> Map a b | == a & < a, [u <= v]
     go _ t [] = t
     go _ t [(kx, x)] = putMax kx x t
     go s l xs=:[(kx, x) : xss]
@@ -1217,7 +1217,7 @@ fromList [(kx0, x0) : xs0]
     // If ys is nonnewMap, the keys in ys are not ordered with respect to tree
     // and must be puted using fromList`. Otherwise the keys have been
     // ordered so far.
-    create :: !Int !u:[v:(!a, !b)] -> (!Map a b, ![(!a, !b)], ![(!a, !b)]) | == a & < a, [u <= v]
+    create :: !Int !u:[v:(a, b)] -> (!Map a b, ![(a, b)], ![(a, b)]) | == a & < a, [u <= v]
     create _ [] = (Tip, [], [])
     create s xs=:[xp : xss]
       | s == 1 = case xp of (kx, x) | not_ordered kx xss -> (Bin 1 kx x Tip Tip, [], xss)
@@ -1243,7 +1243,7 @@ fromListWith f xs :== fromListWithKey (\_ x y -> f x y) xs
 // > fromListWithKey f [(5,"a"), (5,"b"), (3,"b"), (3,"a"), (5,"a")] == fromList [(3, "3ab"), (5, "5a5ba")]
 // > fromListWithKey f [] == newMap
 
-fromListWithKey :: !(k a a -> a) ![(!k, !a)] -> Map k a | < k
+fromListWithKey :: !(k a a -> a) ![(k, a)] -> Map k a | < k
 fromListWithKey f xs = foldl (ins f) newMap xs
   where
   ins :: !(k a a -> a) !(Map k a) !(!k, !a) -> Map k a | < k
@@ -1269,7 +1269,7 @@ fromListWithKey f xs = foldl (ins f) newMap xs
 //
 // > toDescList (fromList [(5,"a"), (3,"b")]) == [(5,"a"), (3,"b")]
 
-toDescList :: !(Map k a) -> [(!k, !a)]
+toDescList :: !(Map k a) -> [(k, a)]
 toDescList m = foldlWithKey (\xs k x -> [(k,x):xs]) [] m
 
 //////////////////////////////////////////////////////////////////////
@@ -1287,7 +1287,7 @@ toDescList m = foldlWithKey (\xs k x -> [(k,x):xs]) [] m
 // > valid (fromAscList [(3,"b"), (5,"a"), (5,"b")]) == True
 // > valid (fromAscList [(5,"a"), (3,"b"), (5,"b")]) == False
 
-fromAscList :: ![(!k, !a)] -> Map k a | == k
+fromAscList :: ![(k, a)] -> Map k a | == k
 fromAscList xs = fromAscListWithKey (\_ x _ -> x) xs
 
 // | /O(n)/. Build a map from an ascending list in linear time with a combining function for equal keys.
@@ -1297,7 +1297,7 @@ fromAscList xs = fromAscListWithKey (\_ x _ -> x) xs
 // > valid (fromAscListWith (++) [(3,"b"), (5,"a"), (5,"b")]) == True
 // > valid (fromAscListWith (++) [(5,"a"), (3,"b"), (5,"b")]) == False
 
-fromAscListWith :: !(a a -> a) ![(!k, !a)] -> Map k a | == k
+fromAscListWith :: !(a a -> a) ![(k, a)] -> Map k a | == k
 fromAscListWith f xs = fromAscListWithKey (\_ x y -> f x y) xs
 
 // | /O(n)/. Build a map from an ascending list in linear time with a
@@ -1309,18 +1309,18 @@ fromAscListWith f xs = fromAscListWithKey (\_ x y -> f x y) xs
 // > valid (fromAscListWithKey f [(3,"b"), (5,"a"), (5,"b"), (5,"b")]) == True
 // > valid (fromAscListWithKey f [(5,"a"), (3,"b"), (5,"b"), (5,"b")]) == False
 
-fromAscListWithKey :: !(k a a -> a) ![(!k, !a)] -> Map k a | == k
+fromAscListWithKey :: !(k a a -> a) ![(k, a)] -> Map k a | == k
 fromAscListWithKey f xs = fromDistinctAscList (combineEq f xs)
   where
   // [combineEq f xs] combines equal elements with function [f] in an ordered list [xs]
-  combineEq :: !(k a a -> a) ![(!k, !a)] -> [(!k, !a)] | == k
+  combineEq :: !(k a a -> a) ![(k, a)] -> [(k, a)] | == k
   combineEq f xs`
     = case xs` of
         []     -> []
         [x]    -> [x]
         [x:xx] -> combineEq` f x xx
 
-  combineEq` :: !(k a a -> a)  !(!k, !a) ![(!k, !a)] -> [(!k, !a)] | == k
+  combineEq` :: !(k a a -> a)  !(!k, !a) ![(k, a)] -> [(k, a)] | == k
   combineEq` _ z [] = [z]
   combineEq` f z=:(kz,zz) [x=:(kx,xx):xs`]
     | kx == kz
@@ -1337,16 +1337,16 @@ fromAscListWithKey f xs = fromDistinctAscList (combineEq f xs)
 
 // For some reason, when 'singleton' is used in fromDistinctAscList or in
 // create, it is not inlined, so we inline it manually.
-fromDistinctAscList :: ![(!k, !a)] -> Map k a
+fromDistinctAscList :: ![(k, a)] -> Map k a
 fromDistinctAscList [] = Tip
 fromDistinctAscList [(kx0, x0) : xs0] = go 1 (Bin 1 kx0 x0 Tip Tip) xs0
   where
-  go :: !Int !(Map a b) ![(!a, !b)] -> Map a b
+  go :: !Int !(Map a b) ![(a, b)] -> Map a b
   go _ t [] = t
   go s l [(kx, x) : xs] = case create s xs of
                             (r, ys) -> go (s << 1) (link kx x l r) ys
 
-  create :: !Int ![(!a, !b)] -> (!Map a b, ![(!a, !b)])
+  create :: !Int ![(a, b)] -> (!Map a b, ![(a, b)])
   create _ [] = (Tip, [])
   create s xs=:[x` : xs`]
     | s == 1 = case x` of (kx, x) -> (Bin 1 kx x Tip Tip, xs`)

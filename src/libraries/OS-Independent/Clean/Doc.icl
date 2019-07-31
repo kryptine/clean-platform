@@ -186,7 +186,7 @@ where
 		Left es           -> Left (UnknownError "failed to parse property signature")
 		Right (name,args) -> Right (ForAll name args, [])
 	where
-		parser :: Parser Char (!String, ![(!String, !Type)])
+		parser :: Parser Char (!String, ![(String, Type)])
 		parser = skipSpaces *>
 			pMany (pSatisfy ((<>) ':')) >>= \name ->
 			skipSpaces *> pToken ':' *>
