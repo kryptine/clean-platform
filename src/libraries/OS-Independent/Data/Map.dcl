@@ -111,7 +111,8 @@ import StdClass
   | Tip
 
 instance Monoid (Map k v) | < k
-instance Semigroup (Map k v) | < k
+instance Semigroup (Map k v) | < k where
+	mappend :: !(Map k v) !(Map k v) -> Map k v | < k
 
 instance == (Map k v) | Eq k  & Eq v
 instance <  (Map k v) | Ord k & Ord v
@@ -276,7 +277,7 @@ toAscList m :== foldrWithKey (\k x xs -> [(k,x):xs]) [] m
  *     m = fromList elems
  * @complexity O(n*log n)
  */
-fromList :: !u:[v:(!a, !b)] -> Map a b | == a & < a, [u <= v]
+fromList :: !u:[v:(a, b)] -> Map a b | == a & < a, [u <= v]
 
 /**
  * The keys of all keys of a map.

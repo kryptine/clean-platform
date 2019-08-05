@@ -26,7 +26,7 @@ from Data.GenEq import generic gEq
 			| JSONReal !Real
 			| JSONString !String
 			| JSONArray ![JSONNode]
-			| JSONObject ![(!String,!JSONNode)]
+			| JSONObject ![(String,JSONNode)]
 			| JSONRaw !String
 			| JSONError
 /**
@@ -156,7 +156,7 @@ JSONDecode{|CONS of {gcd_name}|} fx _ l=:[JSONArray [JSONString name:fields] :xs
 JSONDecode{|CONS|} fx _ l = (Nothing, l)
 JSONDecode{|PAIR|} fx fy _ l = d1 fy (fx False l) l
   where
-  d1 :: !(Bool [JSONNode] -> (!Maybe b, ![JSONNode])) !(!Maybe a, ![JSONNode]) ![JSONNode]
+  d1 :: !(Bool [JSONNode] -> (Maybe b, [JSONNode])) !(!Maybe a, ![JSONNode]) ![JSONNode]
      -> (!Maybe (PAIR a b), ![JSONNode])
   d1 fy (Just x,xs)  l = d2 x (fy False xs) l
   d1 _  (Nothing, _) l = (Nothing, l)
@@ -181,7 +181,7 @@ JSONDecode{|FIELD of {gfd_name}|} fx _ l =:[JSONObject fields]
       (Just x, _) = (Just (FIELD x), l)
       (_, _)      = (Nothing, l)
   where
-  findField :: !String ![(!String, !JSONNode)] -> [JSONNode]
+  findField :: !String ![(String, JSONNode)] -> [JSONNode]
   findField match [(l,x):xs]
     | l == match = [x]
     | otherwise  = findField match xs

@@ -149,7 +149,7 @@ map :: !(a -> b) !(IntMap a) -> IntMap b
 // > mapWithKey f (fromList [(5,"a"), (3,"b")]) == fromList [(3, "3:b"), (5, "5:a")]
 mapWithKey :: !(Int a -> b) !(IntMap a) -> IntMap b
 
-mapSt :: !(a *st -> *(!b, !*st)) !.(IntMap a) !*st -> *(!IntMap b, !*st)
+mapSt :: !(a *st -> *(b, *st)) !.(IntMap a) !*st -> *(!IntMap b, !*st)
 
 /**
  * @property is distinct and sorted: A.list :: [(Int, a)]:
@@ -157,14 +157,14 @@ mapSt :: !(a *st -> *(!b, !*st)) !.(IntMap a) !*st -> *(!IntMap b, !*st)
  *     where
  *         distinctAscList = sort $ removeDup list
  */
-toList :: !(IntMap a) -> [(!Int, !a)]
+toList :: !(IntMap a) -> [(Int, a)]
 
-toAscList :: !(IntMap a) -> [(!Int, !a)]
+toAscList :: !(IntMap a) -> [(Int, a)]
 
-fromList :: ![(!Int, !a)] -> IntMap a
+fromList :: ![(Int, a)] -> IntMap a
 
 // | /O(n*min(n,W))/. Create a map from a list of key\/value pairs with a combining function. See also 'fromAscListWith'.
 //
 // > fromListWith (++) [(5,"a"), (5,"b"), (3,"b"), (3,"a"), (5,"a")] == fromList [(3, "ab"), (5, "aba")]
 // > fromListWith (++) [] == empty
-fromListWith :: !(a a -> a) ![(!Int, !a)] -> IntMap a
+fromListWith :: !(a a -> a) ![(Int, a)] -> IntMap a

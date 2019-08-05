@@ -81,7 +81,7 @@ copyNode start (JSONObject items) buffer
 	#! (start, buffer) = copyObjectItems start items buffer
 	= (start + 1, {buffer &	[start] = '}'})
 where
-    copyObjectItems :: !Int ![(!String, !JSONNode)] !*String -> *(!Int, !*String)
+    copyObjectItems :: !Int ![(String, JSONNode)] !*String -> *(!Int, !*String)
 	copyObjectItems start [] buffer = (start,buffer)
 	copyObjectItems start [(l,x)] buffer
 		# (start,buffer) = let len = size l in (start + len + 3 , copyChars (start + 1) len l {buffer & [start] = '"', [start + len + 1] = '"', [start + len + 2] = ':'})
@@ -319,7 +319,7 @@ where
 			= (JSONObject [], offset+1)
 			= parse_object_items offset [] offset input
 	where
-		parse_object_items :: !Int !*[(!{#Char}, !JSONNode)] !Int !{#Char} -> (!JSONNode,!Int)
+		parse_object_items :: !Int !*[({#Char}, JSONNode)] !Int !{#Char} -> (!JSONNode,!Int)
 		parse_object_items offset items offset_after_bracket_open input
 			| offset<size input
 				| input.[offset]=='"'
@@ -363,7 +363,7 @@ where
 						= (jsonUnescape string, offset+1)
 					= ("",-1) // missing '"'
 
-		parse_object_items_after_label_and_colon :: !{#Char} !Int !*[(!{#Char}, !JSONNode)] !Int !{#Char} -> (!JSONNode,!Int)
+		parse_object_items_after_label_and_colon :: !{#Char} !Int !*[({#Char}, JSONNode)] !Int !{#Char} -> (!JSONNode,!Int)
 		parse_object_items_after_label_and_colon label offset items offset_after_brace_open input
 			#! (item,offset) = parse offset input
 			| offset<size input && input.[offset]==','
@@ -531,7 +531,7 @@ JSONDecode{|UNIT|} _ l					= (Just UNIT, l)
 
 JSONDecode{|PAIR|} fx fy _ l = d1 fy (fx False l) l
   where
-  d1 :: !(Bool [JSONNode] -> (!Maybe b, ![JSONNode])) !(!Maybe a, ![JSONNode]) ![JSONNode]
+  d1 :: !(Bool [JSONNode] -> (Maybe b, [JSONNode])) !(!Maybe a, ![JSONNode]) ![JSONNode]
      -> (!Maybe (PAIR a b), ![JSONNode])
   d1 fy (Just x,xs)  l = d2 x (fy False xs) l
   d1 _  (Nothing, _) l = (Nothing, l)
@@ -575,7 +575,7 @@ JSONDecode{|FIELD of {gfd_name}|} fx _ l =:[JSONObject fields]
       (Just x, _) = (Just (FIELD x), l)
       (_, _)      = (Nothing, l)
   where
-  findField :: !String ![(!String, !JSONNode)] -> [JSONNode]
+  findField :: !String ![(String, JSONNode)] -> [JSONNode]
   findField match [(l,x):xs]
     | l == match = [x]
     | otherwise  = findField match xs
@@ -708,7 +708,7 @@ JSONDecode{|{!}|} fx _ l =:[JSONArray items:xs]
 		_				= (Nothing, l)
 JSONDecode{|{!}|} fx _ l = (Nothing, l)
 
-decodeItems :: !(Bool [JSONNode] -> (!Maybe a, ![JSONNode])) ![JSONNode] -> Maybe [a]
+decodeItems :: !(Bool [JSONNode] -> (Maybe a, [JSONNode])) ![JSONNode] -> Maybe [a]
 decodeItems fx [] 		= Just []
 decodeItems fx [ox:oxs]	= case fx False [ox] of
 	(Just x, _)	= case decodeItems fx oxs of
@@ -753,7 +753,7 @@ where
 		| otherwise								= Nothing
 	findNode _ _		= Nothing
 	
-    findField :: !String ![(!String, !JSONNode)] -> Maybe JSONNode
+    findField :: !String ![(String, JSONNode)] -> Maybe JSONNode
 	findField s []			= Nothing
 	findField s [(l,x):xs]	= if (l == s) (Just x) (findField s xs)
 

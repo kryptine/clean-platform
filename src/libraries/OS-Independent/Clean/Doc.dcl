@@ -98,7 +98,7 @@ instance docDescription ParamDoc
  *   the arguments (the second argument). The first argument is the name.
  */
 :: Property
-	= ForAll !String ![(!String,!Type)] !String
+	= ForAll !String ![(String,Type)] !String
 
 /**
  * When a property type contains type variables, a `PropertyVarInstantiation`
@@ -251,7 +251,7 @@ parseDoc :: !String -> Either ParseError (!d, ![ParseWarning]) | docBlockToDoc{|
  * @representation An order list of key-value pairs. A key can occur multiple
  *   times. The description has key `description`.
  */
-:: DocBlock :== [(!String, !String)]
+:: DocBlock :== [(String, String)]
 
 /**
  * The magic for {{`parseDoc`}}. Usually, a record type like {{`FunctionDoc`}}

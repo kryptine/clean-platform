@@ -103,7 +103,7 @@ unsearchIndex :: !Index !*(NativeDB v a) -> *NativeDB v a
 /**
  * Like {{`search`}}, but search for specific indices.
  */
-searchIndices :: !SearchMode ![(!Index, ![!a!])] !*(NativeDB v a) -> *NativeDB v a
+searchIndices :: !SearchMode ![(Index, [!a!])] !*(NativeDB v a) -> *NativeDB v a
 
 /**
  * Exclude a list of indices.
@@ -119,12 +119,12 @@ unsearchIndices` :: !{#Index} !*(NativeDB v a) -> *NativeDB v a
  * Like {{`searchIndices`}}, but also check on some property.
  * This search always uses the {{`AddExcluded`}} {{`SearchMode`}}.
  */
-searchWithIndices :: !(v -> (Bool, ![!a!])) ![Index] !*(NativeDB v a) -> *NativeDB v a
+searchWithIndices :: !(v -> (Bool, [!a!])) ![Index] !*(NativeDB v a) -> *NativeDB v a
 
 /**
  * Like {{`searchWithIndices`}}, but with an array of indices.
  */
-searchWithIndices` :: !(v -> (Bool, ![!a!])) !{#Index} !*(NativeDB v a) -> *NativeDB v a
+searchWithIndices` :: !(v -> (Bool, [!a!])) !{#Index} !*(NativeDB v a) -> *NativeDB v a
 
 /**
  * Retrieve an entry.
