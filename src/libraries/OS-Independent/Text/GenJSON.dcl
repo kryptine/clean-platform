@@ -24,7 +24,7 @@ from Data.GenEq import generic gEq
 			| JSONBool !Bool
 			| JSONInt !Int
 			| JSONReal !Real
-			| JSONString !String
+			| JSONString !String //* Only control characters and '"' will be escaped
 			| JSONArray ![JSONNode]
 			| JSONObject ![(String,JSONNode)]
 			| JSONRaw !String
