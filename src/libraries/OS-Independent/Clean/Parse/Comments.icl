@@ -97,7 +97,7 @@ scanCommentsFile f
 
 :: ScanState =
 	{ comment_level :: !Int
-	, comment_idxs  :: ![(!Int,!Int,!Int)] // line, col, idx
+	, comment_idxs  :: ![(Int,Int,Int)] // line, col, idx
 	, ln            :: !Int
 	, col           :: !Int
 	, input         :: !String
