@@ -13,10 +13,13 @@ JSONDecode{|TestEvent|} b json = case JSONDecode{|*|} b json of
 		(Just ee, json) -> (Just (EndEvent ee), json)
 		(Nothing, json) -> (Nothing, json)
 
-JSONEncode{|StartEvent|} _ startEvent = [ JSONObject [ ("name",  JSONString startEvent.StartEvent.name)
-                                                     , ("event", JSONString "start")
-                                                     ]
-                                        ]
+JSONEncode{|StartEvent|} _ startEvent = [ JSONObject
+	[ ("name",  JSONString startEvent.StartEvent.name)
+	, ("event", JSONString "start")
+	: case startEvent.StartEvent.module_name of
+		Nothing -> []
+		Just m  -> [("module",JSONString m)]
+	]]
 
 JSONDecode{|StartEvent|} _ [JSONObject objFields : rest] = (mbEvent, rest)
 where
@@ -24,7 +27,7 @@ where
     mbEvent = getField "name"  >>= \name  ->
               getField "event" >>= \event ->
               if (event == "start")
-                 (pure {StartEvent | name = name})
+                 (pure {StartEvent | name = name, module_name = getField "module"})
                  mzero
 
 	getField :: String -> Maybe a | JSONDecode{|*|} a
@@ -35,7 +38,10 @@ JSONEncode{|EndEvent|} _ endEvent = [JSONObject
 	[ ("name", JSONString endEvent.EndEvent.name)
 	, ("message", JSONString endEvent.message)
 	, ("event", JSONString (typeToString endEvent.event))
-	: case endEvent.event of
+	: case endEvent.EndEvent.module_name of
+		Nothing -> []
+		Just m  -> [("module",JSONString m)]
+	++ case endEvent.event of
 		Failed (Just r) -> [("failReason", case JSONEncode{|*|} False r of
 			[JSONArray r] -> JSONArray r
 			r             -> JSONArray r)]
@@ -54,7 +60,7 @@ where
 		getField "name" >>= \name ->
 		getField "event" >>= \event ->
 		getField "message" >>= \message ->
-		let e = {name=name, message=message, event=Passed} in case event of
+		let e = {name=name, message=message, event=Passed, module_name=getField "module"} in case event of
 			"passed"  -> pure e
 			"failed"  -> pure {e & event = Failed $ getField "failReason"}
 			"skipped" -> pure {e & event=Skipped}

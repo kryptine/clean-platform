@@ -24,14 +24,16 @@ from Text.GenJSON import generic JSONEncode, generic JSONDecode, :: JSONNode, ::
  * Specialised JSONEncode/JSONDecode instances are used for this type, which
  * have to be adapted in case the type definition is changed!
  */
-:: StartEvent = { name    :: !String //* The test's name
+:: StartEvent = { name        :: !String       //* The test's name
+                , module_name :: !Maybe String //* The module to which the test belongs
                 }
 /**
  * Event emitted after a test has finished.
  */
-:: EndEvent   = { name    :: !String       //* The test's name
-                , event   :: !EndEventType //* The event's type, indicating success
-                , message :: !String       //* Message providing an explanation for the result
+:: EndEvent   = { name        :: !String       //* The test's name
+                , module_name :: !Maybe String //* The module to which the test belongs
+                , event       :: !EndEventType //* The event's type, indicating success
+                , message     :: !String       //* Message providing an explanation for the result
                 }
 
 /**
