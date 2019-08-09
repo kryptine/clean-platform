@@ -14,7 +14,12 @@ test-nightly:
   image: "camilstaps/clean:nightly"
   script:
     - COCLPATH=./compiler make -C tests/linux64 run
-    - stdbuf -o0 -e0 testproperties -IL Dynamics -d src/libraries/OS-Independent -P Quiet -r -T 'Tests 100000' -C -h -C 100m
+    - cleantest -r testproperties --options '-IL;Dynamics;-d;src/libraries/OS-Independent;-P;OutputTestEvents;-T;Tests 100000;-C;-h;-C;100m;-r' --junit junit.xml
+  artifacts:
+    paths:
+      - junit.xml
+    reports:
+      junit: junit.xml
 
 test-stable:
   before_script:
