@@ -1,6 +1,7 @@
 implementation module Testing.TestEvents
 
-import Text.GenJSON, Control.Monad, StdFunctions, StdTuple, StdList, Data.Maybe, Control.Applicative, Data.Func
+import StdEnv
+import Text.GenJSON, Control.Monad, Data.Maybe, Control.Applicative, Data.Func
 import Data.Functor
 import Data.List
 
@@ -16,9 +17,11 @@ JSONDecode{|TestEvent|} b json = case JSONDecode{|*|} b json of
 JSONEncode{|StartEvent|} _ startEvent = [ JSONObject
 	[ ("name",  JSONString startEvent.StartEvent.name)
 	, ("event", JSONString "start")
-	: case startEvent.StartEvent.module_name of
+	: case startEvent.StartEvent.location of
 		Nothing -> []
-		Just m  -> [("module",JSONString m)]
+		Just l  -> case JSONEncode{|*|} True l of
+			[json] -> [("location",json)]
+			_      -> abort "error in JSONEncode_StartEvent\n"
 	]]
 
 JSONDecode{|StartEvent|} _ [JSONObject objFields : rest] = (mbEvent, rest)
@@ -27,7 +30,7 @@ where
     mbEvent = getField "name"  >>= \name  ->
               getField "event" >>= \event ->
               if (event == "start")
-                 (pure {StartEvent | name = name, module_name = getField "module"})
+                 (pure {StartEvent | name = name, location = getField "location"})
                  mzero
 
 	getField :: String -> Maybe a | JSONDecode{|*|} a
@@ -38,9 +41,11 @@ JSONEncode{|EndEvent|} _ endEvent = [JSONObject
 	[ ("name", JSONString endEvent.EndEvent.name)
 	, ("message", JSONString endEvent.message)
 	, ("event", JSONString (typeToString endEvent.event))
-	: case endEvent.EndEvent.module_name of
+	: case endEvent.EndEvent.location of
 		Nothing -> []
-		Just m  -> [("module",JSONString m)]
+		Just l  -> case JSONEncode{|*|} True l of
+			[json] -> [("location",json)]
+			_      -> abort "error in JSONEncode_EndEvent\n"
 	++ case endEvent.event of
 		Failed (Just r) -> [("failReason", case JSONEncode{|*|} False r of
 			[JSONArray r] -> JSONArray r
@@ -60,7 +65,7 @@ where
 		getField "name" >>= \name ->
 		getField "event" >>= \event ->
 		getField "message" >>= \message ->
-		let e = {name=name, message=message, event=Passed, module_name=getField "module"} in case event of
+		let e = {name=name, message=message, event=Passed, location=getField "location"} in case event of
 			"passed"  -> pure e
 			"failed"  -> pure {e & event = Failed $ getField "failReason"}
 			"skipped" -> pure {e & event=Skipped}
@@ -135,5 +140,5 @@ where
 		f    -> Just (Other f)
 JSONDecode{|Relation|} _ _ = (Nothing, [])
 
-derive JSONEncode FailReason, CounterExample
-derive JSONDecode FailReason, CounterExample
+derive JSONEncode TestLocation, FailReason, CounterExample
+derive JSONDecode TestLocation, FailReason, CounterExample
