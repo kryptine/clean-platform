@@ -100,10 +100,18 @@ where
 		push_a 0
 	}
 
+	// This function destructively updates the length of the string. Because
+	// the decoded value is always shorter than the original value, this can be
+	// done safely (i.e., we don't have to worry about corrupting the elements
+	// on the heap after this string). The leftover bytes will be ignored by
+	// the garbage collector (it is comparable to the case where a thunk is
+	// overwritten by a smaller head normal form).
+	// Note that we cannot use `pushI -2; update INT 0 1` because this will
+	// cause a runtime error when checking indexes (clm's -ci) is enabled.
 	setLength :: !Int !.String -> .String
 	setLength len s = code {
-		pushI -2
-		update INT 0 1
+		fill_r _STRING_ 0 1 0 0 0
+		pop_b 1
 	}
 
 decodedSize :: !u:String -> (!Int, !u:String)
