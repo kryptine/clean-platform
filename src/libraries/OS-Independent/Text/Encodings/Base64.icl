@@ -70,82 +70,99 @@ where
 	| otherwise = addLineBreaks` (src % (len,(size src))) (dest+++(src % (0,len-1))+++"\n") len
 
 base64Decode :: !.String -> .String
-base64Decode s = decodeString (removeLineBreaks s) decodeWithStdAlphabet
+base64Decode s = decodeString s decodeWithStdAlphabet
 
 base64URLDecode :: !.String -> .String
-base64URLDecode s = decodeString (removeLineBreaks s) decodeWithUrlAlphabet
+base64URLDecode s = decodeString s decodeWithUrlAlphabet
 
 decodeString :: !.String !Alphabet -> .String
 decodeString s a
-  | srcSize bitand 3 <> 0 = abort "Base64: Invalid length, size of decoding string must be a multitude of 4."
-  #! destString = createArray destSize '\0'
-  = decodeString` destString 0 0
-  where
-  decodeString` :: !*{#Char} !Int !Int -> *{#Char}
-  decodeString` dest src_o dest_o
-    | src_o < srcSize - 4 = decodeString` (decodeCommonOctet dest src_o dest_o) (src_o + 4) (dest_o + 3)
-    | src_o < srcSize     = decodeLastOctet dest
-    | otherwise           = dest
-    where
-    decodeLastOctet :: !*{#Char} -> *{#Char}
-    decodeLastOctet dest
-      | s.[src_o + 2] == '='
-        // lose the last four obsolete bits (2*6-8b)
-        # oct = (fromChar a.[toInt s.[src_o]]     << 2) +
-                 (fromChar a.[toInt s.[src_o + 1]] >> 4)
-        # dest & [dest_o] = toChar oct
-        = dest
-      | s.[src_o + 3] == '='
-        #! oct = (fromChar a.[toInt s.[src_o]]     << 10) +
-                 (fromChar a.[toInt s.[src_o + 1]] << 4)  +
-                 (fromChar a.[toInt s.[src_o + 2]] >> 2)
-        // lose the last two obsolete bits (3*6-2*8b)
-        # dest & [dest_o+1] = toChar oct
-        # dest & [dest_o]   = toChar (oct >> 8)
-        = dest
-      | otherwise = decodeCommonOctet dest src_o dest_o
-  decodeCommonOctet :: !*String !Int !Int -> *String
-  decodeCommonOctet dest src_o dest_o
-    #! oct = ((fromChar a.[toInt (s.[src_o])])     << 18) +
-             ((fromChar a.[toInt (s.[src_o + 1])]) << 12) +
-             ((fromChar a.[toInt (s.[src_o + 2])]) << 6)  +
-              (fromChar a.[toInt (s.[src_o + 3])])
-    # dest & [dest_o + 2] = toChar oct
-    # dest & [dest_o + 1] = toChar (oct >> 8)
-    # dest & [dest_o]     = toChar (oct >> 16)
-    = dest
+	#! (sz,s) = usize s
+	#! (destSize,s) = decodedSize s
+	#! destString = createArray destSize '\0'
+	= decodeString` s sz a destString 0 0
 
-  srcSize = size s
-  destSize
-    | srcSize == 0            = 0
-    #! d = srcSize * 3 / 4
-    | s.[srcSize - 2] == '=' = d - 2
-    | s.[srcSize - 1] == '=' = d - 1
-    | otherwise              = d
+base64DecodeUnique :: !*String -> .String
+base64DecodeUnique s = decodeUnique s decodeWithStdAlphabet
 
-removeLineBreaks :: !{#Char} -> {#Char}
-removeLineBreaks src
-//	= {char \\ char <-: src | char <> '\n'}
-	#! n_line_breaks = count_line_breaks 0 0 src
-	| n_line_breaks==0
-		= src
-		#! s = createArray (size src-n_line_breaks) '\0';
-		= copy_without_line_breaks 0 0 src s
+base64URLDecodeUnique :: !*String -> .String
+base64URLDecodeUnique s = decodeUnique s decodeWithUrlAlphabet
+
+decodeUnique :: !*String !Alphabet -> .String
+decodeUnique s a
+	#! (destSize,s) = decodedSize s
+	#! (src,dest) = duplicate s
+	#! dest = decodeString` src (size src) a dest 0 0
+	= setLength destSize dest
 where
-	copy_without_line_breaks :: !Int !Int !{#Char} !*{#Char} -> *{#Char}
-	copy_without_line_breaks s_i d_i s d
-		| s_i<size s
-			| s.[s_i]<>'\n'
-				#! d & [d_i] = s.[s_i]
-				= copy_without_line_breaks (s_i + 1) (d_i + 1) s d
-				= copy_without_line_breaks (s_i + 1) d_i s d
-			= d
-	
-	count_line_breaks :: !Int !Int !{#Char} -> Int
-	count_line_breaks i n_line_breaks s
-		| i<size s
-			| s.[i]<>'\n'
-				= count_line_breaks (i + 1) n_line_breaks s
-				= count_line_breaks (i + 1) (n_line_breaks + 1) s
-			= n_line_breaks
+	duplicate :: !.String -> (!String, !.String)
+	duplicate s = code {
+		push_a 0
+	}
 
+	setLength :: !Int !.String -> .String
+	setLength len s = code {
+		pushI -2
+		update INT 0 1
+	}
+
+decodedSize :: !u:String -> (!Int, !u:String)
+decodedSize s
+	#! (srcSize,s) = usize s
+	| srcSize == 0 = (0,s)
+	#! (nnl,s) = countNewlines (srcSize-1) 0 s
+	#! (neq,s) = countEqualSigns (srcSize-1) 0 s
+	= ((srcSize-nnl)*3/4-neq,s)
+where
+	countNewlines :: !Int !Int !u:String -> (!Int, !u:String)
+	countNewlines -1 n s = (n,s)
+	countNewlines i n s
+		# (c,s) = s![i]
+		= case c of
+			'\n' -> countNewlines (i-1) (n+1) s
+			_    -> countNewlines (i-1) n     s
+
+	countEqualSigns :: !Int !Int !u:String -> (!Int, !u:String)
+	countEqualSigns -1 n s = (n,s)
+	countEqualSigns i n s
+		# (c,s) = s![i]
+		= case c of
+			'='  -> countEqualSigns (i-1) (n+1) s
+			'\n' -> countEqualSigns (i-1) n s
+			_    -> (n,s)
+
+decodeString` :: !.String !Int !Alphabet !*{#Char} !Int !Int -> *{#Char}
+decodeString` s sz a dest src_o dest_o
+	| src_o >= sz = dest
+	#! (c1,src_o,s) = nextChar s src_o sz
+	#! (c2,src_o,s) = nextChar s src_o sz
+	#! (c3,src_o,s) = nextChar s src_o sz
+	#! (c4,src_o,s) = nextChar s src_o sz
+	| c4 == '\0'
+		= abort "invalid base64 input: not a multiple of 4\n"
+	| c3 == '=' // lose the last four padding bits
+		# oct =
+			(toInt a.[toInt c1] << 2) +
+			(toInt a.[toInt c2] >> 4)
+		= {dest & [dest_o]=toChar oct}
+	| c4 == '=' // lose the last two obsolete bits
+		# oct =
+			(toInt a.[toInt c1] << 10) +
+			(toInt a.[toInt c2] << 4) +
+			(toInt a.[toInt c3] >> 2)
+		= {dest & [dest_o]=toChar (oct >> 8), [dest_o+1]=toChar oct}
+	| otherwise
+		# oct =
+			(toInt a.[toInt c1] << 18) +
+			(toInt a.[toInt c2] << 12) +
+			(toInt a.[toInt c3] << 6) +
+			(toInt a.[toInt c4])
+		# dest = {dest & [dest_o]=toChar (oct >> 16), [dest_o+1]=toChar (oct >> 8), [dest_o+2]=toChar oct}
+		= decodeString` s sz a dest src_o (dest_o+3)
+where
+	nextChar :: !u:String !Int !Int -> (!Char, !Int, !u:String)
+	nextChar s i size
+		| i >= size = ('\0', i, s)
+		# (c,s) = s![i]
+		| c == '\n' = nextChar s (i+1) size
+		| otherwise = (c, i+1, s)

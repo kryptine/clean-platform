@@ -56,3 +56,21 @@ base64Decode :: !.String -> .String
  * Converts an URL-safe Base64-encoded String to String.
  */
 base64URLDecode :: !.String -> .String
+
+/**
+ * Decodes a Base64-encoded String in place.
+ * @property inverse: A.x :: String:
+ *   base64DecodeUnique (base64Encode x) == x
+ * @property inverse with linebreaks: A.len :: Int; x :: String:
+ *   len > 0 ==> base64DecodeUnique (base64EncodeLen x len) == x
+ */
+base64DecodeUnique :: !*String -> .String
+
+/**
+ * Decodes a URL-safe Base64-encoded String in place.
+ * @property inverse: A.x :: String:
+ *   base64URLDecodeUnique (base64URLEncode x) == x
+ * @property inverse with linebreaks: A.len :: Int; x :: String:
+ *   len > 0 ==> base64URLDecodeUnique (base64URLEncodeLen x len) == x
+ */
+base64URLDecodeUnique :: !*String -> .String
