@@ -59,15 +59,25 @@ encodeString s a
       | otherwise = encodeLastOctet (oct >> 6) (off - 1) p       {s & [off + dest_o] = a.[oct bitand 63]}
   srcSize = size s
 
-addLineBreaks :: !.String Length -> .String
+addLineBreaks :: !u:String !Length -> u:String
 addLineBreaks s l
-| l > 0 = addLineBreaks` s "" l
-| otherwise = abort "Length cannot be 0 or less."
+	| l <= 0
+		= abort "Length cannot be 0 or less."
+	# sz = size s
+	| sz <= l
+		= s
+	# required = case sz rem l of
+		0 -> (sz/l) * (l+1) - 1
+		r -> (sz/l) * (l+1) + r
+	= copy s 0 l (createArray required '\0') 0
 where
-	addLineBreaks` :: !.String !.String !Length -> .String
-	addLineBreaks` src dest len
-	| len >= (size src) = dest +++. src
-	| otherwise = addLineBreaks` (src % (len,(size src))) (dest+++(src % (0,len-1))+++"\n") len
+	copy :: !.String !Int !Int !*String !Int -> .String
+	copy src src_o remaining dest dest_o
+	| src_o >= size src
+		= dest
+	| remaining == 0
+		= copy src src_o     l             {dest & [dest_o]='\n'}        (dest_o+1)
+		= copy src (src_o+1) (remaining-1) {dest & [dest_o]=src.[src_o]} (dest_o+1)
 
 base64Decode :: !.String -> .String
 base64Decode s = decodeString s decodeWithStdAlphabet
@@ -141,13 +151,14 @@ where
 
 decodeString` :: !.String !Int !Alphabet !*{#Char} !Int !Int -> *{#Char}
 decodeString` s sz a dest src_o dest_o
-	| src_o >= sz = dest
 	#! (c1,src_o,s) = nextChar s src_o sz
 	#! (c2,src_o,s) = nextChar s src_o sz
 	#! (c3,src_o,s) = nextChar s src_o sz
 	#! (c4,src_o,s) = nextChar s src_o sz
 	| c4 == '\0'
-		= abort "invalid base64 input: not a multiple of 4\n"
+		| c1 == '\0'
+			= dest
+			= abort "invalid base64 input: not a multiple of 4\n"
 	| c3 == '=' // lose the last four padding bits
 		# oct =
 			(toInt a.[toInt c1] << 2) +
