@@ -15,12 +15,19 @@ CLMLIBS:=\
 	-IL GraphCopy\
 	-IL TCPIP
 
-BINARIES:=checktest test gentest snappytest tartest
+COCLPATH?=../../../compiler
+COCLLIBS:=\
+	-IL ArgEnv\
+	-I $(COCLPATH)/frontend\
+	-I $(COCLPATH)/main\
+	-I $(COCLPATH)/main/Unix
+
+BINARIES:=checktest test commentstest gentest snappytest tartest
 RUN_BINARIES:=$(addprefix run_,$(BINARIES))
 
 all: $(RUN_BINARIES)
 
-$(filter-out checktest tartest snappytest,$(BINARIES)): .FORCE
+$(filter-out checktest commentstest tartest snappytest,$(BINARIES)): .FORCE
 	$(CLM) $(CLMLIBS) -PABC StdEnv
 	$(CLM) $(CLMLIBS) -PABC StdMaybe
 	$(CLM) $(CLMLIBS) -PABC -dynamics _SystemDynamic
@@ -49,6 +56,9 @@ run_tartest: tartest
 	./tartest
 	diff -r _tartest-old _tartest
 	$(RM) -r _tartest-old _tartest _tartest.tar
+
+commentstest: .FORCE
+	$(CLM) $(CLMLIBS) $(COCLLIBS) -nr -nt $@ -o $@
 
 clean:
 	$(RM) -r $(filter-out checktest,$(BINARIES)) _tartest* Clean\ System\ Files
