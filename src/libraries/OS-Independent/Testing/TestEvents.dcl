@@ -97,8 +97,8 @@ from Text.GenJSON import generic JSONEncode, generic JSONDecode, :: JSONNode, ::
 	| Ge            //* Greater than or equal to
 	| Other !String //* Custom relation
 
-derive JSONEncode TestEvent, StartEvent, EndEvent, FailReason, CounterExample, FailedAssertion, Relation
-derive JSONDecode TestEvent, StartEvent, EndEvent, FailReason, CounterExample, FailedAssertion, Relation
+derive JSONEncode TestEvent, StartEvent, EndEvent, TestLocation, FailReason, CounterExample, FailedAssertion, Relation
+derive JSONDecode TestEvent, StartEvent, EndEvent, TestLocation, FailReason, CounterExample, FailedAssertion, Relation
 
 instance toString Expression
 instance toString Relation
