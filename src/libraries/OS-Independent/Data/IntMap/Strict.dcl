@@ -6,11 +6,6 @@ definition module Data.IntMap.Strict
  *     import StdTuple, StdInt
  *     from Data.Func import $
  *
- *     instance == () where
- *         == _ _ = True
- *     instance < () where
- *         < _ _ = False
- *
  * @property-test-with a = ()
  */
 
