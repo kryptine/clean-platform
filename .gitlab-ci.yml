@@ -14,7 +14,7 @@ test-nightly:
   image: "camilstaps/clean:nightly"
   script:
     - COCLPATH=./compiler make -C tests/linux64 run
-    - cleantest -r testproperties --options '-IL;Dynamics;-d;src/libraries/OS-Independent;-P;OutputTestEvents;-T;Tests 100000;-C;-h;-C;100m;-r' --junit junit.xml
+    - cleantest -r testproperties --options '-IL;Dynamics;-d;src/libraries/OS-Independent;-P;OutputTestEvents;-T;Tests 100000;-T;MaxStringLength 500;-C;-h;-C;100m;-r' --junit junit.xml
   artifacts:
     paths:
       - junit.xml
