@@ -29,7 +29,7 @@ sizeOf (JSONArray x)
 //For objects we need to allocate extra size for the enclosing braces, comma's and labels
 sizeOf (JSONObject x)
   #! len = length x
-  = (if (len > 0) (foldl (\s (l,o) -> s + size l + 2 + 1 + sizeOf o) (len - 1) x) 0) + 2
+  = (if (len > 0) (foldl (\s (l,o) -> s + sizeOf (JSONString l) + 1 + sizeOf o) (len - 1) x) 0) + 2
 sizeOf (JSONRaw x)      = size x
 sizeOf (JSONError)      = 0
 
@@ -81,10 +81,12 @@ where
     copyObjectItems :: !Int ![(String, JSONNode)] !*String -> *(!Int, !*String)
 	copyObjectItems start [] buffer = (start,buffer)
 	copyObjectItems start [(l,x)] buffer
-		# (start,buffer) = let len = size l in (start + len + 3 , copyChars (start + 1) len l {buffer & [start] = '"', [start + len + 1] = '"', [start + len + 2] = ':'})
+		# (start,buffer) = copyNode start (JSONString l) buffer
+		# (start,buffer) = (start + 1, {buffer & [start] = ':'})
 		= copyNode start x buffer
 	copyObjectItems start [(l,x):xs] buffer
-		# (start,buffer) = let len = size l in (start + len + 3 , copyChars (start + 1) len l {buffer & [start] = '"', [start + len + 1] = '"', [start + len + 2] = ':'})
+		# (start,buffer) = copyNode start (JSONString l) buffer
+		# (start,buffer) = (start + 1, {buffer & [start] = ':'})
 		# (start,buffer) = copyNode start x buffer
 		= copyObjectItems (start + 1) xs {buffer & [start] = ','}
 copyNode start (JSONRaw x) buffer	= (start + size x, copyChars start (size x) x buffer) 	
