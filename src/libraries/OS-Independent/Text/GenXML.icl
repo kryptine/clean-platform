@@ -1,8 +1,11 @@
 implementation module Text.GenXML
 
-import StdArray, StdBool, StdInt, StdList, StdMisc, StdTuple, StdGeneric, StdFunc, StdString
-import Data.Error, Data.Either, Data.Maybe, Text, Data.GenEq
-from Text.Parsers.CParsers.ParserCombinators import :: Parser, :: ParsResult, :: CParser, &>, +&+, +&-, -&+, <!>, <&, <&>, <*?>, <@, >?<, @>, begin1, satisfy, symbol, yield, <|>, <+?>
+import StdEnv
+import Data.Error, Data.Either, Data.Maybe, Text, Data.GenEq, Data.Func, Data._Array
+from Text.Parsers.CParsers.ParserCombinators import :: Parser, :: ParsResult, :: CParser, &>, +&+, +&-, -&+, <!>, <&, <&>, <*?>, <@, >?<, @>, begin1, satisfy, symbol, yield, <|>, <+?>, fail
+
+instance == XMLDoc where
+	== x y = x === y
 
 uname :: !String -> XMLQName
 uname name = XMLQName Nothing name
@@ -10,130 +13,136 @@ uname name = XMLQName Nothing name
 qname :: !XMLNamespacePrefix !String -> XMLQName
 qname namespace name = XMLQName (Just namespace) name
 
-addNamespaces :: !(Maybe XMLURI) [(XMLNamespacePrefix,String)] !XMLNode -> XMLNode
-addNamespaces mbDefaultNamespace namespaces (XMLElem qname attrs children)
-	# ns = map (\(prefix,uri) -> XMLAttr (XMLQName (Just "xmlns") prefix) uri) namespaces
-	# ns = case mbDefaultNamespace of
-		Nothing					= ns
-		Just defaultNamespace	= [XMLAttr (XMLQName Nothing "xmlns") defaultNamespace:ns]
-	= (XMLElem qname (ns ++ attrs) children)
-addNamespaces _ _ _ = abort "addNamespaces called on non-XMLElem\n"
-	
-docSize :: !XMLDoc -> Int
-docSize (XMLDoc defaultNamespace namespaces documentElement)
-	# documentElement = addNamespaces defaultNamespace namespaces documentElement
-	= 37 + nodeSize documentElement
-
-nodeSize :: !XMLNode -> Int
-nodeSize (XMLText text) = escapedSize text
-nodeSize (XMLElem qname attrs children)
-	# attrsSize = sum (map attrSize attrs) + length attrs
- 	= if (isEmpty children) 
- 		(3 + qnameSize qname + attrsSize)
-		(5 + 2 * qnameSize qname + attrsSize + sum (map nodeSize children))
-
-attrSize :: !XMLAttr -> Int
-attrSize (XMLAttr qname value) = 3 + qnameSize qname + escapedSize value
-
-qnameSize :: !XMLQName -> Int
-qnameSize (XMLQName Nothing   name) = size name
-qnameSize (XMLQName (Just ns) name) = 1 + size ns + size name
-
-//Calculates the number of chars in a string when xml special characters are escaped
-escapedSize :: !{#Char} -> Int
-escapedSize s = escapedSize` s (size s) 0
-where
-	escapedSize` s n i
-		| i == n = 0
-		| s.[i] == '<' = 4 + escapedSize` s n (i + 1)
-		| s.[i] == '>' = 4 + escapedSize` s n (i + 1)
-		| s.[i] == '&' = 5 + escapedSize` s n (i + 1)
-		| otherwise = 1 + escapedSize` s n (i + 1)
-
-serializeDoc :: !XMLDoc !*{#Char} !Int -> (!*{#Char}, !Int)
-serializeDoc (XMLDoc defaultNamespace namespaces documentElement) dest dest_i
-	# documentElement = addNamespaces defaultNamespace namespaces documentElement
-	# (dest,dest_i) = copyChars "<?xml version=\"1.0\" standalone=\"no\"?>" 0 False dest dest_i
-	= serializeNode documentElement dest dest_i 
-
-serializeNode :: !XMLNode !*{#Char} !Int -> (!*{#Char}, !Int)
-serializeNode (XMLText text) dest dest_i = copyChars text 0 True dest dest_i
-serializeNode (XMLElem qname attrs []) dest dest_i
-	# dest = {dest & [dest_i] = '<'}
-	# dest_i = dest_i + 1
-	# (dest,dest_i) = serializeQName qname dest dest_i
-	# (dest,dest_i) = serializeMap serializeAttr attrs dest dest_i
-	# dest = {dest & [dest_i] = '/'}
-	# dest_i = dest_i + 1
-	# dest = {dest & [dest_i] = '>'}
-	= (dest,dest_i + 1)
-serializeNode (XMLElem qname attrs children) dest dest_i
-	# dest = {dest & [dest_i] = '<'}
-	# dest_i = dest_i + 1
-	# (dest,dest_i) = serializeQName qname dest dest_i
-	# (dest,dest_i) = serializeMap serializeAttr attrs dest dest_i
-	# dest = {dest & [dest_i] = '>'}
-	# dest_i = dest_i + 1
-	# (dest,dest_i) = serializeMap serializeNode children dest dest_i
-	# dest = {dest & [dest_i] = '<'}
-	# dest_i = dest_i + 1
-	# dest = {dest & [dest_i] = '/'}
-	# dest_i = dest_i + 1
-	# (dest,dest_i) = serializeQName qname dest dest_i
-	# dest = {dest & [dest_i] = '>'}
-	= (dest,dest_i + 1)
-
-serializeMap f [] dest dest_i = (dest, dest_i)
-serializeMap f [x:xs] dest dest_i
-	# (dest, dest_i) = f x dest dest_i
-	= serializeMap f xs dest dest_i
-
-serializeAttr :: !XMLAttr !*{#Char} !Int -> (!*{#Char}, !Int)
-serializeAttr (XMLAttr qname value) dest dest_i
-	# dest = {dest & [dest_i] = ' '}
-	# dest_i = dest_i + 1
-	# (dest,dest_i) = serializeQName qname dest dest_i 
-	# dest = {dest & [dest_i] = '='}
-	# dest_i = dest_i + 1
-	# dest = {dest & [dest_i] = '"'}
-	# dest_i = dest_i + 1
-	# (dest,dest_i) = copyChars value 0 True dest dest_i
-	# dest = {dest & [dest_i] = '"'}
-	# dest_i = dest_i + 1
-	= (dest,dest_i)
-	
-serializeQName :: !XMLQName !*{#Char} !Int -> (!*{#Char}, !Int)
-serializeQName (XMLQName Nothing   name) dest dest_i = copyChars name 0 False dest dest_i
-serializeQName (XMLQName (Just ns) name) dest dest_i
-	# (dest, dest_i) = copyChars ns 0 False dest dest_i
-	# dest = {dest & [dest_i] = ':'}
-	# dest_i = dest_i + 1
-	= copyChars name 0 False dest dest_i
-
-copyChars :: !{#Char} !Int !Bool !*{#Char} !Int -> (!*{#Char},!Int)
-copyChars src src_i escape dest dest_i
-	| src_i == (size src) = (dest, dest_i)
-	| otherwise	
-		| escape && (src.[src_i] == '<')
-			# dest = {dest & [dest_i] = '&', [dest_i + 1] = 'l', [dest_i + 2] = 't', [dest_i + 3] = ';'}
-			= copyChars src (src_i + 1) escape dest (dest_i + 4)
-		| escape && (src.[src_i] == '>')
-			# dest = {dest & [dest_i] = '&', [dest_i + 1] = 'g', [dest_i + 2] = 't', [dest_i + 3] = ';'}
-			= copyChars src (src_i + 1) escape dest (dest_i + 4)
-		| escape && (src.[src_i] == '&')
-			# dest = {dest & [dest_i] = '&', [dest_i + 1] = 'a', [dest_i + 2] = 'm', [dest_i + 3] = 'p', [dest_i + 4] = ';'}
-			= copyChars src (src_i + 1) escape dest (dest_i + 5)
-		| otherwise
-			# dest = {dest & [dest_i] = src.[src_i]}
-			= copyChars src (src_i + 1) escape dest (dest_i + 1)
-
 instance toString XMLDoc
 where
-	toString doc
+	toString (XMLDoc defaultNamespace namespaces documentElement)
+		# documentElement = addNamespaces defaultNamespace namespaces documentElement
+		# doc             = XMLDoc defaultNamespace namespaces documentElement
 		# docsize = docSize doc
-		# docstring = createArray docsize '\0'
+		# docstring = unsafeCreateArray docsize
 		# (docstring,_) = serializeDoc doc docstring 0
 		= docstring
+	where
+		addNamespaces :: !(Maybe XMLURI) [(XMLNamespacePrefix,String)] !XMLNode -> XMLNode
+		addNamespaces mbDefaultNamespace namespaces (XMLElem qname attrs children)
+			# ns = map (\(prefix,uri) -> XMLAttr (XMLQName (Just "xmlns") prefix) uri) namespaces
+			# ns = case mbDefaultNamespace of
+				Nothing					= ns
+				Just defaultNamespace	= [XMLAttr (XMLQName Nothing "xmlns") defaultNamespace:ns]
+			= (XMLElem qname (ns ++ attrs) children)
+		addNamespaces _ _ _ = abort "addNamespaces called on non-XMLElem\n"
+
+		docSize :: !XMLDoc -> Int
+		docSize (XMLDoc defaultNamespace namespaces documentElement)
+			= 37 + nodeSize documentElement
+
+		nodeSize :: !XMLNode -> Int
+		nodeSize (XMLText text) = escapedSize text
+		nodeSize (XMLElem qname attrs children)
+			# attrsSize = sum (map attrSize attrs) + length attrs
+			= if (isEmpty children)
+				(3 + qnameSize qname + attrsSize)
+				(5 + 2 * qnameSize qname + attrsSize + sum (map nodeSize children))
+		nodeSize (XMLCData data) = 12 + size data
+
+		attrSize :: !XMLAttr -> Int
+		attrSize (XMLAttr qname value) = 3 + qnameSize qname + escapedSize value
+
+		qnameSize :: !XMLQName -> Int
+		qnameSize (XMLQName Nothing   name) = size name
+		qnameSize (XMLQName (Just ns) name) = 1 + size ns + size name
+
+		//Calculates the number of chars in a string when xml special characters are escaped
+		escapedSize :: !{#Char} -> Int
+		escapedSize s = escapedSize` s (size s) 0
+		where
+			escapedSize` s n i
+				| i == n = 0
+				| s.[i] == '<' = 4 + escapedSize` s n (i + 1)
+				| s.[i] == '>' = 4 + escapedSize` s n (i + 1)
+				| s.[i] == '&' = 5 + escapedSize` s n (i + 1)
+				| otherwise = 1 + escapedSize` s n (i + 1)
+
+		serializeDoc :: !XMLDoc !*{#Char} !Int -> (!*{#Char}, !Int)
+		serializeDoc (XMLDoc defaultNamespace namespaces documentElement) dest dest_i
+			# (dest,dest_i) = copyChars "<?xml version=\"1.0\" standalone=\"no\"?>" 0 False dest dest_i
+			= serializeNode documentElement dest dest_i
+
+		serializeNode :: !XMLNode !*{#Char} !Int -> (!*{#Char}, !Int)
+		serializeNode (XMLText text) dest dest_i = copyChars text 0 True dest dest_i
+		serializeNode (XMLElem qname attrs []) dest dest_i
+			# dest = {dest & [dest_i] = '<'}
+			# dest_i = dest_i + 1
+			# (dest,dest_i) = serializeQName qname dest dest_i
+			# (dest,dest_i) = serializeMap serializeAttr attrs dest dest_i
+			# dest = {dest & [dest_i] = '/'}
+			# dest_i = dest_i + 1
+			# dest = {dest & [dest_i] = '>'}
+			= (dest,dest_i + 1)
+		serializeNode (XMLElem qname attrs children) dest dest_i
+			# dest = {dest & [dest_i] = '<'}
+			# dest_i = dest_i + 1
+			# (dest,dest_i) = serializeQName qname dest dest_i
+			# (dest,dest_i) = serializeMap serializeAttr attrs dest dest_i
+			# dest = {dest & [dest_i] = '>'}
+			# dest_i = dest_i + 1
+			# (dest,dest_i) = serializeMap serializeNode children dest dest_i
+			# dest = {dest & [dest_i] = '<'}
+			# dest_i = dest_i + 1
+			# dest = {dest & [dest_i] = '/'}
+			# dest_i = dest_i + 1
+			# (dest,dest_i) = serializeQName qname dest dest_i
+			# dest = {dest & [dest_i] = '>'}
+			= (dest,dest_i + 1)
+		serializeNode (XMLCData data) dest dest_i
+			# (dest, dest_i) = copyChars "<![CDATA[" 0 False dest dest_i
+			# (dest, dest_i) = copyChars data        0 False dest dest_i
+			# (dest, dest_i) = copyChars "]]>"       0 False dest dest_i
+			= (dest, dest_i)
+
+		serializeMap f [] dest dest_i = (dest, dest_i)
+		serializeMap f [x:xs] dest dest_i
+			# (dest, dest_i) = f x dest dest_i
+			= serializeMap f xs dest dest_i
+
+		serializeAttr :: !XMLAttr !*{#Char} !Int -> (!*{#Char}, !Int)
+		serializeAttr (XMLAttr qname value) dest dest_i
+			# dest = {dest & [dest_i] = ' '}
+			# dest_i = dest_i + 1
+			# (dest,dest_i) = serializeQName qname dest dest_i
+			# dest = {dest & [dest_i] = '='}
+			# dest_i = dest_i + 1
+			# dest = {dest & [dest_i] = '"'}
+			# dest_i = dest_i + 1
+			# (dest,dest_i) = copyChars value 0 True dest dest_i
+			# dest = {dest & [dest_i] = '"'}
+			# dest_i = dest_i + 1
+			= (dest,dest_i)
+
+		serializeQName :: !XMLQName !*{#Char} !Int -> (!*{#Char}, !Int)
+		serializeQName (XMLQName Nothing   name) dest dest_i = copyChars name 0 False dest dest_i
+		serializeQName (XMLQName (Just ns) name) dest dest_i
+			# (dest, dest_i) = copyChars ns 0 False dest dest_i
+			# dest = {dest & [dest_i] = ':'}
+			# dest_i = dest_i + 1
+			= copyChars name 0 False dest dest_i
+
+		copyChars :: !{#Char} !Int !Bool !*{#Char} !Int -> (!*{#Char},!Int)
+		copyChars src src_i escape dest dest_i
+			| src_i == (size src) = (dest, dest_i)
+			| otherwise
+				| escape && (src.[src_i] == '<')
+					# dest = {dest & [dest_i] = '&', [dest_i + 1] = 'l', [dest_i + 2] = 't', [dest_i + 3] = ';'}
+					= copyChars src (src_i + 1) escape dest (dest_i + 4)
+				| escape && (src.[src_i] == '>')
+					# dest = {dest & [dest_i] = '&', [dest_i + 1] = 'g', [dest_i + 2] = 't', [dest_i + 3] = ';'}
+					= copyChars src (src_i + 1) escape dest (dest_i + 4)
+				| escape && (src.[src_i] == '&')
+					# dest = {dest & [dest_i] = '&', [dest_i + 1] = 'a', [dest_i + 2] = 'm', [dest_i + 3] = 'p', [dest_i + 4] = ';'}
+					= copyChars src (src_i + 1) escape dest (dest_i + 5)
+				| otherwise
+					# dest = {dest & [dest_i] = src.[src_i]}
+					= copyChars src (src_i + 1) escape dest (dest_i + 1)
 
 instance fromString (MaybeErrorString XMLDoc)
 where
@@ -155,12 +164,12 @@ where
 			| TokenDeclarationStart
 			| TokenDeclarationEnd
 			| TokenEqual
-			
-derive gEq Token
+			| TokenCData !String
+
 instance == Token
 where
 	(==) a b = a === b
-	
+
 isName (TokenName _)			= True
 isName _						= False
 
@@ -169,7 +178,7 @@ isCharData _					= False
 
 isAttrValue (TokenAttrValue _)	= True
 isAttrValue _					= False
-			
+
 :: LexFunctionResult = Token !Int !Token | NoToken !Int | Fail !String
 :: LexFunction :== String Int -> Maybe LexFunctionResult
 			
@@ -183,6 +192,7 @@ where
 	lexFunctions	=	[ lexWhitespace
 						, lexDeclarationStart
 						, lexDeclarationEnd
+						, lexCData
 						, lexEmptyTagClose
 						, lexTagClose
 						, lexEndTagOpen
@@ -191,11 +201,13 @@ where
 						, lexAttrValue
 						, lexName
 						]
-						
-	dataMode [TokenTagClose:_]		= True
-	dataMode [TokenEmptyTagClose:_]	= True
-	dataMode _						= False
-	
+
+	dataMode :: ![Token] -> Bool
+	dataMode [TokenTagClose :_]      = True
+	dataMode [TokenEmptyTagClose :_] = True
+	dataMode [TokenCData _: _]       = True
+	dataMode _                       = False
+
 	charDataResult = lexCharData input offset
 	
 	processResult r = case r of
@@ -222,19 +234,58 @@ where
 		Just res
 			| offset == 0	= Just res
 			| otherwise		= Just (Fail ("XML declaration not at start of entity"))
-		
-	//Char data
-	lexCharData input offset
-		| isTextChar input.[offset]
-			# data = trim (input % (offset, end - 1))
-			| data <> ""	= Just (Token end (TokenCharData data))
-			| otherwise		= Nothing
-		| otherwise			= Nothing							
+
+	lexCData :: !String !Int -> Maybe LexFunctionResult
+	lexCData input offset
+		| input % (offset, offset + 8) <> "<![CDATA[" = Nothing
+		| otherwise                                   =
+			Just $
+				maybe
+					(Fail "CDATA start without end")
+					(\endIdx -> Token (endIdx + 4) $ TokenCData $ input % (offset + 9, endIdx))
+					(dataEndIndex $ inc offset)
 	where
-		end = findEnd isTextChar input (offset + 1)
-		
-		isTextChar c = c <> '<' && c <> '&'
-		
+		dataEndIndex :: !Int -> Maybe Int
+		dataEndIndex curIndex
+			| curIndex >= size input - 3                    = Nothing
+			| input % (curIndex + 1, curIndex + 3) == "]]>" = Just curIndex
+			| otherwise                                     = dataEndIndex $ inc curIndex
+
+	//Char data
+	lexCharData :: !String !Int -> Maybe LexFunctionResult
+	lexCharData input offset =
+		case lexCharData` offset [] of
+			Error e               = Just $ Fail e
+			Ok ([], _)            = Nothing
+			Ok (dataStrings, end) = Just $ Token end (TokenCharData $ concat dataStrings)
+	where
+		lexCharData` :: !Int ![String] -> MaybeErrorString (![String], !Int)
+		lexCharData` offset accum
+			| input.[offset] == '&'
+				# end = findEnd (\c -> c >= 'a' && c <= 'z') input (offset + 1)
+				| input.[end] <> ';' = Error "Missing ';' at end of character entity"
+				# name = input % (offset + 1, end - 1)
+				= maybe
+					(Error $ concat ["Unknown named character entity reference '", name, "'"])
+					(\charString -> lexCharData` (end + 1) [charString: accum])
+					(entityCharacter name)
+			| isTextChar input.[offset]
+				# end = findEnd isTextChar input (offset + 1)
+				# data = trim (input % (offset, end - 1))
+				| data <> ""	= lexCharData` end [data: accum]
+				| otherwise		= Ok (accum, offset)
+			| otherwise			= Ok (reverse accum, offset)
+		where
+			isTextChar c = c <> '<' && c <> '&'
+
+		entityCharacter :: !String -> Maybe String
+		entityCharacter "quot" = Just "\""
+		entityCharacter "amp"  = Just "&"
+		entityCharacter "apos" = Just "'"
+		entityCharacter "lt"   = Just "<"
+		entityCharacter "gt"   = Just ">"
+		entityCharacter _      = Nothing
+
 	//Names
 	lexName input offset
 		| isNameStartChar input.[offset]	= Just (Token end (TokenName (input % (offset, end - 1))))
@@ -298,7 +349,7 @@ where
 	where
 		(mbURI,namespaces,attrs) = filterNamespaces attributes (Nothing,[],[])
 		
-		filterNamespaces [] acc = acc
+		filterNamespaces [] (mbUri, namespaces, attrs) = (mbUri, reverse namespaces, reverse attrs)
 		filterNamespaces [attr=:(XMLAttr name val):rest] (mbURI,namespaces,attrs)
 			# acc = case name of
 				XMLQName Nothing "xmlns"	= (Just val,namespaces,attrs)
@@ -309,7 +360,7 @@ where
 
 pDocDeclaration	= symbol TokenDeclarationStart &> (<+?> pAttr) <& symbol TokenDeclarationEnd
 pNode			= pCharData <@ (\d -> XMLText d) <!> pElem
-pElem			= pElemCont <!> pElemEmpty
+pElem			= pElemCont <!> pElemEmpty <!> pCData
 pElemCont		= pElemStart <&> (\(name,attributes) -> symbol TokenTagClose &> (<*?> pNode) <& pElemContEnd >?< ((==) name) <@ (\nodes -> XMLElem (toQName name) attributes nodes))
 pElemEmpty		= pElemStart <& symbol TokenEmptyTagClose <@ (\(name,attributes) -> XMLElem (toQName name) attributes [])
 pElemStart		= (\name attributes -> (name,attributes)) @> symbol TokenStartTagOpen -&+ pName +&+ (<*?> pAttr)
@@ -318,6 +369,7 @@ pAttr			= (\name v -> XMLAttr (toQName name) v) @> pName +&- symbol TokenEqual +
 pName			= satisfy isName		<@ \n -> case n of TokenName n -> n; _ -> abort "error in pName\n"
 pAttrValue		= satisfy isAttrValue	<@ \n -> case n of TokenAttrValue v -> v; _ -> abort "error in pAttrValue\n"
 pCharData		= satisfy isCharData	<@ \n -> case n of TokenCharData d -> d; _ -> abort "error in pCharData\n"
+pCData          = satisfy (\t -> t =: TokenCData _) <@ \t -> case t of TokenCData data = XMLCData data; _ = undef
 
 toQName :: !String -> XMLQName
 toQName name
@@ -422,3 +474,4 @@ getNodes (XMLEncText txt)		= [toText txt]
 getNodes (XMLEncNodes nodes _)	= nodes
 getNodes XMLEncNothing			= []
 
+derive gEq Token, XMLDoc, XMLQName, XMLNode, XMLAttr

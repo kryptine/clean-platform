@@ -23,6 +23,14 @@ instance Monad (MaybeError e) where
     bind (Error l) _ = Error l
     bind (Ok r) k = k r
 
+instance == (MaybeError a b) | == a & == b where
+	== (Ok x) y = case y of
+		Ok y = x == y
+		_    = False
+	== (Error x) y = case y of
+		Error y = x == y
+		_       = False
+
 derive gEq MaybeError
 
 isOk		:: !(MaybeError a b) -> Bool
