@@ -55,7 +55,7 @@ from syntax import
 	:: ParsedDefinition(..),
 	:: ParsedExpr,
 	:: ParsedImport,
-	:: ParsedInstance{pi_pos},
+	:: ParsedInstance{pi_ident,pi_pos},
 	:: ParsedInstanceAndMembers{pim_pi},
 	:: ParsedModule,
 	:: ParsedSelector{ps_field_pos,ps_field_ident},
@@ -346,6 +346,8 @@ where
 	commentIndex pd = case pd of
 		PD_Function pos id is_infix args rhs kind -> Just (CI "PD_Function" pos id.id_name)
 		PD_TypeSpec pos id prio type specials -> Just (CI "PD_TypeSpec" pos id.id_name)
+		PD_Instance {pim_pi=pi} -> Just (CI "PD_Instance" pi.pi_pos pi.pi_ident.id_name)
+		PD_Instances [{pim_pi=pi}:_] -> Just (CI "PD_Instances" pi.pi_pos pi.pi_ident.id_name)
 		PD_Class cd pds -> Just (CI "PD_Class" cd.class_pos cd.class_ident.id_name)
 		PD_Type ptd -> Just (CI "PD_Type" ptd.td_pos ptd.td_ident.id_name)
 		PD_Generic gd -> Just (CI "PD_Generic" gd.gen_pos gd.gen_ident.id_name)
