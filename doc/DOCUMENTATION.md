@@ -67,7 +67,7 @@ information.
 | Constructor  | ![][y]      |          |           |         |        |                   |           |
 | Function     | ![][y]      | ![][y]   | ![][y]    |         |        |                   | ![][y]    | ![][y]
 | Generic      | ![][y]      | ![][y]   | ![][y]    |         | ![][y] |                   |           |
-| Instance     |             |          |           |         |        |                   |           |
+| Instance     | ![][y]      |          |           |         |        |                   |           |
 | Macro        | ![][y]      | ![][y]   | ![][y]    | ![][y]<sup>2</sup> | |               |           |
 | Module       | ![][y]      |          |           |         |        |                   |           |
 | Record field | ![][y]      |          |           |         |        |                   |           |
