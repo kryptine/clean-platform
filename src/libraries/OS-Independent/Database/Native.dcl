@@ -2,7 +2,7 @@ definition module Database.Native
 
 /**
  * This module provides types and functions to build a database on the native
- * Clean heap. It can be tedious to add new entries, but access is fast. and
+ * Clean heap. It can be tedious to add new entries, but access is fast, and
  * only little memory is used.
  */
 
@@ -19,7 +19,6 @@ from Text.GenJSON import generic JSONEncode, generic JSONDecode, :: JSONNode
  * data to the database use a map over values.
  *
  * @var The type of values stored.
- * @var The key type of annotations.
  * @var The type of annotations.
  */
 :: *NativeDB v a
