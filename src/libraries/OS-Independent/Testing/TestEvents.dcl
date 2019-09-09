@@ -58,10 +58,11 @@ from Text.GenJSON import generic JSONEncode, generic JSONDecode, :: JSONNode, ::
  * Reasons for failing a test.
  */
 :: FailReason
-	= FailedAssertions [FailedAssertion]          //* Assertions that caused the test to fail
-	| CounterExamples [CounterExample]            //* Example values for which the test failed
-	| FailedChildren [(String, Maybe FailReason)] //* Subtests failed; the tuples are of name and failing reason
-	| Crashed                                     //* The test crashed
+	= FailedAssertions ![FailedAssertion]          //* Assertions that caused the test to fail
+	| CounterExamples ![CounterExample]            //* Example values for which the test failed
+	| FailedChildren ![(String, Maybe FailReason)] //* Subtests failed; the tuples are of name and failing reason
+	| Crashed                                      //* The test crashed
+	| CustomFailReason !String                     //* A custom reason for the test to have failed
 
 /**
  * A counter-example to a test.
