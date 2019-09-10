@@ -97,7 +97,7 @@ collisions, adhere to the following conventions:
 Implementation modules may import anything they like.
 
 ## Implementing class instances and generic derives
-Clean platform should provide applicable instances for the types it provides for classes defined in `StdEnv`, `Gast`, and `clean-platform` itself.
+Clean Platform should, where applicable, provide instances for the types it provides for classes defined in StdEnv, Gast, and Platform itself.
 
 The applicable instances for the _general_ classes should be exported in the module of the type and not of the class.
 This means that for example the `Functor` instance of `Maybe` should be defined in `Data.Maybe` and not in `Data.Functor`.
