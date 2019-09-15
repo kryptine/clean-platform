@@ -96,6 +96,18 @@ With [clean-test-properties][]' `testproperties` tool, [Gast][] test programs
 can be generated with properties from docblocks. For this, several additional
 fields can be used, which are further documented by [clean-test-properties][].
 
+Our [standards](STANDARDS.md) require the use of tabs for indentation and spaces
+for outlining. Because with properties code is included in documentation blocks,
+using tabs for indentation would lead to tabs after spaces. To avoid this, we
+use four spaces in this context instead. For example:
+
+```clean
+/**
+ * @property correctness: A.xs :: Set a:
+ *     minList (toList xs) == findMin xs
+ */
+```
+
 [clean-test-properties]: https://gitlab.science.ru.nl/clean-and-itasks/clean-test-properties
 [Gast]: https://gitlab.science.ru.nl/clean-and-itasks/gast
 
