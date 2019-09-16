@@ -127,6 +127,7 @@ import qualified Data.Maybe
 import qualified Data.Maybe.Ord
 import qualified Data.Maybe.Gast
 import qualified Data.Maybe.GenPrint
+import qualified Data.Maybe.GenBinary
 import qualified Data.Monoid
 import qualified Data.NGramIndex
 import qualified Data.OrdList
@@ -139,6 +140,7 @@ import qualified Data.Tree
 import qualified Data.Tuple
 import qualified Data.Word8
 import qualified Data._Array
+import qualified Data.Encoding.GenBinary
 import qualified Database.Native
 import qualified Database.Native.JSON
 import qualified Database.SQL
