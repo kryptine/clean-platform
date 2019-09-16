@@ -11,7 +11,6 @@ import Control.GenMapSt
 import Control.GenMonad
 import Control.GenFMap
 import Control.GenReduce
-import Data.GenCompress
 import Data.GenFDomain
 import Data.GenLexOrd
 import Data.GenZip
@@ -49,9 +48,6 @@ derive gZip				Tree, Rose, Fork, Sequ
 derive gMaybeZip 		Tree, Rose, Fork, Sequ
 derive gPrint			Tree, Rose, Fork, Sequ, Color, InfCons, Rec, NewType
 derive gParse			Tree, Rose, Fork, Sequ, Color, InfCons, Rec, NewType
-derive gCompress		Tree, Rose, Fork, Sequ, Color
-derive gCompressedSize	Tree, Rose, Fork, Sequ, Color
-derive gUncompress		Tree, Rose, Fork, Sequ, Color
 derive gLookupFMap		Tree, Rose, Fork, Sequ, Color
 derive gInsertFMap		Tree, Rose, Fork, Sequ, Color
 
@@ -187,31 +183,6 @@ where
 	arr :: [a] -> {a}
 	arr xs = {x\\x<-xs}
 
-
-testCompress =
-	[ test True
-	, test False
-	, test 12345
-	, test -2
-	, test 1.2345E20
-	, test [1 .. 100]
-	, test (flatten (repeatn 100 [Red, Green, Blue]))
-	//, test (flatten (repeatn 100000 [Red, Green, Blue]))
-	, test "hello"
-	, test 'a'
-	, test Green
-	, test Red
-	, test Blue	
-	, test rose
-	, test (Bin Red (Tip Green) (Bin Blue (Tip Red) (Tip Green))) 
-	, test sequ
-	]
-where	
-	test x = case uncompress (compress x) of
-		Nothing -> False
-		Just y -> x === y
-
-
 testFMap =
 	[ lookupFMap 1 fmap_int === Just 10
 	, lookupFMap 3 fmap_int === Just 30
@@ -254,6 +225,5 @@ where
 		, testReduceRSt
 		, testReduceLSt
 		, testParsePrint
-		, testCompress
 		, testFMap
 		]
