@@ -760,11 +760,10 @@ where
 	// NB: put the most frequently encountered constructors at the top for performance
 	== (JSONObject xs) y = case y of
 		JSONObject ys
-			-> sortBy cmpFst (filter (notNull o snd) xs) == sortBy cmpFst (filter (notNull o snd) ys)
+			-> sortBy cmpFst xs == sortBy cmpFst ys
 			-> False
 	where
 		cmpFst = (<) `on` fst
-		notNull x = not (x=:JSONNull)
 	== (JSONArray x)   y = case y of JSONArray y  -> x==y; _ -> False
 	== (JSONString x)  y = case y of JSONString y -> x==y; _ -> False
 	== (JSONInt x)     y = case y of
