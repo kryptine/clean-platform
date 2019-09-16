@@ -9,7 +9,7 @@ definition module Text.GenJSON
 * For more info about JSON see: http://www.json.org/
 *
 * @property-bootstrap
-*   import StdEnv
+*     import StdEnv
 */
 
 import StdGeneric
@@ -49,17 +49,17 @@ derive gEq JSONNode
 * Encodes any value to JSON format.
 *
 * @property correctness: A.a :: type:
-*   maybe (prop False) ((=.=) a) (fromJSON (fromString (toString (toJSON a))))
+*     maybe (prop False) ((=.=) a) (fromJSON (fromString (toString (toJSON a))))
 * @property-test-with type=Int
 * @property-test-with type=Bool
 * @property-test-with type=Char
 * @property-test-with type=String
 *
 * @property correctness Real: A.a :: Real:
-*   toString (toReal (toString a)) == toString a ==>
-*     case fromJSON (fromString (toString (toJSON a))) of
-*       Nothing -> prop False
-*       Just b -> if (isNaN a) (prop (isNaN b)) (toString a =.= fromReal b)
+*     toString (toReal (toString a)) == toString a ==>
+*         case fromJSON (fromString (toString (toJSON a))) of
+*             Nothing -> prop False
+*             Just b -> if (isNaN a) (prop (isNaN b)) (toString a =.= fromReal b)
 *
 * @param The value to encode
 * @return The JSON encoded value
