@@ -1,7 +1,7 @@
 implementation module Text.GenJSON
 
 import StdGeneric, Data.Maybe, StdList, StdOrdList, StdString, _SystemArray, StdTuple, StdBool, StdFunc, StdOverloadedList, StdFile
-import Data.List, Text, Text.PPrint, Text.GenJSON, Data.GenEq
+import Data.Func, Data.List, Text, Text.PPrint, Text.GenJSON, Data.GenEq
 
 //Basic JSON serialization
 instance toString JSONNode
@@ -755,25 +755,29 @@ where
 	findField s []			= Nothing
 	findField s [(l,x):xs]	= if (l == s) (Just x) (findField s xs)
 
-instance == JSONNode where
-  (==) JSONNull        JSONNull        = True
-  (==) (JSONBool x)    (JSONBool y)    = x == y
-  (==) (JSONInt x)     (JSONInt y)     = x == y
-  (==) (JSONReal x)    (JSONReal y)    = toString x == toString y
-  (==) (JSONInt x)     (JSONReal y)    = toString (toReal x) == toString y
-  (==) (JSONReal x)    (JSONInt y)     = toString x == toString (toReal y)
-  (==) (JSONString x)  (JSONString y)  = x == y
-  (==) (JSONArray xs)  (JSONArray ys)  = xs == ys
-  (==) (JSONObject xs) (JSONObject ys) = sortBy cmpFst (filter (notNull o snd) xs) == sortBy cmpFst (filter (notNull o snd) ys)
-    where
-    cmpFst :: !(!a, b) !(!a, c) -> Bool | < a
-    cmpFst a b = fst a < fst b
-    notNull :: !JSONNode -> Bool
-    notNull JSONNull = False
-    notNull _        = True
-  (==) (JSONRaw x)     (JSONRaw y)     = x == y
-  (==) JSONError       JSONError       = True
-  (==) _               _               = False
+instance == JSONNode
+where
+	// NB: put the most frequently encountered constructors at the top for performance
+	== (JSONObject xs) y = case y of
+		JSONObject ys
+			-> sortBy cmpFst xs == sortBy cmpFst ys
+			-> False
+	where
+		cmpFst = (<) `on` fst
+	== (JSONArray x)   y = case y of JSONArray y  -> x==y; _ -> False
+	== (JSONString x)  y = case y of JSONString y -> x==y; _ -> False
+	== (JSONInt x)     y = case y of
+		JSONInt y  -> x==y
+		JSONReal y -> toString (toReal x) == toString y
+		_          -> False
+	== (JSONReal x)    y = case y of
+		JSONReal y -> x==y
+		JSONInt y  -> toString (toReal y) == toString x
+		_          -> False
+	== JSONNull        y = y=:JSONNull
+	== (JSONBool x)    y = case y of JSONBool y -> x==y; _ -> False
+	== (JSONRaw x)     y = case y of JSONRaw y    -> x==y; _ -> False
+	== JSONError       y = y=:JSONError
 
 gEq{|JSONNode|} x y = x == y
 
