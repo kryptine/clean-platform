@@ -1,16 +1,35 @@
 definition module Text.GenJSON
 
 /**
-* This module provides functions to encode and decode any Clean data type
-* to JSON format. It provides two generic functions JSONEncode and JSONDecode
-* which must be derived for concrete types. Then toJSON and fromJSON may be
-* used to convert any value to and from JSON.
-*
-* For more info about JSON see: http://www.json.org/
-*
-* @property-bootstrap
-*     import StdEnv
-*/
+ * This module provides functions to encode and decode any Clean data type
+ * to JSON format. It provides two generic functions JSONEncode and JSONDecode
+ * which must be derived for concrete types. Then toJSON and fromJSON may be
+ * used to convert any value to and from JSON.
+ *
+ * For more info about JSON see: http://www.json.org/
+ *
+ * @property-bootstrap
+ *     import StdEnv
+ *     import Data.GenEq
+ *
+ *     :: TestRecord = {a :: Int, b` :: [(Int,[Char])]}
+ *
+ *     derive ggen    TestRecord, JSONNode
+ *     derive genShow TestRecord, JSONNode
+ *     derive gPrint  TestRecord, JSONNode
+ *
+ *     derive gEq TestRecord
+ *     instance == TestRecord where == a b = a === b
+ *
+ *     derive JSONEncode TestRecord
+ *     derive JSONDecode TestRecord
+ *
+ * @property-test-with type=Int
+ * @property-test-with type=Bool
+ * @property-test-with type=Char
+ * @property-test-with type=String
+ * @property-test-with type=[TestRecord]
+ */
 
 import StdGeneric
 from StdFile import class <<<
@@ -20,6 +39,19 @@ from Data.List import !?
 from Data.Maybe import :: Maybe(..)
 from Data.GenEq import generic gEq
 
+/**
+ * @invariant noErrorOrRaw: A.json :: JSONNode:
+ *     case json of
+ *         JSONNull     = prop True
+ *         JSONBool _   = prop True
+ *         JSONInt _    = prop True
+ *         JSONReal _   = prop True
+ *         JSONString _ = prop True
+ *         JSONArray a  = foldl (\p j -> p /\ noErrorOrRaw j) (prop True) a
+ *         JSONObject o = foldl (\p (_,j) -> p /\ noErrorOrRaw j) (prop True) o
+ *         JSONRaw _    = prop False
+ *         JSONError    = prop False
+ */
 :: JSONNode	= JSONNull
 			| JSONBool !Bool
 			| JSONInt !Int
@@ -33,9 +65,18 @@ from Data.GenEq import generic gEq
 * Serializing JSON structures is done with a toString instance
 */
 instance toString JSONNode
+
 /**
-* Deserializing JSON structures is done with a fromString instance
-*/
+ * Deserializing JSON structures is done with a fromString instance
+ *
+ * @property no error/raw constructors for generated values: A.x :: type:
+ *     noErrorOrRaw (fromString (toString (toJSON x)))
+ * @property error for incomplete parsings: A.x :: type; s :: String:
+ *     let json = toJSON x in
+ *         toInt s == 0 ==> // we may append more digits to an int, in which case it is not invalid
+ *         size s > 0 ==>
+ *         fromString (toString json +++ s) =.= JSONError
+ */
 instance fromString JSONNode
 
 /**
@@ -50,10 +91,6 @@ derive gEq JSONNode
 *
 * @property correctness: A.a :: type:
 *     maybe (prop False) ((=.=) a) (fromJSON (fromString (toString (toJSON a))))
-* @property-test-with type=Int
-* @property-test-with type=Bool
-* @property-test-with type=Char
-* @property-test-with type=String
 *
 * @property correctness Real: A.a :: Real:
 *     toString (toReal (toString a)) == toString a ==>
