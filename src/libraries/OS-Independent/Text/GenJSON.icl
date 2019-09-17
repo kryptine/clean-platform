@@ -181,7 +181,11 @@ where
 //Basic JSON deserialization (just structure)
 instance fromString JSONNode
 where
-	fromString s = fst (parse 0 s)
+	fromString s
+		# (json,i) = parse 0 s
+		| i == size s
+			= json
+			= JSONError
 
 IsDigit c :== c >= '0' && c <= '9'
 
@@ -499,7 +503,9 @@ JSONEncode{|JSONNode|} _ node = [node]
 
 //-------------------------------------------------------------------------------------------
 fromJSON :: !JSONNode -> Maybe a | JSONDecode{|*|} a
-fromJSON node = fst (JSONDecode{|*|} False [node])
+fromJSON node = case JSONDecode{|*|} False [node] of
+	(_, [_:_]) = Nothing
+	(val, _)   = val
 
 /*
 * Generic JSON parser, using a list of tokens
