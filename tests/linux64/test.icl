@@ -126,6 +126,8 @@ import qualified Data.MapCollection
 import qualified Data.Matrix
 import qualified Data.Maybe
 import qualified Data.Maybe.Ord
+import qualified Data.Maybe.Gast
+import qualified Data.Maybe.GenPrint
 import qualified Data.Monoid
 import qualified Data.NGramIndex
 import qualified Data.OrdList
@@ -200,6 +202,8 @@ import qualified Text.GenJSON
 import qualified Text.GenParse
 import qualified Text.GenPrint
 import qualified Text.GenXML
+import qualified Text.GenXML.Gast
+import qualified Text.GenXML.GenPrint
 import qualified Text.HTML
 import qualified Text.HTML.GenJSON
 import qualified Text.LaTeX

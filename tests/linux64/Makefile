@@ -13,7 +13,8 @@ CLMLIBS:=\
 	-I ../../src/libraries/Platform-x86\
 	-IL Dynamics\
 	-IL GraphCopy\
-	-IL TCPIP
+	-IL TCPIP\
+	-IL Gast
 
 COCLPATH?=../../../compiler
 COCLLIBS:=\
@@ -32,6 +33,7 @@ $(filter-out checktest commentstest tartest snappytest,$(BINARIES)): .FORCE
 	$(CLM) $(CLMLIBS) -PABC StdMaybe
 	$(CLM) $(CLMLIBS) -PABC -dynamics _SystemDynamic
 	$(CLM) $(CLMLIBS) -PABC TCPIP
+	$(CLM) $(CLMLIBS) -PABC Gast
 	$(CLM) $(CLMLIBS) $(CLMFLAGS) $@ -o $@
 
 $(filter-out run_tartest,$(RUN_BINARIES)): run_%: %

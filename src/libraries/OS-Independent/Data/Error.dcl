@@ -1,5 +1,6 @@
 definition module Data.Error
 
+from StdOverloaded import class ==
 from Data.Functor import class Functor
 from Control.Monad import class Monad
 from Control.Applicative import class pure, class <*>, class Applicative
@@ -23,7 +24,7 @@ instance Functor (MaybeError a)
 instance pure (MaybeError a)
 instance <*> (MaybeError a)
 instance Monad (MaybeError a)
-
+instance == (MaybeError a b) | == a & == b
 derive gEq MaybeError
 
 /**
