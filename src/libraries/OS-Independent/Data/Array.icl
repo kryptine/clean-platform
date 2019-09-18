@@ -17,7 +17,7 @@ mapArrSt f arr st
         #! arr      = {arr & [idx] = e}
         = mapArrSt` sz (idx + 1) f arr st
 
-foldrArr :: !(a .b -> .b) !.b !.(arr a) -> .b | Array arr a
+foldrArr :: !(a -> .(.b -> .b)) !.b !.(arr a) -> .b | Array arr a
 foldrArr f b arr = foldrArrWithKey (\_ -> f) b arr
 
 foldrArrWithKey :: !(Int a -> .(.b -> .b)) !.b !.(arr a) -> .b | Array arr a
@@ -49,7 +49,7 @@ foldrUArrWithKey f b arr
       #! (res, arr)  = foldUArr` sz (idx + 1) b arr
       = f idx elem res arr
 
-foldlArr :: !(.b a -> .b) !.b !.(arr a) -> .b | Array arr a
+foldlArr :: !(.b -> .(a -> .b)) !.b !.(arr a) -> .b | Array arr a
 foldlArr f b arr = foldlArrWithKey (\_ -> f) b arr
 
 foldlArrWithKey :: !(Int .b -> .(a -> .b)) !.b !.(arr a) -> .b | Array arr a
