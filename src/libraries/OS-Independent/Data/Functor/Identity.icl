@@ -9,8 +9,10 @@ import Control.Monad
 runIdentity :: (Identity .a) -> .a
 runIdentity (Identity a) = a
 
-instance Functor Identity where
-  fmap f (Identity m) = Identity (f m)
+instance Functor Identity
+where
+	fmap :: (a -> b) !(Identity a) -> Identity b
+	fmap f (Identity m) = Identity (f m)
 
 instance pure Identity
 where

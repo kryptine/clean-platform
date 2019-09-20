@@ -20,7 +20,7 @@ from Data.GenEq import generic gEq
  */
 :: MaybeErrorString a :== MaybeError String a
 
-instance Functor (MaybeError a)
+instance Functor (MaybeError e) where fmap :: (a -> b) !(MaybeError e a) -> MaybeError e b
 instance pure (MaybeError a)
 instance <*> (MaybeError a)
 instance Monad (MaybeError a)

@@ -12,6 +12,7 @@ definition module Data.IntMap.Base
  * @property-test-with a = ()
  */
 from StdOverloaded import class ==
+from Data.Functor import class Functor
 from Data.Maybe import :: Maybe
 
 // A map of integers to values @a@.
@@ -28,6 +29,8 @@ from Data.Maybe import :: Maybe
 :: Mask   :== Int
 
 instance == (IntMap a) | == a
+
+instance Functor IntMap where fmap :: (a -> b) !(IntMap a) -> IntMap b
 
 equal :: !(IntMap a) !(IntMap a) -> Bool | == a
 

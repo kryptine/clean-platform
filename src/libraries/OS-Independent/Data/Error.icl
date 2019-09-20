@@ -7,6 +7,7 @@ import Control.Applicative
 	
 instance Functor (MaybeError a)
 where
+	fmap :: (a -> b) !(MaybeError e a) -> MaybeError e b
 	fmap f (Ok x)		= Ok (f x)
 	fmap f (Error x)	= Error x
 

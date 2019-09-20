@@ -11,8 +11,10 @@ import Control.Monad
 import Control.Monad.Trans
 import Control.Applicative
 
-instance Functor (RWST r w s m) | Monad m & Monoid w where
-  fmap f m = liftM f m
+instance Functor (RWST r w s m) | Monad m & Monoid w
+where
+	fmap :: (a -> b) !(RWST r w s m a) -> RWST r w s m b | Monad m & Monoid w
+	fmap f m = liftM f m
 
 instance pure (RWST r w s m) | pure m & Monoid w
 where

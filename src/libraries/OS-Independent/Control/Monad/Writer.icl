@@ -8,8 +8,10 @@ import Control.Monad.Trans
 from StdFunc import o
 from StdTuple import fst, snd
 
-instance Functor (WriterT w m) | Monad m & Monoid w where
-  fmap f m = liftM f m
+instance Functor (WriterT w m) | Monad m & Monoid w
+where
+	fmap :: (a -> b) !(WriterT w m a) -> WriterT w m b | Monad m & Monoid w
+	fmap f m = liftM f m
 
 instance pure (WriterT w m) | pure m & Monoid w
 where

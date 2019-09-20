@@ -14,10 +14,12 @@ rootLabel (RNode x _) = x
 subRForest :: (RTree a) -> RForest a
 subRForest (RNode _ xs) = xs
 
-instance Functor RTree where
-  fmap f t = fmapRTree f t
+instance Functor RTree
+where
+	fmap :: (a -> b) !(RTree a) -> RTree b
+	fmap f t = fmapRTree f t
 
-fmapRTree :: (a -> b) (RTree a) -> RTree b
+fmapRTree :: (a -> b) !(RTree a) -> RTree b
 fmapRTree f (RNode x ts) = RNode (f x) (map (fmapRTree f) ts)
 
 instance pure RTree

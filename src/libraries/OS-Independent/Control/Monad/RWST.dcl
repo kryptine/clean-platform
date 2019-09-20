@@ -14,6 +14,8 @@ from Data.Monoid import class Monoid, class Semigroup
 :: RWST r w s m a = RWST !(r s -> m (a, s, w))
 
 instance Functor (RWST r w s m) | Monad m & Monoid w
+where
+	fmap :: (a -> b) !(RWST r w s m a) -> RWST r w s m b | Monad m & Monoid w
 instance pure (RWST r w s m) | pure m & Monoid w
 instance <*> (RWST r w s m) | Monad m & Monoid w
 instance Monad (RWST r w s m) | Monad m & Monoid w

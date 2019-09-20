@@ -114,8 +114,15 @@ appendArr l r
 instance +++ (arr a) | Array arr a where
   (+++) l r = appendArr l r
 
-instance Functor {} where fmap f arr = {f a\\a<-:arr}
-instance Functor {!} where fmap f arr = {f a\\a<-:arr}
+instance Functor {}
+where
+	fmap :: (a -> b) !{a} -> !{b}
+	fmap f arr = {f a\\a<-:arr}
+
+instance Functor {!}
+where
+	fmap :: (a -> b) !{!a} -> !{!b}
+	fmap f arr = {f a\\a<-:arr}
 
 instance pure {}
 where

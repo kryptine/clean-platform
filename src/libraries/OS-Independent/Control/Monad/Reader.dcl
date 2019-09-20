@@ -23,6 +23,8 @@ local        :: u:((.a -> .b) -> v:(.(ReaderT .b .c .d) -> .(ReaderT .a .c .d)))
 asks         :: (a -> b) -> ReaderT a c b | Monad c
 
 instance Functor (ReaderT r m) | Monad m
+where
+	fmap :: (a -> b) !(ReaderT r m a) -> ReaderT r m b | Monad m
 instance pure (ReaderT r m) | Monad m
 instance <*> (ReaderT r m) | Monad m
 instance Monad (ReaderT r m) | Monad m

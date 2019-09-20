@@ -179,6 +179,8 @@ instance ArrowApply (Kleisli m) | Monad m
 :: ArrowMonad a b = ArrowMonad (a () b)
 
 instance Functor (ArrowMonad a) | Arrow a
+where
+	fmap :: (t -> u) !(ArrowMonad a t) -> ArrowMonad a u | Arrow a
 
 instance pure (ArrowMonad a) | Arrow a
 instance <*> (ArrowMonad a) | Arrow a

@@ -105,7 +105,9 @@ instance ArrowApply (->) where
 instance ArrowApply (Kleisli m) | Monad m where
     app = Kleisli (\(Kleisli f, x) -> f x)
 
-instance Functor (ArrowMonad a) | Arrow a where
+instance Functor (ArrowMonad a) | Arrow a
+where
+	fmap :: (t -> u) !(ArrowMonad a t) -> ArrowMonad a u | Arrow a
     fmap f (ArrowMonad m) = ArrowMonad (m >>> arr f)
 
 instance pure (ArrowMonad a) | Arrow a

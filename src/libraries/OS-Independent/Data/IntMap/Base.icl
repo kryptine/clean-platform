@@ -6,7 +6,6 @@ import Control.Applicative
 import Control.Monad
 import Data.Either
 import Data.Functor
-import Data.Functor
 import Data.Maybe
 import Data.Monoid
 
@@ -16,6 +15,11 @@ instance Semigroup (IntMap a) where
 
 instance Monoid (IntMap a) where
     mempty  = empty
+
+instance Functor IntMap
+where
+	fmap :: (a -> b) !(IntMap a) -> IntMap b
+    fmap f xs = map f xs
 
 //instance Foldable.Foldable IntMap where
   //fold = go
@@ -1531,12 +1535,6 @@ nequal (Tip kx x) (Tip ky y)
   = (kx <> ky) || (x <> y)
 nequal Nil Nil = False
 nequal _   _   = True
-
-//instance < (IntMap a) | < a where
-    //(<) m1 m2 = toList m1 < toList m2
-
-instance Functor IntMap where
-    fmap f xs = map f xs
 
 link :: !Prefix !(IntMap a) !Prefix !(IntMap a) -> IntMap a
 link p1 t1 p2 t2

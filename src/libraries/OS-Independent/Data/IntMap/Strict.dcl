@@ -15,11 +15,11 @@ from StdOverloaded	import class ==, class <
 from StdBool        import not
 from StdFunc        import id
 from Text.GenJSON   import generic JSONEncode, generic JSONDecode, :: JSONNode
+from Data.Functor import class Functor
 from Data.GenEq import generic gEq
 from Data.Monoid    import class Monoid, class Semigroup
 from StdList import foldr
-from Data.Functor import class Functor (..)
-from Data.IntMap.Base import :: IntMap (..), :: Mask, :: Prefix, minViewWithKey, maxViewWithKey, empty, lookup, instance == (IntMap a), equal
+from Data.IntMap.Base import :: IntMap (..), :: Mask, :: Prefix, minViewWithKey, maxViewWithKey, empty, lookup, instance == (IntMap a), instance Functor IntMap, equal
 
 null :: !(IntMap a) -> Bool
 
@@ -130,8 +130,6 @@ foldrWithKey :: !(Int .a -> .(.b -> .b)) !.b !.(IntMap .a) -> .b
 union :: !(IntMap a) !(IntMap a) -> IntMap a
 
 unions :: ![IntMap a] -> IntMap a
-
-instance Functor IntMap
 
 // | /O(n)/. Map a function over all values in the map.
 //
