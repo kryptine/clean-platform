@@ -10,7 +10,7 @@ definition module Text.GenJSON
  *
  * @property-bootstrap
  *     import StdEnv
- *     import Data.GenEq
+ *     import Data.GenEq, Text
  *
  *     :: TestRecord = {a :: Int, b` :: [(Int,[Char])]}
  *
@@ -74,6 +74,7 @@ instance toString JSONNode
  * @property error for incomplete parsings: A.x :: type; s :: String:
  *     let json = toJSON x in
  *         toInt s == 0 ==> // we may append more digits to an int, in which case it is not invalid
+ *         trim s <> "" ==> // if we only add whitespace it is not invalid
  *         size s > 0 ==>
  *         fromString (toString json +++ s) =.= JSONError
  */
