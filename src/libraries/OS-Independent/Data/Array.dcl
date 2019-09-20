@@ -32,7 +32,8 @@ appendArr :: !(arr a) !(arr a) -> arr a | Array arr a
 
 instance +++ (arr a) | Array arr a
 
-instance Functor {}, {!}
+instance Functor {} where fmap :: (a -> b) !{a} -> {b}
+instance Functor {!} where fmap :: (a -> b) !{!a} -> {!b}
 instance pure {}
 instance pure {!} where pure :: !a -> {!a}
 instance <*> {}, {!}

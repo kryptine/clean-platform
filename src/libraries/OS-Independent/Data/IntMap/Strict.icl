@@ -728,11 +728,6 @@ fromAscListWithKey f [x0 : xs0] = fromDistinctAscList (combineEq x0 xs0)
 
 //:: Stack a = Push !Prefix !(IntMap a) !(Stack a) | Nada
 
-instance Functor IntMap where
-  fmap _ Nil       = Nil
-  fmap f (Tip n x) = Tip n (f x)
-  fmap f (Bin p m l r) = Bin p m (fmap f l) (fmap f r)
-
 mapSt :: !(a *st -> *(b, *st)) !.(IntMap a) !*st -> *(!IntMap b, !*st)
 mapSt _ Nil       st = (Nil, st)
 mapSt f (Tip n x) st

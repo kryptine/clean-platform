@@ -20,9 +20,9 @@ subRForest :: (RTree a) -> RForest a
 
 :: RForest a :== [RTree a]
 
-instance Functor RTree
+instance Functor RTree where fmap :: (a -> b) !(RTree a) -> RTree b
 
-fmapRTree :: (a -> b) (RTree a) -> RTree b
+fmapRTree :: (a -> b) !(RTree a) -> RTree b
 
 instance pure RTree
 instance <*> RTree

@@ -8,7 +8,7 @@ from Control.Applicative import class pure, class <*>, class Applicative
 
 runIdentity :: (Identity .a) -> .a
 
-instance Functor Identity
+instance Functor Identity where fmap :: (a -> b) !(Identity a) -> Identity b
 instance pure Identity
 instance <*> Identity
 instance Monad Identity

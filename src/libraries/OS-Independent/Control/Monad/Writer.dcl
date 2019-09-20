@@ -12,6 +12,8 @@ from Data.Functor.Identity import :: Identity
 :: Writer w a :== WriterT w Identity a
 
 instance Functor (WriterT w m) | Monad m & Monoid w
+where
+	fmap :: (a -> b) !(WriterT w m a) -> WriterT w m b | Monad m & Monoid w
 instance pure (WriterT w m) | pure m & Monoid w
 instance <*> (WriterT w m) | Monad m & Monoid w
 instance Monad (WriterT w m) | Monad m & Monoid w

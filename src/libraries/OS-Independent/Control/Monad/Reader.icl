@@ -6,8 +6,10 @@ import Control.Applicative
 from StdFunc import o, const
 import Control.Monad.Trans
 
-instance Functor (ReaderT r m) | Monad m where
-  fmap f m = liftM f m
+instance Functor (ReaderT r m) | Monad m
+where
+	fmap :: (a -> b) !(ReaderT r m a) -> ReaderT r m b | Monad m
+	fmap f m = liftM f m
 
 instance pure (ReaderT r m) | Monad m
 where
