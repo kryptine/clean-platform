@@ -28,12 +28,13 @@ RUN_BINARIES:=$(addprefix run_,$(BINARIES))
 
 all: $(RUN_BINARIES)
 
-$(filter-out checktest commentstest tartest snappytest,$(BINARIES)): .FORCE
+$(filter-out checktest commentstest snappytest tartest,$(BINARIES)): .FORCE
 	$(CLM) $(CLMLIBS) -PABC StdEnv
 	$(CLM) $(CLMLIBS) -PABC StdMaybe
 	$(CLM) $(CLMLIBS) -PABC -dynamics _SystemDynamic
 	$(CLM) $(CLMLIBS) -PABC TCPIP
 	$(CLM) $(CLMLIBS) -PABC Gast
+	find ../../src/libraries -name '*.abc' -exec rm {} \;
 	$(CLM) $(CLMLIBS) $(CLMFLAGS) $@ -o $@
 
 $(filter-out run_tartest,$(RUN_BINARIES)): run_%: %
