@@ -182,8 +182,9 @@ where
 instance fromString JSONNode
 where
 	fromString s
-		# (json,i) = parse 0 s
-		| i == size s
+		# s` = trim s
+		# (json,i) = parse 0 s`
+		| i == size s`
 			= json
 			= JSONError
 
