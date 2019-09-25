@@ -16,6 +16,7 @@ test-nightly:
     - COCLPATH=./compiler make -C tests/linux64 run
     - cleantest -r testproperties --options '-IL;Dynamics;-d;src/libraries/OS-Independent;-P;OutputTestEvents;-T;Tests 100000;-T;MaxStringLength 500;-T;Bent;-C;-h;-C;100m;-r' --junit junit.xml
   artifacts:
+    when: always
     paths:
       - junit.xml
     reports:
