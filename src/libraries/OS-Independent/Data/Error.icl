@@ -1,6 +1,6 @@
 implementation module Data.Error
 
-import StdMisc
+import StdEnv
 import Data.Functor, Data.Maybe, Data.GenEq
 import Control.Monad
 import Control.Applicative
