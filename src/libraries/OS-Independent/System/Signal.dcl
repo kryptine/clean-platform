@@ -6,7 +6,7 @@ import System._Signal
 
 :: SigHandler
 
-/*
+/**
  * Install a signal handler
  *
  * @param Signal type
@@ -16,7 +16,7 @@ import System._Signal
  */
 signalInstall :: !Int !*env -> *(MaybeOSError *SigHandler, !*env)
 
-/*
+/**
  * Poll a signal, this resets the state
  *
  * @param Signal handler
@@ -26,3 +26,11 @@ signalInstall :: !Int !*env -> *(MaybeOSError *SigHandler, !*env)
  * @return New world
  */
 signalPoll :: !*SigHandler !*env -> *(!MaybeErrorString Bool, !*SigHandler, !*env)
+
+/**
+ * Ignore a signal
+ *
+ * @param Signal type
+ * @param World
+ */
+signalIgnore :: !Int !*env -> (!MaybeOSError (), !*env)

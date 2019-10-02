@@ -41,3 +41,8 @@ void signal_poll(long handler, long *ok, long *state, long *handlerr)
 		*ok = 0;
 	}
 }
+
+int signal_ignore(long signum)
+{
+	return signal(signum, SIG_IGN) == SIG_ERR;
+}

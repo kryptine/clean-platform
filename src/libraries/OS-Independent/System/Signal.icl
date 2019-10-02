@@ -30,3 +30,13 @@ where
 	signalPoll_ _ _= code {
 		ccall signal_poll "I:VIII:A"
 	}
+
+signalIgnore :: !Int !*env -> (!MaybeOSError (), !*env)
+signalIgnore signum w
+	# (error, w) = signalIgnore` signum w
+	= if error (getLastOSError w) (Ok (), w)
+where
+	signalIgnore` :: !Int !*env -> (!Bool, !*env)
+	signalIgnore` signum w = code {
+		ccall signal_ignore "I:I:A"
+	}
