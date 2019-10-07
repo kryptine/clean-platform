@@ -13,3 +13,5 @@ Epsilon        :== 2.22044604925031308E-16
 LargestReal80  :== 1.18973149535723177E+4932
 SmallestReal80 :== 3.36210314311209351E-4932
 Epsilon80      :== 1.08420217248550443E-19
+
+approximatelyEqual :: !Real !Real -> Bool
