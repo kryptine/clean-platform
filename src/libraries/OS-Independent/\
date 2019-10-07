@@ -1,4 +1,0 @@
-implementation module Data.Real
-
-approximatelyEqual :: Real Real -> Bool
-approximatelyEqual a b = abs (a - b) <= abs (if (abs a < abs b) a b) * epsilon
