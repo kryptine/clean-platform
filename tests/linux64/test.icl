@@ -112,6 +112,7 @@ import qualified Data.IntMap.Base
 import qualified Data.IntMap.Strict
 import qualified Data.IntSet
 import qualified Data.IntSet.Base
+import qualified Data.Int
 import qualified Data.Integer
 import qualified Data.Integer.Add
 import qualified Data.Integer.Div
@@ -132,6 +133,7 @@ import qualified Data.Monoid
 import qualified Data.NGramIndex
 import qualified Data.OrdList
 import qualified Data.Queue
+import qualified Data.Real
 import qualified Data.Set
 import qualified Data.Set.GenJSON
 import qualified Data.Stack
@@ -183,6 +185,7 @@ import qualified System.Socket
 import qualified System.Socket.Ipv4
 import qualified System.Socket.Ipv6
 import qualified System.Socket.Unix
+import qualified System._Architecture
 import qualified System._Signal
 import qualified System._Socket
 import qualified System._Directory
