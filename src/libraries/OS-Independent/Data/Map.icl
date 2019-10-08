@@ -155,7 +155,7 @@ getGE k m = goNothing k m
 newMap :: w:(Map k u:v), [ w <= u]
 newMap = Tip
 
-singleton :: !k !a -> Map k a
+singleton :: !k !v -> Map k v | < k
 singleton k x = Bin 1 k x Tip Tip
 
 // See Note: Type of local 'go' function
@@ -1051,7 +1051,7 @@ mapKeysWith c f m = fromListWith c (foldrWithKey (\k x xs -> [(f k, x) : xs]) []
 // > valid (mapKeysMonotonic (\ k -> k * 2) (fromList [(5,"a"), (3,"b")])) == True
 // > valid (mapKeysMonotonic (\ _ -> 1)     (fromList [(5,"a"), (3,"b")])) == False
 
-mapKeysMonotonic :: !(k1 -> k2) !(Map k1 a) -> Map k2 a
+mapKeysMonotonic :: !(k1 -> k2) !(Map k1 a) -> Map k2 a | < k1 & < k2
 mapKeysMonotonic _ Tip = Tip
 mapKeysMonotonic f (Bin sz k x l r) =
     Bin sz (f k) x (mapKeysMonotonic f l) (mapKeysMonotonic f r)
@@ -1185,7 +1185,7 @@ keysSet :: !(Map k a) -> Set k
 keysSet Tip = 'Data.Set'.Tip
 keysSet (Bin sz kx _ l r) = 'Data.Set'.Bin sz kx (keysSet l) (keysSet r)
 
-fromSet :: !(k -> a) !(Set k) -> Map k a
+fromSet :: !(k -> a) !(Set k) -> Map k a | < k
 fromSet _ 'Data.Set'.Tip            = Tip
 fromSet f ('Data.Set'.Bin sz x l r) = Bin sz x (f x) (fromSet f l) (fromSet f r)
 
@@ -1288,7 +1288,7 @@ toDescList m = foldlWithKey (\xs k x -> [(k,x):xs]) [] m
 // > valid (fromAscList [(3,"b"), (5,"a"), (5,"b")]) == True
 // > valid (fromAscList [(5,"a"), (3,"b"), (5,"b")]) == False
 
-fromAscList :: ![(k, a)] -> Map k a | == k
+fromAscList :: ![(k, a)] -> Map k a | ==, < k
 fromAscList xs = fromAscListWithKey (\_ x _ -> x) xs
 
 // | /O(n)/. Build a map from an ascending list in linear time with a combining function for equal keys.
@@ -1298,7 +1298,7 @@ fromAscList xs = fromAscListWithKey (\_ x _ -> x) xs
 // > valid (fromAscListWith (++) [(3,"b"), (5,"a"), (5,"b")]) == True
 // > valid (fromAscListWith (++) [(5,"a"), (3,"b"), (5,"b")]) == False
 
-fromAscListWith :: !(a a -> a) ![(k, a)] -> Map k a | == k
+fromAscListWith :: !(a a -> a) ![(k, a)] -> Map k a | ==, < k
 fromAscListWith f xs = fromAscListWithKey (\_ x y -> f x y) xs
 
 // | /O(n)/. Build a map from an ascending list in linear time with a
@@ -1310,7 +1310,7 @@ fromAscListWith f xs = fromAscListWithKey (\_ x y -> f x y) xs
 // > valid (fromAscListWithKey f [(3,"b"), (5,"a"), (5,"b"), (5,"b")]) == True
 // > valid (fromAscListWithKey f [(5,"a"), (3,"b"), (5,"b"), (5,"b")]) == False
 
-fromAscListWithKey :: !(k a a -> a) ![(k, a)] -> Map k a | == k
+fromAscListWithKey :: !(k a a -> a) ![(k, a)] -> Map k a | ==, < k
 fromAscListWithKey f xs = fromDistinctAscList (combineEq f xs)
   where
   // [combineEq f xs] combines equal elements with function [f] in an ordered list [xs]
@@ -1338,16 +1338,16 @@ fromAscListWithKey f xs = fromDistinctAscList (combineEq f xs)
 
 // For some reason, when 'singleton' is used in fromDistinctAscList or in
 // create, it is not inlined, so we inline it manually.
-fromDistinctAscList :: ![(k, a)] -> Map k a
+fromDistinctAscList :: ![(k, a)] -> Map k a | < k
 fromDistinctAscList [] = Tip
 fromDistinctAscList [(kx0, x0) : xs0] = go 1 (Bin 1 kx0 x0 Tip Tip) xs0
   where
-  go :: !Int !(Map a b) ![(a, b)] -> Map a b
+  go :: !Int !(Map a b) ![(a, b)] -> Map a b | < a
   go _ t [] = t
   go s l [(kx, x) : xs] = case create s xs of
                             (r, ys) -> go (s << 1) (link kx x l r) ys
 
-  create :: !Int ![(a, b)] -> (!Map a b, ![(a, b)])
+  create :: !Int ![(a, b)] -> (!Map a b, ![(a, b)]) | < a
   create _ [] = (Tip, [])
   create s xs=:[x` : xs`]
     | s == 1 = case x` of (kx, x) -> (Bin 1 kx x Tip Tip, xs`)
@@ -1538,7 +1538,7 @@ splitLookup k t =
 //////////////////////////////////////////////////////////////////////
 //  Link
 //////////////////////////////////////////////////////////////////////
-link :: !k !a !(Map k a) !(Map k a) -> Map k a
+link :: !k !a !(Map k a) !(Map k a) -> Map k a | < k
 link kx x Tip r  = putMin kx x r
 link kx x l Tip  = putMax kx x l
 link kx x l=:(Bin mapSizeL ky y ly ry) r=:(Bin mapSizeR kz z lz rz)
@@ -1549,14 +1549,14 @@ link _ _ _ _ = abort "error in link\n"
 
 
 // putMin and putMax don't perform potentially expensive comparisons.
-putMax :: !k !a !(Map k a) -> Map k a
+putMax :: !k !a !(Map k a) -> Map k a | < k
 putMax kx x t
   = case t of
       Tip -> singleton kx x
       Bin _ ky y l r
           -> balanceR ky y l (putMax kx x r)
 
-putMin :: !k !a !(Map k a) -> Map k a
+putMin :: !k !a !(Map k a) -> Map k a | < k
 putMin kx x t
   = case t of
       Tip -> singleton kx x
@@ -1579,7 +1579,7 @@ merge _ _ = abort "error in merge\n"
 //  [glue l r]: glues two trees together.
 //  Assumes that [l] and [r] are already balanced with respect to each other.
 ////////////////////////////////////////////////////////////////////
-glue :: !(Map k a) !(Map k a) -> Map k a
+glue :: !(Map k a) !(Map k a) -> Map k a | < k
 glue Tip r = r
 glue l Tip = l
 glue l r
@@ -1694,7 +1694,7 @@ ratio :== 2
 //
 // It is only written in such a way that every node is pattern-matched only once.
 
-balance :: !k !a !(Map k a) !(Map k a) -> Map k a
+balance :: !k !a !(Map k a) !(Map k a) -> Map k a | < k
 balance k x l r = case l of
   Tip -> case r of
            Tip -> Bin 1 k x Tip Tip
@@ -1732,7 +1732,7 @@ balance k x l r = case l of
 
 // balanceL is called when left subtree might have been puted to or when
 // right subtree might have been deleted from.
-balanceL :: !k !a !(Map k a) !(Map k a) -> Map k a
+balanceL :: !k !a !(Map k a) !(Map k a) -> Map k a | < k
 balanceL k x l r = case r of
   Tip -> case l of
            Tip -> Bin 1 k x Tip Tip
@@ -1756,7 +1756,7 @@ balanceL k x l r = case r of
 
 // balanceR is called when right subtree might have been puted to or when
 // left subtree might have been deleted from.
-balanceR :: !k !a !(Map k a) !(Map k a) -> Map k a
+balanceR :: !k !a !(Map k a) !(Map k a) -> Map k a | < k
 balanceR k x l r = case l of
   Tip -> case r of
            Tip -> Bin 1 k x Tip Tip
@@ -1782,7 +1782,7 @@ balanceR k x l r = case l of
 ////////////////////////////////////////////////////////////////////
 //  The bin constructor maintains the mapSize of the tree
 ////////////////////////////////////////////////////////////////////
-bin :: !k !a !(Map k a) !(Map k a) -> Map k a
+bin :: !k !a !(Map k a) !(Map k a) -> Map k a | < k
 bin k x l r = Bin (mapSize l + mapSize r + 1) k x l r
 
 ////////////////////////////////////////////////////////////////////

@@ -107,7 +107,7 @@ import StdClass
  *             sizes_correct r
  */
 :: Map k v
-  = Bin !Int !k !v !(Map k v) !(Map k v)
+  = Bin !Int !k !v !(Map k v) !(Map k v) & < k
   | Tip
 
 instance Monoid (Map k v) | < k
@@ -145,7 +145,7 @@ newMap      :: w:(Map k u:v), [ w <= u]
  * Create a Map with one element.
  * @complexity O(1)
  */
-singleton   :: !k !v -> Map k v
+singleton   :: !k !v -> Map k v | < k
 
 /**
  * The number of elements in a Map.
@@ -289,7 +289,7 @@ keysSet :: !(Map k a) -> Set k
  * Build a map from a set of keys and a function which for each key computes its value.
  * @complexity log(n)
  */
-fromSet :: !(k -> a) !(Set k) -> Map k a
+fromSet :: !(k -> a) !(Set k) -> Map k a | < k
 
 derive gEq Map
 derive gLexOrd Map
