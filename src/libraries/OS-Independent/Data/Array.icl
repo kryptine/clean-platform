@@ -116,12 +116,12 @@ instance +++ (arr a) | Array arr a where
 
 instance Functor {}
 where
-	fmap :: (a -> b) !{a} -> !{b}
+	fmap :: (a -> b) !{a} -> {b}
 	fmap f arr = {f a\\a<-:arr}
 
 instance Functor {!}
 where
-	fmap :: (a -> b) !{!a} -> !{!b}
+	fmap :: (a -> b) !{!a} -> {!b}
 	fmap f arr = {f a\\a<-:arr}
 
 instance pure {}
