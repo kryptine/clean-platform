@@ -1,5 +1,7 @@
 definition module System._Signal
 
+from StdMisc import abort
+
 //All posix signals for x86, arm and most other architectures
 SIGHUP    :== 1
 SIGINT    :== 2
@@ -35,3 +37,5 @@ SIGPOLL   :== 29
 SIGPWR    :== 30
 SIGSYS    :== 31
 SIGUNUSED :== 31
+
+SIGBREAK  :== abort "SIGBREAK is not supported on POSIX\n"
