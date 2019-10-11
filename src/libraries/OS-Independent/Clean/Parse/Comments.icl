@@ -12,13 +12,16 @@ import StdString
 import StdTuple
 
 import Control.Monad
+import Data.Bifunctor
 import Data.Error
+from Data.Func import $
 import Data.Functor
-from Data.Map import :: Map(..), newMap, put, get
+from Data.Map import :: Map(..), newMap, put, get, alter
 import Data.Maybe
+import Data.Tuple
 import System.File
 import System.FilePath
-from Text import class Text(startsWith), instance Text String
+from Text import class Text(concat,startsWith), instance Text String
 
 from Heap import :: Heap, :: HeapN, :: Ptr{pointer}, :: PtrN(Ptr), readPtr
 from syntax import
@@ -244,8 +247,17 @@ collectComments comments pm
 	[c:cs]
 		| c.line <= 3 && startsWith "*" c.content -> (cs, putCC pm c coll)
 		| otherwise -> (comments, coll)
+# comments = chunkSingleLineComments comments
 # (_,_,coll) = collect comments Nothing pm.mod_defs coll
 = coll
+where
+	chunkSingleLineComments [] = []
+	chunkSingleLineComments [c:cs]
+	| c.multiline = [c:chunkSingleLineComments cs]
+	# (same,rest) = bifmap (map snd) (map snd) $ span
+		(\(i,c`) -> i==c`.line && c.column==c`.column)
+		[(i,c`) \\ c` <- cs & i <- [c.line+1..]]
+	= [{c & content=concat [c`.content \\ c` <- [c:same]]}:chunkSingleLineComments rest]
 
 collect :: ![CleanComment] !(Maybe CleanComment) ![a] !CollectedComments -> (![CleanComment], !Maybe CleanComment, !CollectedComments) | pos, singleLineAbove, commentIndex, children a
 collect cc prev [] coll = (cc, prev, coll)
