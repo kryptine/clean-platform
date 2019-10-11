@@ -23,8 +23,7 @@ map :: (a -> b) [a] -> [b]
 
 For short documentation items, doclines, starting with `//*` can be used. When
 documenting a constructor, or record field, they should be placed *after* the
-item they document. Doclines are only supported for constructors and record
-fields. For example:
+item they document. For example:
 
 ```clean
 /**
@@ -35,6 +34,23 @@ fields. For example:
 	, month :: Int  //* The month (January is 1)
 	, year  :: Int  //* The year
 	}
+```
+
+To add several lines of documentation to a constructor or record field, several
+doclines can be used:
+
+```clean
+:: MyType
+	= MyConstructor args // ...
+		//* This constructor may require some more explanation,
+		//* which is added on several lines.
+```
+
+Doclines can also be added *above* a function, type, or class definition:
+
+```clean
+//* The identity function.
+id :: .a -> .a
 ```
 
 ## Markup in documentation
