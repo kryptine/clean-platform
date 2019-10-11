@@ -38,8 +38,9 @@ expected =
 	, {kind="selector",    name="value",       value=Nothing}
 	, {kind="type",     name="TrickyADT",      value=Just "* This type is just here to test; it isn't used\n"}
 	, {kind="constructor", name="TrickyADT_A", value=Just "* Documentation on same line\n"}
-	, {kind="constructor", name="TrickyADT_B", value=Just "* Documentation on new line\n* Extra documentation line\n"}
-	, {kind="constructor", name="TrickyADT_C", value=Just "* Documentation on new line\n"}
+	, {kind="constructor", name="TrickyADT_B", value=Just "* New constructor with matching column\n"}
+	, {kind="constructor", name="TrickyADT_C", value=Just "* Documentation on new line\n* Extra documentation line\n"}
+	, {kind="constructor", name="TrickyADT_D", value=Just "* Documentation on new line\n"}
 	, {kind="typespec", name="list_comments",  value=Nothing}
 	]
 

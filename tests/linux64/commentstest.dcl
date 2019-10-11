@@ -19,10 +19,11 @@ import Clean.Parse.Comments
 //* This type is just here to test; it isn't used
 :: TrickyADT
 	= TrickyADT_A //* Documentation on same line
-	| TrickyADT_B
+	| TrickyADT_B //* New constructor with matching column
+	| TrickyADT_C
 		//* Documentation on new line
 		//* Extra documentation line
-	| TrickyADT_C
+	| TrickyADT_D
 		//* Documentation on new line
 
 list_comments :: !ParsedModule !CollectedComments -> [Entry]

@@ -118,18 +118,17 @@ defaultScanState =
 	}
 
 advance :: !ScanState -> ScanState
-advance ss = {ss & col=ss.col+1, idx=ss.idx+1}
+advance ss = case ss.input.[ss.idx] of
+	'\t' -> {ss &             col=ss.col+4, idx=ss.idx+1} // We assume that there are no tabs in a line
+	'\n' -> {ss & ln=ss.ln+1, col=0,        idx=ss.idx+1}
+	_    -> {ss &             col=ss.col+1, idx=ss.idx+1}
 
 scan :: !ScanState -> (![CleanComment], !ScanState)
 scan ss=:{idx}
 | idx >= size ss.input = ([], ss)
 | otherwise = case [ss.input.[i] \\ i <- [idx..]] of
-	['\r':_]
+	[s:_] | s=='\r' || s=='\n' || s=='\t'
 		-> scan (advance ss)
-	['\n':_]
-		-> scan {ss & idx=idx+1, ln=ss.ln+1, col=0}
-	['\t':_] // We assume that there are no tabs within a line: each tab counts as 4 characters
-		-> scan {ss & idx=idx+1, col=ss.col+4}
 	['//':_] | ss.comment_level == 0
 		# cmnt =
 			{ line      = ss.ln
@@ -139,7 +138,9 @@ scan ss=:{idx}
 			, multiline = False
 			}
 		# ss = scan_to_newline ss
-		# cmnt & content = ss.input % (idx+2,ss.idx-1)
+		# content = ss.input % (idx+2,ss.idx-1)
+		# (extra_content,ss) = collect_single_line_comments cmnt.line cmnt.column ss
+		# cmnt & content = concat [content:extra_content]
 		# (cmnts,ss) = scan ss
 		-> ([cmnt:cmnts],ss)
 	['/*':_]
@@ -171,13 +172,32 @@ scan ss=:{idx}
 		-> scan (skip_string_literal '"' (advance ss))
 	_
 		-> scan (advance ss)
+where
+	collect_single_line_comments :: !Int !Int !ScanState -> (![String], !ScanState)
+	collect_single_line_comments ln col ss
+	# ss=:{idx} = skip_whitespace ss
+	| ss.ln==ln+1 && ss.col==col
+			&& ss.idx<size ss.input-2
+			&& ss.input.[idx]=='/' && ss.input.[idx+1]=='/'
+		# ss = scan_to_newline ss
+		# content = ss.input % (idx+2,ss.idx-1)
+		# (cmnts,ss) = collect_single_line_comments (ln+1) col ss
+		= ([content:cmnts],ss)
+		= ([],ss)
 
 scan_to_newline :: !ScanState -> ScanState
 scan_to_newline ss
 | ss.idx >= size ss.input = ss
 # c = ss.input.[ss.idx]
-| c == '\n' = {ss & ln=ss.ln+1, col=0, idx=ss.idx+1}
-| otherwise = scan_to_newline (advance ss)
+# ss = advance ss
+= if (c=='\n') ss (scan_to_newline ss)
+
+skip_whitespace :: !ScanState -> ScanState
+skip_whitespace ss
+| ss.idx >= size ss.input = ss
+# c = ss.input.[ss.idx]
+| isSpace c = skip_whitespace (advance ss)
+| otherwise = ss
 
 skip_list_literal :: !ScanState -> ScanState
 skip_list_literal ss
@@ -247,17 +267,8 @@ collectComments comments pm
 	[c:cs]
 		| c.line <= 3 && startsWith "*" c.content -> (cs, putCC pm c coll)
 		| otherwise -> (comments, coll)
-# comments = chunkSingleLineComments comments
 # (_,_,coll) = collect comments Nothing pm.mod_defs coll
 = coll
-where
-	chunkSingleLineComments [] = []
-	chunkSingleLineComments [c:cs]
-	| c.multiline = [c:chunkSingleLineComments cs]
-	# (same,rest) = bifmap (map snd) (map snd) $ span
-		(\(i,c`) -> i==c`.line && c.column==c`.column)
-		[(i,c`) \\ c` <- cs & i <- [c.line+1..]]
-	= [{c & content=concat [c`.content \\ c` <- [c:same]]}:chunkSingleLineComments rest]
 
 collect :: ![CleanComment] !(Maybe CleanComment) ![a] !CollectedComments -> (![CleanComment], !Maybe CleanComment, !CollectedComments) | pos, singleLineAbove, commentIndex, children a
 collect cc prev [] coll = (cc, prev, coll)
