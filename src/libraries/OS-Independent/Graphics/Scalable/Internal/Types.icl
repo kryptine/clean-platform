@@ -37,7 +37,7 @@ from Text.GenJSON  import generic JSONEncode, generic JSONDecode, :: JSONNode
     , fontweight`  :: !String              // default value: "normal"
     }
 :: MilliInt
-  = MilliInt !Int
+  = { msec         :: !Int }
 derive gEq        MilliInt
 derive gPrint     MilliInt
 derive JSONEncode MilliInt
@@ -45,19 +45,34 @@ derive JSONDecode MilliInt
 derive gText      MilliInt
 gToJS{|MilliInt|} m = gToJS{|*|} (toReal m)
 
-instance zero     MilliInt where zero                          = MilliInt 0
-instance one      MilliInt where one                           = MilliInt 1000
-instance ==       MilliInt where ==  (MilliInt a) (MilliInt b) = a == b
-instance <        MilliInt where <   (MilliInt a) (MilliInt b) = a <  b
-instance +        MilliInt where +   (MilliInt a) (MilliInt b) = MilliInt (a + b)
-instance -        MilliInt where -   (MilliInt a) (MilliInt b) = MilliInt (a - b)
-instance abs      MilliInt where abs (MilliInt a)              = MilliInt (abs a)
-instance ~        MilliInt where ~   (MilliInt a)              = MilliInt (~ a)
+instance zero     MilliInt where zero                          = {msec=0} //MilliInt 0
+instance one      MilliInt where one                           = {msec=1000} //MilliInt 1000
+//instance ==       MilliInt where ==  (MilliInt a) (MilliInt b) = a == b
+instance ==       MilliInt where ==  {msec=a} {msec=b} = a == b
+//instance <        MilliInt where <   (MilliInt a) (MilliInt b) = a <  b
+instance <        MilliInt where <   {msec=a} {msec=b} = a <  b
+//instance +        MilliInt where +   (MilliInt a) (MilliInt b) = MilliInt (a + b)
+instance +        MilliInt where +   {msec=a} {msec=b} = {msec=a + b}
+//instance -        MilliInt where -   (MilliInt a) (MilliInt b) = MilliInt (a - b)
+instance -        MilliInt where -   {msec=a} {msec=b} = {msec=a - b}
+//instance abs      MilliInt where abs (MilliInt a)              = MilliInt (abs a)
+instance abs      MilliInt where abs {msec=a}              = {msec=abs a}
+//instance ~        MilliInt where ~   (MilliInt a)              = MilliInt (~ a)
+instance ~        MilliInt where ~   {msec=a}              = {msec= ~ a}
+//instance *        MilliInt where *   a b                       = toMilliInt ((toReal a) * (toReal b))
 instance *        MilliInt where *   a b                       = toMilliInt ((toReal a) * (toReal b))
 instance /        MilliInt where /   a b                       = toMilliInt ((toReal a) / (toReal b))
-instance toReal   MilliInt where toReal (MilliInt a)           = (toReal a) / 1000.0
-instance toString MilliInt where toString (MilliInt a)
+//instance toReal   MilliInt where toReal (MilliInt a)           = (toReal a) / 1000.0
+instance toReal   MilliInt where toReal {msec=a}           = (toReal a) / 1000.0
+/*instance toString MilliInt where toString (MilliInt a)
                                  | a <  0                      = concat ["-",toString (MilliInt (~a))]
+                                 | a == 0                      = "0.0"
+                                 | a < 1000                    = concat ["0.",toString a]
+                                 | otherwise                   = concat [toString (a / 1000),".",createArray (3-size trailer) '0',trailer]
+                                 where
+                                 	trailer                    = toString (a rem 1000)*/
+instance toString MilliInt where toString {msec=a}
+                                 | a <  0                      = concat ["-",toString {msec= ~a}]
                                  | a == 0                      = "0.0"
                                  | a < 1000                    = concat ["0.",toString a]
                                  | otherwise                   = concat [toString (a / 1000),".",createArray (3-size trailer) '0',trailer]
@@ -303,8 +318,8 @@ getfontweight` {FontDef` | fontweight`} = fontweight`
 
 class toMilliInt a :: !a -> MilliInt
 instance toMilliInt MilliInt where toMilliInt n = n
-instance toMilliInt Int      where toMilliInt n = MilliInt        (n * 1000)
-instance toMilliInt Real     where toMilliInt r = MilliInt (toInt (r * 1000.0))
+instance toMilliInt Int      where toMilliInt n = {msec=n*1000} //MilliInt        (n * 1000)
+instance toMilliInt Real     where toMilliInt r = {msec=toInt (r * 1000.0)} //MilliInt (toInt (r * 1000.0))
 instance toMilliInt Span     where toMilliInt (PxSpan n) = n
                                    toMilliInt _ = abort "Fatal error in module Graphics.Scalable.Internal.Types: instance toMilliInt Span applied to illegal argument"
 
