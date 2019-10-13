@@ -134,6 +134,7 @@ import qualified Data.OrdList
 import qualified Data.Queue
 import qualified Data.Set
 import qualified Data.Set.GenJSON
+import qualified Data.Set.Gast
 import qualified Data.Stack
 import qualified Data.Traversable
 import qualified Data.Tree
