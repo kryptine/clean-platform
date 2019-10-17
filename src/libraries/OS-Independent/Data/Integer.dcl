@@ -21,10 +21,12 @@ instance sign			Integer
 instance /				Integer
 instance rem            Integer
 
-//instance ^				Integer
+instance ^				Integer
 
 instance ==				Integer
 instance <  			Integer
+
+instance isEven Integer
 
 class toInteger a :: !a -> Integer
 

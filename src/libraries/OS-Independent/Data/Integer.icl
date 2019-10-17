@@ -40,6 +40,24 @@ instance *  			Integer
 where
 	(*) a b = mul_integer a b
 
+instance ^ Integer
+where
+	(^) x n
+		| n < zero = abort "^ (Integer) called with negative power argument"
+		= pow x n
+	where
+		pow a b
+			| b == zero = one
+			# x = pow a (b / toInteger 2)
+			| isEven b = x * x
+			= a * x * x
+
+instance isEven Integer
+where
+	isEven {integer_s=s,integer_a=a}
+		| size a == 0 = isEven s
+		= isEven a.[0]
+
 instance zero			Integer
 where
     zero = {integer_s = 0, integer_a = {}}
