@@ -1,6 +1,6 @@
 implementation module System.Time
 
-import StdString, StdArray, StdClass, StdOverloaded, StdInt, StdMisc, StdBool
+import StdEnv
 import System._Pointer
 import System._WinBase
 import Data.Integer
@@ -166,18 +166,31 @@ packTm32 tm = 	{ tm.sec
 				, tm.yday
 				, tm.isdst
 				}
-				
-//Number of ticks difference between the windows and linux epoch
-TICKSDIFF :== {integer_s=0,integer_a={-1240428288,2}} * TICKSPERSEC
-//Number of ticks per second on windows machines
-TICKSPERSEC :== {integer_s=10000000,integer_a={}}
-BIGTWO :== {integer_s=2,integer_a={}}
-				
+
+
+//Number of 100ns ticks difference between the windows and linux epoch 
+TICKSDIFF32   =: toInteger "11644473600" * TICKSPERSEC32
+TICKSDIFF64   =: 11644473600 * TICKSPERSEC64
+
+//Number of ticks per second (100 ns ticks)
+TICKSPERSEC32 =: toInteger 10000000
+TICKSPERSEC64 =: 10000000
+
+/*
+ * On windows GetSystemTimeAsFileTime returns a struct containing 2 32bit unsigned integers.
+ * On 64 bit we therefore use an array of length 1, on 32 bit of length two.
+ * On 64 bit we can use native integers, on 32 bit we use bigints.
+ */
 nsTime :: !*World -> (!Timespec, !*World)
-nsTime w
-# (is, w) = GetSystemTimeAsFileTime (createArray 2 0) w
-# ticks = uintToInt is.[0] + foldr ($) (uintToInt is.[1]) (repeatn 32 ((*) BIGTWO)) - TICKSDIFF
-= ({Timespec | tv_sec=toInt (ticks / TICKSPERSEC), tv_nsec=toInt (ticks rem TICKSPERSEC) *100}, w)
+nsTime w = IF_INT_64_OR_32 nsTime64 nsTime32 w
+where
+	nsTime64 w
+		# (is, w) = GetSystemTimeAsFileTime {0} w
+		= ({tv_sec=(is.[0] - TICKSDIFF64) / TICKSPERSEC64, tv_nsec=(is.[0] rem TICKSPERSEC64) * 100}, w)
+	nsTime32 w
+		# (is, w) = GetSystemTimeAsFileTime {0,0} w
+		# ticks = uintToInt is.[0] + foldr ($) (uintToInt is.[1]) (repeatn 32 ((*) (toInteger 2))) - TICKSDIFF32
+		= ({tv_sec=toInt (ticks / TICKSPERSEC32), tv_nsec=toInt (ticks rem TICKSPERSEC32) * 100}, w)
 
 uintToInt :: Int -> Integer
 uintToInt i
