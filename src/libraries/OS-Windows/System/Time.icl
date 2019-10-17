@@ -179,7 +179,7 @@ TICKSPERSEC64 =: 10000000
 /*
  * On windows GetSystemTimeAsFileTime returns a struct containing 2 32bit unsigned integers.
  * On 64 bit we therefore use an array of length 1, on 32 bit of length two.
- * On 64 bit we can use native integers, on windows we use bigints.
+ * On 64 bit we can use native integers, on 32 bit we use bigints.
  */
 nsTime :: !*World -> (!Timespec, !*World)
 nsTime w = IF_INT_64_OR_32 nsTime64 nsTime32 w
