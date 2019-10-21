@@ -145,6 +145,7 @@ import qualified Data.Tree
 import qualified Data.Tuple
 import qualified Data.Word8
 import qualified Data._Array
+import qualified Data._Int32Array
 import qualified Data.Encoding.GenBinary
 import qualified Database.Native
 import qualified Database.Native.JSON
