@@ -39,7 +39,8 @@ recursiveDelete fp w
 		= removeDirectory fp w
 	= deleteFile fp w
 
-scanDirectory :: !(FilePath FileInfo .st *World -> *(.st, *World)) !.st !FilePath !*World -> *(![OSError], !.st, !*World)
+scanDirectory ::
+	!(FilePath FileInfo .st -> *(*World -> *(.st, *World))) !.st !FilePath !*World -> *(![OSError], !.st, !*World)
 scanDirectory upd st dir w = scan dir [] st w
 where
 	scan dir errs st w

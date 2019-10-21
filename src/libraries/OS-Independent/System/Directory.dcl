@@ -32,7 +32,8 @@ recursiveDelete :: !FilePath !*World -> *(!MaybeOSError (), !*World)
  * @result The updated state.
  * @result The new world.
  */
-scanDirectory :: !(FilePath FileInfo .st *World -> *(.st, *World)) !.st !FilePath !*World -> *(![OSError], !.st, !*World)
+scanDirectory ::
+	!(FilePath FileInfo .st -> *(*World -> *(.st, *World))) !.st !FilePath !*World -> *(![OSError], !.st, !*World)
 
 /**
  * Create an {{RTree}} from a root for a directory structure.
