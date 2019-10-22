@@ -14,7 +14,10 @@ CLMLIBS:=\
 	-IL Dynamics\
 	-IL GraphCopy\
 	-IL TCPIP\
-	-IL Gast
+	-IL Gast\
+	-l -lmariadb\
+	-l -lsqlite3\
+	-l -lsnappy
 
 COCLPATH?=../../../compiler
 COCLLIBS:=\
@@ -44,7 +47,7 @@ run: all
 	@FAILED=0; for t in $(BINARIES); do echo "$$t"; ./$$t || FAILED=1; done; if [ $$FAILED -gt 0 ]; then exit 1; fi
 
 snappytest: %: %.icl .FORCE
-	$(CLM) $(CLMLIBS) -l -lsnappy $(CLMFLAGS) -nr $@ -o $@
+	$(CLM) $(CLMLIBS) $(CLMFLAGS) -nr $@ -o $@
 
 tartest: .FORCE
 	$(CLM) $(CLMLIBS) $(CLMFLAGS) -nr -nt $@ -o $@
