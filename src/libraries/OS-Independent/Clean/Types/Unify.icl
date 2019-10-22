@@ -1,24 +1,20 @@
 implementation module Clean.Types.Unify
 
-import StdArray
-import StdBool
-from StdFunctions import o, const
-import StdList
-import StdOrdList
-import StdTuple
-import StdString
+import StdEnv
 
 import Clean.Types
 import Clean.Types.Util
 import Control.Applicative
 import Control.Monad
 import Control.Monad.State
+import Data.Bifunctor
 from Data.Func import $
 import Data.Functor
 import Data.GenEq
 import Data.List
 from Data.Map import :: Map, newMap
 import Data.Maybe
+import Data.Tuple
 
 derive gEq Type, TypeRestriction, Kind
 
@@ -74,9 +70,9 @@ where
 	renameAndRemoveStrictness (Var v) = Var (prep +++ v)
 	renameAndRemoveStrictness (Cons c ts) = Cons (prep +++ c) $ map renameAndRemoveStrictness ts
 	renameAndRemoveStrictness (Type t ts) = Type t $ map renameAndRemoveStrictness ts
-	renameAndRemoveStrictness (Func is r tc) = Func (map renameAndRemoveStrictness is) (renameAndRemoveStrictness r) (map (inTC renameAndRemoveStrictness) tc)
+	renameAndRemoveStrictness (Func [i] r _) = Type "(->)" (map renameAndRemoveStrictness [i,r])
 	renameAndRemoveStrictness (Uniq t) = Uniq $ renameAndRemoveStrictness t
-	renameAndRemoveStrictness (Arrow t) = Arrow (renameAndRemoveStrictness <$> t)
+	renameAndRemoveStrictness (Arrow t) = Type "(->)" (if (isJust t) [renameAndRemoveStrictness (fromJust t)] [])
 	renameAndRemoveStrictness (Forall vs t tc) = fromJust $
 		assignAll [(prep+++v,Var ("_"+++prep+++v)) \\ v <- map fromVarLenient vs] $
 		renameAndRemoveStrictness t
@@ -88,15 +84,28 @@ where
 finish_unification :: ![TypeDef] ![TVAssignment] -> Unifier
 finish_unification syns tvs
 # (tvs1, tvs2) = (filter (startsWith 'l') tvs, filter (startsWith 'r') tvs)
-# (tvs1, tvs2) = (map removePrefixes tvs1, map removePrefixes tvs2)
+# (tvs1, tvs2) = (map fixup tvs1, map fixup tvs2)
 = {assignments=sortBy order (map LeftToRight tvs1 ++ map RightToLeft tvs2), used_synonyms=removeDupTypedefs syns}
 where
 	startsWith :: !Char !TVAssignment -> Bool
 	startsWith c (h,_) = h.[0] == c || h.[0] == '_' && h.[1] == c
 
-	removePrefixes :: !TVAssignment -> TVAssignment
-	removePrefixes (v,t) = (rm v, fromJust $ assignAll (map (\v->(v,Var (rm v))) $ allVars t) t)
-	where rm s = s % (if (s.[0] == '_') 2 1, size s - 1)
+	fixup :: (TVAssignment -> TVAssignment)
+	fixup = second addArrowAndFunc o removePrefixes
+	where
+		removePrefixes (v,t) = (rm v, fromJust $ assignAll (map (\v->(v,Var (rm v))) $ allVars t) t)
+		rm s = s % (if (s.[0] == '_') 2 1, size s - 1)
+
+		addArrowAndFunc (Type "(->)" [])    = Arrow Nothing
+		addArrowAndFunc (Type "(->)" [t])   = Arrow $ Just $ addArrowAndFunc t
+		addArrowAndFunc (Type "(->)" [t,u]) = Func [addArrowAndFunc t] (addArrowAndFunc u) []
+		addArrowAndFunc (Type t ts)         = Type t $ map addArrowAndFunc ts
+		addArrowAndFunc t=:(Var _)          = t
+		addArrowAndFunc (Cons c ts)         = Cons c $ map addArrowAndFunc ts
+		addArrowAndFunc (Uniq t)            = Uniq $ addArrowAndFunc t
+		addArrowAndFunc (Arrow _)           = abort "addArrowAndFunc: Arrow\n"
+		addArrowAndFunc (Forall vs t tc)    = Forall vs (addArrowAndFunc t) tc
+		addArrowAndFunc (Strict t)          = Strict $ addArrowAndFunc t
 
 	order :: !UnifyingAssignment !UnifyingAssignment -> Bool
 	order ua1 ua2
@@ -130,6 +139,7 @@ applyAssignment v (Var w) | v.[0] <> '_' && w.[0] == '_' =
 applyAssignment v t =
 	checkUniversalisedVariables v t >>= \t ->
 	checkCircularAssignment v t >>|
+	//checkSingleKind t >>|
 	gets goals >>= mapM (assign` (v,t)) >>= \goals ->
 	modify \s ->
 	{ s
@@ -171,13 +181,19 @@ where
 		(Just t, Just u) -> pure (t,u)
 		_                -> fail
 
+import Debug.Trace
 unify :: !Type !Type -> Maybe [TVAssignment]
-unify t u = evalStateT loopUntilDone {assignments=[], goals=[(t,u)], used_universal_vars=[]}
+unify t u = flip evalStateT {assignments=[], goals=[(t,u)], used_universal_vars=[]} $
+	loopUntilDone >>= \assignments ->
+	case trace_stdout (assignAll assignments (Type "" [t,u])) of
+		Just (Type _ [t`,u`:_])
+			-> pure assignments
+			-> fail
 where
 	loopUntilDone :: UnifyM [TVAssignment]
 	loopUntilDone = gets goals >>= \goals -> case goals of
 		[(t1,t2):_] -> modify (\s -> {s & goals=tl s.goals}) >>| uni t1 t2 >>| loopUntilDone
-		[]          -> gets assignments
+		[]          -> reverse <$> gets assignments
 
 uni :: !Type !Type -> UnifyM ()
 uni (Var v) t = if (t == Var v) succeed (applyAssignment v t)
@@ -207,3 +223,20 @@ addGoals :: ![Type] ![Type] -> UnifyM ()
 addGoals [t:ts] [u:us] = addGoal t u >>| addGoals ts us
 addGoals []     []     = succeed
 addGoals _      _      = fail
+
+Start = (result, assignments, t1``, t2``)
+where
+	t1 = Cons "a" [Arrow Nothing]
+	t2 = Cons "a" [Var "a"]
+
+	(_,t1`) = prepare_unification True  (const False) newMap t1
+	(_,t2`) = prepare_unification False (const False) newMap t2
+
+	result = unify t1` t2`
+
+	assignments = (finish_unification [] (fromJust result)).Unifier.assignments
+	ltr = [a \\ LeftToRight a <- assignments]
+	rtl = [a \\ RightToLeft a <- assignments]
+
+	(Just t1``) = assignAll ltr t1
+	(Just t2``) = assignAll rtl t2

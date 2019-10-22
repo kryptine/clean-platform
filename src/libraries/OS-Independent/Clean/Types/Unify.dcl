@@ -2,6 +2,45 @@ definition module Clean.Types.Unify
 
 /**
  * Functions to unify Clean types.
+ *
+ * @property-bootstrap
+ *     import StdEnv
+ *     from Data.Map import :: Map, newMap
+ *
+ *     import Clean.Types.Parse
+ *     import Clean.Types.Util
+ *
+ *     derive genShow Type, TypeRestriction, Maybe
+ *     derive gPrint  Type, TypeRestriction, Maybe
+ *
+ *     ggen{|Type|} st = flatten
+ *         [ if (typeList=:[])
+ *           [ Arrow Nothing
+ *           ]
+ *           [ Func (tl typeList) (hd typeList) []
+ *           , Uniq (hd typeList)
+ *           , Arrow (Just (hd typeList))
+ *           ] ++
+ *           [ Type typeName typeList
+ *           , Var  varName
+ *           , Cons varName typeList
+ *           ]
+ *         \\ typeName <- ["A","B","C"]
+ *          , varName  <- ["a","b","c"]
+ *          , typeList <- take st.maxDepth (ggen{|*|} st)
+ *         ]
+ *
+ *     type :: !String -> Type
+ *     type s = fromJust (parseType [c \\ c <-: s])
+ *
+ *     prepare_and_unify :: !String !String -> Maybe [TVAssignment]
+ *     prepare_and_unify t u
+ *         # (_,t) = prepare_unification True  (const False) newMap (type t)
+ *         # (_,u) = prepare_unification False (const False) newMap (type u)
+ *         = unify t u
+ *
+ *     can_unify :: !String !String -> Bool
+ *     can_unify t u = isJust (prepare_and_unify t u)
  */
 
 import Clean.Types
@@ -67,5 +106,19 @@ finish_unification :: ![TypeDef] ![TVAssignment] -> Unifier
  * @param The left type
  * @param The right type
  * @result A list of type variable assignments, or Nothing if unification failed
+ *
+ * @property applying unifier gives equal types: A.t :: Type; u :: Type:
+ *     let
+ *         (_,t`) = prepare_unification True  (const False) newMap t
+ *         (_,u`) = prepare_unification False (const False) newMap u
+ *         result = unify t` u`
+ *     in  isJust result ==>
+ *     let temp = assignAll (reverse (fromJust result)) (Type "" [t`,u`])
+ *     in  name "assigning succeeded" (isJust temp) /\
+ *     let (Type _ [t,u:_]) = fromJust temp
+ *     in  t =.= u
+ *
+ * @property issue 76:
+ *     can_unify "(a b -> c) (a -> b) a -> c" "(f (t -> u)) (f t) -> f u"
  */
 unify :: !Type !Type -> Maybe [TVAssignment]

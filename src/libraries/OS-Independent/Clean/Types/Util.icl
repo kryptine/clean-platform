@@ -242,10 +242,10 @@ assign va (Func ts r tc)
 	= liftM3 Func (mapM (assign va) ts) (assign va r) (pure tc) // TODO tc
 assign (v,a) (Var v`) = pure $ if (v == v`) a (Var v`)
 assign va=:(v,Type s ts) (Cons v` ts`)
-	| v == v`   = Type s <$> mapM (assign va) (ts ++ ts`)
+	| v == v`   = Type s <$> (++) ts <$> mapM (assign va) ts`
 	| otherwise = Cons v` <$> mapM (assign va) ts`
 assign va=:(v,Cons c ts) (Cons v` ts`)
-	| v == v`   = Cons c <$> mapM (assign va) (ts ++ ts`)
+	| v == v`   = Cons c <$> (++) ts <$> mapM (assign va) ts`
 	| otherwise = Cons v` <$> mapM (assign va) ts`
 assign va=:(v,Var v`) (Cons v`` ts)
 	| v == v``  = Cons v` <$> mapM (assign va) ts
