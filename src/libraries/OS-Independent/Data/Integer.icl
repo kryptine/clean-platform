@@ -54,13 +54,9 @@ where
 				= negative_power_error
 			| size x.integer_a<>0 || x.integer_s < -1 || x.integer_s > 1
 				= abort "^ (Integer) overflow"
-			| x.integer_s==1
+			| x.integer_s== -1 && n.integer_a.[0] bitand 1==0
 				= one
-			| x.integer_s== -1
-				| n.integer_a.[0] bitand 1==0
-					= one
-					= ~one
-				= zero
+				= x
 	where
 		pow :: !Integer !Int -> Integer
 		pow a b
