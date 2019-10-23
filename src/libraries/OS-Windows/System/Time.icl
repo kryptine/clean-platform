@@ -175,7 +175,6 @@ TICKSDIFF64   =: 11644473600 * TICKSPERSEC64
 //Number of ticks per second (100 ns ticks)
 TICKSPERSEC32 =: toInteger 10000000
 TICKSPERSEC64 =: 10000000
-
 /*
  * On windows GetSystemTimeAsFileTime returns a struct containing 2 32bit unsigned integers.
  * On 64 bit we therefore use an array of length 1, on 32 bit of length two.
@@ -189,7 +188,7 @@ where
 		= ({tv_sec=(is.[0] - TICKSDIFF64) / TICKSPERSEC64, tv_nsec=(is.[0] rem TICKSPERSEC64) * 100}, w)
 	nsTime32 w
 		# (is, w) = GetSystemTimeAsFileTime {0,0} w
-		# ticks = uintToInt is.[0] + foldr ($) (uintToInt is.[1]) (repeatn 32 ((*) (toInteger 2))) - TICKSDIFF32
+		# ticks = uintToInt is.[0] + uintToInt is.[1] * (toInteger 2 ^ toInteger 32) - TICKSDIFF32
 		= ({tv_sec=toInt (ticks / TICKSPERSEC32), tv_nsec=toInt (ticks rem TICKSPERSEC32) * 100}, w)
 
 uintToInt :: Int -> Integer
