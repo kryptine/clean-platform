@@ -42,15 +42,39 @@ where
 
 instance ^ Integer
 where
+	(^) :: !Integer !Integer -> Integer
 	(^) x n
-		| n < zero = abort "^ (Integer) called with negative power argument"
-		= pow x n
+		| size n.integer_a==0
+			| n.integer_s<=0
+	 			| n.integer_s==0
+					= one
+					= negative_power_error
+				= pow x n.integer_s
+			| n.integer_s<0
+				= negative_power_error
+			| size x.integer_a<>0 || x.integer_s < -1 || x.integer_s > 1
+				= abort "^ (Integer) overflow"
+			| x.integer_s==1
+				= one
+			| x.integer_s== -1
+				| n.integer_a.[0] bitand 1==0
+					= one
+					= ~one
+				= zero
 	where
+		pow :: !Integer !Int -> Integer
 		pow a b
-			| b == zero = one
-			# x = pow a (b / toInteger 2)
-			| isEven b = x * x
+			| b<=2
+				| b==2
+					= a * a
+					= a
+			# x = pow x (b >> 1)
+			| b bitand 1==0
+				= x * x
 			= a * x * x
+
+		negative_power_error
+			= abort "^ (Integer) called with negative power argument"
 
 instance isEven Integer
 where
@@ -101,8 +125,6 @@ where
 instance rem            Integer
 where
 	(rem) a b = rem_integer a b
-
-//instance ^				Integer
 
 instance ==				Integer
 where
