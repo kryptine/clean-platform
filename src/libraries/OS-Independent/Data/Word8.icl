@@ -1,6 +1,10 @@
 implementation module Data.Word8
 
-import StdClass, StdChar, StdArray, StdInt
+import StdArray
+import StdClass
+import StdOverloaded
+from StdInt import instance + Int, instance - Int, instance one Int, instance < Int, instance rem Int
+from StdChar import instance toChar Int, instance fromChar Int
 
 :: Word8 :== Char
 

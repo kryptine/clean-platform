@@ -9,6 +9,10 @@ import Data.Monoid
 import Data.Foldable
 import Data.Traversable
 import Control.Applicative
+import StdOverloaded
+import StdString
+from Text import class Text, instance Text String
+import qualified Text
 
 tuple  :: .a .b -> .(.a,.b)
 tuple a b = (a,b)
@@ -132,3 +136,19 @@ where
 instance Bifunctor ((,,,,) x y z)
 where
 	bifmap f g t = let (x, y, z, a, b) = t in (x, y, z, f a, g b)
+
+instance toString (a, b) | toString a & toString b
+where
+	toString (a, b) = 'Text'.concat ["(", toString a, ", ", toString b, ")"]
+
+instance toString (a, b, c) | toString a & toString b & toString c
+where
+	toString (a, b, c) = 'Text'.concat ["(", toString a, ", ", toString b, ", ", toString c, ")"]
+
+instance toString (a, b, c, d) | toString a & toString b & toString c & toString d
+where
+	toString (a, b, c, d) = 'Text'.concat ["(", toString a, ", ", toString b, ", ", toString c, ", ", toString d, ")"]
+
+instance toString (a, b, c, d, e) | toString a & toString b & toString c & toString d & toString e
+where
+	toString (a, b, c, d, e) = 'Text'.concat ["(", toString a, ", ", toString b, ", ", toString c, ", ", toString d, ", ", toString e, ")"]

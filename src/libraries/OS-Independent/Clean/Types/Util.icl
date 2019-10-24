@@ -57,8 +57,8 @@ where
 
 instance print TypeContext
 where
-	print _ [] = []
-	print _ crs = printersperse False " & "
+	print _ (TypeContext []) = []
+	print _ (TypeContext crs) = printersperse False " & "
 		[printersperse False ", " (map corg gr) -- " " -- printersperse False " " (types $ hd gr) \\ gr <- grps]
 	where
 		grps = groupBy (\a b -> types a == types b && length (types a) == 1) crs
@@ -69,16 +69,16 @@ instance print Type
 where
 	print ia (Type s vs) = typeConstructorName True ia s vs
 	print _ (Var v) = [v]
-	print ia (Func [] r []) = print ia r
+	print ia (Func [] r (TypeContext [])) = print ia r
 	print _ (Func [] r tc) = r -- " | " -- tc
-	print ia (Func ts r []) = parens ia (printersperse True " " ts -- " -> " -- r)
-	print _ (Func ts r tc) = (Func ts r []) -- " | " -- tc
+	print ia (Func ts r (TypeContext [])) = parens ia (printersperse True " " ts -- " -> " -- r)
+	print _ (Func ts r tc) = (Func ts r (TypeContext [])) -- " | " -- tc
 	print ia (Cons tv [])  = print ia tv
 	print ia (Cons tv ats) = parens ia (tv -- " " -- printersperse True " " ats)
 	print _ (Uniq t)       = case t of
 		Type _ _ -> "*" -- t
 		_        -> "*" -+ t
-	print _ (Forall tvs t []) = "(A." -- printersperse True " " tvs -- ": " -- t -- ")"
+	print _ (Forall tvs t (TypeContext [])) = "(A." -- printersperse True " " tvs -- ": " -- t -- ")"
 	print _ (Forall tvs t tc) = "(A." -- printersperse True " " tvs -- ": " -- t -- " | " -- tc -- ")"
 	print _ (Arrow Nothing)  = ["(->)"]
 	print _ (Arrow (Just t)) = "((->) " -+ t +- ")"
@@ -161,10 +161,10 @@ where
 
 instance print Constructor
 where
-	print _ {cons_name,cons_args,cons_exi_vars=evars,cons_context,cons_priority}
+	print _ {cons_name,cons_args,cons_exi_vars=evars,cons_context=TypeContext c,cons_priority}
 		= if (isEmpty evars) [] ("E." -- printersperse False " " evars -- ": ") --
 			name -- " " -- prio -- printersperse True " " cons_args --
-			if (isEmpty cons_context) [] (" & " -- cons_context)
+			if (isEmpty c) [] (" & " -- c)
 	where
 		(name,prio) = case cons_priority of
 			Nothing -> ([cons_name],             [])
@@ -264,7 +264,7 @@ assign va (Arrow Nothing) = Just $ Arrow Nothing
 assign va (Strict t) = Strict <$> assign va t
 
 reduceArities :: !Type -> Type
-reduceArities (Func [] r []) = r
+reduceArities (Func [] r (TypeContext [])) = r
 reduceArities (Func ts r tc)
 | length ts > 1 = Func [reduceArities $ hd ts] (reduceArities $ Func (tl ts) r tc) tc
 | otherwise = Func (map reduceArities ts) (reduceArities r) tc
@@ -272,7 +272,7 @@ reduceArities (Type s ts) = Type s $ map reduceArities ts
 reduceArities (Cons v ts) = Cons v $ map reduceArities ts
 reduceArities (Uniq t) = Uniq $ reduceArities t
 reduceArities (Var v) = Var v
-reduceArities (Forall [] t []) = reduceArities t
+reduceArities (Forall [] t (TypeContext [])) = reduceArities t
 reduceArities (Forall tvs t tc) = Forall tvs (reduceArities t) tc
 reduceArities (Arrow mt) = Arrow (reduceArities <$> mt)
 reduceArities (Strict t) = Strict $ reduceArities t
@@ -293,14 +293,14 @@ where
 		renames = [(o, "v" +++ toString n) \\ o <- removeDup $ allVars t & n <- [1..]]
 
 		renameVars :: !Type -> Type
-		renameVars (Type s ts)      = Type s $ map renameVars ts
-		renameVars (Func is r tc)   = Func (map renameVars is) (renameVars r) $ map renameVarsInTC tc
-		renameVars (Var tv)         = Var $ fromJust $ lookup tv renames
-		renameVars (Cons cv ts)     = Cons (fromJust $ lookup cv renames) $ map renameVars ts
-		renameVars (Uniq t)         = Uniq $ renameVars t
-		renameVars (Forall vs t tc) = Forall (map renameVars vs) (renameVars t) $ map renameVarsInTC tc
-		renameVars (Arrow t)        = Arrow $ renameVars <$> t
-		renameVars (Strict t)       = Strict $ renameVars t
+		renameVars (Type s ts)                    = Type s $ map renameVars ts
+		renameVars (Func is r (TypeContext tc))   = Func (map renameVars is) (renameVars r) $ TypeContext (map renameVarsInTC tc)
+		renameVars (Var tv)                       = Var $ fromJust $ lookup tv renames
+		renameVars (Cons cv ts)                   = Cons (fromJust $ lookup cv renames) $ map renameVars ts
+		renameVars (Uniq t)                       = Uniq $ renameVars t
+		renameVars (Forall vs t (TypeContext tc)) = Forall (map renameVars vs) (renameVars t) $ TypeContext (map renameVarsInTC tc)
+		renameVars (Arrow t)                      = Arrow $ renameVars <$> t
+		renameVars (Strict t)                     = Strict $ renameVars t
 
 		renameVarsInTC :: !TypeRestriction -> TypeRestriction
 		renameVarsInTC (Instance c ts)  = Instance c $ map renameVars ts
@@ -321,15 +321,15 @@ where
 		allVars` = concatMap allVars
 
 	optConses :: !Type -> Type
-	optConses (Type s ts)      = Type s $ map optConses ts
-	optConses (Func is r tc)   = Func (map optConses is) (optConses r) $ map optConsesInTR tc
-	optConses (Var v)          = Var v
-	optConses (Cons c [])      = Var c
-	optConses (Cons c ts)      = Cons c $ map optConses ts
-	optConses (Uniq t)         = Uniq $ optConses t
-	optConses (Forall vs t tc) = Forall (map optConses vs) (optConses t) $ map optConsesInTR tc
-	optConses (Arrow t)        = Arrow $ optConses <$> t
-	optConses (Strict t)       = Strict $ optConses t
+	optConses (Type s ts)                    = Type s $ map optConses ts
+	optConses (Func is r (TypeContext tc))   = Func (map optConses is) (optConses r) $ TypeContext (map optConsesInTR tc)
+	optConses (Var v)                        = Var v
+	optConses (Cons c [])                    = Var c
+	optConses (Cons c ts)                    = Cons c $ map optConses ts
+	optConses (Uniq t)                       = Uniq $ optConses t
+	optConses (Forall vs t (TypeContext tc)) = Forall (map optConses vs) (optConses t) $ TypeContext (map optConsesInTR tc)
+	optConses (Arrow t)                      = Arrow $ optConses <$> t
+	optConses (Strict t)                     = Strict $ optConses t
 
 	optConsesInTR :: !TypeRestriction -> TypeRestriction
 	optConsesInTR (Instance c ts)  = Instance c $ map optConses ts

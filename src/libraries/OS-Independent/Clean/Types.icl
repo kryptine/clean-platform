@@ -60,6 +60,10 @@ where
 			KArrow a` b` -> a==a` && b==b`
 			_            -> False
 
+instance == TypeContext
+where
+	== (TypeContext a) (TypeContext b) = a == b
+
 subtypes :: !Type -> [Type]
 subtypes t=:(Type s ts) = removeDup [t : flatten (map subtypes ts)]
 subtypes t=:(Func is r tc) = removeDup [t : flatten (map subtypes [r:is])]
@@ -72,10 +76,10 @@ subtypes t=:(Strict t`) = [t:subtypes t`]
 
 allRestrictions :: !Type -> [TypeRestriction]
 allRestrictions (Type _ ts) = concatMap allRestrictions ts
-allRestrictions (Func is r tc) = tc ++ concatMap allRestrictions [r:is]
+allRestrictions (Func is r (TypeContext tc)) = tc ++ concatMap allRestrictions [r:is]
 allRestrictions (Cons _ ts) = concatMap allRestrictions ts
 allRestrictions (Uniq t) = allRestrictions t
-allRestrictions (Forall _ t tc) = tc ++ allRestrictions t
+allRestrictions (Forall _ t (TypeContext tc)) = tc ++ allRestrictions t
 allRestrictions (Var _) = []
 allRestrictions (Arrow t) = fromMaybe [] (allRestrictions <$> t)
 allRestrictions (Strict t) = allRestrictions t
@@ -171,11 +175,11 @@ arity (Arrow _) = abort "what is the arity of Arrow?\n" // TODO
 
 removeTypeContexts :: !Type -> Type
 removeTypeContexts (Type s ts) = Type s $ map removeTypeContexts ts
-removeTypeContexts (Func is r _) = Func (map removeTypeContexts is) (removeTypeContexts r) []
+removeTypeContexts (Func is r _) = Func (map removeTypeContexts is) (removeTypeContexts r) (TypeContext [])
 removeTypeContexts (Var v) = Var v
 removeTypeContexts (Cons v ts) = Cons v $ map removeTypeContexts ts
 removeTypeContexts (Uniq t) = Uniq $ removeTypeContexts t
-removeTypeContexts (Forall ts t _) = Forall (map removeTypeContexts ts) (removeTypeContexts t) []
+removeTypeContexts (Forall ts t _) = Forall (map removeTypeContexts ts) (removeTypeContexts t) (TypeContext [])
 removeTypeContexts (Arrow t) = Arrow (removeTypeContexts <$> t)
 removeTypeContexts (Strict t) = Strict (removeTypeContexts t)
 
@@ -192,7 +196,7 @@ where
 
 selectorsToFunctions :: !TypeDef -> [(String,Type)]
 selectorsToFunctions {td_name,td_uniq,td_args,td_rhs=TDRRecord _ _ fields}
-	= [(f.rf_name, Func [strict arg] (unStrict f.rf_type) []) \\ f <- fields]
+	= [(f.rf_name, Func [strict arg] (unStrict f.rf_type) (TypeContext [])) \\ f <- fields]
 where
 	arg = if td_uniq Uniq id $ Type td_name td_args
 	unStrict t = case t of
@@ -231,9 +235,9 @@ removeDupTypedefs [td:tds]
 	= [td:removeDupTypedefs $ filter (\d -> d.td_name <> td.td_name) tds]
 
 typeRhsRestrictions :: !TypeDefRhs -> [TypeRestriction]
-typeRhsRestrictions (TDRCons _ cs) = flatten [c.cons_context \\ c <- cs]
-typeRhsRestrictions (TDRNewType c) = c.cons_context
-typeRhsRestrictions (TDRMoreConses cs) = flatten [c.cons_context \\ c <- cs]
+typeRhsRestrictions (TDRCons _ cs) = flatten [c \\ {cons_context=TypeContext c} <- cs]
+typeRhsRestrictions (TDRNewType {cons_context=TypeContext c}) = c
+typeRhsRestrictions (TDRMoreConses cs) = flatten [c \\ {cons_context=TypeContext c} <- cs]
 typeRhsRestrictions (TDRRecord _ _ _) = []
 typeRhsRestrictions (TDRSynonym _) = []
 typeRhsRestrictions (TDRAbstract _) = []

@@ -21,11 +21,11 @@ import Text.GenJSON
 instance zero (TypeTree v) where zero = Node (Var "ra") [] []
 
 instance < (TypeTree v) where < (Node a _ _) (Node b _ _) = a < b
-derive gLexOrd Type, Maybe, TypeRestriction
+derive gLexOrd Type, Maybe, TypeRestriction, TypeContext
 instance < Type where < t u = (t =?= u) =: LT
 
-derive JSONEncode TypeTree, Type, TypeRestriction
-derive JSONDecode TypeTree, Type, TypeRestriction
+derive JSONEncode TypeTree, Type, TypeRestriction, TypeContext
+derive JSONDecode TypeTree, Type, TypeRestriction, TypeContext
 
 typeTreeNodes :: !(TypeTree v) -> Int
 typeTreeNodes (Node _ _ cs) = 1 + sum (map typeTreeNodes cs)

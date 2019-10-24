@@ -111,7 +111,9 @@ appendArr l r
   addWithOffset totalSz offset oldArr newArr
     = foldrArrWithKey (\idx oldEl newArr -> {newArr & [idx + offset] = oldEl}) newArr oldArr
 
-instance +++ (arr a) | Array arr a where
+instance +++ {a} where
+  (+++) l r = appendArr l r
+instance +++ {!a} where
   (+++) l r = appendArr l r
 
 instance Functor {}

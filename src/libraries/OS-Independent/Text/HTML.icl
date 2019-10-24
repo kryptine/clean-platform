@@ -1,10 +1,9 @@
 implementation module Text.HTML
 
-import StdEnv
+import StdEnv, StdMisc
 import Data.Maybe, Data.GenEq
-from StdFunc import o
-from StdMisc import abort
-from Data.List import intersperse
+import Data.List
+import Text
 
 instance toString HtmlTag
 where
@@ -737,10 +736,10 @@ instance toString SVGColor where
 	toString (SVGColorText name)					= name
 
 svgICCColorSize :: !SVGICCColor -> Int
-svgICCColorSize (profile,values)					= 12 + size profile + svgNumbersSize values
+svgICCColorSize (SVGICCColor profile values)		= 12 + size profile + svgNumbersSize values
 
 instance toString SVGICCColor where
-	toString (profile,values)						= "icc-color(" +++ profile +++ " " +++ glue_list " " (map toString values) +++ ")"
+	toString (SVGICCColor profile values)			= concat ["icc-color(", profile, " ", glue_list " " (map toString values), ")"]
 
 svgFillOpacitySize :: !SVGFillOpacity -> Int
 svgFillOpacitySize (FillOpacity nr)					= size nr					// number
@@ -765,10 +764,10 @@ instance toString SVGFuncIRI where
 	toString (IRI url)								= "url(" +++ url +++ ")"
 
 svgLengthSize :: !SVGLength -> Int
-svgLengthSize (nr,unit)								= size nr + svgLengthUnitSize unit
+svgLengthSize (SVGLength nr unit)					= size nr + svgLengthUnitSize unit
 
 instance toString SVGLength where
-	toString (nr,unit)								= toString nr +++ toString unit
+	toString (SVGLength nr unit)					= toString nr +++ toString unit
 
 svgLengthAdjustSize :: !SVGLengthAdjust -> Int
 svgLengthAdjustSize Spacing							= 7							// "spacing"
@@ -1082,4 +1081,4 @@ escapeStr str
       = str
 
 derive gEq HtmlTag, HtmlAttr
-derive gEq SVGElt, SVGAttr, SVGAlign, SVGColor, SVGDefer, SVGFillOpacity, SVGFuncIRI, SVGLengthAdjust, SVGLengthUnit, SVGLineCap, SVGFillRule, SVGLineJoin, SVGMeetOrSlice, SVGStrokeMiterLimit, SVGPaint, SVGStrokeDashArray, SVGStrokeDashOffset, SVGStrokeWidth, SVGTransform, SVGZoomAndPan
+derive gEq SVGElt, SVGAttr, SVGAlign, SVGColor, SVGDefer, SVGFillOpacity, SVGFuncIRI, SVGLengthAdjust, SVGLengthUnit, SVGLineCap, SVGFillRule, SVGLineJoin, SVGMeetOrSlice, SVGStrokeMiterLimit, SVGPaint, SVGStrokeDashArray, SVGStrokeDashOffset, SVGStrokeWidth, SVGTransform, SVGZoomAndPan, SVGICCColor, SVGLength

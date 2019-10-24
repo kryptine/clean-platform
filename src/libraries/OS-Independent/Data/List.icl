@@ -70,6 +70,10 @@ instance Traversable []
 where
 	traverse f x = foldr (\x ys->(\x xs->[x:xs]) <$> f x <*> ys) (pure []) x
 
+instance +++ [a]
+where
+	(+++) a b = a ++ b
+
 (!?) infixl 9   :: ![.a] !Int -> Maybe .a
 (!?) [x:_]  0 = Just x
 (!?) [_:xs] i = xs !? (i-1)

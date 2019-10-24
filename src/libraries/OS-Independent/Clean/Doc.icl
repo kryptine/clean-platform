@@ -27,7 +27,7 @@ from Text import <+,
 import Text.Language
 import Text.Parsers.Simple.ParserCombinators
 
-from Clean.Types import :: Type, :: TypeRestriction
+from Clean.Types import :: Type, :: TypeRestriction, :: TypeContext
 from Clean.Types.Parse import parseType
 from Clean.Types.Util import instance toString Type
 
@@ -86,7 +86,7 @@ where
 	toString {ParamDoc | description=Just d} = d
 	toString _ = ""
 
-derive gDefault Type, TypeRestriction, ModuleDoc, FunctionDoc, InstanceDoc,
+derive gDefault Type, TypeRestriction, ModuleDoc, FunctionDoc, InstanceDoc, TypeContext,
 	ClassMemberDoc, ConstructorDoc, ClassDoc, TypeDoc, Property,
 	PropertyVarInstantiation, MultiLineString, PropertyTestGenerator, ParamDoc
 

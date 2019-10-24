@@ -351,8 +351,8 @@ from Data.GenEq import generic gEq
 						| FillOpacityInherit
 :: SVGFillRule			= FillNonzero | FillEvenodd | FillInherit
 :: SVGFuncIRI			= IRI String							// url(<IRI>)
-:: SVGICCColor		  :== (String,[SVGNumber])					// (<color-profile-name>,<color-values>), the <color-values> list must not be empty
-:: SVGLength		  :== (SVGNumber,SVGLengthUnit)
+:: SVGICCColor		    = SVGICCColor String [SVGNumber]		// (<color-profile-name>,<color-values>), the <color-values> list must not be empty
+:: SVGLength		    = SVGLength SVGNumber SVGLengthUnit
 :: SVGLengthAdjust		= Spacing | SpacingAndGlyphs
 :: SVGLengthUnit		= EM | EX | PX | IN | CM | MM | PT | PC | PERCENT
 :: SVGLineCap			= CapButt | CapRound | CapSquare | CapInherit
@@ -415,7 +415,7 @@ instance toString SVGTransform
 instance toString SVGZoomAndPan
 
 derive gEq HtmlTag, HtmlAttr
-derive gEq SVGElt, SVGAttr, SVGAlign, SVGColor, SVGDefer, SVGFillOpacity, SVGFuncIRI, SVGLengthAdjust, SVGLengthUnit, SVGLineCap, SVGFillRule, SVGLineJoin, SVGMeetOrSlice, SVGStrokeMiterLimit, SVGPaint, SVGStrokeDashArray, SVGStrokeDashOffset, SVGStrokeWidth, SVGTransform, SVGZoomAndPan
+derive gEq SVGElt, SVGAttr, SVGAlign, SVGColor, SVGDefer, SVGFillOpacity, SVGFuncIRI, SVGLengthAdjust, SVGLengthUnit, SVGLineCap, SVGFillRule, SVGLineJoin, SVGMeetOrSlice, SVGStrokeMiterLimit, SVGPaint, SVGStrokeDashArray, SVGStrokeDashOffset, SVGStrokeWidth, SVGTransform, SVGZoomAndPan, SVGICCColor, SVGLength
 
 /*
 * This html class makes it possible to use either strings, or html as description/message/instruction

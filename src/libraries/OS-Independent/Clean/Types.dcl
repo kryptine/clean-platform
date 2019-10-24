@@ -47,7 +47,7 @@ from StdMaybe import :: Maybe
 /**
  * A type context.
  */
-:: TypeContext :== [TypeRestriction]
+:: TypeContext =: TypeContext [TypeRestriction]
 
 /**
  * A restriction on a type.
@@ -260,6 +260,13 @@ constructorsToFunctions :: !TypeDef -> [(String,Type,Maybe Priority)]
  * @result A list of tuples of the name and type of the record fields
  */
 selectorsToFunctions :: !TypeDef -> [(String,Type)]
+
+/**
+ * Constructor for {{`TypeContext`}}.
+ *
+ * @type [TypeRestriction] -> TypeContext
+ */
+typeContext x :== TypeContext x
 
 /**
  * Wrapper around the {{`td_name`}} field of the {{`TypeDef`}} record.

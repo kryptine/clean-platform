@@ -20,7 +20,7 @@ import Data.List
 from Data.Map import :: Map, newMap
 import Data.Maybe
 
-derive gEq Type, TypeRestriction, Kind
+derive gEq Type, TypeRestriction, Kind, TypeContext
 
 isGeneralisingUnifier :: ![TVAssignment] -> Bool
 isGeneralisingUnifier tvas = all isOk $ groupVars tvas []
@@ -74,7 +74,7 @@ where
 	renameAndRemoveStrictness (Var v) = Var (prep +++ v)
 	renameAndRemoveStrictness (Cons c ts) = Cons (prep +++ c) $ map renameAndRemoveStrictness ts
 	renameAndRemoveStrictness (Type t ts) = Type t $ map renameAndRemoveStrictness ts
-	renameAndRemoveStrictness (Func is r tc) = Func (map renameAndRemoveStrictness is) (renameAndRemoveStrictness r) (map (inTC renameAndRemoveStrictness) tc)
+	renameAndRemoveStrictness (Func is r (TypeContext tc)) = Func (map renameAndRemoveStrictness is) (renameAndRemoveStrictness r) (TypeContext (map (inTC renameAndRemoveStrictness) tc))
 	renameAndRemoveStrictness (Uniq t) = Uniq $ renameAndRemoveStrictness t
 	renameAndRemoveStrictness (Arrow t) = Arrow (renameAndRemoveStrictness <$> t)
 	renameAndRemoveStrictness (Forall vs t tc) = fromJust $

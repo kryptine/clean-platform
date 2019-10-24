@@ -6,6 +6,7 @@ from Data.Monoid import class Semigroup, class Monoid
 from Data.Foldable import class Foldable
 from Data.Traversable import class Traversable
 from Data.Bifunctor import class Bifunctor
+from StdOverloaded import class toString
 
 tuple  :: .a .b -> .(.a,.b)
 tuple3 :: .a .b .c -> .(.a,.b,.c)
@@ -59,3 +60,8 @@ instance Bifunctor (,)
 instance Bifunctor ((,,) x)
 instance Bifunctor ((,,,) x y)
 instance Bifunctor ((,,,,) x y z)
+
+instance toString (a, b) | toString a & toString b
+instance toString (a, b, c) | toString a & toString b & toString c
+instance toString (a, b, c, d) | toString a & toString b & toString c & toString d
+instance toString (a, b, c, d, e) | toString a & toString b & toString c & toString d & toString e
