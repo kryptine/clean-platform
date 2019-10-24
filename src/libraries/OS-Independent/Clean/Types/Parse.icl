@@ -160,20 +160,20 @@ where
 	uniq parser = pToken TStar >>| parser
 
 	optContext :: Parser Token TypeContext
-	optContext = liftM2 (++) (context <|> pure []) (uniquenessEqualities <|> pure [])
+	optContext = liftM2 (\(TypeContext a) (TypeContext b)->TypeContext (a ++ b)) (context <|> pure (TypeContext [])) (uniquenessEqualities <|> pure (TypeContext []))
 
 	addContextAsConstFunction :: (Parser Token Type) -> Parser Token Type
 	addContextAsConstFunction parser =
 		parser >>= \t -> pPeek >>= \tks -> case tks of
-			[TPipe:_] ->  (pure [] <|> optContext) >>= \c -> case c of
-				[] -> pure t
-				c  -> pure $ Func [] t c
+			[TPipe:_] ->  (pure (TypeContext []) <|> optContext) >>= \c -> case c of
+				TypeContext [] -> pure t
+				c              -> pure $ Func [] t c
 			_ -> pure t
 
 	context :: Parser Token TypeContext
-	context = pToken TPipe >>| flatten <$> pSepBy context` (pToken TAmpersand)
+	context = pToken TPipe >>| typeContext o flatten <$> pSepBy context` (pToken TAmpersand)
 	where
-		context` :: Parser Token TypeContext
+		context` :: Parser Token [TypeRestriction]
 		context` = pSepBy classOrGeneric (pToken TComma) >>= \restrictions ->
 			some argtype >>= \ts ->
 			mapM (flip ($) ts) restrictions
@@ -201,7 +201,7 @@ where
 			_           -> False
 
 	uniquenessEqualities :: Parser Token TypeContext
-	uniquenessEqualities = pToken TComma >>| bracked (pSepBy inequality (pToken TComma)) $> []
+	uniquenessEqualities = pToken TComma >>| bracked (pSepBy inequality (pToken TComma)) $> TypeContext []
 	where
 		inequality = unqvar >>| pToken TLtEq >>| unqvar
 
