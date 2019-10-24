@@ -1,18 +1,10 @@
 definition module Text.Unicode
 
-import StdClass
 from Text.Unicode.UChar import :: UChar
+from StdOverloaded import class +++
+from Data.List import instance +++ [a]
 
 :: UString :== [UChar]
 
-// String is supposed be ASCII
-instance fromString UString
-
-instance % UString
-instance +++ UString
-
 class fromUnicode a :: !UString -> a
 class toUnicode a :: !a -> UString
-
-
-

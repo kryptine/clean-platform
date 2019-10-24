@@ -1,6 +1,7 @@
 implementation module Text.Unicode.UChar
 
-import StdEnum, StdClass, StdBool, StdFunc, StdMisc
+import StdClass, StdOverloaded, StdBool, StdMisc
+
 
 import code from "bsearch."
 import code from "WCsubst."

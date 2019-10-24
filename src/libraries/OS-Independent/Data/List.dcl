@@ -1,7 +1,7 @@
 definition module Data.List
 
 from StdClass import class Ord, class Eq, class IncDec
-from StdOverloaded import class ==, class <, class length, class %, class toString, class toChar, class fromString, class fromChar, class +, class *, class /, class *, class /, class *, class /, class *, class /, class zero, class one, class -
+from StdOverloaded import class ==, class <, class length, class %, class toString, class toChar, class fromString, class fromChar, class +, class *, class /, class *, class /, class *, class /, class *, class /, class zero, class one, class -, class +++
 import StdList
 
 from Data.GenEq import generic gEq
@@ -24,6 +24,8 @@ instance Semigroup [a]
 instance Monoid [a]
 instance Foldable []
 instance Traversable []
+
+instance +++ [a]
 
 /**
  * An element in the list, or Nothing if it does not exist.

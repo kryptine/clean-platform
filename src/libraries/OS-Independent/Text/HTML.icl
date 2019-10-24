@@ -1,10 +1,9 @@
 implementation module Text.HTML
 
-import StdEnv
+import StdEnv, StdMisc
 import Data.Maybe, Data.GenEq
-from StdFunc import o
-from StdMisc import abort
-from Data.List import intersperse
+import Data.List
+import Text
 
 instance toString HtmlTag
 where
