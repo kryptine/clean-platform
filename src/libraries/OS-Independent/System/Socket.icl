@@ -1,7 +1,8 @@
 implementation module System.Socket
 
 import StdEnv
-import System._Socket => qualified socket, bind, listen, accept, close, connect, send, recv, hostToNetworkByteOrderLong, hostToNetworkByteOrderShort, networkToHostByteOrderShort, networkToHostByteOrderLong
+import qualified System._Socket
+from System._Socket import :: Socket, SOCK_STREAM, SOCK_DGRAM, MSG_DONTROUTE, MSG_OOB, MSG_WAITALL, MSG_PEEK
 import System.OSError
 
 instance toInt SocketType where
