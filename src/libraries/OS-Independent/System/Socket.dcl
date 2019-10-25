@@ -2,7 +2,7 @@ definition module System.Socket
 
 from StdOverloaded import class toInt
 from Data.Error import :: MaybeError, :: MaybeErrorString
-from System._Pointer import :: Pointer(..)
+from System._Pointer import :: Pointer
 from System._Socket import :: Socket
 from System.OSError import :: MaybeOSError, :: OSError, :: OSErrorMessage, :: OSErrorCode
 

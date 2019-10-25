@@ -5,7 +5,8 @@ import Data.Error
 import System.OSError
 import System._Pointer
 import System._Posix
-import System.Socket => qualified socket, bind, listen, accept, close, connect, send, recv, networkToHostByteOrderLong, networkToHostByteOrderShort, hostToNetworkByteOrderLong, hostToNetworkByteOrderShort
+import qualified System.Socket
+from System.Socket import :: SocketType(..), class SocketAddress(..), :: SendFlag, :: RecvFlag, instance toInt SendFlag, instance toInt RecvFlag, instance toInt SocketType
 
 :: *Socket a :== Int
 
