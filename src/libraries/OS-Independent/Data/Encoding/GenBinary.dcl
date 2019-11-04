@@ -47,8 +47,12 @@ definition module Data.Encoding.GenBinary
  */
 
 from StdGeneric   import :: UNIT (..), :: PAIR (..), :: EITHER (..), :: CONS (..), :: OBJECT (..), :: RECORD (..),
-                         :: FIELD (..)
+                         :: FIELD (..),
+                         :: GenericConsDescriptor{gcd_index,gcd_type_def},
+                         :: GenericTypeDefDescriptor{gtd_conses,gtd_num_conses},
+                         :: ConsPos(..), getConsPath
 from StdInt       import class + (+), instance + Int
+from StdList      import !!
 from Data.Maybe   import :: Maybe (..), instance Functor Maybe
 from Data.Func    import $
 from Data.Functor import class Functor (fmap)
@@ -76,14 +80,14 @@ decode :: !{#Char} -> Maybe a | gBinaryDecode{|*|} a
 
 class GenBinary a | gBinaryEncode{|*|}, gBinaryEncodingSize{|*|}, gBinaryDecode{|*|} a
 
-:: *EncodingSt
+:: *EncodingSt = {cs_pos :: !Int, cs_bits :: !*{#Char}, cs_cons_path :: ![ConsPos]}
 
 generic gBinaryEncode a :: !a !*EncodingSt -> *EncodingSt
 gBinaryEncode{|UNIT|} _ st = st
 gBinaryEncode{|PAIR|} cx cy (PAIR x y) st = cy y $ cx x st
-gBinaryEncode{|EITHER|} cl cr (LEFT x) st = cl x $ encodeBool False st
-gBinaryEncode{|EITHER|} cl cr (RIGHT x) st = cr x $ encodeBool True st
-gBinaryEncode{|CONS|} c (CONS x) st = c x st
+gBinaryEncode{|EITHER|} cl cr (LEFT x)   st = cl x st
+gBinaryEncode{|EITHER|} cl cr (RIGHT x)  st = cr x st
+gBinaryEncode{|CONS of d|} c (CONS x)    st = c x $ encodeIntUsingNBits (ceil_log2 0 d.gcd_type_def.gtd_num_conses) d.gcd_index st
 gBinaryEncode{|FIELD|} c (FIELD x) st = c x st
 gBinaryEncode{|OBJECT|} c (OBJECT x) st = c x st
 gBinaryEncode{|RECORD|} c (RECORD x) st = c x st
@@ -91,12 +95,15 @@ gBinaryEncode{|RECORD|} c (RECORD x) st = c x st
 derive gBinaryEncode Int, Real, Bool, Char, String, [], {}, {!}, (), (,), (,,), (,,,), (,,,,), (,,,,,), (,,,,,,),
                      (,,,,,,,)
 
+// Only exported for gBinaryEncode{|CONS|}
+encodeIntUsingNBits :: !Int !Int !*EncodingSt -> *EncodingSt
+
 generic gBinaryEncodingSize a :: !a !Int -> Int
 gBinaryEncodingSize{|UNIT|} _ s = s
 gBinaryEncodingSize{|PAIR|} cx cy (PAIR x y) s = cy y $ cx x s
-gBinaryEncodingSize{|EITHER|} cl _ (LEFT x) s = cl x $ s + 1
-gBinaryEncodingSize{|EITHER|} _ cr (RIGHT x) s = cr x $ s + 1
-gBinaryEncodingSize{|CONS|} c (CONS x) s = c x s
+gBinaryEncodingSize{|EITHER|} cl _ (LEFT x) s = cl x s
+gBinaryEncodingSize{|EITHER|} _ cr (RIGHT x) s = cr x s
+gBinaryEncodingSize{|CONS of d|} c (CONS x)    s = c x $ ceil_log2 s d.gcd_type_def.gtd_num_conses
 gBinaryEncodingSize{|FIELD|} c (FIELD x) s = c x s
 gBinaryEncodingSize{|OBJECT|} c (OBJECT x) s = c x s
 gBinaryEncodingSize{|RECORD|} c (RECORD x) s = c x s
@@ -112,15 +119,16 @@ gBinaryDecode{|PAIR|} fx fy st
     = case (mbX, mbY) of
         (Just x, Just y) = (Just $ PAIR x y, st)
         _                = (Nothing,         st)
-gBinaryDecode{|EITHER|} fl fr st
-    # (mbIsRight, st) = decodeBool st
-    = case mbIsRight of
-        Just isRight | isRight   = appFst (fmap RIGHT) $ fr st
-                     | otherwise = appFst (fmap LEFT)  $ fl st
-        _                        = (Nothing, st)
+gBinaryDecode{|EITHER|} fl fr st = case st.cs_cons_path of
+	[]               = (Nothing, st)
+	[ConsLeft:path]  = appFst (fmap LEFT)  $ fl {st & cs_cons_path=path}
+	[ConsRight:path] = appFst (fmap RIGHT) $ fr {st & cs_cons_path=path}
 gBinaryDecode{|CONS|} f st = appFst (fmap CONS) $ f st
 gBinaryDecode{|FIELD|} f st = appFst (fmap \x -> FIELD x) $ f st
-gBinaryDecode{|OBJECT|} f st = appFst (fmap \x -> OBJECT x) $ f st
+gBinaryDecode{|OBJECT of {gtd_conses,gtd_num_conses}|} f st =
+	case decodeIntWithNBits (ceil_log2 0 gtd_num_conses) st of
+		(Nothing, st) = (Nothing, st)
+		(Just i, st)  = appFst (fmap \x -> OBJECT x) $ f {st & cs_cons_path=getConsPath (gtd_conses!!i)}
 gBinaryDecode{|RECORD|} f st = appFst (fmap RECORD) $ f st
 
 derive gBinaryDecode Int, Real, Bool, Char, String, [], {}, {!}, (), (,), (,,), (,,,), (,,,,), (,,,,,), (,,,,,,),
@@ -129,3 +137,5 @@ derive gBinaryDecode Int, Real, Bool, Char, String, [], {}, {!}, (), (,), (,,), 
 // This is only exported because it is used in exposed generic definitions.
 decodeBool :: !*EncodingSt -> (!Maybe Bool, !*EncodingSt)
 encodeBool :: !Bool !*EncodingSt -> *EncodingSt
+decodeIntWithNBits :: !Int !*EncodingSt -> (!Maybe Int, !*EncodingSt)
+ceil_log2 :: !Int !Int -> Int
