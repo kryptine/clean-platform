@@ -80,7 +80,7 @@ decode :: !{#Char} -> Maybe a | gBinaryDecode{|*|} a
 
 class GenBinary a | gBinaryEncode{|*|}, gBinaryEncodingSize{|*|}, gBinaryDecode{|*|} a
 
-:: *EncodingSt = {cs_pos :: !Int, cs_bits :: !*{#Char}, cs_cons_path :: ![ConsPos]}
+:: *EncodingSt = {es_pos :: !Int, es_bits :: !*{#Char}, es_cons_path :: ![ConsPos]}
 
 generic gBinaryEncode a :: !a !*EncodingSt -> *EncodingSt
 gBinaryEncode{|UNIT|} _ st = st
@@ -119,16 +119,16 @@ gBinaryDecode{|PAIR|} fx fy st
     = case (mbX, mbY) of
         (Just x, Just y) = (Just $ PAIR x y, st)
         _                = (Nothing,         st)
-gBinaryDecode{|EITHER|} fl fr st = case st.cs_cons_path of
+gBinaryDecode{|EITHER|} fl fr st = case st.es_cons_path of
 	[]               = (Nothing, st)
-	[ConsLeft:path]  = appFst (fmap LEFT)  $ fl {st & cs_cons_path=path}
-	[ConsRight:path] = appFst (fmap RIGHT) $ fr {st & cs_cons_path=path}
+	[ConsLeft:path]  = appFst (fmap LEFT)  $ fl {st & es_cons_path=path}
+	[ConsRight:path] = appFst (fmap RIGHT) $ fr {st & es_cons_path=path}
 gBinaryDecode{|CONS|} f st = appFst (fmap CONS) $ f st
 gBinaryDecode{|FIELD|} f st = appFst (fmap \x -> FIELD x) $ f st
 gBinaryDecode{|OBJECT of {gtd_conses,gtd_num_conses}|} f st =
 	case decodeIntWithNBits (ceil_log2 0 gtd_num_conses) st of
 		(Nothing, st) = (Nothing, st)
-		(Just i, st)  = appFst (fmap \x -> OBJECT x) $ f {st & cs_cons_path=getConsPath (gtd_conses!!i)}
+		(Just i, st)  = appFst (fmap \x -> OBJECT x) $ f {st & es_cons_path=getConsPath (gtd_conses!!i)}
 gBinaryDecode{|RECORD|} f st = appFst (fmap RECORD) $ f st
 
 derive gBinaryDecode Int, Real, Bool, Char, String, [], {}, {!}, (), (,), (,,), (,,,), (,,,,), (,,,,,), (,,,,,,),
