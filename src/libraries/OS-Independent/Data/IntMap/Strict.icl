@@ -2,11 +2,8 @@ implementation module Data.IntMap.Strict
 
 // Copied from Haskell's Data.IntMap 13 January 2015 by Jurriën Stutterheim
 
-from StdFunc import o, id, const
-from StdMisc import abort
-from StdString import instance == {#Char}
-from StdInt import class < (..), instance < Int, instance == Int, class + (..), instance + Int, bitand
-from StdList import foldl
+import StdEnv
+
 from Data.GenEq import generic gEq
 import Data.Maybe, Data.Either, Data.Functor
 from Data.IntMap.Base import :: IntMap (..), :: Prefix, :: Mask, nomatch, bin, empty, fromDistinctAscList, mask, shorter, branchMask

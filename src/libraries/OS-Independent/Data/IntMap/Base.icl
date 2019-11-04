@@ -1,6 +1,14 @@
 implementation module Data.IntMap.Base
 
-import StdEnv
+from StdBool import &&, ||, not
+from StdClass import class Eq(..), class Ord(..)
+import StdFunctions
+from StdInt import bitand, bitor, bitxor, >>, bitnot, IF_INT_64_OR_32,
+	instance == Int, instance < Int, instance ~ Int, instance + Int, instance ^ Int
+from StdList import foldl
+from StdMisc import abort
+from StdOverloaded import class <(<), class +(+), class ^(^), class ~(~)
+from StdTuple import snd
 
 import Control.Applicative
 import Control.Monad
@@ -1549,17 +1557,17 @@ bin _ _ l Nil = l
 bin _ _ Nil r = r
 bin p m l r   = Bin p m l r
 
-zero :: !Int !Mask -> Bool
-zero i m = (i bitand m) == 0
+//zero :: !Int !Mask -> Bool
+//zero i m = (i bitand m) == 0
 
-nomatch :: !Int !Prefix !Mask -> Bool
-nomatch i p m = mask i m <> p
+//nomatch :: !Int !Prefix !Mask -> Bool
+//nomatch i p m = mask i m <> p
 
 match :: !Int !Prefix !Mask -> Bool
 match i p m = mask i m == p
 
-mask :: !Int !Mask -> Prefix
-mask i m = i bitand (~m bitxor m)
+//mask :: !Int !Mask -> Prefix
+//mask i m = i bitand (~m bitxor m)
 
 // we have to treat the masks as unsigned ints
 // this means that the sign bit has to be inverted to preserve order

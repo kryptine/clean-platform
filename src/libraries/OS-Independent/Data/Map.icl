@@ -26,6 +26,10 @@ mapSize :: !(Map k a) -> Int
 mapSize Tip              = 0
 mapSize (Bin sz _ _ _ _) = sz
 
+mapSizeU :: !u:(Map k a) -> *(!Int, !u:Map k a)
+mapSizeU t=:Tip = (0,t)
+mapSizeU b=:(Bin sz _ _ _ _) = (sz, b)
+
 lexOrd x y :== if (x < y) LT (if (x > y) GT EQ)
 
 member :: !k !(Map k a) -> Bool | < k
@@ -155,11 +159,11 @@ getGE k m = goNothing k m
 newMap :: w:(Map k u:v), [ w <= u]
 newMap = Tip
 
-singleton :: !k !a -> Map k a
+singleton :: !k !a -> .Map k a
 singleton k x = Bin 1 k x Tip Tip
 
 // See Note: Type of local 'go' function
-put :: !k !a !(Map k a) -> Map k a | < k
+put :: !k !a !u:(Map k a) -> u:Map k a | < k
 put kx x Tip               = singleton kx x
 put kx x (Bin sz ky y l r) =
   if (kx < ky)
@@ -1110,7 +1114,7 @@ foldl` f z` (Bin _ _ x l r) = foldl` f (f (foldl` f z` l) x) r
 //
 // > let f k a result = result ++ "(" ++ (show k) ++ ":" ++ a ++ ")"
 // > foldrWithKey f "Map: " (fromList [(5,"a"), (3,"b")]) == "Map: (5:a)(3:b)"
-foldrWithKey :: !(k v u:a -> u:a) !u:a !(Map k v) -> u:a
+foldrWithKey :: !(k v u:a -> u:a) !u:a !.(Map k v) -> u:a
 foldrWithKey f z` Tip              = z`
 foldrWithKey f z` (Bin _ kx x l r) = foldrWithKey f (f kx x (foldrWithKey f z` r)) l
 
@@ -1131,7 +1135,7 @@ foldrWithKey` f z` (Bin _ kx x l r) = foldrWithKey` f (f kx x (foldrWithKey` f z
 //
 // > let f result k a = result ++ "(" ++ (show k) ++ ":" ++ a ++ ")"
 // > foldlWithKey f "Map: " (fromList [(5,"a"), (3,"b")]) == "Map: (3:b)(5:a)"
-foldlWithKey :: !(.a -> .(k -> .(v -> .a))) !.a !(Map k v) -> .a
+foldlWithKey :: !(.a -> .(k -> .(v -> .a))) !.a !.(Map k v) -> .a
 foldlWithKey f z` Tip              = z`
 foldlWithKey f z` (Bin _ kx x l r) = foldlWithKey f (f (foldlWithKey f z` l) kx x) r
 
@@ -1180,6 +1184,14 @@ foldMapWithKey f (Bin _ k v l r) = mappend (foldMapWithKey f l) (mappend (f k v)
 
 assocs :: !(Map k a) -> [(k, a)]
 assocs m = toAscList m
+
+keysU :: !u:(Map k v) -> (![k], !u:Map k v)
+keysU Tip
+	= ([], Tip)
+keysU (Bin sz k v l r)
+	# (lks,l) = keysU l
+	# (rks,r) = keysU r
+	= (lks ++ [k:rks], Bin sz k v l r)
 
 keysSet :: !(Map k a) -> Set k
 keysSet Tip = 'Data.Set'.Tip
@@ -1579,11 +1591,11 @@ merge _ _ = abort "error in merge\n"
 //  [glue l r]: glues two trees together.
 //  Assumes that [l] and [r] are already balanced with respect to each other.
 ////////////////////////////////////////////////////////////////////
-glue :: !(Map k a) !(Map k a) -> Map k a
+glue :: !u:(Map k a) !u:(Map k a) -> u:Map k a
 glue Tip r = r
-glue l Tip = l
-glue l r
-  | mapSize l > mapSize r
+glue l=:(Bin _ _ _ _ _) Tip = l
+glue l=:(Bin lsz _ _ _ _) r=:(Bin rsz _ _ _ _)
+  | lsz > rsz
       #! ((km, m), l`) = deleteFindMax l
       = balanceR km m l` r
   | otherwise
@@ -1596,7 +1608,7 @@ glue l r
 // > deleteFindMin (fromList [(5,"a"), (3,"b"), (10,"c")]) == ((3,"b"), fromList[(5,"a"), (10,"c")])
 // > deleteFindMin                                            Error: can not return the minimal element of an newMap map
 
-deleteFindMin :: !(Map k a) -> (!(!k, !a), !Map k a)
+deleteFindMin :: !u:(Map k a) -> (!(!k, !a), !u:Map k a)
 deleteFindMin t
   = case t of
       Bin _ k x Tip r
@@ -1612,7 +1624,7 @@ deleteFindMin t
 // > deleteFindMax (fromList [(5,"a"), (3,"b"), (10,"c")]) == ((10,"c"), fromList [(3,"b"), (5,"a")])
 // > deleteFindMax newMap                                      Error: can not return the maximal element of an newMap map
 
-deleteFindMax :: !(Map k a) -> (!(!k, !a), !Map k a)
+deleteFindMax :: !u:(Map k a) -> (!(!k, !a), !u:Map k a)
 deleteFindMax t
   = case t of
       Bin _ k x l Tip
@@ -1694,37 +1706,55 @@ ratio :== 2
 //
 // It is only written in such a way that every node is pattern-matched only once.
 
-balance :: !k !a !(Map k a) !(Map k a) -> Map k a
+balance :: !k !a !u:(Map k a) !u:(Map k a) -> u:Map k a
 balance k x l r = case l of
-  Tip -> case r of
-           Tip -> Bin 1 k x Tip Tip
-           (Bin _ _ _ Tip Tip) -> Bin 2 k x Tip r
-           (Bin _ rk rx Tip rr=:(Bin _ _ _ _ _)) -> Bin 3 rk rx (Bin 1 k x Tip Tip) rr
-           (Bin _ rk rx (Bin _ rlk rlx _ _) Tip) -> Bin 3 rlk rlx (Bin 1 k x Tip Tip) (Bin 1 rk rx Tip Tip)
-           (Bin rs rk rx rl=:(Bin rls rlk rlx rll rlr) rr=:(Bin rrs _ _ _ _))
-             | rls < ratio*rrs -> Bin (1+rs) rk rx (Bin (1+rls) k x Tip rl) rr
-             | otherwise -> Bin (1+rs) rlk rlx (Bin (1+mapSize rll) k x Tip rll) (Bin (1+rrs+mapSize rlr) rk rx rlr rr)
+	Tip -> case r of
+		Tip -> Bin 1 k x Tip Tip
+		Bin _ _ _ Tip Tip -> Bin 2 k x Tip r
+		Bin _ rk rx Tip rr=:(Bin _ _ _ _ _) -> Bin 3 rk rx (Bin 1 k x Tip Tip) rr
+		Bin _ rk rx (Bin _ rlk rlx _ _) Tip -> Bin 3 rlk rlx (Bin 1 k x Tip Tip) (Bin 1 rk rx Tip Tip)
+		Bin rs rk rx rl=:(Bin rls rlk rlx rll rlr) rr=:(Bin rrs _ _ _ _)
+			| rls < ratio*rrs
+				-> Bin (1+rs) rk rx (Bin (1+rls) k x Tip rl) rr
+			| otherwise
+				# (rllsz,rll) = mapSizeU rll
+				# (rlrsz,rlr) = mapSizeU rlr
+				-> Bin (1+rs) rlk rlx (Bin (1+rllsz) k x Tip rll) (Bin (1+rrs+rlrsz) rk rx rlr rr)
 
-  (Bin ls lk lx ll lr) -> case r of
-           Tip -> case (ll, lr) of
-                    (Tip, Tip) -> Bin 2 k x l Tip
-                    (Tip, (Bin _ lrk lrx _ _)) -> Bin 3 lrk lrx (Bin 1 lk lx Tip Tip) (Bin 1 k x Tip Tip)
-                    ((Bin _ _ _ _ _), Tip) -> Bin 3 lk lx ll (Bin 1 k x Tip Tip)
-                    ((Bin lls _ _ _ _), (Bin lrs lrk lrx lrl lrr))
-                      | lrs < ratio*lls -> Bin (1+ls) lk lx ll (Bin (1+lrs) k x lr Tip)
-                      | otherwise -> Bin (1+ls) lrk lrx (Bin (1+lls+mapSize lrl) lk lx ll lrl) (Bin (1+mapSize lrr) k x lrr Tip)
-           (Bin rs rk rx rl rr)
-              | rs > delta*ls  -> case (rl, rr) of
-                   (Bin rls rlk rlx rll rlr, Bin rrs _ _ _ _)
-                     | rls < ratio*rrs -> Bin (1+ls+rs) rk rx (Bin (1+ls+rls) k x l rl) rr
-                     | otherwise -> Bin (1+ls+rs) rlk rlx (Bin (1+ls+mapSize rll) k x l rll) (Bin (1+rrs+mapSize rlr) rk rx rlr rr)
-                   (_, _) -> abort "Failure in Data.Map.balance"
-              | ls > delta*rs  -> case (ll, lr) of
-                   (Bin lls _ _ _ _, Bin lrs lrk lrx lrl lrr)
-                     | lrs < ratio*lls -> Bin (1+ls+rs) lk lx ll (Bin (1+rs+lrs) k x lr r)
-                     | otherwise -> Bin (1+ls+rs) lrk lrx (Bin (1+lls+mapSize lrl) lk lx ll lrl) (Bin (1+rs+mapSize lrr) k x lrr r)
-                   (_, _) -> abort "Failure in Data.Map.balance"
-              | otherwise -> Bin (1+ls+rs) k x l r
+	Bin ls lk lx ll lr -> case r of
+		Tip -> case ll of
+			Tip -> case lr of
+				Tip -> Bin 2 k x l Tip
+				Bin _ lrk lrx _ _ -> Bin 3 lrk lrx (Bin 1 lk lx Tip Tip) (Bin 1 k x Tip Tip)
+			Bin lls _ _ _ _ -> case lr of
+				Tip -> Bin 3 lk lx ll (Bin 1 k x Tip Tip)
+				Bin lrs lrk lrx lrl lrr
+					| lrs < ratio*lls
+						-> Bin (1+ls) lk lx ll (Bin (1+lrs) k x lr Tip)
+					| otherwise
+						# (lrlsz,lrl) = mapSizeU lrl
+						# (lrrsz,lrr) = mapSizeU lrr
+						-> Bin (1+ls) lrk lrx (Bin (1+lls+lrlsz) lk lx ll lrl) (Bin (1+lrrsz) k x lrr Tip)
+		Bin rs rk rx rl rr
+			| rs > delta*ls  -> case (rl, rr) of
+				(Bin rls rlk rlx rll rlr, Bin rrs _ _ _ _)
+					| rls < ratio*rrs
+						-> Bin (1+ls+rs) rk rx (Bin (1+ls+rls) k x l rl) rr
+					| otherwise
+						# (rllsz,rll) = mapSizeU rll
+						# (rlrsz,rlr) = mapSizeU rlr
+						-> Bin (1+ls+rs) rlk rlx (Bin (1+ls+rllsz) k x l rll) (Bin (1+rrs+rlrsz) rk rx rlr rr)
+				_ -> abort "Failure in Data.Map.balance\n"
+			| ls > delta*rs  -> case (ll, lr) of
+				(Bin lls _ _ _ _, Bin lrs lrk lrx lrl lrr)
+					| lrs < ratio*lls
+						-> Bin (1+ls+rs) lk lx ll (Bin (1+rs+lrs) k x lr r)
+					| otherwise
+						# (lrlsz,lrl) = mapSizeU lrl
+						# (lrrsz,lrr) = mapSizeU lrr
+						-> Bin (1+ls+rs) lrk lrx (Bin (1+lls+lrlsz) lk lx ll lrl) (Bin (1+rs+lrrsz) k x lrr r)
+				_ -> abort "Failure in Data.Map.balance\n"
+			| otherwise -> Bin (1+ls+rs) k x l r
 
 // Functions balanceL and balanceR are specialised versions of balance.
 // balanceL only checks whether the left subtree is too big,
@@ -1732,51 +1762,65 @@ balance k x l r = case l of
 
 // balanceL is called when left subtree might have been puted to or when
 // right subtree might have been deleted from.
-balanceL :: !k !a !(Map k a) !(Map k a) -> Map k a
+balanceL :: !k !a !u:(Map k a) !u:(Map k a) -> u:Map k a
 balanceL k x l r = case r of
-  Tip -> case l of
-           Tip -> Bin 1 k x Tip Tip
-           (Bin _ _ _ Tip Tip) -> Bin 2 k x l Tip
-           (Bin _ lk lx Tip (Bin _ lrk lrx _ _)) -> Bin 3 lrk lrx (Bin 1 lk lx Tip Tip) (Bin 1 k x Tip Tip)
-           (Bin _ lk lx ll=:(Bin _ _ _ _ _) Tip) -> Bin 3 lk lx ll (Bin 1 k x Tip Tip)
-           (Bin ls lk lx ll=:(Bin lls _ _ _ _) lr=:(Bin lrs lrk lrx lrl lrr))
-             | lrs < ratio*lls -> Bin (1+ls) lk lx ll (Bin (1+lrs) k x lr Tip)
-             | otherwise -> Bin (1+ls) lrk lrx (Bin (1+lls+mapSize lrl) lk lx ll lrl) (Bin (1+mapSize lrr) k x lrr Tip)
+	Tip -> case l of
+		Tip -> Bin 1 k x Tip Tip
+		Bin _ _ _ Tip Tip -> Bin 2 k x l Tip
+		Bin _ lk lx Tip (Bin _ lrk lrx _ _) -> Bin 3 lrk lrx (Bin 1 lk lx Tip Tip) (Bin 1 k x Tip Tip)
+		Bin _ lk lx ll=:(Bin _ _ _ _ _) Tip -> Bin 3 lk lx ll (Bin 1 k x Tip Tip)
+		Bin ls lk lx ll=:(Bin lls _ _ _ _) lr=:(Bin lrs lrk lrx lrl lrr)
+			| lrs < ratio*lls
+				-> Bin (1+ls) lk lx ll (Bin (1+lrs) k x lr Tip)
+			| otherwise
+				# (lrlsz,lrl) = mapSizeU lrl
+				# (lrrsz,lrr) = mapSizeU lrr
+				-> Bin (1+ls) lrk lrx (Bin (1+lls+lrlsz) lk lx ll lrl) (Bin (1+lrrsz) k x lrr Tip)
 
-  (Bin rs _ _ _ _) -> case l of
-           Tip -> Bin (1+rs) k x Tip r
-
-           (Bin ls lk lx ll lr)
-              | ls > delta*rs  -> case (ll, lr) of
-                   (Bin lls _ _ _ _, Bin lrs lrk lrx lrl lrr)
-                     | lrs < ratio*lls -> Bin (1+ls+rs) lk lx ll (Bin (1+rs+lrs) k x lr r)
-                     | otherwise -> Bin (1+ls+rs) lrk lrx (Bin (1+lls+mapSize lrl) lk lx ll lrl) (Bin (1+rs+mapSize lrr) k x lrr r)
-                   (_, _) -> abort "Failure in Data.Map.balanceL"
-              | otherwise -> Bin (1+ls+rs) k x l r
+	Bin rs _ _ _ _ -> case l of
+		Tip -> Bin (1+rs) k x Tip r
+		Bin ls lk lx ll lr
+			| ls > delta*rs -> case (ll, lr) of
+				(Bin lls _ _ _ _, Bin lrs lrk lrx lrl lrr)
+					| lrs < ratio*lls
+						-> Bin (1+ls+rs) lk lx ll (Bin (1+rs+lrs) k x lr r)
+					| otherwise
+						# (lrlsz,lrl) = mapSizeU lrl
+						# (lrrsz,lrr) = mapSizeU lrr
+						-> Bin (1+ls+rs) lrk lrx (Bin (1+lls+lrlsz) lk lx ll lrl) (Bin (1+rs+lrrsz) k x lrr r)
+				_ -> abort "Failure in Data.Map.balanceL\n"
+			| otherwise -> Bin (1+ls+rs) k x l r
 
 // balanceR is called when right subtree might have been puted to or when
 // left subtree might have been deleted from.
-balanceR :: !k !a !(Map k a) !(Map k a) -> Map k a
+balanceR :: !k !a !u:(Map k a) !u:(Map k a) -> u:Map k a
 balanceR k x l r = case l of
-  Tip -> case r of
-           Tip -> Bin 1 k x Tip Tip
-           (Bin _ _ _ Tip Tip) -> Bin 2 k x Tip r
-           (Bin _ rk rx Tip rr=:(Bin _ _ _ _ _)) -> Bin 3 rk rx (Bin 1 k x Tip Tip) rr
-           (Bin _ rk rx (Bin _ rlk rlx _ _) Tip) -> Bin 3 rlk rlx (Bin 1 k x Tip Tip) (Bin 1 rk rx Tip Tip)
-           (Bin rs rk rx rl=:(Bin rls rlk rlx rll rlr) rr=:(Bin rrs _ _ _ _))
-             | rls < ratio*rrs -> Bin (1+rs) rk rx (Bin (1+rls) k x Tip rl) rr
-             | otherwise -> Bin (1+rs) rlk rlx (Bin (1+mapSize rll) k x Tip rll) (Bin (1+rrs+mapSize rlr) rk rx rlr rr)
+	Tip -> case r of
+		Tip -> Bin 1 k x Tip Tip
+		(Bin _ _ _ Tip Tip) -> Bin 2 k x Tip r
+		(Bin _ rk rx Tip rr=:(Bin _ _ _ _ _)) -> Bin 3 rk rx (Bin 1 k x Tip Tip) rr
+		(Bin _ rk rx (Bin _ rlk rlx _ _) Tip) -> Bin 3 rlk rlx (Bin 1 k x Tip Tip) (Bin 1 rk rx Tip Tip)
+		(Bin rs rk rx rl=:(Bin rls rlk rlx rll rlr) rr=:(Bin rrs _ _ _ _))
+			| rls < ratio*rrs
+				-> Bin (1+rs) rk rx (Bin (1+rls) k x Tip rl) rr
+			| otherwise
+				# (rllsz,rll) = mapSizeU rll
+				# (rlrsz,rlr) = mapSizeU rlr
+				-> Bin (1+rs) rlk rlx (Bin (1+rllsz) k x Tip rll) (Bin (1+rrs+rlrsz) rk rx rlr rr)
 
-  (Bin ls _ _ _ _) -> case r of
-           Tip -> Bin (1+ls) k x l Tip
-
-           (Bin rs rk rx rl rr)
-              | rs > delta*ls  -> case (rl, rr) of
-                   (Bin rls rlk rlx rll rlr, Bin rrs _ _ _ _)
-                     | rls < ratio*rrs -> Bin (1+ls+rs) rk rx (Bin (1+ls+rls) k x l rl) rr
-                     | otherwise -> Bin (1+ls+rs) rlk rlx (Bin (1+ls+mapSize rll) k x l rll) (Bin (1+rrs+mapSize rlr) rk rx rlr rr)
-                   (_, _) -> abort "Failure in Data.Map.balanceR"
-              | otherwise -> Bin (1+ls+rs) k x l r
+	(Bin ls _ _ _ _) -> case r of
+		Tip -> Bin (1+ls) k x l Tip
+		(Bin rs rk rx rl rr)
+			| rs > delta*ls -> case (rl, rr) of
+				(Bin rls rlk rlx rll rlr, Bin rrs _ _ _ _)
+					| rls < ratio*rrs
+						-> Bin (1+ls+rs) rk rx (Bin (1+ls+rls) k x l rl) rr
+					| otherwise
+						# (rllsz,rll) = mapSizeU rll
+						# (rlrsz,rlr) = mapSizeU rlr
+						-> Bin (1+ls+rs) rlk rlx (Bin (1+ls+rllsz) k x l rll) (Bin (1+rrs+rlrsz) rk rx rlr rr)
+				_ -> abort "Failure in Data.Map.balanceR\n"
+			| otherwise -> Bin (1+ls+rs) k x l r
 
 
 ////////////////////////////////////////////////////////////////////
@@ -1986,10 +2030,10 @@ splitRoot :: !(Map k b) -> [Map k b]
 splitRoot Tip = []
 splitRoot (Bin _ k v l r) = [l, singleton k v, r]
 
-getU :: !k !w:(Map k v) -> x:(!Maybe v, !y:(Map k v)) | == k & < k, [ x <= y, w <= y]
+getU :: !k !u:(Map k v) -> (!Maybe v, !u:(Map k v)) | == k & < k
 getU k Tip = (Nothing, Tip)
-getU k (Bin h nk nv left right)
-  | k == nk  = (Just nv, Bin h nk nv left right)
+getU k b=:(Bin h nk nv left right)
+  | k == nk  = (Just nv, b)
   | k < nk
     #! (mbv, left) = getU k left
     = (mbv, Bin h nk nv left right)

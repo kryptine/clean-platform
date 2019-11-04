@@ -11,7 +11,9 @@ definition module Data.IntMap.Base
  *
  * @property-test-with a = ()
  */
-from StdOverloaded import class ==
+from StdBool import not
+from StdInt import bitand, bitxor
+from StdOverloaded import class ==(==), class ~(~)
 from Data.Functor import class Functor
 from Data.Maybe import :: Maybe
 
@@ -36,7 +38,10 @@ equal :: !(IntMap a) !(IntMap a) -> Bool | == a
 
 bin :: !Prefix !Mask !(IntMap a) !(IntMap a) -> IntMap a
 
-nomatch :: !Int !Prefix !Mask -> Bool
+zero i m :== (i bitand m) == 0
+
+//nomatch :: !Int !Prefix !Mask -> Bool
+nomatch i p m :== not (mask i m == p)
 
 empty :: IntMap a
 
@@ -54,7 +59,7 @@ union :: !(IntMap a) !(IntMap a) -> IntMap a
 
 unions :: ![IntMap a] -> IntMap a
 
-mask :: !Int !Mask -> Prefix
+mask i m :== i bitand (~m bitxor m)
 
 shorter :: !Mask !Mask -> Bool
 

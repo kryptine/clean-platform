@@ -107,7 +107,7 @@ import StdClass
  *             sizes_correct r
  */
 :: Map k v
-  = Bin !Int !k !v !(Map k v) !(Map k v)
+  = Bin !Int !k !v !.(Map k v) !.(Map k v)
   | Tip
 
 instance Monoid (Map k v) | < k
@@ -145,7 +145,7 @@ newMap      :: w:(Map k u:v), [ w <= u]
  * Create a Map with one element.
  * @complexity O(1)
  */
-singleton   :: !k !v -> Map k v
+singleton :: !k !v -> .Map k v
 
 /**
  * The number of elements in a Map.
@@ -169,7 +169,7 @@ mapSize     :: !(Map k v) -> Int
  *         m` = put k v m
  * @complexity O(log n)
  */
-put :: !k !a !(Map k a) -> Map k a | < k
+put :: !k !a !u:(Map k a) -> u:Map k a | < k
 
 /**
  * Searches for a value at a given key position. Works only for non-unique
@@ -193,7 +193,7 @@ get k m :== get` k m
 /**
  * Searches for a value at a given key position. Works also for unique mappings.
  */
-getU :: !k !w:(Map k v) -> x:(!Maybe v, !y:(Map k v)) | == k & < k, [ x <= y, w <= y]
+getU :: !k !u:(Map k v) -> (!Maybe v, !u:(Map k v)) | == k & < k
 
 /**
  * Removes the value at a given key position. The mapping itself can be spine unique.
@@ -215,8 +215,8 @@ del :: !k !(Map k a) -> Map k a | < k
  */
 delU :: !a !.(Map a b) -> u:(!v:(Maybe b), !Map a b) | == a & < a, [u <= v] // !k !w:(Map k u:v) -> x:(Maybe u:v, !y:(Map k u:v)) | == k & < k, [ w y <= u, x <= y, w <= y]
 
-foldrWithKey :: !(k v u:a -> u:a) !u:a !(Map k v) -> u:a
-foldlWithKey :: !(.a -> .(k -> .(v -> .a))) !.a !(Map k v) -> .a
+foldrWithKey :: !(k v u:a -> u:a) !u:a !.(Map k v) -> u:a
+foldlWithKey :: !(.a -> .(k -> .(v -> .a))) !.a !.(Map k v) -> .a
 
 //* @type (v a -> a) a (Map k v) -> a
 foldrNoKey f x m :== foldrWithKey (\_ v acc -> f v acc) x m
@@ -238,6 +238,9 @@ filterWithKey :: !(k v -> Bool) !(Map k v) -> Map k v
  * @type (Map k v) -> [k]
  */
 keys m :== foldrWithKey (\k _ ks -> [k : ks]) [] m
+
+//* Like `keys`, but also works with unique maps.
+keysU :: !u:(Map k v) -> (![k], !u:Map k v)
 
 /**
  * A list of the elements in a Map.
