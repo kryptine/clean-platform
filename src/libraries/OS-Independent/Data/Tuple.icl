@@ -137,6 +137,10 @@ instance Bifunctor ((,,,,) x y z)
 where
 	bifmap f g t = let (x, y, z, a, b) = t in (x, y, z, f a, g b)
 
+instance toString ()
+where
+	toString _ = "()"
+
 instance toString (a, b) | toString a & toString b
 where
 	toString (a, b) = 'Text'.concat ["(", toString a, ", ", toString b, ")"]
