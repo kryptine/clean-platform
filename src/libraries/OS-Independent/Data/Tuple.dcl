@@ -61,6 +61,7 @@ instance Bifunctor ((,,) x)
 instance Bifunctor ((,,,) x y)
 instance Bifunctor ((,,,,) x y z)
 
+instance toString ()
 instance toString (a, b) | toString a & toString b
 instance toString (a, b, c) | toString a & toString b & toString c
 instance toString (a, b, c, d) | toString a & toString b & toString c & toString d
