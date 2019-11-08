@@ -174,7 +174,7 @@ packTm32 tm = 	{ tm.sec
 nsTime :: !*World -> (!Timespec, !*World)
 nsTime w
 	# (is, w) = GetSystemTimeAsFileTime (IF_INT_64_OR_32 {0} {0,0}) w
-	= (filetimeToTimespec is, w)
+	= (fileTimeToTimeSpec is, w)
 
 timespecToStamp :: !Timespec -> Timestamp
 timespecToStamp t = Timestamp t.tv_sec

@@ -1,6 +1,7 @@
 definition module System._WinBase
 
 import System._WinDef, StdInt
+from System.Time import :: Timespec
 
 /*
  * Record definitions, size and field offsets

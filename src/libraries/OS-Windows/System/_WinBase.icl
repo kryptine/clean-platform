@@ -1,7 +1,8 @@
 implementation module System._WinBase
 
+import StdEnv
 import System._WinDef
-import Data.Integer
+import Data.Integer, System.Time
 import code from library "_WinBase_library"
 
 closeHandle :: !HANDLE !*w -> (!Bool,!*w)
@@ -306,10 +307,10 @@ fileTimeToTimeSpec :: !{#Int} -> Timespec
 fileTimeToTimeSpec is = IF_INT_64_OR_32 fttts64 fttts32
 where
 	fttts64
-		= ({tv_sec=(is.[0] - TICKSDIFF64) / TICKSPERSEC64, tv_nsec=(is.[0] rem TICKSPERSEC64) * 100}, w)
+		= {tv_sec=(is.[0] - TICKSDIFF64) / TICKSPERSEC64, tv_nsec=(is.[0] rem TICKSPERSEC64) * 100}
 	fttts32
 		# ticks = uintToInt is.[0] + uintToInt is.[1] * (toInteger 2 ^ toInteger 32) - TICKSDIFF32
-		= ({tv_sec=toInt (ticks / TICKSPERSEC32), tv_nsec=toInt (ticks rem TICKSPERSEC32) * 100}, w)
+		= {tv_sec=toInt (ticks / TICKSPERSEC32), tv_nsec=toInt (ticks rem TICKSPERSEC32) * 100}
 
 uintToInt :: Int -> Integer
 uintToInt i

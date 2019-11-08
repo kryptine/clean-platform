@@ -16,7 +16,7 @@ import System.Time
 import Text
 
 CHUNK_SIZE :== 1024
-
+ 
 from System._Windows import 
 	::HANDLE, 
 	:: LPWIN32_FIND_DATA, 
@@ -42,6 +42,7 @@ from System._Windows import
 	moveFileA,
 	:: FILETIME,
 	fileTimeToSystemTime,
+	fileTimeToTimeSpec,
 	:: LPSYSTEMTIME
 	
 instance toString FileError
@@ -119,9 +120,9 @@ getFileInfo filename world
 	# win32FindData = createArray WIN32_FIND_DATA_size_bytes '\0'
 	# (handle, world) = findFirstFileA (packString filename) win32FindData world
 	| handle == INVALID_HANDLE_VALUE = getLastOSError world
-	# creationTime = filetimeToTimespec (win32FindData % (WIN32_FIND_DATA_ftCreationTime_bytes_offset, WIN32_FIND_DATA_ftCreationTime_bytes_offset + FILETIME_size_bytes))
-	# lastModifiedTime = filetimeToTimespec (win32FindData % (WIN32_FIND_DATA_ftLastWriteTime_bytes_offset, WIN32_FIND_DATA_ftLastWriteTime_bytes_offset + FILETIME_size_bytes))
-	# lastAccessedTime = filetimeToTimespec (win32FindData % (WIN32_FIND_DATA_ftLastAccessTime_bytes_offset, WIN32_FIND_DATA_ftLastAccessTime_bytes_offset + FILETIME_size_bytes))
+	# creationTime     = fileTimeToTimeSpec (toFileTimeArray win32FindData WIN32_FIND_DATA_ftCreationTime_bytes_offset)
+	# lastModifiedTime = fileTimeToTimeSpec (toFileTimeArray win32FindData WIN32_FIND_DATA_ftLastWriteTime_bytes_offset)
+	# lastAccessedTime = fileTimeToTimeSpec (toFileTimeArray win32FindData WIN32_FIND_DATA_ftLastAccessTime_bytes_offset)
 	# info = creationTime
 	# info =	{ directory			= toDWORD win32FindData bitand FILE_ATTRIBUTE_DIRECTORY > 0
 				, creationTime		= creationTime
@@ -132,6 +133,9 @@ getFileInfo filename world
 				}
 	= (Ok info, world)
 where
+	toFileTimeArray :: !{#Char} !Int -> {#Int}
+	toFileTimeArray a o = IF_INT_64_OR_32 {unpackInt8 a o} {unpackInt4S a o,unpackInt4S a (o+4)}
+
 	toDWORD :: !{#Char} -> DWORD
 	toDWORD s = toInt s.[3] << 24 bitor toInt s.[2] << 16 bitor toInt s.[1] << 8 bitor toInt s.[0] //little-endian
 
