@@ -2,7 +2,7 @@ definition module System._Posix
 
 from System._Pointer import :: Pointer
 from StdInt import IF_INT_64_OR_32
-from System.Time import :: Tm
+from System.Time import :: Tm, :: Timespec
 
 WNOHANG		:==	0x00000001
 WUNTRACED	:== 0x00000002
@@ -98,9 +98,9 @@ memcpy_string_to_pointer :: !Pointer !{#Char} !Int -> Pointer
 	, st_size			:: !Int
 	, st_blocks			:: !Int
 	, st_blksize		:: !Int
-	, st_ctimespec		:: !Int
-	, st_mtimespec		:: !Int
-	, st_atimespec		:: !Int
+	, st_ctimespec		:: !Timespec
+	, st_mtimespec		:: !Timespec
+	, st_atimespec		:: !Timespec
 	}
 //Mapping to/from byte arrays
 unpackStat	:: !{#Char} -> Stat

@@ -198,9 +198,15 @@ unpackStat s =
     , st_size       	= IF_INT_64_OR_32 (unpackInt8  s 48) (unpackInt4S s 44)
     , st_blocks    		= IF_INT_64_OR_32 (unpackInt8  s 64) (unpackInt4S s 52)
     , st_blksize    	= IF_INT_64_OR_32 (unpackInt8  s 56) (unpackInt4S s 48)
-	, st_atimespec		= IF_INT_64_OR_32 (unpackInt8  s 72  /*16 bytes*/) (unpackInt4S s 56 /*8 bytes*/)
-	, st_mtimespec		= IF_INT_64_OR_32 (unpackInt8  s 88  /*16 bytes*/) (unpackInt4S s 64 /*8 bytes*/)
-	, st_ctimespec		= IF_INT_64_OR_32 (unpackInt8  s 104 /*16 bytes*/) (unpackInt4S s 72 /*8 bytes*/)
+	, st_atimespec		= IF_INT_64_OR_32
+		{tv_sec=unpackInt8  s 72, tv_nsec=unpackInt8  s 80} /*16 bytes*/
+		{tv_sec=unpackInt4S s 56, tv_nsec=unpackInt4S s 60}/*8 bytes*/
+	, st_mtimespec		= IF_INT_64_OR_32
+		{tv_sec=unpackInt8  s 88, tv_nsec=unpackInt8  s 96} /*16 bytes*/
+		{tv_sec=unpackInt4S s 64, tv_nsec=unpackInt4S s 68}/*8 bytes*/
+	, st_ctimespec		= IF_INT_64_OR_32
+		{tv_sec=unpackInt8  s 104, tv_nsec=unpackInt8  s 112} /*16 bytes*/
+		{tv_sec=unpackInt4S s 72,  tv_nsec=unpackInt4S s 76}/*8 bytes*/
     }
 
 sizeOfStat :: Int

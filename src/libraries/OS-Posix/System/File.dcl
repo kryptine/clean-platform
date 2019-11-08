@@ -3,9 +3,9 @@ definition module System.File
 from StdFile import class FileSystem
 from StdClass import class toString
 
-from System.Time import ::Tm
-from Data.Error import ::MaybeError
-from System.OSError import ::MaybeOSError, ::OSError, ::OSErrorCode, ::OSErrorMessage
+from System.Time import :: Tm, :: Timespec
+from Data.Error import :: MaybeError
+from System.OSError import :: MaybeOSError, :: OSError, :: OSErrorCode, :: OSErrorMessage
 
 :: FileError = CannotOpen | CannotClose | IOError
 
@@ -74,9 +74,9 @@ deleteFile :: !String !*World -> (!MaybeOSError (), !*World)
 
 :: FileInfo =
 	{ directory         :: !Bool
-	, creationTime      :: !Tm
-	, lastModifiedTime  :: !Tm
-	, lastAccessedTime  :: !Tm
+	, creationTime      :: !Timespec
+	, lastModifiedTime  :: !Timespec
+	, lastAccessedTime  :: !Timespec
 	, sizeHigh          :: !Int
 	, sizeLow           :: !Int
 	}

@@ -196,10 +196,10 @@ unpackStat s =
     , st_uid			= unpackInt4S s 16
     , st_gid			= unpackInt4S s 20
 	, st_rdev			= unpackInt8  s 24 
-    , st_atimespec  	= unpackInt8  s 32
-    , st_mtimespec  	= unpackInt8  s 48
-    , st_ctimespec  	= unpackInt8  s 64 
-	, st_birthtimespec	= unpackInt8  s 80
+    , st_atimespec  	= {tv_sec=unpackInt8 s 32, tv_nsec=unpackInt8 s 40}
+    , st_mtimespec  	= {tv_sec=unpackInt8 s 48, tv_nsec=unpackInt8 s 56}
+    , st_ctimespec  	= {tv_sec=unpackInt8 s 64, tv_nsec=unpackInt8 s 72}
+	, st_birthtimespec	= {tv_sec=unpackInt8 s 80, tv_nsec=unpackInt8 s 88}
     , st_size       	= unpackInt8  s 96 
     , st_blocks    		= unpackInt8  s 104 
     , st_blksize    	= unpackInt4S s 112
