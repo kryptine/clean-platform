@@ -119,15 +119,9 @@ getFileInfo filename world
 	# win32FindData = createArray WIN32_FIND_DATA_size_bytes '\0'
 	# (handle, world) = findFirstFileA (packString filename) win32FindData world
 	| handle == INVALID_HANDLE_VALUE = getLastOSError world
-	# (res, world) = filetimeToTm (win32FindData % (WIN32_FIND_DATA_ftCreationTime_bytes_offset, WIN32_FIND_DATA_ftCreationTime_bytes_offset + FILETIME_size_bytes)) world
-	| isError res = (liftError res, world)
-	# creationTime = fromOk res
-	# (res, world) = filetimeToTm (win32FindData % (WIN32_FIND_DATA_ftLastWriteTime_bytes_offset, WIN32_FIND_DATA_ftLastWriteTime_bytes_offset + FILETIME_size_bytes)) world
-	| isError res = (liftError res, world)
-	# lastModifiedTime = fromOk res
-	# (res, world) = filetimeToTm (win32FindData % (WIN32_FIND_DATA_ftLastAccessTime_bytes_offset, WIN32_FIND_DATA_ftLastAccessTime_bytes_offset + FILETIME_size_bytes)) world
-	| isError res = (liftError res, world)
-	# lastAccessedTime = fromOk res
+	# creationTime = filetimeToTimespec (win32FindData % (WIN32_FIND_DATA_ftCreationTime_bytes_offset, WIN32_FIND_DATA_ftCreationTime_bytes_offset + FILETIME_size_bytes))
+	# lastModifiedTime = filetimeToTimespec (win32FindData % (WIN32_FIND_DATA_ftLastWriteTime_bytes_offset, WIN32_FIND_DATA_ftLastWriteTime_bytes_offset + FILETIME_size_bytes))
+	# lastAccessedTime = filetimeToTimespec (win32FindData % (WIN32_FIND_DATA_ftLastAccessTime_bytes_offset, WIN32_FIND_DATA_ftLastAccessTime_bytes_offset + FILETIME_size_bytes))
 	# info = creationTime
 	# info =	{ directory			= toDWORD win32FindData bitand FILE_ATTRIBUTE_DIRECTORY > 0
 				, creationTime		= creationTime
@@ -140,24 +134,6 @@ getFileInfo filename world
 where
 	toDWORD :: !{#Char} -> DWORD
 	toDWORD s = toInt s.[3] << 24 bitor toInt s.[2] << 16 bitor toInt s.[1] << 8 bitor toInt s.[0] //little-endian
-
-filetimeToTm :: !FILETIME !*World -> (!MaybeOSError Tm, !*World)
-filetimeToTm filetime world
-	# systemtime = createArray SYSTEMTIME_size_bytes '\0'
-	# (ok, world) = fileTimeToSystemTime filetime systemtime world
-	| ok <> ok = undef
-	| not ok = getLastOSError world
-	# tm=	{ sec	= toInt systemtime.[SYSTEMTIME_wSecond_offset]		+ (toInt systemtime.[SYSTEMTIME_wSecond_offset + 1]		<< 8)
-			, min	= toInt systemtime.[SYSTEMTIME_wMinute_offset]		+ (toInt systemtime.[SYSTEMTIME_wMinute_offset + 1]		<< 8)
-			, hour	= toInt systemtime.[SYSTEMTIME_wHour_offset]		+ (toInt systemtime.[SYSTEMTIME_wHour_offset + 1]		<< 8)
-			, mday	= toInt systemtime.[SYSTEMTIME_wDay_offset]			+ (toInt systemtime.[SYSTEMTIME_wDay_offset + 1]		<< 8)
-			, mon	= toInt systemtime.[SYSTEMTIME_wMonth_offset]		+ (toInt systemtime.[SYSTEMTIME_wMonth_offset + 1]		<< 8) - 1
-			, year	= toInt systemtime.[SYSTEMTIME_wYear_offset]		+ (toInt systemtime.[SYSTEMTIME_wYear_offset + 1]		<< 8) - 1900
-			, wday	= toInt systemtime.[SYSTEMTIME_wDayOfWeek_offset]	+ (toInt systemtime.[SYSTEMTIME_wDayOfWeek_offset + 1]	<< 8)
-			, yday	= -1	//Not implemented
-			, isdst	= 0     //Not implemented
-			}
-	= (Ok tm, world)
 
 moveFile :: !String !String !*World -> (!MaybeOSError (), !*World)
 moveFile oldpath newpath world
