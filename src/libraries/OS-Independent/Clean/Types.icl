@@ -64,15 +64,25 @@ instance == TypeContext
 where
 	== (TypeContext a) (TypeContext b) = a == b
 
+childTypes :: !Type -> [Type]
+childTypes t = case t of
+	Type _ ts -> ts
+	Func is r _ -> [r:is]
+	Cons _ ts -> ts
+	Uniq t -> [t]
+	Forall vs t _ -> [t:vs]
+	Var _ -> []
+	Arrow mt -> case mt of Just t -> [t]; _ -> []
+	Strict t -> [t]
+
 subtypes :: !Type -> [Type]
-subtypes t=:(Type s ts) = removeDup [t : flatten (map subtypes ts)]
-subtypes t=:(Func is r tc) = removeDup [t : flatten (map subtypes [r:is])]
-subtypes t=:(Cons c ts) = removeDup [t : flatten (map subtypes ts)]
-subtypes t=:(Uniq t`) = removeDup [t : subtypes t`]
-subtypes t=:(Forall vs t` tc) = removeDup [t : flatten (map subtypes [t`:vs])]
-subtypes t=:(Var _) = [t]
-subtypes t=:(Arrow mt) = [t:flatten (map subtypes (maybeToList mt))]
-subtypes t=:(Strict t`) = [t:subtypes t`]
+subtypes t = subtypes [] [t]
+where
+	subtypes :: ![Type] ![Type] -> [Type]
+	subtypes subs [] = subs
+	subtypes subs [type:types]
+		# subs = if (isMember type subs) subs [type:subs]
+		= subtypes subs (childTypes type ++ types)
 
 allRestrictions :: !Type -> [TypeRestriction]
 allRestrictions (Type _ ts) = concatMap allRestrictions ts
@@ -84,24 +94,29 @@ allRestrictions (Var _) = []
 allRestrictions (Arrow t) = fromMaybe [] (allRestrictions <$> t)
 allRestrictions (Strict t) = allRestrictions t
 
-allVars :: (Type -> [TypeVar])
-allVars = removeDup o map name o filter (\t -> isCons t || isVar t) o subtypes
+allVars :: !Type -> [TypeVar]
+allVars t = vars [] [t]
 where
-	name :: !Type -> TypeVar
-	name (Cons v _) = v
-	name (Var v) = v
-	name _ = abort "error in allVars\n"
+	vars :: ![TypeVar] ![Type] -> [TypeVar]
+	vars vs [] = vs
+	vars vs [type:types]
+		# vs = case type of
+			Cons c _ -> if (isMember c vs) vs [c:vs]
+			Var v    -> if (isMember v vs) vs [v:vs]
+			_        -> vs
+		= vars vs (childTypes type ++ types)
 
 allUniversalVars :: !Type -> [TypeVar]
-allUniversalVars (Forall vs t tc) = removeDup (flatten (map allVars vs) ++ allUniversalVars t)
-allUniversalVars (Type _ ts) = removeDup (flatten (map allUniversalVars ts))
-allUniversalVars (Func is r _) = removeDup (flatten (map allUniversalVars [r:is]))
-allUniversalVars (Cons _ ts) = removeDup (flatten (map allUniversalVars ts))
-allUniversalVars (Uniq t) = allUniversalVars t
-allUniversalVars (Var _) = []
-allUniversalVars (Arrow (Just t)) = allUniversalVars t
-allUniversalVars (Arrow Nothing)  = []
-allUniversalVars (Strict t) = allUniversalVars t
+allUniversalVars t = vars [] [t]
+where
+	vars :: ![TypeVar] ![Type] -> [TypeVar]
+	vars vs [] = vs
+	vars vs [type:types]
+		# vs = case type of
+			Forall newvs _ _
+				-> foldl (\vs v -> if (isMember v vs) vs [v:vs]) vs (concatMap allVars newvs)
+				-> vs
+		= vars vs (childTypes type ++ types)
 
 isVar :: !Type -> Bool
 isVar t = t=:(Var _)

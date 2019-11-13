@@ -143,7 +143,7 @@ allRestrictions :: !Type -> [TypeRestriction]
 /**
  * A list of type variables used in a type.
  */
-allVars :: (Type -> [TypeVar])
+allVars :: !Type -> [TypeVar]
 
 /**
  * A list of all the variables that are quantified universally in a (sub)type.
