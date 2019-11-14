@@ -1,6 +1,7 @@
 definition module System._WinBase
 
 import System._WinDef, StdInt
+from System.Time import :: Timespec
 
 /*
  * Record definitions, size and field offsets
@@ -9,7 +10,7 @@ import System._WinDef, StdInt
 INT_SIZE :== IF_INT_64_OR_32 8 4
 
 :: FILETIME :== {#Char}
-FILETIME_size_bytes :== 8//FILETIME_size_int * INT_SIZE
+FILETIME_size_bytes :== FILETIME_size_int * INT_SIZE
 FILETIME_size_int :== 2
 
 :: LPSYSTEMTIME :== {#Char}
@@ -196,3 +197,4 @@ createPipe :: !PHANDLE !PHANDLE !SECURITY_ATTRIBUTES !DWORD !*w -> (!Bool, !*w)
 peekNamedPipe :: !HANDLE !LPVOID !DWORD !LPDWORD !LPDWORD !LPDWORD !*w -> (!Bool, !*w)
 
 GetSystemTimeAsFileTime :: !{#Int} !*World -> (!{#Int},!*World)
+fileTimeToTimeSpec :: !{#Int} -> Timespec

@@ -90,13 +90,10 @@ getFileInfo path world
 	# (ok,world)    = stat (packString path) buf world
 	| ok <> 0		= getLastOSError world
 	# stat			= unpackStat buf
-	# (ctime,world)	= toLocalTime (Timestamp stat.st_ctimespec) world //NOT RELIABLE ctime is actually inode change time
-	# (mtime,world) = toLocalTime (Timestamp stat.st_mtimespec) world
-	# (atime,world) = toLocalTime (Timestamp stat.st_atimespec) world
 	= (Ok { directory = (stat.st_mode bitand S_IFMT) == S_IFDIR
-		  , creationTime = ctime
-		  , lastModifiedTime = mtime
-		  , lastAccessedTime = atime
+		  , creationTime = stat.st_ctimespec
+		  , lastModifiedTime = stat.st_mtimespec
+		  , lastAccessedTime = stat.st_atimespec
 		  , sizeHigh = stat.st_blocks * stat.st_blksize
 		  , sizeLow = stat.st_size
 		  }, world)

@@ -1,6 +1,8 @@
 implementation module System._WinBase
 
+import StdEnv
 import System._WinDef
+import Data.Integer, System.Time
 import code from library "_WinBase_library"
 
 closeHandle :: !HANDLE !*w -> (!Bool,!*w)
@@ -292,3 +294,25 @@ GetSystemTimeAsFileTime i w
 	ccall GetSystemTimeAsFileTime@4 "PA:I:AA"
 	pop_b 1
 }
+
+//Number of 100ns ticks difference between the windows and linux epoch 
+TICKSDIFF32   =: toInteger "11644473600" * TICKSPERSEC32
+TICKSDIFF64   =: 11644473600 * TICKSPERSEC64
+
+//Number of ticks per second (100 ns ticks)
+TICKSPERSEC32 =: toInteger 10000000
+TICKSPERSEC64 =: 10000000
+
+fileTimeToTimeSpec :: !{#Int} -> Timespec
+fileTimeToTimeSpec is = IF_INT_64_OR_32 fttts64 fttts32
+where
+	fttts64
+		= {tv_sec=(is.[0] - TICKSDIFF64) / TICKSPERSEC64, tv_nsec=(is.[0] rem TICKSPERSEC64) * 100}
+	fttts32
+		# ticks = uintToInt is.[0] + uintToInt is.[1] * (toInteger 2 ^ toInteger 32) - TICKSDIFF32
+		= {tv_sec=toInt (ticks / TICKSPERSEC32), tv_nsec=toInt (ticks rem TICKSPERSEC32) * 100}
+
+uintToInt :: Int -> Integer
+uintToInt i
+| i < 0 = toInteger i + {integer_s=0,integer_a={0,1}}
+= toInteger i

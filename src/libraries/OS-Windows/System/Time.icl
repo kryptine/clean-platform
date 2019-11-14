@@ -3,7 +3,6 @@ implementation module System.Time
 import StdEnv
 import System._Pointer
 import System._WinBase
-import Data.Integer
 import Data.List
 import Data.GenEq
 from Data.Func import $
@@ -167,34 +166,15 @@ packTm32 tm = 	{ tm.sec
 				, tm.isdst
 				}
 
-
-//Number of 100ns ticks difference between the windows and linux epoch 
-TICKSDIFF32   =: toInteger "11644473600" * TICKSPERSEC32
-TICKSDIFF64   =: 11644473600 * TICKSPERSEC64
-
-//Number of ticks per second (100 ns ticks)
-TICKSPERSEC32 =: toInteger 10000000
-TICKSPERSEC64 =: 10000000
 /*
  * On windows GetSystemTimeAsFileTime returns a struct containing 2 32bit unsigned integers.
  * On 64 bit we therefore use an array of length 1, on 32 bit of length two.
  * On 64 bit we can use native integers, on 32 bit we use bigints.
  */
 nsTime :: !*World -> (!Timespec, !*World)
-nsTime w = IF_INT_64_OR_32 nsTime64 nsTime32 w
-where
-	nsTime64 w
-		# (is, w) = GetSystemTimeAsFileTime {0} w
-		= ({tv_sec=(is.[0] - TICKSDIFF64) / TICKSPERSEC64, tv_nsec=(is.[0] rem TICKSPERSEC64) * 100}, w)
-	nsTime32 w
-		# (is, w) = GetSystemTimeAsFileTime {0,0} w
-		# ticks = uintToInt is.[0] + uintToInt is.[1] * (toInteger 2 ^ toInteger 32) - TICKSDIFF32
-		= ({tv_sec=toInt (ticks / TICKSPERSEC32), tv_nsec=toInt (ticks rem TICKSPERSEC32) * 100}, w)
-
-uintToInt :: Int -> Integer
-uintToInt i
-| i < 0 = toInteger i + {integer_s=0,integer_a={0,1}}
-= toInteger i
+nsTime w
+	# (is, w) = GetSystemTimeAsFileTime (IF_INT_64_OR_32 {0} {0,0}) w
+	= (fileTimeToTimeSpec is, w)
 
 timespecToStamp :: !Timespec -> Timestamp
 timespecToStamp t = Timestamp t.tv_sec

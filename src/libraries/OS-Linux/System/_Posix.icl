@@ -188,20 +188,26 @@ clock_gettime _ _ _ = code {
 //Mapping to/from byte arrays
 unpackStat :: !{#Char} -> Stat
 unpackStat s =
-    { st_dev			= IF_INT_64_OR_32 (unpackInt8  s 0)  (unpackInt4S s 0 /*8 bytes*/)
-    , st_ino			= IF_INT_64_OR_32 (unpackInt8  s 8)  (unpackInt4S s 12)
-    , st_mode			= IF_INT_64_OR_32 (unpackInt4S s 24) (unpackInt4S s 16)
-    , st_nlink			= IF_INT_64_OR_32 (unpackInt8  s 16) (unpackInt4S s 20)
-    , st_uid			= IF_INT_64_OR_32 (unpackInt4S s 28) (unpackInt4S s 24)
-    , st_gid			= IF_INT_64_OR_32 (unpackInt4S s 32) (unpackInt4S s 28)
+	{ st_dev			= IF_INT_64_OR_32 (unpackInt8  s 0)  (unpackInt4S s 0 /*8 bytes*/)
+	, st_ino			= IF_INT_64_OR_32 (unpackInt8  s 8)  (unpackInt4S s 12)
+	, st_mode			= IF_INT_64_OR_32 (unpackInt4S s 24) (unpackInt4S s 16)
+	, st_nlink			= IF_INT_64_OR_32 (unpackInt8  s 16) (unpackInt4S s 20)
+	, st_uid			= IF_INT_64_OR_32 (unpackInt4S s 28) (unpackInt4S s 24)
+	, st_gid			= IF_INT_64_OR_32 (unpackInt4S s 32) (unpackInt4S s 28)
 	, st_rdev			= IF_INT_64_OR_32 (unpackInt8  s 40) (unpackInt4S s 32 /*8 bytes*/)
-    , st_size       	= IF_INT_64_OR_32 (unpackInt8  s 48) (unpackInt4S s 44)
-    , st_blocks    		= IF_INT_64_OR_32 (unpackInt8  s 64) (unpackInt4S s 52)
-    , st_blksize    	= IF_INT_64_OR_32 (unpackInt8  s 56) (unpackInt4S s 48)
-	, st_atimespec		= IF_INT_64_OR_32 (unpackInt8  s 72  /*16 bytes*/) (unpackInt4S s 56 /*8 bytes*/)
-	, st_mtimespec		= IF_INT_64_OR_32 (unpackInt8  s 88  /*16 bytes*/) (unpackInt4S s 64 /*8 bytes*/)
-	, st_ctimespec		= IF_INT_64_OR_32 (unpackInt8  s 104 /*16 bytes*/) (unpackInt4S s 72 /*8 bytes*/)
-    }
+	, st_size       	= IF_INT_64_OR_32 (unpackInt8  s 48) (unpackInt4S s 44)
+	, st_blocks    		= IF_INT_64_OR_32 (unpackInt8  s 64) (unpackInt4S s 52)
+	, st_blksize    	= IF_INT_64_OR_32 (unpackInt8  s 56) (unpackInt4S s 48)
+	, st_atimespec		= IF_INT_64_OR_32
+		{tv_sec=unpackInt8  s 72, tv_nsec=unpackInt8  s 80} /*16 bytes*/
+		{tv_sec=unpackInt4S s 56, tv_nsec=unpackInt4S s 60}/*8 bytes*/
+	, st_mtimespec		= IF_INT_64_OR_32
+		{tv_sec=unpackInt8  s 88, tv_nsec=unpackInt8  s 96} /*16 bytes*/
+		{tv_sec=unpackInt4S s 64, tv_nsec=unpackInt4S s 68}/*8 bytes*/
+	, st_ctimespec		= IF_INT_64_OR_32
+		{tv_sec=unpackInt8  s 104, tv_nsec=unpackInt8  s 112} /*16 bytes*/
+		{tv_sec=unpackInt4S s 72,  tv_nsec=unpackInt4S s 76}/*8 bytes*/
+	}
 
 sizeOfStat :: Int
 sizeOfStat = IF_INT_64_OR_32 144 88

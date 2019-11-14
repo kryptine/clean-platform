@@ -1,7 +1,7 @@
 definition module System._Posix
 
 from System._Pointer import :: Pointer
-from System.Time import :: Tm
+from System.Time import :: Tm, :: Timespec
 
 WNOHANG		:==	0x00000001  
 WUNTRACED	:== 0x00000002
@@ -93,10 +93,10 @@ memcpy_string_to_pointer :: !Pointer !{#Char} !Int -> Pointer
 	, st_uid			:: !Int
 	, st_gid			:: !Int
 	, st_rdev			:: !Int
-	, st_atimespec		:: !Int
-	, st_mtimespec		:: !Int
-	, st_ctimespec		:: !Int
-	, st_birthtimespec	:: !Int
+	, st_atimespec		:: !Timespec
+	, st_mtimespec		:: !Timespec
+	, st_ctimespec		:: !Timespec
+	, st_birthtimespec	:: !Timespec
 	, st_size			:: !Int
 	, st_blocks			:: !Int
 	, st_blksize		:: !Int
