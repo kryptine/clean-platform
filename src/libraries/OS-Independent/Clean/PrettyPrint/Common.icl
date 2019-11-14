@@ -50,8 +50,8 @@ where
 		= print st (":: " :+: t :+: ('(',conses,')'))
 	print st (ID_Record t fields)
 		= print st (":: " :+: t :+: ('{',fields,'}'))
-	print st (ID_Instance cls _ (ts, tcs))
-		= print st (cls :+: join_start st " " ts :+: if (isEmpty tcs) "" (" | " +++ join st " & " tcs))
+	print st (ID_Instance cls _ ts)
+		= print st (cls :+: join_start st " " ts)
 	print st (ID_Generic id _)
 		= print st ("generic " :+: id)
 
