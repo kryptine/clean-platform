@@ -20,10 +20,11 @@ import qualified syntax
 instance 'Clean.Types'.toTypeContext ['syntax'.TypeContext]
 where
 	toTypeContext context
-		= ['Clean.Types'.Instance gds.glob_object.ds_ident.id_name (map 'Clean.Types'.toType tc_types)
-		     \\ {tc_class=(TCClass gds),tc_types} <- context] ++
-		  ['Clean.Types'.Derivation gtc_generic.glob_object.ds_ident.id_name ('Clean.Types'.toType t)
-		     \\ {tc_class=(TCGeneric {gtc_generic}),tc_types=[t]} <- context]
+		= 'Clean.Types'.TypeContext
+			(['Clean.Types'.Instance gds.glob_object.ds_ident.id_name (map 'Clean.Types'.toType tc_types)
+				 \\ {tc_class=(TCClass gds),tc_types} <- context] ++
+			  ['Clean.Types'.Derivation gtc_generic.glob_object.ds_ident.id_name ('Clean.Types'.toType t)
+				 \\ {tc_class=(TCGeneric {gtc_generic}),tc_types=[t]} <- context])
 
 instance 'Clean.Types'.toTypeContext 'syntax'.TypeContext where toTypeContext tc = 'Clean.Types'.toTypeContext [tc]
 
@@ -49,9 +50,9 @@ where
 	toType (TB bt) = 'Clean.Types'.Type (toString bt) []
 	toType (TV tv) = 'Clean.Types'.Var tv.tv_ident.id_name
 	toType (GTV tv) = 'Clean.Types'.Var tv.tv_ident.id_name
-	toType (t1 --> t2) = 'Clean.Types'.Func ['Clean.Types'.toType t1] ('Clean.Types'.toType t2) []
+	toType (t1 --> t2) = 'Clean.Types'.Func ['Clean.Types'.toType t1] ('Clean.Types'.toType t2) ('Clean.Types'.TypeContext [])
 	toType ((CV cv) :@: ats) = 'Clean.Types'.Cons cv.tv_ident.id_name (map 'Clean.Types'.toType ats)
-	toType (TFA tvas t) = 'Clean.Types'.Forall (map 'Clean.Types'.toType tvas) ('Clean.Types'.toType t) []
+	toType (TFA tvas t) = 'Clean.Types'.Forall (map 'Clean.Types'.toType tvas) ('Clean.Types'.toType t) ('Clean.Types'.TypeContext [])
 	toType (TFAC tvas t tc) = 'Clean.Types'.Forall (map 'Clean.Types'.toType tvas) ('Clean.Types'.toType t) ('Clean.Types'.toTypeContext tc)
 	toType TArrow = 'Clean.Types'.Arrow Nothing
 	toType (TArrow1 t) = 'Clean.Types'.Arrow (Just ('Clean.Types'.toType t))
@@ -155,7 +156,7 @@ where
 			mapM coclType args >>= \argts ->
 			allowNewIdents False >>|
 			coclType ewl_expr >>= \rt ->
-			store id ('Clean.Types'.Func argts rt [])
+			store id ('Clean.Types'.Func argts rt ('Clean.Types'.TypeContext []))
 	coclType _
 		= fail
 
