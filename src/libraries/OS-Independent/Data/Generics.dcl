@@ -2,6 +2,9 @@ definition module Data.Generics
 
 import StdGeneric
 
+class genericDescriptorName a :: !a -> String
+instance genericDescriptorName GenericTypeDefDescriptor, GenericConsDescriptor, GenericRecordDescriptor, GenericFieldDescriptor
+
 fromOBJECT :: !(OBJECT x) -> x
 fromCONS   :: !(CONS x)   -> x
 fromRECORD :: !(RECORD x) -> x
