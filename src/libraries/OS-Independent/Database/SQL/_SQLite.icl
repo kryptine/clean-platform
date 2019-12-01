@@ -1,5 +1,9 @@
 implementation module Database.SQL._SQLite
+
 import System._Pointer
+
+import code from library "-lsqlite3"
+import code from library "sqlite3_library"
 
 sqlite3_open :: !{#Char} -> (!Int,!Pointer)
 sqlite3_open a0 = code {
