@@ -3,8 +3,19 @@ definition module System.FilePath
 /**
  * Module for manipulation of file and directory paths
  *
- * @property-bootstrap
- *     import StdEnv, Text
+ * @property-bootstrap without default imports
+ *     import Gast.Gen, Gast.GenLibTest, Gast.CommandLine
+ *     from Gast.Testable import
+ *         class TestArg,
+ *         instance Testable Property, instance Testable (a->b)
+ *     from Gast.StdProperty import
+ *         :: Property,
+ *         class /\(..), instance /\ Bool Bool,
+ *         class ==>(..), instance ==> Bool,
+ *         location_and_name, =.=
+ *     import Testing.TestEvents, Text.GenPrint
+ *     import StdEnv, StdMaybe, Text
+ *     import System.FilePath
  *
  *     :: GFilePath :== [GFilePathPart]
  *     :: GFilePathPart = PathSep | ExtSep | Name GName
@@ -13,6 +24,7 @@ definition module System.FilePath
  *     derive genShow GFilePathPart, GName
  *     derive ggen GFilePathPart, GName
  *     derive gPrint GFilePathPart, GName
+ *     derive bimap []
  *
  * @property-test-generator GFilePath -> FilePath
  *     gen gfp = concat (map toString gfp)
