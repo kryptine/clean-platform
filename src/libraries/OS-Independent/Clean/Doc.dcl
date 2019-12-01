@@ -17,7 +17,7 @@ from Clean.Types import :: Type
  * A wrapper around the {{`String`}} type which makes sure that multi-line
  * documentation blocks get trimmed w.r.t. whitespace.
  */
-:: MultiLineString = MultiLine !String
+:: MultiLineString =: MultiLine String
 
 class docDescription            d :: !d -> Maybe Description
 class docComplexity             d :: !d -> Maybe String
@@ -31,7 +31,7 @@ class docFields                 d :: !d -> Maybe [Maybe Description]
 class docConstructors           d :: !d -> Maybe [Maybe ConstructorDoc]
 class docRepresentation         d :: !d -> Maybe (Maybe Description)
 
-class docPropertyBootstrap      d :: !d -> Maybe String
+class docPropertyBootstrap      d :: !d -> Maybe PropertyBootstrapDoc
 class docPropertyTestWith       d :: !d -> [PropertyVarInstantiation]
 class docPropertyTestGenerators d :: !d -> [PropertyTestGenerator]
 class docProperties             d :: !d -> [Property]
@@ -42,7 +42,7 @@ class docPreconditions          d :: !d -> [String]
  */
 :: ModuleDoc =
 	{ description        :: !Maybe Description
-	, property_bootstrap :: !Maybe MultiLineString      //* For generating unit tests with clean-test
+	, property_bootstrap :: !Maybe PropertyBootstrapDoc //* For generating unit tests with clean-test-properties
 	, property_test_with :: ![PropertyVarInstantiation] //* With which types to test the properties
 	, property_test_generators :: ![PropertyTestGenerator]
 	  //* Functions to generate values of types for which Gast's {{`ggen`}} is not good enough, like {{`Map`}}
@@ -52,7 +52,14 @@ instance docDescription ModuleDoc
 instance docPropertyBootstrap ModuleDoc
 instance docPropertyTestWith ModuleDoc
 instance docPropertyTestGenerators ModuleDoc
-derive gDefault ModuleDoc
+derive gDefault ModuleDoc, PropertyBootstrapDoc
+
+//* Belongs to `property_bootstrap` in `ModuleDoc`.
+:: PropertyBootstrapDoc =
+	{ bootstrap_content                 :: !MultiLineString
+	, bootstrap_without_default_imports :: !Bool
+		//* Don't generate a default set of imports (e.g. to avoid name clashes with Gast)
+	}
 
 /**
  * Documentation of a Clean function.
