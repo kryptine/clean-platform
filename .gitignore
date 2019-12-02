@@ -1,12 +1,14 @@
-Clean System Files
-_Tests
-_Tests.*
+*.abc
+*.bc
 *.o
-*-sapl
-*-www
-*-data
+*.tcl
+
 *.prj
 *.prp
-* Time Profile.pcl
 *.exe
 a.out
+
+* Time Profile.pcl
+
+_Tests
+_Tests.*
