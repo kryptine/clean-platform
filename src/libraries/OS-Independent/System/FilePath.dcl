@@ -6,6 +6,8 @@ definition module System.FilePath
  * @property-bootstrap without default imports
  *     import Gast.Gen, Gast.GenLibTest, Gast.CommandLine
  *     from Gast.Testable import
+ *         :: Testoption(..),
+ *         :: PrintOption(..),
  *         class TestArg,
  *         instance Testable Property, instance Testable (a->b)
  *     from Gast.StdProperty import
