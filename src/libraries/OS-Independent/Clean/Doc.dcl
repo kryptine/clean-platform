@@ -301,9 +301,8 @@ printDoc :: !d -> String | docToDocBlock{|*|} d
 
 /**
  * The magic for {{`printDoc`}}.
- * @param If true, return a `Left`. If false, return a `Right`.
  */
-generic docToDocBlock d :: !Bool !d -> Either [String] DocBlock
+generic docToDocBlock d :: !d -> Either [String] DocBlock
 
 derive docToDocBlock ModuleDoc, FunctionDoc, InstanceDoc, ClassMemberDoc,
 	ClassDoc, ConstructorDoc, TypeDoc

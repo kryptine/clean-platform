@@ -263,29 +263,25 @@ printDoc d = join "\n * "
 	] +++
 	"\n */"
 where
-	fields` = case docToDocBlock{|*|} False d of
+	fields` = case docToDocBlock{|*|} d of
 		Right fs -> fs
 		_        -> abort "error in printDoc\n"
 	fields = filter ((<>) "description" o fst) fields`
 	desc = lookup "description" fields`
 
-generic docToDocBlock a :: !Bool !a -> Either [String] DocBlock
-docToDocBlock{|String|} True s = Left [s]
-docToDocBlock{|String|} _    _ = abort "error in docToDocBlock{|String|}\n"
-docToDocBlock{|[]|} fx True xs = Left [x \\ Left xs` <- map (fx True) xs, x <- xs`]
-docToDocBlock{|[]|} _  _    _  = abort "error in docToDocBlock{|[]|}\n"
-docToDocBlock{|Maybe|} fx True mb = case mb of
+generic docToDocBlock a :: !a -> Either [String] DocBlock
+docToDocBlock{|String|} s = Left [s]
+docToDocBlock{|[]|} fx xs = Left [x \\ Left xs` <- map fx xs, x <- xs`]
+docToDocBlock{|Maybe|} fx mb = case mb of
 	Nothing -> Left []
-	Just x  -> fx True x
-docToDocBlock{|Maybe|} _  _    _  = abort "error in docToDocBlock{|Maybe|}\n"
+	Just x  -> fx x
 
-docToDocBlock{|PAIR|} fx fy False (PAIR x y) = case fx False x of
-	Right xs -> case fy False y of
+docToDocBlock{|PAIR|} fx fy (PAIR x y) = case fx x of
+	Right xs -> case fy y of
 		Right ys -> Right (xs ++ ys)
 		_        -> abort "error in docToDocBlock{|PAIR|}\n"
 	_            -> abort "error in docToDocBlock{|PAIR|}\n"
-docToDocBlock{|PAIR|} _  _  _      _         = abort "error in docToDocBlock{|PAIR|}\n"
-docToDocBlock{|FIELD of d|} fx False (FIELD x) = case fx True x of
+docToDocBlock{|FIELD of d|} fx (FIELD x) = case fx x of
 	Left xs -> Right [(name,x) \\ x <- xs]
 	_       -> abort "error in docToDocBlock{|FIELD|}\n"
 where
@@ -294,37 +290,28 @@ where
 	| endsWith "ies" d.gfd_name = d.gfd_name % (0,size d.gfd_name-4) +++ "y"
 	| endsWith "s" d.gfd_name   = d.gfd_name % (0,size d.gfd_name-2)
 	| otherwise                 = d.gfd_name
-docToDocBlock{|FIELD|} _ _ _ = abort "error in docToDocBlock{|FIELD|}\n"
-docToDocBlock{|RECORD|} fx False (RECORD x) = fx False x
-docToDocBlock{|RECORD|} _  _     _          = abort "error in docToDocBlock{|RECORD|}\n"
+docToDocBlock{|RECORD|} fx (RECORD x) = fx x
 
-docToDocBlock{|ParamDoc|} True pd = case pd.ParamDoc.name of
+docToDocBlock{|ParamDoc|} pd = case pd.ParamDoc.name of
 	Nothing -> case pd.ParamDoc.description of
 		Nothing -> Left []
 		Just d -> Left [d]
 	Just n -> case pd.ParamDoc.description of
 		Nothing -> Left [n]
 		Just d -> Left [n +++ ": " +++ d]
-docToDocBlock{|ParamDoc|} _ _ = abort "error in docToDocBlock{|ParamDoc|}\n"
-docToDocBlock{|MultiLineString|} True (MultiLine s) = Left [s]
-docToDocBlock{|MultiLineString|} _    _             = abort "error in docToDocBlock{|MultiLineString|}\n"
-docToDocBlock{|Type|} True t = Left [toString t]
-docToDocBlock{|Type|} _    _ = abort "error in docToDocBlock{|Type|}\n"
-docToDocBlock{|PropertyBootstrapDoc|} True bs_doc = Left $ [ if bs_doc.bootstrap_without_default_imports " without default imports" ""
+docToDocBlock{|MultiLineString|} (MultiLine s) = Left [s]
+docToDocBlock{|Type|} t = Left [toString t]
+docToDocBlock{|PropertyBootstrapDoc|} bs_doc = Left $ [ if bs_doc.bootstrap_without_default_imports " without default imports" ""
 	: map ((+++) "    ") $ split "\n" $ fromMultiLine bs_doc.bootstrap_content
 	]
-docToDocBlock{|PropertyBootstrapDoc|} _ _ = abort "error in docToDocBlock{|PropertyBootstrapDoc|}\n"
-docToDocBlock{|Property|} True (ForAll name args impl) = Left
+docToDocBlock{|Property|} (ForAll name args impl) = Left
 	[name +++ ": A." +++ join "; " [a +++ " :: " <+ t \\ (a,t) <- args] +++ ":\n" +++ impl]
-docToDocBlock{|Property|} _ _ = abort "error in docToDocBlock{|Property|}\n"
-docToDocBlock{|PropertyVarInstantiation|} True (PropertyVarInstantiation (a,t)) = Left [a +++ " = " <+ t]
-docToDocBlock{|PropertyVarInstantiation|} _    _                                = abort "error in docToDocBlock{|PropertyVarInstantiation|}\n"
-docToDocBlock{|PropertyTestGenerator|} True ptg = Left [t <+ "\n" +++ imp]
+docToDocBlock{|PropertyVarInstantiation|} (PropertyVarInstantiation (a,t)) = Left [a +++ " = " <+ t]
+docToDocBlock{|PropertyTestGenerator|} ptg = Left [t <+ "\n" +++ imp]
 where
 	(t,imp) = case ptg of
 		PTG_Function t imp -> (t,imp)
 		PTG_List t imp     -> (t,imp)
-docToDocBlock{|PropertyTestGenerator|} _    _                              = abort "error in docToDocBlock{|PropertyTestGenerator|}\n"
 
 derive docToDocBlock ModuleDoc, FunctionDoc, InstanceDoc, ClassMemberDoc,
 	ClassDoc, ConstructorDoc, TypeDoc
