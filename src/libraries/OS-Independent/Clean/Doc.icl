@@ -37,7 +37,7 @@ fromMultiLine :: !MultiLineString -> String
 fromMultiLine (MultiLine s) = s
 
 instance docDescription       ModuleDoc where docDescription       d = d.ModuleDoc.description
-instance docPropertyBootstrap ModuleDoc where docPropertyBootstrap d = fromMultiLine <$> d.property_bootstrap
+instance docPropertyBootstrap ModuleDoc where docPropertyBootstrap d = d.property_bootstrap
 instance docPropertyTestWith  ModuleDoc where docPropertyTestWith  d = d.ModuleDoc.property_test_with
 instance docPropertyTestGenerators ModuleDoc where docPropertyTestGenerators d = d.property_test_generators
 
@@ -87,7 +87,7 @@ where
 	toString _ = ""
 
 derive gDefault Type, TypeRestriction, ModuleDoc, FunctionDoc, InstanceDoc, TypeContext,
-	ClassMemberDoc, ConstructorDoc, ClassDoc, TypeDoc, Property,
+	ClassMemberDoc, ConstructorDoc, ClassDoc, TypeDoc, Property, PropertyBootstrapDoc,
 	PropertyVarInstantiation, MultiLineString, PropertyTestGenerator, ParamDoc
 
 constructorToFunctionDoc :: !ConstructorDoc -> FunctionDoc
@@ -158,7 +158,7 @@ docBlockToDoc{|EITHER|} fl fr doc = case fl doc of
 		Left _ -> Left e
 docBlockToDoc{|OBJECT|} fx doc = appFst (\x -> OBJECT x) <$> fx doc
 
-docBlockToDoc{|MultiLineString|} (Left [s]) = Right (MultiLine $ trimMultiLine $ split "\n" s, [])
+docBlockToDoc{|MultiLineString|} (Left [s]) = Right (MultiLine (trimMultiLine $ split "\n" s), [])
 docBlockToDoc{|MultiLineString|} _          = abort "error in docBlockToDoc{|MultiLineString|}\n"
 
 docBlockToDoc{|ParamDoc|} (Left [s]) = case findName (fromString s) of
@@ -182,6 +182,25 @@ docBlockToDoc{|Type|} (Left ss) = case [v \\ Just v <- map (parseType o fromStri
 	[] -> Left (UnknownError "no parsable type")
 	vs -> Right (last vs, [])
 docBlockToDoc{|Type|} _ = abort "error in docBlockToDoc{|Type|}\n"
+
+docBlockToDoc{|PropertyBootstrapDoc|} (Left [s]) =
+	let [opts:content] = split "\n" s in
+	parseOpts opts >>= \(no_imports,ws) -> pure
+		(
+			{ bootstrap_content                 = MultiLine (trimMultiLine content)
+			, bootstrap_without_default_imports = no_imports
+			}
+		, ws
+		)
+where
+	parseOpts opts = case opts of
+		"without default imports" ->
+			Right (True,[])
+		"" ->
+			Right (False,[])
+		_ ->
+			Left (UnknownError "illegal header for property-bootstrap field")
+docBlockToDoc{|PropertyBootstrapDoc|} _ = abort "error in docBlockToDoc{|PropertyBootstrapDoc|}\n"
 
 docBlockToDoc{|Property|} (Left [s]) = let [signature:property] = split "\n" s in
 		parseSignature signature >>= \(sig,ws1) ->
@@ -297,6 +316,9 @@ docToDocBlock{|MultiLineString|} True (MultiLine s) = Left [s]
 docToDocBlock{|MultiLineString|} _    _             = abort "error in docToDocBlock{|MultiLineString|}\n"
 docToDocBlock{|Type|} True t = Left [toString t]
 docToDocBlock{|Type|} _    _ = abort "error in docToDocBlock{|Type|}\n"
+docToDocBlock{|PropertyBootstrapDoc|} True bs_doc = Left $ [ if bs_doc.bootstrap_without_default_imports " without default imports" ""
+	: map ((+++) "    ") $ split "\n" $ fromMultiLine bs_doc.bootstrap_content
+	]
 docToDocBlock{|Property|} True (ForAll name args impl) = Left
 	[name +++ ": A." +++ join "; " [a +++ " :: " <+ t \\ (a,t) <- args] +++ ":\n" +++ impl]
 docToDocBlock{|Property|} _ _ = abort "error in docToDocBlock{|Property|}\n"
