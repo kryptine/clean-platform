@@ -183,23 +183,17 @@ docBlockToDoc{|Type|} (Left ss) = case [v \\ Just v <- map (parseType o fromStri
 	vs -> Right (last vs, [])
 docBlockToDoc{|Type|} _ = abort "error in docBlockToDoc{|Type|}\n"
 
-docBlockToDoc{|PropertyBootstrapDoc|} (Left [s]) =
-	let [opts:content] = split "\n" s in
-	parseOpts opts >>= \(no_imports,ws) -> pure
-		(
-			{ bootstrap_content                 = MultiLine (trimMultiLine content)
-			, bootstrap_without_default_imports = no_imports
-			}
-		, ws
-		)
+docBlockToDoc{|PropertyBootstrapDoc|} (Left [s]) = Right
+	(
+		{ bootstrap_content                 = MultiLine (trimMultiLine content)
+		, bootstrap_without_default_imports = without_imports
+		}
+	, []
+	)
 where
-	parseOpts opts = case opts of
-		"without default imports" ->
-			Right (True,[])
-		"" ->
-			Right (False,[])
-		_ ->
-			Left (UnknownError "illegal header for property-bootstrap field")
+	lines = split "\n" s
+	without_imports = hd lines == "without default imports"
+	content = if without_imports (tl lines) lines
 docBlockToDoc{|PropertyBootstrapDoc|} _ = abort "error in docBlockToDoc{|PropertyBootstrapDoc|}\n"
 
 docBlockToDoc{|Property|} (Left [s]) = let [signature:property] = split "\n" s in
