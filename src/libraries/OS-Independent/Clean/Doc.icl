@@ -313,6 +313,7 @@ docToDocBlock{|Type|} _    _ = abort "error in docToDocBlock{|Type|}\n"
 docToDocBlock{|PropertyBootstrapDoc|} True bs_doc = Left $ [ if bs_doc.bootstrap_without_default_imports " without default imports" ""
 	: map ((+++) "    ") $ split "\n" $ fromMultiLine bs_doc.bootstrap_content
 	]
+docToDocBlock{|PropertyBootstrapDoc|} _ _ = abort "error in docToDocBlock{|PropertyBootstrapDoc|}\n"
 docToDocBlock{|Property|} True (ForAll name args impl) = Left
 	[name +++ ": A." +++ join "; " [a +++ " :: " <+ t \\ (a,t) <- args] +++ ":\n" +++ impl]
 docToDocBlock{|Property|} _ _ = abort "error in docToDocBlock{|Property|}\n"
