@@ -322,9 +322,14 @@ instance children ParsedConstructor where children pc = Children (tl [pc])
 | not (singleLineAbove elem) && column < 4
 	= Just False
 	= pos elem >>= \p -> case p of
-		FunPos _ ln _ -> Just (if multiline (>) (if (singleLineAbove elem) (>=) (<=)) ln line)
-		LinePos _ ln  -> Just (if multiline (>) (if (singleLineAbove elem) (>=) (<=)) ln line)
+		FunPos _ ln _ -> Just (if multiline (>) (if (singleLineAbove elem) (>=) eq_or_one_less) ln line)
+		LinePos _ ln  -> Just (if multiline (>) (if (singleLineAbove elem) (>=) eq_or_one_less) ln line)
 		_             -> Nothing
+where
+	eq_or_one_less a b
+		| column <= 8 // probably meant for the thing a line above
+			= a==b || a+1==b
+			= a==b
 
 // If true, single-line documentation should be given above the element.
 class singleLineAbove a :: !a -> Bool
