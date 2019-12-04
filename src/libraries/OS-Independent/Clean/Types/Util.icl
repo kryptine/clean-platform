@@ -161,10 +161,10 @@ where
 
 instance print Constructor
 where
-	print _ {cons_name,cons_args,cons_exi_vars=evars,cons_context=TypeContext c,cons_priority}
+	print _ {cons_name,cons_args,cons_exi_vars=evars,cons_context=tc=:(TypeContext c),cons_priority}
 		= if (isEmpty evars) [] ("E." -- printersperse False " " evars -- ": ") --
 			name -- " " -- prio -- printersperse True " " cons_args --
-			if (isEmpty c) [] (" & " -- c)
+			if (isEmpty c) [] (" & " -- tc)
 	where
 		(name,prio) = case cons_priority of
 			Nothing -> ([cons_name],             [])
