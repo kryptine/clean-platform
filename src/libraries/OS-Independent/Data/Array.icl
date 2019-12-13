@@ -98,18 +98,7 @@ mapArr f arr
 
 appendArr :: !(arr a) !(arr a) -> arr a | Array arr a
 appendArr l r
-  #! szl     = size l
-  #! totalSz = szl + size r
-  | totalSz < 1 = l
-  | otherwise
-    #! el     = if (szl > 0) l.[0] r.[0]
-    #! newArr = createArray totalSz el
-    #! newArr = addWithOffset totalSz 0 l newArr
-    #  newArr = addWithOffset totalSz (szl - 1) r newArr
-    = newArr
-  where
-  addWithOffset totalSz offset oldArr newArr
-    = foldrArrWithKey (\idx oldEl newArr -> {newArr & [idx + offset] = oldEl}) newArr oldArr
+	= {if (i < size l) l.[i] r.[i rem size l]\\i<-[0..size l + size r - 1]}
 
 instance +++ {a} where
   (+++) l r = appendArr l r
