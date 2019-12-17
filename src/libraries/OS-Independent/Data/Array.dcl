@@ -28,7 +28,7 @@ takeArr :: !Int !.(arr a) -> .arr a | Array arr a
 
 mapArr :: !(a -> a) !(arr a) -> arr a | Array arr a
 
-appendArr :: !(arr a) !(arr a) -> arr a | Array arr a
+appendArr :: !.(arr1 a) !.(arr2 a) -> .(arr3 a) | Array arr1 a & Array arr2 a & Array arr3 a
 
 instance +++ {a}
 instance +++ {!a}

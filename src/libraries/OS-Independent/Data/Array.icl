@@ -1,7 +1,8 @@
 implementation module Data.Array
 
-import StdArray, StdInt, StdOverloaded, StdClass, StdFunctions
+import StdEnv
 import Data.Functor, Control.Applicative, Control.Monad
+
 
 mapArrSt :: !(.a -> .(*st -> *(.a, *st))) !*(arr .a) !*st -> *(!*(arr .a), !*st) | Array arr a
 mapArrSt f arr st
@@ -96,9 +97,17 @@ mapArr f arr
         #! arr      = {arr & [idx] = e}
         = mapArrSt` sz (idx + 1) f arr
 
-appendArr :: !(arr a) !(arr a) -> arr a | Array arr a
+appendArr :: !.(arr1 a) !.(arr2 a) -> .(arr3 a) | Array arr1 a & Array arr2 a & Array arr3 a
 appendArr l r
-	= {if (i < size l) l.[i] r.[i rem size l]\\i<-[0..size l + size r - 1]}
+	| size l == 0 && size r == 0 = {}
+	# a = createArray (size l + size r) (if (size l == 0) r.[0] l.[0])
+	# a = cpyarr l a 0 0
+	= cpyarr r a 0 (size l)
+where
+	cpyarr src target i offset
+		| i >= size src = target
+		# target = update target (i+offset) src.[i]
+		= cpyarr src target (i+1) offset
 
 instance +++ {a} where
   (+++) l r = appendArr l r
