@@ -7,7 +7,7 @@ test-nightly:
     - make -C src/cdeps install
 
     - git clone https://gitlab.science.ru.nl/clean-compiler-and-rts/compiler tests/linux64/compiler
-    - make -j -C tests/linux64/compiler/main/Unix
+    - make -C tests/linux64/compiler/main/Unix
     - make -j -C tests/linux64/compiler/backendC/CleanCompilerSources -f Makefile.linux64
     - mkdir -p tests/linux64/compiler/backend/Clean\ System\ Files
     - ln -fs ../../backendC/CleanCompilerSources/backend.a tests/linux64/compiler/backend/Clean\ System\ Files/backend_library
