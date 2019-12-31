@@ -33,13 +33,13 @@ CRITICAL_SECTION_SIZE_BYTES	:== IF_INT_64_OR_32 48 24
 :: LPCRITICAL_SECTION :== Int
 
 :: LPSTARTUPINFO :== {#Int}
-STARTUPINFO_size_bytes :== 68
-STARTUPINFO_size_int :== 17
+STARTUPINFO_size_bytes :== IF_INT_64_OR_32 104 68
+STARTUPINFO_size_int :== IF_INT_64_OR_32 13 17
 STARTUPINFO_cb_int_offset :== 0
-STARTUPINFO_dwFlags_int_offset :== 11
-STARTUPINFO_hStdInput_int_offset :== 14
-STARTUPINFO_hStdOutput_int_offset :== 15
-STARTUPINFO_hStdError_int_offset :== 16
+STARTUPINFO_dwFlags_int_offset :== IF_INT_64_OR_32 7 11
+STARTUPINFO_hStdInput_int_offset :== IF_INT_64_OR_32 10 14
+STARTUPINFO_hStdOutput_int_offset :== IF_INT_64_OR_32 11 15
+STARTUPINFO_hStdError_int_offset :== IF_INT_64_OR_32 12 16
 
 :: LPWIN32_FIND_DATA :== {#Char}
 WIN32_FIND_DATA_size_bytes :== 320
@@ -54,8 +54,8 @@ WIN32_FIND_DATA_cFileName_bytes_offset :== 44
 FILE_ATTRIBUTE_DIRECTORY :== 16
 
 :: LPPROCESS_INFORMATION :== {#Int}
-PROCESS_INFORMATION_size_bytes :== 32
-PROCESS_INFORMATION_size_int :== 4
+PROCESS_INFORMATION_size_bytes :== IF_INT_64_OR_32 24 16
+PROCESS_INFORMATION_size_int :== IF_INT_64_OR_32 3 4
 PROCESS_INFORMATION_hProcess_int_offset :== 0
 PROCESS_INFORMATION_hThread_int_offset :== 1
 
