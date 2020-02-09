@@ -72,14 +72,14 @@ readCSVFile :: !*File -> (![[String]],!*File)
 readCSVFile file = readCSVFileWith ',' '"' '\\' file
 
 readCSVFileWith :: !Char !Char !Char !*File -> (![[String]],!*File)
-readCSVFileWith delimitChar quoteChar escapeChar file
-	# (mbRec,file) = readCSVRecordWith delimitChar quoteChar escapeChar file
-	= case mbRec of
-		Nothing	= ([],file)
-		Just rec
-			# (recs,file) = readCSVFileWith delimitChar quoteChar escapeChar file
-			= ([rec:recs],file)
-
+readCSVFileWith delimitChar quoteChar escapeChar file = readCSVFileWithAccum [] file
+where
+	readCSVFileWithAccum :: ![[String]] !*File -> (![[String]],!*File)
+	readCSVFileWithAccum acc file
+		# (mbRec, file) = readCSVRecordWith delimitChar quoteChar escapeChar file
+		= case mbRec of
+			Nothing	 = (reverse acc,file)
+			Just rec = readCSVFileWithAccum [rec: acc] file
 
 writeCSVRecord :: ![String] !*File -> *File
 writeCSVRecord fields file = writeCSVRecordWith ',' '"' '\\' fields file
