@@ -231,5 +231,6 @@ import qualified Text.Unicode
 import qualified Text.Unicode.Encodings.JS
 import qualified Text.Unicode.Encodings.UTF8
 import qualified Text.Unicode.UChar
+import qualified Message.Encodings.AIS
 
 Start = "Hello World!"
