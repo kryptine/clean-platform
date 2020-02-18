@@ -129,6 +129,7 @@ import qualified Data.Maybe.Ord
 import qualified Data.Maybe.Gast
 import qualified Data.Maybe.GenPrint
 import qualified Data.Maybe.GenBinary
+import qualified Data.Maybe.GenDefault
 import qualified Data.Monoid
 import qualified Data.NGramIndex
 import qualified Data.OrdList
@@ -231,5 +232,6 @@ import qualified Text.Unicode
 import qualified Text.Unicode.Encodings.JS
 import qualified Text.Unicode.Encodings.UTF8
 import qualified Text.Unicode.UChar
+import qualified Message.Encodings.AIS
 
 Start = "Hello World!"
