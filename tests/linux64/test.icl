@@ -129,6 +129,7 @@ import qualified Data.Maybe.Ord
 import qualified Data.Maybe.Gast
 import qualified Data.Maybe.GenPrint
 import qualified Data.Maybe.GenBinary
+import qualified Data.Maybe.GenDefault
 import qualified Data.Monoid
 import qualified Data.NGramIndex
 import qualified Data.OrdList

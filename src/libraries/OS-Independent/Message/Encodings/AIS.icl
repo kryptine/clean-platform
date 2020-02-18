@@ -1,7 +1,7 @@
 implementation module Message.Encodings.AIS
 
 import StdEnv
-import Data.Func, Data.GenDefault, Data.Maybe, Data.Tuple
+import Data.Func, Data.GenDefault, Data.Maybe, Data.Tuple, Data.Maybe.GenDefault
 import Text
 
 decodeAIVDM :: ![String] -> (![AIVDM], ![String])
@@ -21,7 +21,8 @@ where
 	decodeWrapper [sentence:remainder]
 		= case split "," sentence of
 			[f1,f2,f3,f4,f5,f6,f7]
-				| f1 <> "!AIVDM" && f1 <> "!BSVDM" && f1 <> "!ABVDM" && f1 <> "!AIVDO" && f1 <> "!BSVDO" && f1 <> "!BYVDM" && f1 <> "!SSVDM" && f1 <> "!SSVDO" && f1 <> "!BYVDO" && f1 <> "!ABVDO"
+				| f1 <> "!AIVDM" && f1 <> "!BSVDM" && f1 <> "!ABVDM" && f1 <> "!AIVDO" && f1 <> "!BSVDO" &&
+				  f1 <> "!BYVDM" && f1 <> "!SSVDM" && f1 <> "!SSVDO" && f1 <> "!BYVDO" && f1 <> "!ABVDO"
 					= ([],remainder)
 				# fragmentCount = toInt f2
 				# fragmentNum = toInt f3
@@ -120,12 +121,12 @@ where
 			[ decodeUnsigned  2 (\i m -> {AIVDM18| m & repeat = i})
 			, decodeUnsigned 30 (\i m -> {AIVDM18| m & mmsi = i})
 			, decodeSpare     8
-			, decodeUnsigned 10 (\i m -> if (i == 1023) m {AIVDM18| m & speed = Just i})
+			, decodeUnsigned 10 (\i m -> {AIVDM18| m & speed = if (i == 1023) Nothing (Just i)})
 			, decodeUnsigned  1 (\i m -> {AIVDM18| m & accuracy = i > 0})
 			, decodeUnsigned 28 (\i m -> {AIVDM18| m & lon = i})
 			, decodeUnsigned 27 (\i m -> {AIVDM18| m & lat = i})
-			, decodeUnsigned 12 (\i m -> if (i == 3600) m {AIVDM18| m & course = Just i})
-			, decodeUnsigned  9 (\i m -> if (i == 511) m {AIVDM18| m & heading = Just i})
+			, decodeUnsigned 12 (\i m -> {AIVDM18| m & course = if (i == 3600) Nothing (Just i)})
+			, decodeUnsigned  9 (\i m -> {AIVDM18| m & heading = if (i == 511) Nothing (Just i)})
 			, decodeUnsigned  6 (\i m -> {AIVDM18| m & second = i})
 			, decodeSpare     8
 			, decodeUnsigned  1 (\i m -> {AIVDM18| m & raim = i > 0})
@@ -136,12 +137,12 @@ where
 			[ decodeUnsigned  2 (\i m -> {AIVDM19| m & repeat = i})
 			, decodeUnsigned 30 (\i m -> {AIVDM19| m & mmsi = i})
 			, decodeSpare     8
-			, decodeUnsigned 10 (\i m -> if (i == 1023) m {AIVDM19| m & speed = Just i})
+			, decodeUnsigned 10 (\i m -> {AIVDM19| m & speed = if (i == 1023) Nothing (Just i)})
 			, decodeUnsigned  1 (\i m -> {AIVDM19| m & accuracy = i > 0})
 			, decodeUnsigned 28 (\i m -> {AIVDM19| m & lon = i})
 			, decodeUnsigned 27 (\i m -> {AIVDM19| m & lat = i})
-			, decodeUnsigned 12 (\i m -> if (i == 3600) m {AIVDM19| m & course = Just i})
-			, decodeUnsigned  9 (\i m -> if (i == 511) m {AIVDM19| m & heading = Just i})
+			, decodeUnsigned 12 (\i m -> {AIVDM19| m & course = if (i == 3600) Nothing (Just i)})
+			, decodeUnsigned  9 (\i m -> {AIVDM19| m & heading = if (i == 511) Nothing (Just i)})
 			, decodeUnsigned  6 (\i m -> {AIVDM19| m & second = i})
 			, decodeSpare     4
 			, decodeString  120 (\s m -> {AIVDM19| m & shipname= s})
@@ -165,8 +166,8 @@ where
 			, decodeUnsigned  4 (\i m -> {AIVDM27| m & status = i})
 			, decodeUnsigned 18 (\i m -> {AIVDM27| m & lon = i * 1000})
 			, decodeUnsigned 17 (\i m -> {AIVDM27| m & lat = i * 1000})
-			, decodeUnsigned  6 (\i m -> if (i == 63) m {AIVDM27| m & speed = Just $ i * 10})
-			, decodeUnsigned  9 (\i m -> if (i == 511) m {AIVDM27| m & course = Just $ i * 10})
+			, decodeUnsigned  6 (\i m -> {AIVDM27| m & speed = if (i == 63) Nothing (Just $ i * 10)})
+			, decodeUnsigned  9 (\i m -> {AIVDM27| m & course = if (i == 511) Nothing (Just $ i * 10)})
 			, decodeUnsigned  1 (\i m -> {AIVDM27| m & gnss = i == 0})
 			, decodeSpare     1
 			]
@@ -205,7 +206,6 @@ where
 		# (pos,msg) = f bits pos msg
 		= decodeMultiple fs bits pos msg
 
-import StdMisc
 //Lowlevel bit manipulation
 bv_unarmor :: {#Char} -> {#Char}
 bv_unarmor src = unarmor_and_copy src 0 0 0 0 (createArray required_bytes '\0')
@@ -255,4 +255,3 @@ bv_sbits start width bits
 											= ~(2 ^ width - field)
 
 derive gDefault AIVDM18, AIVDM19, AIVDM27
-gDefault{|Maybe|} _ = Nothing
