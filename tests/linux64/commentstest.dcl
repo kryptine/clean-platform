@@ -8,6 +8,8 @@ definition module commentstest
 import syntax
 import Clean.Parse.Comments
 
+:: NT =: NT Int //* Should be ignored (see clean-test-properties#11)
+
 //* A documentation entry
 :: Entry =
 	{ kind  :: !String //* the kind of thing that is documented

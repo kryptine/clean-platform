@@ -270,12 +270,14 @@ collectComments comments pm
 # (_,_,coll) = collect comments Nothing pm.mod_defs coll
 = coll
 
+import Debug.Trace
 collect :: ![CleanComment] !(Maybe CleanComment) ![a] !CollectedComments -> (![CleanComment], !Maybe CleanComment, !CollectedComments) | pos, singleLineAbove, commentIndex, children a
 collect cc prev [] coll = (cc, prev, coll)
 collect [] (Just prev) [pd:pds] coll = ([], Nothing, putCC pd prev coll)
 collect [] Nothing _ coll = ([], Nothing, coll)
 collect [{content}:cs] prev pds coll | not (startsWith "*" content) = collect cs prev pds coll
-collect allcmnts=:[c:cs] prev allpds=:[pd:pds] coll = case c canBelongTo pd of
+collect allcmnts=:[c:cs] prev allpds=:[pd:pds] coll =
+	let (_,_,b) = trace_stdout (c.line,commentIndex pd,c canBelongTo pd) in case b of
 	Nothing -> collect allcmnts prev pds coll
 	Just True -> case prev of
 		Just prev | not (singleLineAbove pd) && not c.multiline
@@ -288,8 +290,12 @@ collect allcmnts=:[c:cs] prev allpds=:[pd:pds] coll = case c canBelongTo pd of
 		# coll = case prev of
 			Nothing -> coll
 			Just cmnt -> putCC pd cmnt coll
-		# (allcmnts,prev,coll) = recurse allcmnts Nothing (children pd) coll
-		-> collect allcmnts prev pds coll
+		-> case trace_stdout (pd before c) of
+			Just False
+				# (allcmnts,prev,coll) = recurse allcmnts Nothing (children pd) coll
+				-> collect allcmnts prev pds coll
+			_
+				-> collect allcmnts prev pds coll
 where
 	// Compiler cannot figure out the overloading if we call collect from collect directly
 	recurse :: ![CleanComment] !(Maybe CleanComment) !Children !CollectedComments -> (![CleanComment], !Maybe CleanComment, !CollectedComments)
@@ -330,6 +336,21 @@ where
 		| column <= 8 // probably meant for the thing a line above
 			= a==b || a+1==b
 			= a==b
+
+(before) elem {line,column,multiline} = case trace_stdout elem_line of
+	Nothing
+		-> Nothing
+	Just elem_line
+		| multiline
+			-> Just (line <= elem_line)
+		| singleLineAbove elem
+			-> Just (line <= elem_line)
+			-> Just (line <  elem_line)
+where
+	elem_line = case pos elem of
+		Just (FunPos _ ln _) -> Just ln
+		Just (LinePos _ ln) -> Just ln
+		_ -> Nothing
 
 // If true, single-line documentation should be given above the element.
 class singleLineAbove a :: !a -> Bool

@@ -32,6 +32,7 @@ Start w
 expected :: [Entry]
 expected =
 	[ {kind="module",   name="commentstest",   value=Just "*\n * This module is used to test the Clean documentation parser in Clean.Parse.Comments.\n * The documentation here is written obscurely on purpose!\n "}
+	, {kind="type",     name="NT",             value=Nothing}
 	, {kind="type",     name="Entry",          value=Just "* A documentation entry\n"}
 	, {kind="selector",    name="kind",        value=Just "* the kind of thing that is documented\n"}
 	, {kind="selector",    name="name",        value=Just "* the name of the documented thing\n"}
