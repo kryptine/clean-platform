@@ -63,8 +63,10 @@ fix          :: !(a -> a) -> a
  *
  * Typical usage: `sortBy (on (<) toInt) :: [a] -> [a] | toInt a`
  * Or infix: `sortBy ((<) `on` toInt) :: [a] -> [a] | toInt a`
+ *
+ * @type (b b -> c) (a -> b) -> (a a -> c)
  */
-on           :: (b b -> c) (a -> b) -> (a a -> c)
+on f g :== \x y -> f (g x) (g y)
 
 /**
  * Infix version of {{`on`}}.
