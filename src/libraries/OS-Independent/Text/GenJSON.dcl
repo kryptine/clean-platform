@@ -19,7 +19,7 @@ definition module Text.GenJSON
  *     derive gPrint  TestRecord, JSONNode
  *
  *     derive gEq TestRecord
- *     instance == TestRecord where == a b = a === b
+ *     instance == TestRecord where (==) a b = a === b
  *
  *     derive JSONEncode TestRecord
  *     derive JSONDecode TestRecord

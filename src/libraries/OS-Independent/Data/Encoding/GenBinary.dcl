@@ -17,7 +17,7 @@ definition module Data.Encoding.GenBinary
  *     derive class Gast      ADT
  *
  *     instance == ADT where
- *         == x y = x === y
+ *         (==) x y = x === y
  *
  *     :: Record = {a :: ADT, b :: ADT , c :: ADT}
  *
@@ -26,7 +26,7 @@ definition module Data.Encoding.GenBinary
  *     derive class Gast      Record
  *
  *     instance == Record where
- *         == x y = x === y
+ *         (==) x y = x === y
  *
  * @property-test-with a = Maybe Bool
  * @property-test-with a = Int
