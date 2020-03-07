@@ -132,7 +132,7 @@ instance <*> (MaybeT m) | Monad m where
 instance Alternative (MaybeT m) | Monad m where
 	empty = MaybeT $ return Nothing
 
-	<|> x y = MaybeT $
+	(<|>) x y = MaybeT $
 		runMaybeT x >>= \v ->
 		case v of
 			Nothing -> runMaybeT y

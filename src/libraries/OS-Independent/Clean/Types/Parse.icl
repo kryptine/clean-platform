@@ -49,29 +49,29 @@ from Text.Parsers.Simple.Core import :: Parser, :: Error,
 
 instance == Token
 where
-	== (TIdent a) b = case b of
+	(==) (TIdent a) b = case b of
 		TIdent b -> a == b
 		_        -> False
-	== (TVar a) b = case b of
+	(==) (TVar a) b = case b of
 		TVar b   -> a == b
 		_        -> False
-	== TArrow      b          = b=:TArrow
-	== TComma      b          = b=:TComma
-	== TStar       b          = b=:TStar
-	== TAnonymous  b          = b=:TAnonymous
-	== TUnboxed    b          = b=:TUnboxed
-	== TStrict     b          = b=:TStrict
-	== TColon      b          = b=:TColon
-	== TUniversalQuantifier b = b=:TUniversalQuantifier
-	== TPipe       b          = b=:TPipe
-	== TAmpersand  b          = b=:TAmpersand
-	== TLtEq       b          = b=:TLtEq
-	== TParenOpen  b          = b=:TParenOpen
-	== TParenClose b          = b=:TParenClose
-	== TBrackOpen  b          = b=:TBrackOpen
-	== TBrackClose b          = b=:TBrackClose
-	== TBraceOpen  b          = b=:TBraceOpen
-	== TBraceClose b          = b=:TBraceClose
+	(==) TArrow      b          = b=:TArrow
+	(==) TComma      b          = b=:TComma
+	(==) TStar       b          = b=:TStar
+	(==) TAnonymous  b          = b=:TAnonymous
+	(==) TUnboxed    b          = b=:TUnboxed
+	(==) TStrict     b          = b=:TStrict
+	(==) TColon      b          = b=:TColon
+	(==) TUniversalQuantifier b = b=:TUniversalQuantifier
+	(==) TPipe       b          = b=:TPipe
+	(==) TAmpersand  b          = b=:TAmpersand
+	(==) TLtEq       b          = b=:TLtEq
+	(==) TParenOpen  b          = b=:TParenOpen
+	(==) TParenClose b          = b=:TParenClose
+	(==) TBrackOpen  b          = b=:TBrackOpen
+	(==) TBrackClose b          = b=:TBrackClose
+	(==) TBraceOpen  b          = b=:TBraceOpen
+	(==) TBraceClose b          = b=:TBraceClose
 
 isTIdent t = t=:(TIdent _)
 isTVar   t = t=:(TVar _)

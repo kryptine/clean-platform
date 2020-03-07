@@ -17,7 +17,7 @@ where
 
 instance <*> (ReaderT r m) | Monad m
 where
-	<*> mf mx = ap mf mx
+	(<*>) mf mx = ap mf mx
 
 instance Monad (ReaderT r m) | Monad m where
   bind m k = ReaderT (\r -> runReaderT m r >>= \a -> runReaderT (k a) r)

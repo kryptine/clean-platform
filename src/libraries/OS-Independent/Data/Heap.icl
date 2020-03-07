@@ -47,22 +47,23 @@ instance == (Heap a) where
     go _ _      _      = False
   (==) _ _ = False
 
-instance < (Heap a) where
-  < Empty Empty = False
-  < Empty _     = True
-  < _     Empty = False
-  < a=:(Heap _ leq _) b = go leq ('Data.Foldable'.toList a) ('Data.Foldable'.toList b)
-    where
-    go f [x:xs] [y:ys] =
-        if (f x y)
-          (if (f y x)
-             (go f xs ys)
-             True)
-          False
-    go f []    []    = False
-    go f []    [_:_] = True
-    go f [_:_] []    = False
-  < _     _ = False
+instance < (Heap a)
+where
+	(<) Empty Empty = False
+	(<) Empty _     = True
+	(<) _     Empty = False
+	(<) a=:(Heap _ leq _) b = go leq ('Data.Foldable'.toList a) ('Data.Foldable'.toList b)
+	where
+		go f [x:xs] [y:ys] =
+			if (f x y)
+				(if (f y x)
+					(go f xs ys)
+					True)
+				False
+		go f []    []    = False
+		go f []    [_:_] = True
+		go f [_:_] []    = False
+	(<) _     _ = False
 
 
 // /O(1)/. Is the heap empty?

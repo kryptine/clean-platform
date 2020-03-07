@@ -16,7 +16,7 @@ import Data.Maybe
 
 instance == Type
 where
-	== a b = case a of
+	(==) a b = case a of
 		Type t args -> case b of
 			Type t` args` -> t==t` && args==args`
 			_             -> False
@@ -44,7 +44,7 @@ where
 
 instance == TypeRestriction
 where
-	== a b = case a of
+	(==) a b = case a of
 		Instance cls ts -> case b of
 			Instance cls` ts` -> cls==cls` && ts==ts`
 			_                 -> False
@@ -54,7 +54,7 @@ where
 
 instance == Kind
 where
-	== a b = case a of
+	(==) a b = case a of
 		KStar -> b=:KStar
 		KArrow a b -> case b of
 			KArrow a` b` -> a==a` && b==b`
@@ -62,7 +62,7 @@ where
 
 instance == TypeContext
 where
-	== (TypeContext a) (TypeContext b) = a == b
+	(==) (TypeContext a) (TypeContext b) = a == b
 
 childTypes :: !Type -> [Type]
 childTypes t = case t of

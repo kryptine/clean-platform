@@ -24,7 +24,7 @@ import StdDebug
 
 derive gEq Angle, BasicImg, BasicImgAttr, ImageTag, ImgTransform, LookupSpan, Span
 
-instance == ImgTransform where == a b = a === b
+instance == ImgTransform where (==) a b = a === b
 
 toFontDef` :: !FontDef -> FontDef`
 toFontDef` fd
@@ -676,9 +676,9 @@ ImgEventhandler`ConsName ImgEventhandlerOnMouseMoveAttr`   = "ImgEventhandlerOnM
 ImgEventhandler`ConsName ImgEventhandlerOnMouseOutAttr`    = "ImgEventhandlerOnMouseOutAttr`"
 ImgEventhandler`ConsName ImgEventhandlerDraggableAttr`     = "ImgEventhandlerDraggableAttr`"
 
-instance <  (ImgEventhandler m)    where <  a b = ImgEventhandlerConsName  a <  ImgEventhandlerConsName  b
-instance == (ImgEventhandler m)    where == a b = ImgEventhandlerConsName  a == ImgEventhandlerConsName  b
-instance == DefuncImgEventhandler` where == a b = ImgEventhandler`ConsName a == ImgEventhandler`ConsName b
+instance <  (ImgEventhandler m)    where (<)  a b = ImgEventhandlerConsName  a <  ImgEventhandlerConsName  b
+instance == (ImgEventhandler m)    where (==) a b = ImgEventhandlerConsName  a == ImgEventhandlerConsName  b
+instance == DefuncImgEventhandler` where (==) a b = ImgEventhandler`ConsName a == ImgEventhandler`ConsName b
 
 ImgAttrConsName :: !BasicImgAttr -> String
 ImgAttrConsName (BasicImgStrokeAttr        _) = "BasicImgStrokeAttr"
@@ -690,8 +690,8 @@ ImgAttrConsName (BasicImgFillOpacityAttr   _) = "BasicImgFillOpacityAttr"
 ImgAttrConsName (BasicImgFillAttr          _) = "BasicImgFillAttr"
 ImgAttrConsName (BasicImgDashAttr          _) = "BasicImgDashAttr"
 
-instance <  BasicImgAttr where <  a b = ImgAttrConsName a <  ImgAttrConsName b
-instance == BasicImgAttr where == a b = ImgAttrConsName a == ImgAttrConsName b
+instance <  BasicImgAttr where (<)  a b = ImgAttrConsName a <  ImgAttrConsName b
+instance == BasicImgAttr where (==) a b = ImgAttrConsName a == ImgAttrConsName b
 
 tag` :: !ImageTag !(Image` m) !ImgNodePath !FontSpans !TextSpans !ImgTables -> (!Img,!ImgTables)
 tag` t=:(ImageTagUser no label) image p font_spans txt_spans imgTables

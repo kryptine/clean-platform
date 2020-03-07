@@ -5,7 +5,7 @@ import Data.Error, Data.Either, Data.Maybe, Text, Data.GenEq, Data.Func, Data._A
 from Text.Parsers.CParsers.ParserCombinators import :: Parser, :: ParsResult, :: CParser, &>, +&+, +&-, -&+, <!>, <&, <&>, <*?>, <@, >?<, @>, begin1, satisfy, symbol, yield, <|>, <+?>, fail
 
 instance == XMLDoc where
-	== x y = x === y
+	(==) x y = x === y
 
 uname :: !String -> XMLQName
 uname name = XMLQName Nothing name

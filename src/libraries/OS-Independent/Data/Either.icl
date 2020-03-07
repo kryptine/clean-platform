@@ -13,9 +13,9 @@ import Data.Bifunctor
 import Data.GenEq
 
 instance == (Either a b) | == a & == b where
-	== (Left x)  (Left y)  = x == y
-	== (Right x) (Right y) = x == y
-	== _         _         = False
+	(==) (Left x)  (Left y)  = x == y
+	(==) (Right x) (Right y) = x == y
+	(==) _         _         = False
 
 instance Functor (Either a) where
 	fmap f (Left l)  = Left l

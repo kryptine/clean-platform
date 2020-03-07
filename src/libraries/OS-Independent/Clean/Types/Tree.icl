@@ -20,9 +20,9 @@ import Text.GenJSON
 
 instance zero (TypeTree v) where zero = Node (Var "ra") [] []
 
-instance < (TypeTree v) where < (Node a _ _) (Node b _ _) = a < b
+instance < (TypeTree v) where (<) (Node a _ _) (Node b _ _) = a < b
 derive gLexOrd Type, Maybe, TypeRestriction, TypeContext
-instance < Type where < t u = (t =?= u) =: LT
+instance < Type where (<) t u = (t =?= u) =: LT
 
 derive JSONEncode TypeTree, Type, TypeRestriction, TypeContext
 derive JSONDecode TypeTree, Type, TypeRestriction, TypeContext

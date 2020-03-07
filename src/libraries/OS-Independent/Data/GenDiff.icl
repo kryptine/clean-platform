@@ -17,11 +17,11 @@ instance zero Diff where zero = {status=Common, value="", children=[]}
 
 instance == DiffStatus
 where
-	== Common    Common    = True
-	== Changed   Changed   = True
-	== OnlyRight OnlyRight = True
-	== OnlyLeft  OnlyLeft  = True
-	== _         _         = False
+	(==) Common    Common    = True
+	(==) Changed   Changed   = True
+	(==) OnlyRight OnlyRight = True
+	(==) OnlyLeft  OnlyLeft  = True
+	(==) _         _         = False
 
 setStatus :: !DiffStatus !Diff -> Diff
 setStatus s d = {d & status=s, children=map (setStatus s) d.children}

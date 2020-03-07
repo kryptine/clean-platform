@@ -92,11 +92,11 @@ instance Graph Gr where
   matchAny g = defMatchAny g
 
 instance DynGraph Gr where
-  <&> (p, v, l, s) (Gr g)
-        #! g1 = 'Data.IntMap.Strict'.insert v (fromAdj p, l, fromAdj s) g
-        #! g2 = addSucc g1 v p
-        #! g3 = addPred g2 v s
-        = Gr g3
+	(<&>) (p, v, l, s) (Gr g)
+		#! g1 = 'Data.IntMap.Strict'.insert v (fromAdj p, l, fromAdj s) g
+		#! g2 = addSucc g1 v p
+		#! g3 = addPred g2 v s
+		= Gr g3
 
 matchGr :: Node (Gr a b) -> Decomp Gr a b
 matchGr node (Gr g)

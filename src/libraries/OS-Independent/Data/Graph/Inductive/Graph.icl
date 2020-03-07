@@ -23,16 +23,16 @@ unLPath (LP xs) = xs
 //instance toString (LPath a) | toString a where
   //toString (LP xs) = foldr (\x xs -> toString x +++ " " +++ xs) "" xs
 
-instance == (LPath a) | == a where
-  == (LP [])        (LP [])        = True
-  == (LP [(_,x):_]) (LP [(_,y):_]) = x==y
-  == (LP _)         (LP _)         = False
+instance == (LPath a) | == a
+where
+	(==) (LP [])        (LP [])        = True
+	(==) (LP [(_,x):_]) (LP [(_,y):_]) = x==y
+	(==) (LP _)         (LP _)         = False
 
-instance < (LPath a) | gLexOrd{|*|} a where
-  < (LP [(_,x):_]) (LP [(_,y):_]) = case x =?= y of
-                                      LT -> True
-                                      _  -> False
-  < _ _ = False
+instance < (LPath a) | gLexOrd{|*|} a
+where
+	(<) (LP [(_,x):_]) (LP [(_,y):_]) = (x =?= y)=:LT
+	(<) _ _ = False
 
 // | Decompose a graph into the 'Context' for an arbitrarily-chosen 'Node'
 // and the remaining 'Graph'.
@@ -391,9 +391,8 @@ hasNeighborAdj gr v a = 'Data.List'.elem a (lneighbors gr v)
 :: GroupEdges b = GEs (LEdge [b])
 
 instance == (GroupEdges b) | Eq b where
-  == (GEs (v1,w1,bs1)) (GEs (v2,w2,bs2)) = v1 == v2
-                                           && w1 == w2
-                                           && eqLists bs1 bs2
+	(==) (GEs (v1,w1,bs1)) (GEs (v2,w2,bs2)) =
+		v1 == v2 && w1 == w2 && eqLists bs1 bs2
 
 eqLists :: [a] [a] -> Bool | Eq a
 eqLists xs ys = False // TODO FIXME null (xs \\ ys) && null (ys \\ xs)

@@ -16,8 +16,8 @@ import Text.GenJSON
 
 :: *NativeDB v a :== *{!*Entry v a}
 
-instance == Index where == (Index a) (Index b) = a == b
-instance < Index where < (Index a) (Index b) = a < b
+instance == Index where (==) (Index a) (Index b) = a == b
+instance < Index where (<) (Index a) (Index b) = a < b
 
 newDB :: ![v] -> *NativeDB v a
 newDB vs = {{value=hyperstrict v,included=True,annotations=[!!]} \\ v <- vs}

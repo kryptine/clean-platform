@@ -25,11 +25,11 @@ where
 
 instance *> (StateT s m) | Monad m
 where
-	*> fa fb = liftA2 (\a b -> b) fa fb
+	(*>) fa fb = liftA2 (\a b -> b) fa fb
 
 instance <* (StateT s m) | Monad m
 where
-	<* fa fb = liftA2 (\a b -> a) fa fb
+	(<*) fa fb = liftA2 (\a b -> a) fa fb
 
 instance Alternative (StateT s m) | Alternative m where
   empty = StateT (const empty)

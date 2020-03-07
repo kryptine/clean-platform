@@ -25,10 +25,10 @@ instance Monad (MaybeError e) where
     bind (Ok r) k = k r
 
 instance == (MaybeError a b) | == a & == b where
-	== (Ok x) y = case y of
+	(==) (Ok x) y = case y of
 		Ok y = x == y
 		_    = False
-	== (Error x) y = case y of
+	(==) (Error x) y = case y of
 		Error y = x == y
 		_       = False
 

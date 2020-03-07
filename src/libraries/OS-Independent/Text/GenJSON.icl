@@ -765,26 +765,26 @@ where
 instance == JSONNode
 where
 	// NB: put the most frequently encountered constructors at the top for performance
-	== (JSONObject xs) y = case y of
+	(==) (JSONObject xs) y = case y of
 		JSONObject ys
 			-> sortBy cmpFst xs == sortBy cmpFst ys
 			-> False
 	where
 		cmpFst = (<) `on` fst
-	== (JSONArray x)   y = case y of JSONArray y  -> x==y; _ -> False
-	== (JSONString x)  y = case y of JSONString y -> x==y; _ -> False
-	== (JSONInt x)     y = case y of
+	(==) (JSONArray x)   y = case y of JSONArray y  -> x==y; _ -> False
+	(==) (JSONString x)  y = case y of JSONString y -> x==y; _ -> False
+	(==) (JSONInt x)     y = case y of
 		JSONInt y  -> x==y
 		JSONReal y -> toString (toReal x) == toString y
 		_          -> False
-	== (JSONReal x)    y = case y of
+	(==) (JSONReal x)    y = case y of
 		JSONReal y -> x==y
 		JSONInt y  -> toString (toReal y) == toString x
 		_          -> False
-	== JSONNull        y = y=:JSONNull
-	== (JSONBool x)    y = case y of JSONBool y -> x==y; _ -> False
-	== (JSONRaw x)     y = case y of JSONRaw y    -> x==y; _ -> False
-	== JSONError       y = y=:JSONError
+	(==) JSONNull        y = y=:JSONNull
+	(==) (JSONBool x)    y = case y of JSONBool y -> x==y; _ -> False
+	(==) (JSONRaw x)     y = case y of JSONRaw y    -> x==y; _ -> False
+	(==) JSONError       y = y=:JSONError
 
 gEq{|JSONNode|} x y = x == y
 

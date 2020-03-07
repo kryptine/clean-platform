@@ -83,7 +83,7 @@ instance toString Expr where
 	toString (ExprPair _ _) = abort "toString on auxiliary ExprPair\n"
 
 instance == Expr where
-    == x y = x === y
+    (==) x y = x === y
 derive gEq Expr, GenConsAssoc
 
 :: ParseState s =

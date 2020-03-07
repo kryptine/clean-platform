@@ -19,7 +19,7 @@ where
 
 instance <*> (WriterT w m) | Monad m & Monoid w
 where
-	<*> mf mx = ap mf mx
+	(<*>) mf mx = ap mf mx
 
 instance Monad (WriterT w m) | Monad m & Monoid w where
   bind m k = WriterT (runWriterT m >>= \(a, w) ->

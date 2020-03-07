@@ -240,14 +240,14 @@ where
 
 instance < Position
 where
-	< a b = index a < index b
+	(<) a b = index a < index b
 	where
 		index (FunPos f l n) = (f,   l, n)
 		index (LinePos f l)  = (f,   l, "")
 		index (PreDefPos id) = ("", -1, id.id_name)
 		index NoPos          = ("", -2, "")
 
-instance < CommentIndex where < (CI a b c) (CI d e f) = (a,b,c) < (d,e,f)
+instance < CommentIndex where (<) (CI a b c) (CI d e f) = (a,b,c) < (d,e,f)
 
 putCC k v coll :== case commentIndex k of
 	Nothing -> coll

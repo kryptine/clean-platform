@@ -57,8 +57,8 @@ getfontvariant fontdef = getfontvariant` fontdef
 getfontweight :: !FontDef -> String
 getfontweight fontdef = getfontweight` fontdef
 
-instance == FontDef    where  == fd1 fd2 = fd1 === fd2
-instance <  FontDef    where  <  fd1 fd2 =  fd1.fontfamily`  < fd2.fontfamily`
+instance == FontDef    where  (==) fd1 fd2 = fd1 === fd2
+instance <  FontDef    where  (<)  fd1 fd2 =  fd1.fontfamily`  < fd2.fontfamily`
                                          || fd1.fontysize`   < fd2.fontysize`
                                          || fd1.fontstretch` < fd2.fontstretch`
                                          || fd1.fontstyle`   < fd2.fontstyle`
@@ -67,7 +67,7 @@ instance <  FontDef    where  <  fd1 fd2 =  fd1.fontfamily`  < fd2.fontfamily`
 instance toString FontDef where toString font = printToString font
 
 derive gEq LineMarkerPos
-instance == LineMarkerPos  where == lm1 lm2 = lm1 === lm2
+instance == LineMarkerPos  where (==) lm1 lm2 = lm1 === lm2
 
 instance toSVGColor String where toSVGColor name = SVGColorText name
 instance toSVGColor RGB    where toSVGColor {RGB | r, g, b} = SVGRGB r g b
