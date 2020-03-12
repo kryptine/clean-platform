@@ -123,136 +123,137 @@ tagsSize tags = intsum tagSize tags
 
 //Calculates the number of chars this attribute will take once serialized
 attrSize :: !HtmlAttr -> Int
-attrSize (AbbrAttr a)			=  8 + (escapedSize a)
-attrSize (AcceptAttr a)			= 10 + (escapedSize a)
-attrSize (AcceptcharsetAttr a)	= 18 + (escapedSize a)
-attrSize (AccesskeyAttr a)		= 13 + (escapedSize a)
-attrSize (ActionAttr a)			= 10 + (escapedSize a)
-attrSize (AlignAttr a)			=  9 + (escapedSize a)
-attrSize (AlinkAttr a)			=  9 + (escapedSize a)
-attrSize (AltAttr a)			=  7 + (escapedSize a)
-attrSize (ArchiveAttr a)		= 11 + (escapedSize a)
-attrSize (AxisAttr a)			=  8 + (escapedSize a)
-attrSize (BackgroundAttr a)		= 14 + (escapedSize a)
-attrSize (BgcolorAttr a)		= 11 + (escapedSize a)
-attrSize (BorderAttr a)			= 10 + (escapedSize a)
-attrSize (CellspacingAttr a)	= 15 + (escapedSize a)
-attrSize (CellpaddingAttr a)	= 15 + (escapedSize a)
-attrSize (CharAttr a)			=  8 + (escapedSize a)
-attrSize (CharoffAttr a)		= 11 + (escapedSize a)
-attrSize (CharsetAttr a)		= 11 + (escapedSize a)
-attrSize (CheckedAttr)			= 18
-attrSize (CiteAttr a)			=  8 + (escapedSize a)
-attrSize (ClassAttr a)			=  9 + (escapedSize a)
-attrSize (ClassidAttr a)		= 11 + (escapedSize a)
-attrSize (ColorAttr a)			=  9 + (escapedSize a)
-attrSize (ColsAttr a)			=  8 + (escapedSize a)
-attrSize (ColspanAttr a)		= 11 + (escapedSize a)
-attrSize (CodebaseAttr a)		= 12 + (escapedSize a)
-attrSize (CodetypeAttr a)		= 12 + (escapedSize a)
-attrSize (ContentAttr a)		= 11 + (escapedSize a)
-attrSize (CompactAttr)			= 18
-attrSize (CoordsAttr a)			= 10 + (escapedSize a)
-attrSize (DataAttr a)			=  8 + (escapedSize a)
-attrSize (DatetimeAttr a)		= 12 + (escapedSize a)
-attrSize (DeclareAttr)			= 18
-attrSize (DeferAttr a)			=  9 + (escapedSize a)
-attrSize (DirAttr a)			=  7 + (escapedSize a)
-attrSize (DisabledAttr)			= 20
-attrSize (DXAttr a)				=  6 + (escapedSize a)
-attrSize (DYAttr a)				=  6 + (escapedSize a)
-attrSize (EnctypeAttr a)		= 11 + (escapedSize a)
-attrSize (FaceAttr a)			=  8 + (escapedSize a)
-attrSize (ForAttr a)			=  7 + (escapedSize a)
-attrSize (FrameAttr a)			=  9 + (escapedSize a)
-attrSize (FrameborderAttr a)	= 15 + (escapedSize a)
-attrSize (HeadersAttr a)		= 11 + (escapedSize a)
-attrSize (HeightAttr a)			= 10 + (escapedSize a)
-attrSize (HrefAttr a)			=  8 + (escapedSize a)
-attrSize (HreflangAttr a)		= 12 + (escapedSize a)
-attrSize (HttpequivAttr a)		= 14 + (escapedSize a)
-attrSize (HspaceAttr a)			= 10 + (escapedSize a)
-attrSize (IdAttr a)				=  6 + (escapedSize a)
-attrSize (IsmapAttr)			= 14
-attrSize (LabelAttr a)			=  9 + (escapedSize a)
-attrSize (LangAttr a)			=  8 + (escapedSize a)
-attrSize (LanguageAttr a)		= 12 + (escapedSize a)
-attrSize (LinkAttr a)			=  8 + (escapedSize a)
-attrSize (LongdescAttr a)		= 12 + (escapedSize a)
-attrSize (MarginheightAttr a)	= 16 + (escapedSize a)
-attrSize (MarginwidthAttr a)	= 15 + (escapedSize a)
-attrSize (MaxlengthAttr a)		= 13 + (escapedSize a)
-attrSize (MediaAttr a)			=  9 + (escapedSize a)
-attrSize (MethodAttr a)			= 10 + (escapedSize a)
-attrSize (MultipleAttr)			= 20
-attrSize (NameAttr a)			=  8 + (escapedSize a)
-attrSize (NohrefAttr)			= 16
-attrSize (NoshadeAttr)			= 18
-attrSize (NowrapAttr)			= 16
-attrSize (OnblurAttr a)			= 10 + (escapedSize a)
-attrSize (OnchangeAttr a)		= 12 + (escapedSize a)
-attrSize (OnclickAttr a)		= 11 + (escapedSize a)
-attrSize (OndblclickAttr a)		= 14 + (escapedSize a)
-attrSize (OnfocusAttr a)		= 11 + (escapedSize a)
-attrSize (OnloadAttr a)			= 10 + (escapedSize a)
-attrSize (OnmousedownAttr a)	= 15 + (escapedSize a)
-attrSize (OnmousemoveAttr a)	= 15 + (escapedSize a)
-attrSize (OnmouseoutAttr a)		= 14 + (escapedSize a)
-attrSize (OnmouseoverAttr a)	= 15 + (escapedSize a)
-attrSize (OnmouseupAttr a)		= 13 + (escapedSize a)
-attrSize (OnkeydownAttr a)		= 13 + (escapedSize a)
-attrSize (OnkeypressAttr a)		= 14 + (escapedSize a)
-attrSize (OnkeyupAttr a)		= 11 + (escapedSize a)
-attrSize (OnresetAttr a)		= 11 + (escapedSize a)
-attrSize (OnselectAttr a)		= 12 + (escapedSize a)
-attrSize (OnsubmitAttr a)		= 12 + (escapedSize a)
-attrSize (OnunloadAttr a)		= 12 + (escapedSize a)
-attrSize (OntoggleAttr a)		= 12 + (escapedSize a)
-attrSize (OpenAttr a)           =  8 + (escapedSize a)
-attrSize (PlaceholderAttr a)	= 15 + (escapedSize a)
-attrSize (ProfileAttr a)		= 11 + (escapedSize a)
-attrSize (PromptAttr a)			= 10 + (escapedSize a)
-attrSize (ReadonlyAttr)			= 20
-attrSize (RelAttr a)			=  7 + (escapedSize a)
-attrSize (RevAttr a)			=  7 + (escapedSize a)
-attrSize (RowsAttr a)			=  8 + (escapedSize a)
-attrSize (RowspanAttr a)		= 11 + (escapedSize a)
-attrSize (RulesAttr a)			=  9 + (escapedSize a)
-attrSize (RXAttr a)				=  6 + (escapedSize a)
-attrSize (RYAttr a)				=  6 + (escapedSize a)
-attrSize (SchemeAttr a)			= 10 + (escapedSize a)
-attrSize (ScopeAttr a)			=  9 + (escapedSize a)
-attrSize (ScrollingAttr a)		= 13 + (escapedSize a)
-attrSize (SelectedAttr)			= 20
-attrSize (ShapeAttr a)			=  9 + (escapedSize a)
-attrSize (SizeAttr a)			=  8 + (escapedSize a)
-attrSize (SpanAttr a)			=  8 + (escapedSize a)
-attrSize (SrcAttr a)			=  7 + (escapedSize a)
-attrSize (StandbyAttr a)		= 11 + (escapedSize a)
-attrSize (StartAttr a)			=  9 + (escapedSize a)
-attrSize (StyleAttr a)			=  9 + (escapedSize a)
-attrSize (SummaryAttr a)		= 11 + (escapedSize a)
-attrSize (TabindexAttr a)		= 12 + (escapedSize a)
-attrSize (TargetAttr a)			= 10 + (escapedSize a)
-attrSize (TextAttr a)			=  8 + (escapedSize a)
-attrSize (TitleAttr a)			=  9 + (escapedSize a)
-attrSize (TypeAttr a)			=  8 + (escapedSize a)
-attrSize (UsemapAttr a)			= 10 + (escapedSize a)
-attrSize (ValignAttr a)			= 10 + (escapedSize a)
-attrSize (ValueAttr a)			=  9 + (escapedSize a)
-attrSize (ValuetypeAttr a)		= 13 + (escapedSize a)
-attrSize (VlinkAttr a)			=  9 + (escapedSize a)
-attrSize (VspaceAttr a)			= 10 + (escapedSize a)
-attrSize (WidthAttr a)			=  9 + (escapedSize a)
-attrSize (XmllangAttr a)		= 12 + (escapedSize a)
-attrSize (XmlnsAttr a)			=  9 + (escapedSize a)
-attrSize (XmlnsXlinkAttr a)		= 15 + (escapedSize a)
-attrSize (XmlspaceAttr a)		= 13 + (escapedSize a)
+attrSize (AbbrAttr a)           =  8 + (escapedAttrSize a)
+attrSize (AcceptAttr a)         = 10 + (escapedAttrSize a)
+attrSize (AcceptcharsetAttr a)  = 18 + (escapedAttrSize a)
+attrSize (AccesskeyAttr a)      = 13 + (escapedAttrSize a)
+attrSize (ActionAttr a)         = 10 + (escapedAttrSize a)
+attrSize (AlignAttr a)          =  9 + (escapedAttrSize a)
+attrSize (AlinkAttr a)          =  9 + (escapedAttrSize a)
+attrSize (AltAttr a)            =  7 + (escapedAttrSize a)
+attrSize (ArchiveAttr a)        = 11 + (escapedAttrSize a)
+attrSize (AxisAttr a)           =  8 + (escapedAttrSize a)
+attrSize (BackgroundAttr a)     = 14 + (escapedAttrSize a)
+attrSize (BgcolorAttr a)        = 11 + (escapedAttrSize a)
+attrSize (BorderAttr a)         = 10 + (escapedAttrSize a)
+attrSize (CellspacingAttr a)    = 15 + (escapedAttrSize a)
+attrSize (CellpaddingAttr a)    = 15 + (escapedAttrSize a)
+attrSize (CharAttr a)           =  8 + (escapedAttrSize a)
+attrSize (CharoffAttr a)        = 11 + (escapedAttrSize a)
+attrSize (CharsetAttr a)        = 11 + (escapedAttrSize a)
+attrSize (CheckedAttr)          = 18
+attrSize (CiteAttr a)           =  8 + (escapedAttrSize a)
+attrSize (ClassAttr a)          =  9 + (escapedAttrSize a)
+attrSize (ClassidAttr a)        = 11 + (escapedAttrSize a)
+attrSize (ColorAttr a)          =  9 + (escapedAttrSize a)
+attrSize (ColsAttr a)           =  8 + (escapedAttrSize a)
+attrSize (ColspanAttr a)        = 11 + (escapedAttrSize a)
+attrSize (CodebaseAttr a)       = 12 + (escapedAttrSize a)
+attrSize (CodetypeAttr a)       = 12 + (escapedAttrSize a)
+attrSize (ContentAttr a)        = 11 + (escapedAttrSize a)
+attrSize (CompactAttr)          = 18
+attrSize (CoordsAttr a)         = 10 + (escapedAttrSize a)
+attrSize (DataAttr a)           =  8 + (escapedAttrSize a)
+attrSize (DatetimeAttr a)       = 12 + (escapedAttrSize a)
+attrSize (DeclareAttr)          = 18
+attrSize (DeferAttr a)          =  9 + (escapedAttrSize a)
+attrSize (DirAttr a)            =  7 + (escapedAttrSize a)
+attrSize (DisabledAttr)         = 20
+attrSize (DXAttr a)             =  6 + (escapedAttrSize a)
+attrSize (DYAttr a)             =  6 + (escapedAttrSize a)
+attrSize (EnctypeAttr a)        = 11 + (escapedAttrSize a)
+attrSize (FaceAttr a)           =  8 + (escapedAttrSize a)
+attrSize (ForAttr a)            =  7 + (escapedAttrSize a)
+attrSize (FrameAttr a)          =  9 + (escapedAttrSize a)
+attrSize (FrameborderAttr a)    = 15 + (escapedAttrSize a)
+attrSize (HeadersAttr a)        = 11 + (escapedAttrSize a)
+attrSize (HeightAttr a)         = 10 + (escapedAttrSize a)
+attrSize (HrefAttr a)           =  8 + (escapedAttrSize a)
+attrSize (HreflangAttr a)       = 12 + (escapedAttrSize a)
+attrSize (HttpequivAttr a)      = 14 + (escapedAttrSize a)
+attrSize (HspaceAttr a)         = 10 + (escapedAttrSize a)
+attrSize (IdAttr a)             =  6 + (escapedAttrSize a)
+attrSize (IsmapAttr)            = 14
+attrSize (LabelAttr a)          =  9 + (escapedAttrSize a)
+attrSize (LangAttr a)           =  8 + (escapedAttrSize a)
+attrSize (LanguageAttr a)       = 12 + (escapedAttrSize a)
+attrSize (LinkAttr a)           =  8 + (escapedAttrSize a)
+attrSize (LongdescAttr a)       = 12 + (escapedAttrSize a)
+attrSize (MarginheightAttr a)   = 16 + (escapedAttrSize a)
+attrSize (MarginwidthAttr a)    = 15 + (escapedAttrSize a)
+attrSize (MaxlengthAttr a)      = 13 + (escapedAttrSize a)
+attrSize (MediaAttr a)          =  9 + (escapedAttrSize a)
+attrSize (MethodAttr a)         = 10 + (escapedAttrSize a)
+attrSize (MultipleAttr)         = 20
+attrSize (NameAttr a)           =  8 + (escapedAttrSize a)
+attrSize (NohrefAttr)           = 16
+attrSize (NoshadeAttr)          = 18
+attrSize (NowrapAttr)           = 16
+attrSize (OnblurAttr a)         = 10 + (escapedAttrSize a)
+attrSize (OnchangeAttr a)       = 12 + (escapedAttrSize a)
+attrSize (OnclickAttr a)        = 11 + (escapedAttrSize a)
+attrSize (OndblclickAttr a)     = 14 + (escapedAttrSize a)
+attrSize (OnfocusAttr a)        = 11 + (escapedAttrSize a)
+attrSize (OnloadAttr a)         = 10 + (escapedAttrSize a)
+attrSize (OnmousedownAttr a)    = 15 + (escapedAttrSize a)
+attrSize (OnmousemoveAttr a)    = 15 + (escapedAttrSize a)
+attrSize (OnmouseoutAttr a)     = 14 + (escapedAttrSize a)
+attrSize (OnmouseoverAttr a)    = 15 + (escapedAttrSize a)
+attrSize (OnmouseupAttr a)      = 13 + (escapedAttrSize a)
+attrSize (OnkeydownAttr a)      = 13 + (escapedAttrSize a)
+attrSize (OnkeypressAttr a)     = 14 + (escapedAttrSize a)
+attrSize (OnkeyupAttr a)        = 11 + (escapedAttrSize a)
+attrSize (OnresetAttr a)        = 11 + (escapedAttrSize a)
+attrSize (OnselectAttr a)       = 12 + (escapedAttrSize a)
+attrSize (OnsubmitAttr a)       = 12 + (escapedAttrSize a)
+attrSize (OnunloadAttr a)       = 12 + (escapedAttrSize a)
+attrSize (OntoggleAttr a)       = 12 + (escapedAttrSize a)
+attrSize (OpenAttr a)           =  8 + (escapedAttrSize a)
+attrSize (PlaceholderAttr a)    = 15 + (escapedAttrSize a)
+attrSize (ProfileAttr a)        = 11 + (escapedAttrSize a)
+attrSize (PromptAttr a)         = 10 + (escapedAttrSize a)
+attrSize (ReadonlyAttr)         = 20
+attrSize (RelAttr a)            =  7 + (escapedAttrSize a)
+attrSize (RevAttr a)            =  7 + (escapedAttrSize a)
+attrSize (RowsAttr a)           =  8 + (escapedAttrSize a)
+attrSize (RowspanAttr a)        = 11 + (escapedAttrSize a)
+attrSize (RulesAttr a)          =  9 + (escapedAttrSize a)
+attrSize (RXAttr a)             =  6 + (escapedAttrSize a)
+attrSize (RYAttr a)             =  6 + (escapedAttrSize a)
+attrSize (SchemeAttr a)         = 10 + (escapedAttrSize a)
+attrSize (ScopeAttr a)          =  9 + (escapedAttrSize a)
+attrSize (ScrollingAttr a)      = 13 + (escapedAttrSize a)
+attrSize (SelectedAttr)         = 20
+attrSize (ShapeAttr a)          =  9 + (escapedAttrSize a)
+attrSize (SizeAttr a)           =  8 + (escapedAttrSize a)
+attrSize (SpanAttr a)           =  8 + (escapedAttrSize a)
+attrSize (SrcAttr a)            =  7 + (escapedAttrSize a)
+attrSize (StandbyAttr a)        = 11 + (escapedAttrSize a)
+attrSize (StartAttr a)          =  9 + (escapedAttrSize a)
+attrSize (StyleAttr a)          =  9 + (escapedAttrSize a)
+attrSize (SummaryAttr a)        = 11 + (escapedAttrSize a)
+attrSize (TabindexAttr a)       = 12 + (escapedAttrSize a)
+attrSize (TargetAttr a)         = 10 + (escapedAttrSize a)
+attrSize (TextAttr a)           =  8 + (escapedAttrSize a)
+attrSize (TitleAttr a)          =  9 + (escapedAttrSize a)
+attrSize (TypeAttr a)           =  8 + (escapedAttrSize a)
+attrSize (UsemapAttr a)         = 10 + (escapedAttrSize a)
+attrSize (ValignAttr a)         = 10 + (escapedAttrSize a)
+attrSize (ValueAttr a)          =  9 + (escapedAttrSize a)
+attrSize (ValuetypeAttr a)      = 13 + (escapedAttrSize a)
+attrSize (VlinkAttr a)          =  9 + (escapedAttrSize a)
+attrSize (VspaceAttr a)         = 10 + (escapedAttrSize a)
+attrSize (WidthAttr a)          =  9 + (escapedAttrSize a)
+attrSize (XmllangAttr a)        = 12 + (escapedAttrSize a)
+attrSize (XmlnsAttr a)          =  9 + (escapedAttrSize a)
+attrSize (XmlnsXlinkAttr a)     = 15 + (escapedAttrSize a)
+attrSize (XmlspaceAttr a)       = 13 + (escapedAttrSize a)
 
 attrsSize :: ![HtmlAttr] -> Int
 attrsSize attrs = intsum attrSize attrs
 
-//Calculates the number of chars in a string when html special characters are escaped
+// Calculates the number of chars in a string when html special characters are escaped
+// This version is for text nodes: <, >, and & are escaped
 escapedSize :: !{#Char} -> Int
 escapedSize s = escapedSize` s (size s) 0
 where
@@ -263,6 +264,22 @@ where
     | s.[i] == '>' = 4 + escapedSize` s n (i + 1)
     | s.[i] == '&' = 5 + escapedSize` s n (i + 1)
     | otherwise = 1 + escapedSize` s n (i + 1)
+
+// Calculates the number of chars in a string when html special characters are escaped
+// This version is for attribute values: " and & are escaped
+escapedAttrSize :: !{#Char} -> Int
+escapedAttrSize s = escapedSize` s (size s) 0
+where
+	escapedSize` :: !{#Char} !Int !Int -> Int
+	escapedSize` s n i
+		| i == n = 0
+		| s.[i] == '<' || s.[i] == '>' // NB: these are accepted by HTML, but not by XML
+			= 4 + escapedSize` s n (i + 1)
+		| s.[i] == '"'
+			= 6 + escapedSize` s n (i + 1)
+		| s.[i] == '&'
+			= 5 + escapedSize` s n (i + 1)
+			= 1 + escapedSize` s n (i + 1)
 
 serializeTag :: !HtmlTag !*{#Char} !Int -> (!*{#Char}, !Int)
 serializeTag (Text t) s i				= copyChars t 0 True s i
@@ -529,6 +546,28 @@ copyChars src src_i escape dest dest_i
 				#! dest = {dest & [dest_i] = src_src_i}
 				= copyChars src (src_i + 1) escape dest (dest_i + 1)
 
+copyAttrChars :: !{#Char} !Int !*{#Char} !Int -> (!*{#Char},!Int)
+copyAttrChars src src_i dest dest_i
+	| src_i == size src = (dest, dest_i)
+	| otherwise
+		#! src_src_i = src.[src_i]
+		// NB: < and > are accepted by HTML, but not by XML, so be on the safe side...
+		| src_src_i == '<'
+			#! dest = {dest & [dest_i] = '&', [dest_i + 1] = 'l', [dest_i + 2] = 't', [dest_i + 3] = ';'}
+			= copyAttrChars src (src_i + 1) dest (dest_i + 4)
+		| src_src_i == '>'
+			#! dest = {dest & [dest_i] = '&', [dest_i + 1] = 'g', [dest_i + 2] = 't', [dest_i + 3] = ';'}
+			= copyAttrChars src (src_i + 1) dest (dest_i + 4)
+		| src_src_i == '"'
+			#! dest = {dest & [dest_i] = '&', [dest_i + 1] = 'q', [dest_i + 2] = 'u', [dest_i + 3] = 'o', [dest_i + 4] = 't', [dest_i + 5] = ';'}
+			= copyAttrChars src (src_i + 1) dest (dest_i + 6)
+		| src_src_i == '&'
+			#! dest = {dest & [dest_i] = '&', [dest_i + 1] = 'a', [dest_i + 2] = 'm', [dest_i + 3] = 'p', [dest_i + 4] = ';'}
+			= copyAttrChars src (src_i + 1) dest (dest_i + 5)
+		| otherwise
+			#! dest = {dest & [dest_i] = src_src_i}
+			= copyAttrChars src (src_i + 1) dest (dest_i + 1)
+
 writeTag :: !{#Char} ![HtmlAttr] ![HtmlTag] !*{#Char} !Int -> (!*{#Char},!Int)
 writeTag name attrs tags dest dest_i
 	#! dest = {dest & [dest_i] = '<'}
@@ -577,7 +616,7 @@ writeAttr name value dest dest_i
 	#! dest_i = dest_i + 1
 	#! dest = {dest & [dest_i] = '"'}
 	#! dest_i = dest_i + 1
-	#! (dest,dest_i) = copyChars value 0 True dest dest_i
+	#! (dest,dest_i) = copyAttrChars value 0 dest dest_i
 	#! dest = {dest & [dest_i] = '"'}
 	#! dest_i = dest_i + 1
 	= (dest,dest_i)
@@ -1071,14 +1110,23 @@ glue_list _ _				= ""
 intsum :: !(a -> Int) ![a] -> Int
 intsum f xs				= sum (map f xs)
 
-escapeStr :: !String -> String
-escapeStr str
+escapeForTextNode :: !String -> String
+escapeForTextNode str
   #! origSz = size str
   #! escdSz = escapedSize str
   | origSz == escdSz = str
   | otherwise
       #! (str, _) = copyChars str 0 True (createArray escdSz '\0') 0
       = str
+
+escapeForAttribute :: !String -> String
+escapeForAttribute str
+	#! origSz = size str
+	#! escdSz = escapedAttrSize str
+	| origSz == escdSz = str
+	| otherwise
+		#! (str, _) = copyAttrChars str 0 (createArray escdSz '\0') 0
+		= str
 
 derive gEq HtmlTag, HtmlAttr
 derive gEq SVGElt, SVGAttr, SVGAlign, SVGColor, SVGDefer, SVGFillOpacity, SVGFuncIRI, SVGLengthAdjust, SVGLengthUnit, SVGLineCap, SVGFillRule, SVGLineJoin, SVGMeetOrSlice, SVGStrokeMiterLimit, SVGPaint, SVGStrokeDashArray, SVGStrokeDashOffset, SVGStrokeWidth, SVGTransform, SVGZoomAndPan, SVGICCColor, SVGLength
