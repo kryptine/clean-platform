@@ -429,4 +429,7 @@ instance html HtmlTag
 instance html [a] | html a
 instance html (Maybe a) | html a
 
-escapeStr :: !String -> String
+//* Escape a string for use as a HTML text node.
+escapeForTextNode :: !String -> String
+//* Escape a string for use as a HTML attribute value.
+escapeForAttribute :: !String -> String
