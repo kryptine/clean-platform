@@ -142,7 +142,7 @@ deleteMax Tip             = Tip
  * Union. 
  *--------------------------------------------------------------------*/
 
-union :: !u:(Set a) !u:(Set a) -> Set a | < a & == a
+union :: !u:(Set a) !u:(Set a) -> Set a | < a
 union t1 Tip = t1
 union t1 (Bin _ x Tip Tip) = insertR x t1
 union (Bin _ x Tip Tip) t2 = insert x t2
@@ -153,7 +153,7 @@ where
 	l1l2 = union l1 l2
 	r1r2 = union r1 r2
 
-splitS :: !a !(Set a) -> (!Set a, !Set a) | <, == a
+splitS :: !a !(Set a) -> (!Set a, !Set a) | < a
 splitS _ Tip = (Tip,Tip)
 splitS x (Bin _ y l r)
 | x < y     = let (lt,gt) = splitS x l in (lt, link y gt r)
@@ -164,7 +164,7 @@ splitS x (Bin _ y l r)
  * Difference
  *--------------------------------------------------------------------*/
  
-difference :: !(Set a) !(Set a) -> Set a | < a & == a
+difference :: !(Set a) !(Set a) -> Set a | < a
 difference Tip _   = Tip
 difference t1 Tip  = t1
 difference t1 (Bin _ x l2 r2) = case split  x t1 of
@@ -179,17 +179,17 @@ difference t1 (Bin _ x l2 r2) = case split  x t1 of
  * Intersection
  *--------------------------------------------------------------------*/
 
-intersections :: ![Set a] -> Set a | < a & == a
+intersections :: ![Set a] -> Set a | < a
 intersections [t] = t
 intersections [t:ts] = 'StdList'.foldl intersection t ts
 intersections [] = abort "intersections called with []\n"
 
-intersection :: !(Set a) !(Set a) -> Set a | < a & == a
+intersection :: !(Set a) !(Set a) -> Set a | < a
 intersection Tip _ = Tip
 intersection _ Tip = Tip
 intersection t1 t2 = hedgeInt NothingS NothingS t1 t2
 
-hedgeInt :: !(MaybeS a) !(MaybeS a) !(Set a) !(Set a) -> Set a | < a & == a
+hedgeInt :: !(MaybeS a) !(MaybeS a) !(Set a) !(Set a) -> Set a | < a
 hedgeInt _ _ _   Tip = Tip
 hedgeInt _ _ Tip _   = Tip
 hedgeInt blo bhi (Bin _ x l r) t2
@@ -253,7 +253,7 @@ fromList xs = 'StdList'.foldl ins newSet xs
   empty or the key of the root is between @lo@ and @hi@.
 --------------------------------------------------------------------*/
 
-trim :: !(MaybeS a) !(MaybeS a) !(Set a) -> Set a | < a & == a
+trim :: !(MaybeS a) !(MaybeS a) !(Set a) -> Set a | < a
 trim NothingS   NothingS   t = t
 trim (JustS lx) NothingS   t = greater lx t
   where

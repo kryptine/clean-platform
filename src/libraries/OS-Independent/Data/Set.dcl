@@ -310,11 +310,11 @@ maxView :: !.(Set a) -> .(Maybe (!a, !Set a))
  *         u = union xs ys
  *         elems = toList xs ++ toList ys
  */
-union :: !u:(Set a) !u:(Set a) -> Set a | < a & == a
+union :: !u:(Set a) !u:(Set a) -> Set a | < a
 
 /**
  * The union of a list of sets.
- * @type !u:[v:(Set a)] -> Set a | < a & == a, [u <= v]
+ * @type !u:[v:(Set a)] -> Set a | < a, [u <= v]
  */
 unions ts :== foldl union newSet ts
 
@@ -329,7 +329,7 @@ unions ts :== foldl union newSet ts
  *         d = difference xs ys
  *         (xs`,ys`) = (toList xs, toList ys)
  */
-difference :: !(Set a) !(Set a) -> Set a | < a & == a
+difference :: !(Set a) !(Set a) -> Set a | < a
 
 /**
  * The intersection of two sets.
@@ -344,13 +344,13 @@ difference :: !(Set a) !(Set a) -> Set a | < a & == a
  *         i = intersection xs ys
  *         (xs`,ys`) = (toList xs, toList ys)
  */
-intersection :: !(Set a) !(Set a) -> Set a | < a & == a
+intersection :: !(Set a) !(Set a) -> Set a | < a
 
 /**
  * The intersection of a list of sets.
  * Elements of the result come from the first set
  */
-intersections :: ![Set a] -> Set a | < a & == a
+intersections :: ![Set a] -> Set a | < a
 
 /**
  * Filter all elements that satisfy the predicate.
