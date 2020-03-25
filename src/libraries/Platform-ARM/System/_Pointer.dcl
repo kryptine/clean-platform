@@ -146,5 +146,4 @@ unpackBool :: !{#Char} !Offset -> Bool
 forceEval			:: !a !*env -> *env
 forceEvalPointer	:: !Pointer !*env -> *env
 
-readP :: !(Pointer -> a) !Pointer -> (!a, !Pointer)
-
+readP :: !.(Pointer -> .a) !Pointer -> (!.a, !Pointer)
