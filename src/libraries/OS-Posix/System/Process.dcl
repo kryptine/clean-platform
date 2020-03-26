@@ -131,6 +131,14 @@ writePipe :: !String !WritePipe !*World -> (!MaybeOSError (), !*World)
 terminateProcess :: !ProcessHandle !*World -> (!MaybeOSError (), !*World)
 
 /**
+* terminates the process if it is still running and releases the process handle resources.
+* @param the process handle.
+* @param the kill signal number
+* @return ()
+*/
+terminateProcessCode :: !ProcessHandle !Int !*World -> (!MaybeOSError (), !*World)
+
+/**
 * closes the IO channels of the process.
 * @param the io channels
 * @return ()

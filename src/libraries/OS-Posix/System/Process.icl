@@ -404,15 +404,18 @@ writePipe str (WritePipe fd) world
     | res == -1 = getLastOSError world
     = (Ok (), world)
 
-terminateProcess :: !ProcessHandle !*World -> (!MaybeOSError (), !*World)
-terminateProcess pHandle=:{pid} world
-    # (res, world) = kill pid 15 world // Termination signal
+terminateProcessCode :: !ProcessHandle !Int !*World -> (!MaybeOSError (), !*World)
+terminateProcessCode pHandle=:{pid} sig world
+    # (res, world) = kill pid sig world // Termination signal
     | res == -1    = getLastOSError world
     // otherwise process will remain as zombie
     # status       = createArray 1 0
     # (res, world) = waitpid pid status 0 world
     | res == -1    = getLastOSError world
     = (Ok (), world)
+
+terminateProcess :: !ProcessHandle !*World -> (!MaybeOSError (), !*World)
+terminateProcess ph w = terminateProcessCode ph 15 w
 
 closeProcessIO :: !ProcessIO !*World -> (!MaybeOSError (), !*World)
 closeProcessIO {stdIn = WritePipe fdStdIn, stdOut = ReadPipe fdStdOut, stdErr = ReadPipe fdStdErr} world
