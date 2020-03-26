@@ -196,10 +196,13 @@ writePipe str (WritePipe hPipe) world
     | not ok = getLastOSError world
     = (Ok (), world)
 
-terminateProcess :: !ProcessHandle !*World -> (!MaybeOSError (), !*World)
-terminateProcess hProc=:{processHandle} world
-	# (ok, world) = 'System._WinBase'.terminateProcess processHandle 0 world
+terminateProcessCode :: !ProcessHandle !Int !*World -> (!MaybeOSError (), !*World)
+terminateProcess hProc=:{processHandle} exitCode world
+	# (ok, world) = 'System._WinBase'.terminateProcess processHandle exitCode world
 	= closeProcessHandle hProc world
+
+terminateProcess :: !ProcessHandle !*World -> (!MaybeOSError (), !*World)
+terminateProcess ph w = terminateProcessCode ph 0 w
 
 closeProcessIO :: !ProcessIO !*World -> (!MaybeOSError (), !*World)
 closeProcessIO {stdIn = WritePipe hStdIn, stdOut = ReadPipe hStdOut, stdErr = ReadPipe hStdErr} world
