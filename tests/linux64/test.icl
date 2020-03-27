@@ -116,6 +116,7 @@ import qualified Data.Int
 import qualified Data.Integer
 import qualified Data.Integer.Add
 import qualified Data.Integer.Div
+import qualified Data.Integer.GenJSON
 import qualified Data.Integer.Mul
 import qualified Data.Integer.ToInteger
 import qualified Data.Integer.ToString
