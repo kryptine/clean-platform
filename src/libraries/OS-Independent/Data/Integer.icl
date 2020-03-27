@@ -1132,9 +1132,11 @@ rest_all_zeros i a
 
 */
 
-gEq{|Integer|} x y = x == y
-gLexOrd{|Integer|} x y
-	| x == y = 'Data.GenLexOrd'.EQ
-	| x < y = 'Data.GenLexOrd'.LT
-	= 'Data.GenLexOrd'.GT
 gDefault{|Integer|} = {integer_s=0, integer_a={}}
+
+gEq{|Integer|} x y = x == y
+
+gLexOrd{|Integer|} x y
+	| x == y    = 'Data.GenLexOrd'.EQ
+	| x < y     = 'Data.GenLexOrd'.LT
+	| otherwise = 'Data.GenLexOrd'.GT

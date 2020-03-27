@@ -1,8 +1,8 @@
 definition module Data.Integer.GenJSON
 
-from Data.Maybe   import :: Maybe
-from Text.GenJSON import generic JSONEncode, generic JSONDecode, :: JSONNode
+from StdMaybe import :: Maybe
 from Data.Integer import :: Integer
+from Text.GenJSON import generic JSONEncode, generic JSONDecode, :: JSONNode
 
 derive JSONEncode Integer
 derive JSONDecode Integer
