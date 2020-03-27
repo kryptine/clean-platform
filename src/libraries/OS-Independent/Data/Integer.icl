@@ -2,6 +2,10 @@ implementation module Data.Integer
 
 import StdEnv
 import Data.Integer.ToString, Data.Integer.ToInteger, Data.Integer.Add, Data.Integer.Mul,Data.Integer.Div
+import Data.GenDefault
+import Data.GenLexOrd
+import qualified Data.GenLexOrd
+import Data.GenEq
 
 instance toChar Integer where
     toChar i = toChar (toInt i)
@@ -1127,3 +1131,10 @@ rest_all_zeros i a
 		= True
 
 */
+
+gEq{|Integer|} x y = x == y
+gLexOrd{|Integer|} x y
+	| x == y = 'Data.GenLexOrd'.EQ
+	| x < y = 'Data.GenLexOrd'.LT
+	= 'Data.GenLexOrd'.GT
+gDefault{|Integer|} = {integer_s=0, integer_a={}}

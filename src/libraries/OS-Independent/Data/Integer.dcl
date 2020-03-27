@@ -3,6 +3,9 @@
 /// Ported from the Haskell frontend by Tim Steenvoorden
 definition module Data.Integer
 
+from Data.GenDefault import generic gDefault
+from Data.GenLexOrd import generic gLexOrd, :: LexOrd
+from Data.GenEq import generic gEq
 import StdOverloaded
 
 :: Integer = {integer_s ::!Int, integer_a ::!.{#Int}};
@@ -43,3 +46,7 @@ instance toInteger String
 /*
 integer_a_to_double :: !Int !{#Int} -> Real
 */
+
+derive gEq Integer
+derive gLexOrd Integer
+derive gDefault Integer
