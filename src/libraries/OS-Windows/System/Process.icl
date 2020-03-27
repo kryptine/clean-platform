@@ -197,7 +197,7 @@ writePipe str (WritePipe hPipe) world
     = (Ok (), world)
 
 terminateProcessCode :: !ProcessHandle !Int !*World -> (!MaybeOSError (), !*World)
-terminateProcess hProc=:{processHandle} exitCode world
+terminateProcessCode hProc=:{processHandle} exitCode world
 	# (ok, world) = 'System._WinBase'.terminateProcess processHandle exitCode world
 	= closeProcessHandle hProc world
 
