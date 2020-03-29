@@ -49,6 +49,9 @@ from System.OSError import :: OSError, :: OSErrorCode, :: OSErrorMessage, :: May
 */
 pathSeparator :: Char
 
+//* `pathSeparator` as a String.
+pathSeparatorString :: String
+
 /**
 * Returns a list of all allowed platform path separators
 */
@@ -59,10 +62,16 @@ pathSeparators :: [Char]
 */
 extSeparator :: Char
 
+//* `extSeparator` as a String.
+extSeparatorString :: String
+
 /**
 * Concatenates two paths
 */
 (</>) infixr 5 :: !FilePath !FilePath -> FilePath
+
+//* Concatenate a list of paths.
+concatPaths :: ![FilePath] -> FilePath
 
 /**
  * Split a FilePath into filename and extension. The result does not include the extension separator (.).
