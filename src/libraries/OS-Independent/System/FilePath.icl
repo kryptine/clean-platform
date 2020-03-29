@@ -14,14 +14,32 @@ import qualified System._FilePath
 pathSeparator :: Char
 pathSeparator = OS_PATH_SEPARATOR
 
+pathSeparatorString :: String
+pathSeparatorString =: {#pathSeparator}
+
 pathSeparators :: [Char]
 pathSeparators = ['\\', '/']
 
 extSeparator :: Char
 extSeparator = '.'
 
+extSeparatorString :: String
+extSeparatorString =: {#extSeparator}
+
 (</>) infixr 5 :: !FilePath !FilePath -> FilePath
-(</>) x y = (addTrailingPathSeparator x) +++ y
+(</>) x y
+	| hasTrailingPathSeparator x
+		= x +++ y
+		= concat [x,pathSeparatorString,y]
+
+concatPaths :: ![FilePath] -> FilePath
+concatPaths paths = concat (addSeparators paths)
+where
+	addSeparators [] = []
+	addSeparators [p:ps]
+		| hasTrailingPathSeparator p
+			= [p:addSeparators ps]
+			= [p,pathSeparatorString:ps]
 
 splitExtension :: !FilePath -> (String, String)
 splitExtension path = split sz
@@ -46,23 +64,29 @@ dropExtension :: !FilePath -> String
 dropExtension path = fst (splitExtension path)
 
 addExtension :: !FilePath !String -> FilePath
-addExtension path "" = path
-addExtension path ext | path.[size path - 1] == extSeparator = path +++ ext
-addExtension path ext = path +++ {extSeparator} +++ ext
+addExtension path ext
+	| size ext == 0
+		= path
+	# sz = size path
+	| sz == 0
+		= ext
+	| path.[sz-1] == extSeparator
+		= path +++ ext
+		= concat [path,extSeparatorString,ext]
 
 replaceExtension :: !FilePath !String -> FilePath
 replaceExtension path ext = addExtension (dropExtension path) ext
 
 hasTrailingPathSeparator :: !FilePath -> Bool
-hasTrailingPathSeparator "" = False
-hasTrailingPathSeparator path = path.[size path - 1] == pathSeparator
-
-addTrailingPathSeparator :: !FilePath -> FilePath
-addTrailingPathSeparator path = if (hasTrailingPathSeparator path) path (path +++ {pathSeparator})
+hasTrailingPathSeparator path
+	# sz = size path
+	| sz == 0
+		= False
+		= path.[sz-1] == pathSeparator
 
 splitFileName  :: !FilePath -> (String, String)
 splitFileName path = 
-	case lastIndexOf {pathSeparator} path of
+	case lastIndexOf pathSeparatorString path of
 		-1 -> ("", path)
 		i  -> (subString 0 i path, subString (i+1) (size path - i - 1) path)
 
@@ -70,7 +94,7 @@ takeDirectory :: !FilePath -> FilePath
 takeDirectory path = fst (splitFileName path) 
 
 dropDirectory :: !FilePath -> String
-dropDirectory path = case lastIndexOf {pathSeparator} path of
+dropDirectory path = case lastIndexOf pathSeparatorString path of
 	-1                    = path
 	i | i == sizePath - 1 = dropDirectory $ subString 0 (sizePath - 1) path // drop file separator at end of path
 	  | otherwise         = subString (i+1) (sizePath - i - 1) path
