@@ -36,10 +36,11 @@ concatPaths :: ![FilePath] -> FilePath
 concatPaths paths = concat (addSeparators paths)
 where
 	addSeparators [] = []
+	addSeparators [p] = [p]
 	addSeparators [p:ps]
 		| hasTrailingPathSeparator p
 			= [p:addSeparators ps]
-			= [p,pathSeparatorString:ps]
+			= [p,pathSeparatorString: addSeparators ps]
 
 splitExtension :: !FilePath -> (String, String)
 splitExtension path = split sz
