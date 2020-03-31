@@ -140,6 +140,7 @@ size s :== case s of
  *     member x s <==> isMember x (toList s)
  */
 member    :: !a !(Set a) -> Bool | < a
+	special a=Int; a=String
 
 /**
  * Checks if an element is not in the set.
@@ -158,6 +159,7 @@ notMember x t :== not (member x t)
 isSubsetOf t1 t2 :== (size t1 <= size t2) && (isSubsetOfX t1 t2)
 
 isSubsetOfX :: !(Set a) !(Set a) -> Bool | < a
+	special a=Int; a=String
 
 /**
  * Is t1 a proper subset of t2?
@@ -197,6 +199,7 @@ singleton :: !u:a -> w:(Set u:a), [w <= u]
  *         integrity xs`                     // Data structure integrity
  */
 insert :: !a !.(Set a) -> Set a | < a
+	special a=Int; a=String
 
 /**
  * Delete an element from a set.
@@ -209,6 +212,7 @@ insert :: !a !.(Set a) -> Set a | < a
  *         integrity xs`                                           // Data structure integrity
  */
 delete :: !a !.(Set a) -> Set a | < a
+	special a=Int; a=String
 
 /**
  * The minimal element of a set.
@@ -311,6 +315,7 @@ maxView :: !.(Set a) -> .(Maybe (!a, !Set a))
  *         elems = toList xs ++ toList ys
  */
 union :: !u:(Set a) !u:(Set a) -> Set a | < a
+	special a=Int; a=String
 
 /**
  * The union of a list of sets.
@@ -330,6 +335,7 @@ unions ts :== foldl union newSet ts
  *         (xs`,ys`) = (toList xs, toList ys)
  */
 difference :: !(Set a) !(Set a) -> Set a | < a
+	special a=Int; a=String
 
 /**
  * The intersection of two sets.
@@ -345,12 +351,14 @@ difference :: !(Set a) !(Set a) -> Set a | < a
  *         (xs`,ys`) = (toList xs, toList ys)
  */
 intersection :: !(Set a) !(Set a) -> Set a | < a
+	special a=Int; a=String
 
 /**
  * The intersection of a list of sets.
  * Elements of the result come from the first set
  */
 intersections :: ![Set a] -> Set a | < a
+	special a=Int; a=String
 
 /**
  * Filter all elements that satisfy the predicate.
@@ -360,6 +368,7 @@ intersections :: ![Set a] -> Set a | < a
  *         =.= sort (removeDup ('StdList'.filter (pred p) (toList xs)))
  */
 filter :: !(a -> Bool) !(Set a) -> Set a | < a
+	special a=Int; a=String
 
 /**
  * Partition the set into two sets, one with all elements that satisfy the
@@ -381,6 +390,7 @@ filter :: !(a -> Bool) !(Set a) -> Set a | < a
  *         xs` = true` ++ false`
  */
 partition :: !(a -> Bool) !(Set a) -> (!Set a, !Set a) | < a
+	special a=Int; a=String
 
 /**
  * Split a set in elements less and elements greater than a certain pivot.
@@ -404,6 +414,7 @@ partition :: !(a -> Bool) !(Set a) -> (!Set a, !Set a) | < a
  *         xs` = lt` ++ gt`
  */
 split :: !a !(Set a) -> (!Set a, !Set a) | < a
+	special a=Int; a=String
 
 /**
  * Performs a 'split' but also returns whether the pivot element was found in
@@ -425,6 +436,7 @@ split :: !a !(Set a) -> (!Set a, !Set a) | < a
  *         xs` = lt` ++ gt`
  */
 splitMember :: !a !(Set a) -> (!Set a, !Bool, !Set a) | < a
+	special a=Int; a=String
 
 /**
  * Convert the set to an ascending list of elements.
@@ -447,6 +459,7 @@ toAscList t :== 'Data.Foldable'.foldr` (\a as -> [a:as]) [] t
  * @complexity O(n*log n)
  */
 fromList :: ![a] -> Set a | < a
+	special a=Int; a=String
 
 /**
  * Map a function to all elements in a set.
