@@ -1,6 +1,6 @@
 implementation module Data.Set
 
-import StdClass, StdMisc, StdBool, StdFunc, StdInt, StdTuple
+import StdClass, StdMisc, StdBool, StdFunc, StdInt, StdString, StdTuple
 import Data.Maybe, Data.GenEq, Data.GenLexOrd, Data.Monoid
 from Data.Foldable import class Foldable (..)
 import Data.Func
