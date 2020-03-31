@@ -76,6 +76,9 @@ from Data.Foldable import class Foldable
 /**
  * A `Set a` is an unordered, uncounted collection of values of type `a`.
  *
+ * Like with keys in `Map`, avoid tuple elements since this can be slow.
+ * Instead, define a (local) record with strict fields where appropriate.
+ *
  * @invariant integrity: A.s :: Set a | Eq, genShow{|*|}, gPrint{|*|} a:
  *     // Check that the data structure is still correct.
  *     name "no_duplicates" (no_duplicates s) /\

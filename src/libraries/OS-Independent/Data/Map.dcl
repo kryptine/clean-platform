@@ -82,6 +82,12 @@ import StdClass
  * The abstract Map type provides the mapping.
  * For example "Map Int String" is a mapping "from" integers "to" strings.
  *
+ * Notes on performance:
+ * - For maps from `Int`, you can use Data.IntMap in many cases.
+ * - Avoid using tuples as keys, since strictness information is lost in their
+ *   `<` instance. Instead, define a (local) record with strict fields where
+ *   appropriate.
+ *
  * @var The key type on which the data structure is indexed.
  * @var The type of the values stored in the mapping.
  *
