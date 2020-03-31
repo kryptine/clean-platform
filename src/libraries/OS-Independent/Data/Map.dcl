@@ -170,6 +170,7 @@ mapSize     :: !(Map k v) -> Int
  * @complexity O(log n)
  */
 put :: !k !a !(Map k a) -> Map k a | < k
+	special k=Int; k=String
 
 /**
  * Searches for a value at a given key position. Works only for non-unique
@@ -194,6 +195,7 @@ get k m :== get` k m
  * Searches for a value at a given key position. Works also for unique mappings.
  */
 getU :: !k !w:(Map k v) -> x:(!Maybe v, !y:(Map k v)) | == k & < k, [ x <= y, w <= y]
+	special k=Int; k=String
 
 /**
  * Removes the value at a given key position. The mapping itself can be spine unique.
@@ -209,11 +211,13 @@ getU :: !k !w:(Map k v) -> x:(!Maybe v, !y:(Map k v)) | == k & < k, [ x <= y, w 
  *         m` = del k m
  */
 del :: !k !(Map k a) -> Map k a | < k
+	special k=Int; k=String
 
 /**
  * Removes the value at a given key position. The mapping can be unique.
  */
 delU :: !a !.(Map a b) -> u:(!v:(Maybe b), !Map a b) | == a & < a, [u <= v] // !k !w:(Map k u:v) -> x:(Maybe u:v, !y:(Map k u:v)) | == k & < k, [ w y <= u, x <= y, w <= y]
+	special a=Int; a=String
 
 foldrWithKey :: !(k v u:a -> u:a) !u:a !(Map k v) -> u:a
 foldlWithKey :: !(.a -> .(k -> .(v -> .a))) !.a !(Map k v) -> .a
@@ -278,6 +282,7 @@ toAscList m :== foldrWithKey (\k x xs -> [(k,x):xs]) [] m
  * @complexity O(n*log n)
  */
 fromList :: !u:[v:(a, b)] -> Map a b | == a & < a, [u <= v]
+	special a=Int; a=String
 
 /**
  * The keys of all keys of a map.
@@ -301,6 +306,7 @@ derive gLexOrd Map
  * @complexity O(log n)
  */
 member :: !k !(Map k a) -> Bool | < k
+	special k=Int; k=String
 
 /**
  * Checks if a key is not a member of a Map.
@@ -318,6 +324,7 @@ notMember k m :== not (member k m)
  * @complexity O(log n)
  */
 find :: !k !(Map k a) -> a | < k
+	special k=Int; k=String
 
 /**
  * Find an element in a Map.
@@ -332,6 +339,7 @@ find :: !k !(Map k a) -> a | < k
  * @complexity O(log n)
  */
 findWithDefault :: !a !k !(Map k a) -> a | < k
+	special k=Int; k=String
 
 
 /**
@@ -359,6 +367,7 @@ findKey :: !a !(Map k a) -> Maybe k | == a
  * @complexity O(n)
  */
 findKeyWith :: !(a -> Bool) !(Map k a) -> Maybe k
+	special k=Int; k=String
 
 /**
  * Find the key of an element in a Map.
@@ -392,12 +401,14 @@ findKeyWithDefaultWith :: !(a -> Bool) !k !(Map k a) -> k
 
 
 alter :: !((Maybe a) -> Maybe a) !k !(Map k a) -> Map k a | < k
+	special k=Int; k=String
 
 /**
  * Get the index of a key in a Map so that it can be retrieved with
  * {{`elemAt`}}.
  */
 getIndex :: !k !(Map k a) -> Maybe Int | < k
+	special k=Int; k=String
 
 /**
  * Get the entry at a certain index. To get an index for a certain key, see
@@ -421,23 +432,32 @@ findMin :: !(Map k a) -> (!k, !a)
 findMax :: !(Map k a) -> (!k, !a)
 
 unions :: ![Map k a] -> Map k a | < k
+	special k=Int; k=String
 
 unionsWith :: !(a a -> a) ![Map k a] -> Map k a | < k
+	special k=Int; k=String
 
 unionWith :: !(a a -> a) !(Map k a) !(Map k a) -> Map k a | < k
+	special k=Int; k=String
 
 unionWithKey :: !(k a a -> a) !(Map k a) !(Map k a) -> Map k a | < k
+	special k=Int; k=String
 
 intersection :: !(Map k a) !(Map k b) -> Map k a | < k
+	special k=Int; k=String
 
 intersectionWith :: !(a b -> c) !(Map k a) !(Map k b) -> Map k c | < k
+	special k=Int; k=String
 
 intersectionWithKey :: !(k a b -> c) !(Map k a) !(Map k b) -> Map k c | < k
+	special k=Int; k=String
 
 union :: !(Map k a) !(Map k a) -> Map k a | < k
+	special k=Int; k=String
 
 mergeWithKey :: !(k a b -> Maybe c) !((Map k a) -> Map k c) !((Map k b) -> Map k c)
              !(Map k a) !(Map k b) -> Map k c | < k
+	special k=Int; k=String
 
 /**
  * Removes the values at given key positions. The mapping itself can be spine unique.
@@ -464,6 +484,8 @@ where
 	fmap :: !(a -> b) !(Map k a) -> Map k b
 
 difference :: !(Map k a) !(Map k b) -> Map k a | < k
+	special k=Int; k=String
 mapWithKey :: !(k a -> b) !(Map k a) -> Map k b
 isSubmapOf :: !(Map k a) !(Map k a) -> Bool | < k & Eq a
 isSubmapOfBy :: !(a b -> Bool) !(Map k a) !(Map k b) -> Bool | < k
+	special k=Int; k=String
