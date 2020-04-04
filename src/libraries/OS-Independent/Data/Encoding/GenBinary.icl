@@ -53,7 +53,12 @@ encodeBool True cs=:{es_pos = pos, es_bits = bits}
 encodeReal :: !Real !*EncodingSt -> *EncodingSt
 encodeReal real st = IF_INT_64_OR_32
 	(encodeInt (unsafeCoerce real) st)
-	(let (i1, i2) = unsafeCoerce real in encodeInt i2 $ encodeInt i1 st)
+	(let (i1, i2) = realToInts real in encodeInt i2 $ encodeInt i1 st)
+where
+	realToInts :: !Real -> (!Int, !Int)
+	realToInts _ = code {
+		no_op
+	}
 
 encodeArray :: !(a *EncodingSt -> *EncodingSt) !(b a) !*EncodingSt -> *EncodingSt | Array b a
 encodeArray f xs st
@@ -161,8 +166,13 @@ where
 		# (mbInt1, st) = decodeInt st
 		# (mbInt2, st) = decodeInt st
 		= case (mbInt1, mbInt2) of
-			(Just int1, Just int2) = (Just $ unsafeCoerce (int1, int2), st)
+			(Just int1, Just int2) = (Just $ intsToReal int1 int2, st)
 			_                      = (Nothing, st)
+	where
+		intsToReal :: !Int !Int -> Real
+		intsToReal _ _ = code {
+			no_op
+		}
 
 decodeArray :: !(*EncodingSt -> (Maybe a, *EncodingSt)) !*EncodingSt -> (!Maybe (b a), !*EncodingSt) | Array b a
 decodeArray f st
