@@ -173,12 +173,12 @@ sizeOfTm = IF_ANDROID 44 36
 
 nsTime :: !*World -> (!Timespec, !*World)
 nsTime w
-# (p, w) = mallocSt 16 w
+# (p, w) = mallocSt (IF_INT_64_OR_32 16 12) w
 # (r, w) = clock_gettime 0 p w
 //For completeness sake
 | r <> 0 = abort "clock_gettime error: everyone should have permission to open CLOCK_REALTIME?"
-# (tv_sec, p) = readIntP p 0
-# (tv_nsec, p) = readIntP p 8
+# (tv_sec, p) = IF_INT_64_OR_32 (readIntP p 0) (readP (\p -> readInt4Z p 0) p)
+# (tv_nsec, p) = readIntP p (IF_INT_64_OR_32 8 4)
 = ({Timespec | tv_sec = tv_sec, tv_nsec = tv_nsec}, freeSt p w)
 
 timespecToStamp :: !Timespec -> Timestamp
