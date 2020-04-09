@@ -41,31 +41,31 @@ gLexOrd{|Set|} eLexOrd x y = gLexOrd{|* -> *|} eLexOrd (toAscList x) (toAscList 
 
 instance Foldable Set where
 	foldr :: (a .b -> .b) .b !(Set a) -> .b
-	foldr _ z Tip           = z
 	foldr f z (Bin _ x l r) = foldr f (f x (foldr f z r)) l
+	foldr _ z _             = z
 
 	foldr` :: (a .b -> .b) !.b !(Set a) -> .b
-	foldr` _ z Tip           = z
 	foldr` f z (Bin _ x l r) = foldr` f (f x (foldr` f z r)) l
+	foldr` _ z _             = z
 
 	foldl :: (.b -> .(a -> .b)) .b !(Set a) -> .b
-	foldl _ z Tip           = z
 	foldl f z (Bin _ x l r) = foldl f (f (foldl f z l) x) r
+	foldl _ z _             = z
 
 	foldl` :: (.b -> .(a -> .b)) !.b !(Set a) -> .b
-	foldl` _ z Tip           = z
 	foldl` f z (Bin _ x l r) = foldl` f (f (foldl` f z l) x) r
+	foldl` _ z _             = z
 
 /*--------------------------------------------------------------------
  * Query
  *--------------------------------------------------------------------*/
 
 member :: !a !(Set a) -> Bool | < a
-member x Tip = False
 member x (Bin _ y l r)
-  | x < y     = member x l
-  | x > y     = member x r
-  | otherwise = True
+	| x < y     = member x l
+	| x > y     = member x r
+	| otherwise = True
+member x _ = False
 
 /*--------------------------------------------------------------------
  * Construction
@@ -82,37 +82,36 @@ singleton x = Bin 1 x Tip Tip
  *--------------------------------------------------------------------*/
 
 insert :: !a !.(Set a) -> Set a | < a
-insert x Tip = singleton x
-insert x (Bin sz y l r)
-  | x < y     = balanceL y (insert x l) r
-  | x > y     = balanceR y l (insert x r)
-  | otherwise = Bin sz x l r
+insert x t=:(Bin sz y l r)
+	| x < y     = balanceL y (insert x l) r
+	| x > y     = balanceR y l (insert x r)
+	| otherwise = t
+insert x _ = singleton x
 
 insertR :: !a !(Set a) -> Set a | < a
-insertR x Tip = singleton x
 insertR x t=:(Bin _ y l r)
-  | x < y     = balanceL y (insertR x l) r
-  | x > y     = balanceR y l (insertR x r)
-  | otherwise = t
+	| x < y     = balanceL y (insertR x l) r
+	| x > y     = balanceR y l (insertR x r)
+	| otherwise = t
+insertR x _ = singleton x
 
 delete :: !a !.(Set a) -> Set a | < a
-delete x Tip = Tip
 delete x (Bin _ y l r)
-  | x < y     = balanceR y (delete x l) r
-  | x > y     = balanceL y l (delete x r)
-  | otherwise = glue l r
+	| x < y     = balanceR y (delete x l) r
+	| x > y     = balanceL y l (delete x r)
+	| otherwise = glue l r
+delete x tip = tip
 
 /*--------------------------------------------------------------------
  * Subset
  *--------------------------------------------------------------------*/
 
 isSubsetOfX :: !(Set a) !(Set a) -> Bool | < a
-isSubsetOfX Tip _ = True
-isSubsetOfX _ Tip = False
 isSubsetOfX (Bin _ x l r) t
-  #! (lt, found, gt) = splitMember x t
-  = found && isSubsetOfX l lt && isSubsetOfX r gt
-isSubsetOfX _ _ = abort "error in isSubsetOfX\n"
+	| t =: Tip = False
+	#! (lt, found, gt) = splitMember x t
+	= found && isSubsetOfX l lt && isSubsetOfX r gt
+isSubsetOfX _ _ = True
 
 /*--------------------------------------------------------------------
  * Minimal, Maximal
@@ -166,14 +165,16 @@ splitS x (Bin _ y l r)
  
 difference :: !(Set a) !(Set a) -> Set a | < a
 difference Tip _   = Tip
-difference t1 Tip  = t1
-difference t1 (Bin _ x l2 r2) = case split  x t1 of
-	(l1, r1)
-		| size l1l2 + size r1r2 == size t1 -> t1
-		| otherwise -> merge l1l2 r1r2
-	where
-		l1l2 = difference l1 l2
-		r1r2 = difference r1 r2
+difference t1 t2 =
+	case t2 of
+		Bin _ x l2 r2 -> case split x t1 of
+			(l1, r1)
+				| size l1l2 + size r1r2 == size t1 -> t1
+				| otherwise -> merge l1l2 r1r2
+			where
+				l1l2 = difference l1 l2
+				r1r2 = difference r1 r2
+		_ -> t1
 
 /*--------------------------------------------------------------------
  * Intersection
@@ -205,18 +206,18 @@ hedgeInt blo bhi (Bin _ x l r) t2
  *--------------------------------------------------------------------*/
 
 filter :: !(a -> Bool) !(Set a) -> Set a | < a
-filter _ Tip = Tip
 filter p (Bin _ x l r)
-  | p x       = link x (filter p l) (filter p r)
-  | otherwise = merge (filter p l) (filter p r)
+	| p x       = link x (filter p l) (filter p r)
+	| otherwise = merge (filter p l) (filter p r)
+filter _ tip = tip
 
 partition :: !(a -> Bool) !(Set a) -> (!Set a, !Set a) | < a
-partition _ Tip = (Tip,Tip)
 partition p (Bin _ x l r)
   #! (l1,l2) = partition p l
   #! (r1,r2) = partition p r
   | p x       = (link x l1 r1,merge l2 r2)
   | otherwise = (merge l1 r1,link x l2 r2)
+partition _ t = (t, t)
 
 /*--------------------------------------------------------------------
  * Lists 
@@ -297,26 +298,26 @@ filterLt (JustS b) t = filter` b t
  *--------------------------------------------------------------------*/
 
 split :: !a !(Set a) -> (!Set a, !Set a) | < a
-split _ Tip = (Tip,Tip)
 split x (Bin _ y l r)
-  | x < y
-    #! (lt, gt) = split x l
-    = (lt, link y gt r)
-  | x > y
-    #! (lt,gt) = split x r
-    = (link y l lt,gt)
-  | otherwise = (l, r)
+	| x < y
+		#! (lt, gt) = split x l
+		= (lt, link y gt r)
+	| x > y
+		#! (lt,gt) = split x r
+		= (link y l lt,gt)
+	| otherwise = (l, r)
+split _ t = (t, t)
 
 splitMember :: !a !(Set a) -> (!Set a, !Bool, !Set a) | < a
-splitMember _ Tip = (Tip, False, Tip)
 splitMember x (Bin _ y l r)
-  | x < y
-    #! (lt, found, gt) = splitMember x l
-    = (lt, found, link y gt r)
-  | x > y
-    #! (lt, found, gt) = splitMember x r
-    = (link y l lt, found, gt)
-  | otherwise = (l, True, r)
+	| x < y
+		#! (lt, found, gt) = splitMember x l
+		= (lt, found, link y gt r)
+	| x > y
+		#! (lt, found, gt) = splitMember x r
+		= (link y l lt, found, gt)
+	| otherwise = (l, True, r)
+splitMember _ t = (t, False, t)
 
 /*--------------------------------------------------------------------
   Utility functions that maintain the balance properties of the tree.
@@ -351,34 +352,32 @@ splitMember x (Bin _ y l r)
  * Join 
  *--------------------------------------------------------------------*/
 link :: !a !(Set a) !(Set a) -> Set a
-link x Tip r  = insertMin x r
-link x l Tip  = insertMax x l
 link x l=:(Bin sizeL y ly ry) r=:(Bin sizeR z lz rz)
-  | delta*sizeL < sizeR  = balanceL z (link x l lz) rz
-  | delta*sizeR < sizeL  = balanceR y ly (link x ry r)
-  | otherwise            = bin x l r
-link _ _ _ = abort "error in link\n"
+	| delta*sizeL < sizeR  = balanceL z (link x l lz) rz
+	| delta*sizeR < sizeL  = balanceR y ly (link x ry r)
+	| otherwise            = bin x l r
+link x Tip r  = insertMin x r
+link x l _  = insertMax x l
 
 // insertMin and insertMax don't perform potentially expensive comparisons.
 insertMax :: !a !(Set a) -> Set a
-insertMax x Tip = singleton x
 insertMax x (Bin _ y l r) = balanceR y l (insertMax x r)
+insertMax x _ = singleton x
 
 insertMin :: !a !(Set a) -> Set a
-insertMin x Tip = singleton x
 insertMin x (Bin _ y l r) = balanceL y (insertMin x l) r
+insertMin x _ = singleton x
          
 /*--------------------------------------------------------------------
  * [merge l r]: merges two trees.
  *--------------------------------------------------------------------*/
 merge :: !(Set a) !(Set a) -> Set a
-merge Tip r   = r
-merge l Tip   = l
 merge l=:(Bin sizeL x lx rx) r=:(Bin sizeR y ly ry)
   | delta*sizeL < sizeR = balanceL y (merge l ly) ry
   | delta*sizeR < sizeL = balanceR x lx (merge rx r)
   | otherwise           = glue l r
-merge _ _ = abort "error in merge\n"
+merge Tip r = r
+merge l _ = l
 
 /*--------------------------------------------------------------------
  * [glue l r]: glues two trees together.
@@ -473,49 +472,47 @@ ratio :== 2
 // right subtree might have been deleted from.
 balanceL :: !a !(Set a) !(Set a) -> Set a
 balanceL x l r = case r of
-  Tip -> case l of
-           Tip -> Bin 1 x Tip Tip
-           (Bin _ _ Tip Tip) -> Bin 2 x l Tip
-           (Bin _ lx Tip (Bin _ lrx _ _)) -> Bin 3 lrx (Bin 1 lx Tip Tip) (Bin 1 x Tip Tip)
-           (Bin _ lx ll=:(Bin _ _ _ _) Tip) -> Bin 3 lx ll (Bin 1 x Tip Tip)
-           (Bin ls lx ll=:(Bin lls _ _ _) lr=:(Bin lrs lrx lrl lrr))
-             | lrs < ratio*lls -> Bin (1+ls) lx ll (Bin (1+lrs) x lr Tip)
-             | otherwise -> Bin (1+ls) lrx (Bin (1+lls+size lrl) lx ll lrl) (Bin (1+size lrr) x lrr Tip)
+	Bin rs _ _ _ -> case l of
+		Bin ls lx ll lr
+			| ls > delta*rs
+				# (Bin lls _   _   _  ) = ll
+				# (Bin lrs lrx lrl lrr) = lr
+				| lrs < ratio*lls -> Bin (1+ls+rs) lx ll (Bin (1+rs+lrs) x lr r)
+				| otherwise -> Bin (1+ls+rs) lrx (Bin (1+lls+size lrl) lx ll lrl) (Bin (1+rs+size lrr) x lrr r)
+			| otherwise -> Bin (1+ls+rs) x l r
+		_ -> Bin (1+rs) x Tip r
 
-  (Bin rs _ _ _) -> case l of
-           Tip -> Bin (1+rs) x Tip r
-
-           (Bin ls lx ll lr)
-              | ls > delta*rs  -> case (ll, lr) of
-                   (Bin lls _ _ _, Bin lrs lrx lrl lrr)
-                     | lrs < ratio*lls -> Bin (1+ls+rs) lx ll (Bin (1+rs+lrs) x lr r)
-                     | otherwise -> Bin (1+ls+rs) lrx (Bin (1+lls+size lrl) lx ll lrl) (Bin (1+rs+size lrr) x lrr r)
-                   (_, _) -> abort "Failure in Data.Map.balanceL"
-              | otherwise -> Bin (1+ls+rs) x l r
+	_ -> case l of
+			Bin ls lx ll=:(Bin lls _ _ _) lr=:(Bin lrs lrx lrl lrr)
+				| lrs < ratio*lls -> Bin (1+ls) lx ll (Bin (1+lrs) x lr Tip)
+				| otherwise -> Bin (1+ls) lrx (Bin (1+lls+size lrl) lx ll lrl) (Bin (1+size lrr) x lrr Tip)
+			Bin _ lx Tip (Bin _ lrx _ _) -> Bin 3 lrx (Bin 1 lx Tip Tip) (Bin 1 x Tip Tip)
+			Bin _ lx ll=:(Bin _ _ _ _) Tip -> Bin 3 lx ll (Bin 1 x Tip Tip)
+			Bin _ _ _ _ -> Bin 2 x l Tip
+			_ -> Bin 1 x Tip Tip
 
 // balanceR is called when right subtree might have been inserted to or when
 // left subtree might have been deleted from.
 balanceR :: !a !(Set a) !(Set a) -> Set a
 balanceR x l r = case l of
-  Tip -> case r of
-           Tip -> Bin 1 x Tip Tip
-           (Bin _ _ Tip Tip) -> Bin 2 x Tip r
-           (Bin _ rx Tip rr=:(Bin _ _ _ _)) -> Bin 3 rx (Bin 1 x Tip Tip) rr
-           (Bin _ rx (Bin _ rlx _ _) Tip) -> Bin 3 rlx (Bin 1 x Tip Tip) (Bin 1 rx Tip Tip)
-           (Bin rs rx rl=:(Bin rls rlx rll rlr) rr=:(Bin rrs _ _ _))
-             | rls < ratio*rrs -> Bin (1+rs) rx (Bin (1+rls) x Tip rl) rr
-             | otherwise -> Bin (1+rs) rlx (Bin (1+size rll) x Tip rll) (Bin (1+rrs+size rlr) rx rlr rr)
+	Bin ls _ _ _ -> case r of
+		Bin rs rx rl rr
+			| rs > delta*ls
+				# (Bin rls rlx rll rlr) = rl
+				# (Bin rrs _   _   _  ) = rr
+				| rls < ratio*rrs -> Bin (1+ls+rs) rx (Bin (1+ls+rls) x l rl) rr
+				| otherwise -> Bin (1+ls+rs) rlx (Bin (1+ls+size rll) x l rll) (Bin (1+rrs+size rlr) rx rlr rr)
+			| otherwise -> Bin (1+ls+rs) x l r
+		_ -> Bin (1+ls) x l Tip
 
-  (Bin ls _ _ _) -> case r of
-           Tip -> Bin (1+ls) x l Tip
-
-           (Bin rs rx rl rr)
-              | rs > delta*ls  -> case (rl, rr) of
-                   (Bin rls rlx rll rlr, Bin rrs _ _ _)
-                     | rls < ratio*rrs -> Bin (1+ls+rs) rx (Bin (1+ls+rls) x l rl) rr
-                     | otherwise -> Bin (1+ls+rs) rlx (Bin (1+ls+size rll) x l rll) (Bin (1+rrs+size rlr) rx rlr rr)
-                   (_, _) -> abort "Failure in Data.Map.balanceR"
-              | otherwise -> Bin (1+ls+rs) x l r
+	_ -> case r of
+		Bin rs rx rl=:(Bin rls rlx rll rlr) rr=:(Bin rrs _ _ _)
+			| rls < ratio*rrs -> Bin (1+rs) rx (Bin (1+rls) x Tip rl) rr
+			| otherwise -> Bin (1+rs) rlx (Bin (1+size rll) x Tip rll) (Bin (1+rrs+size rlr) rx rlr rr)
+		Bin _ rx Tip rr=:(Bin _ _ _ _) -> Bin 3 rx (Bin 1 x Tip Tip) rr
+		Bin _ rx (Bin _ rlx _ _) Tip-> Bin 3 rlx (Bin 1 x Tip Tip) (Bin 1 rx Tip Tip)
+		Bin _ _ _ _ -> Bin 2 x Tip r
+		_ -> Bin 1 x Tip Tip
 
 // rotate
 rotateL :: !a !(Set a) !(Set a) -> Set a
